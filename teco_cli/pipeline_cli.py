@@ -26,7 +26,7 @@ def parse_pipeline_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--prompts-dir",
         default=None,
         help=(
-            "Directory contenente prompt_user_stories.md e prompt_test_cases.md. "
+            "Directory contenente i prompt (user_stories/, test_cases/, evaluation/). "
             "Default: teco_cli/prompts/ nel progetto."
         ),
     )
@@ -64,6 +64,16 @@ def parse_pipeline_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=int,
         default=None,
         help="Elabora solo i primi N requisiti (utile per test).",
+    )
+    parser.add_argument(
+        "--strategy",
+        choices=["ac", "persona", "both"],
+        default="ac",
+        help=(
+            "Strategia di decomposizione user stories: "
+            "'ac' (per acceptance criterion), 'persona' (per persona), "
+            "'both' (entrambe in sequenza). Default: ac."
+        ),
     )
     parser.add_argument(
         "--verbose",
@@ -117,6 +127,7 @@ def main() -> None:
         max_tokens=args.max_tokens,
         verbose=args.verbose,
         limit=args.limit,
+        strategy=args.strategy,
     )
 
 

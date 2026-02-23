@@ -100,7 +100,7 @@ Con l'approccio AC-based, la granularità è proporzionale alla complessità fun
 
 ### 6. Impatto sulla generazione dei test cases a valle
 
-Il prompt dei test cases (`prompt_test_cases.md` e `prompt_test_cases_strict_check.md`) si aspetta user stories con:
+Il prompt dei test cases (`test_cases/from_user_stories.md` e `test_cases/strict_check/from_user_stories_strict.md`) si aspetta user stories con:
 
 - `acceptance_criteria` in formato "QUANDO... ALLORA..."
 - `story_id` nel formato `REQ-XXX.USNN`
@@ -149,12 +149,12 @@ L'approccio persona-based produce stories più aderenti al design thinking e all
 2. **AC trasversali**: vengono replicati in ogni US delle personas coinvolte, con segnalazione della ridondanza nel campo `notes`. Vedi side effect #3.
 3. **AC senza persona / requisiti puramente tecnici**: vengono assegnati a una persona convenzionale "Sistema", con segnalazione nel campo `assumptions`. Vedi side effect #3.
 4. **Requisito con una sola persona**: produce una singola US con tutti gli AC aggregati. Nessun fallback alla decomposizione per AC. Vedi side effect #5.
-5. **Coesistenza dei due approcci**: il prompt persona-based coesiste con quello AC-based come file separato (`prompt_user_stories_persona.md`). ADR-001 resta valida per il flusso AC-based.
+5. **Coesistenza dei due approcci**: il prompt persona-based coesiste con quello AC-based come file separato (`user_stories/persona_based.md`). ADR-001 resta valida per il flusso AC-based.
 6. **Schema JSON di output**: resta identico all'attuale (stessi campi) per garantire compatibilità con il prompt test cases. Nessun campo aggiuntivo. Vedi side effect #6.
 
 ## Conseguenze
 
-- Creazione del prompt `prompt_user_stories_persona.md` come file separato, coesistente con `prompt_user_stories.md`
+- Creazione del prompt `user_stories/persona_based.md` come file separato, coesistente con `user_stories/ac_based.md`
 - Modifica di `pipeline.py` per gestire l'input delle personas come contesto
 - Modifica di `pipeline.py` per filtrare i requisiti PERSONAS dalla trasformazione
 - ADR-001 resta valida per il flusso AC-based

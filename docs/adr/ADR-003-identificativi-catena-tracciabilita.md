@@ -123,7 +123,7 @@ Dove `NN` e un progressivo a due cifre (01, 02, ...).
 
 ## Conseguenze
 
-- Aggiornare i tre prompt (`prompt_user_stories.md`, `prompt_test_cases.md`, `prompt_test_cases_direct.md`) con la nuova convenzione
+- Aggiornare i tre prompt (`user_stories/ac_based.md`, `test_cases/from_user_stories.md`, `test_cases/from_requirements.md`) con la nuova convenzione
 - Aggiornare il campo `test_id` nella tabella descrizione campi di entrambi i prompt TC
 - Aggiornare il campo `story_id` nella tabella del prompt US
 - Aggiornare gli esempi JSON nei prompt

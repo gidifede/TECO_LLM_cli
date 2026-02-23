@@ -7,6 +7,14 @@ import json
 from datetime import datetime
 
 
+# Colori predefiniti per catena (background, border) — Chart.js
+CHART_COLORS: dict[str, tuple[str, str]] = {
+    "direct": ("rgba(22, 163, 74, 0.7)", "rgba(22, 163, 74, 1)"),
+    "indirect_ac": ("rgba(37, 99, 235, 0.7)", "rgba(37, 99, 235, 1)"),
+    "indirect_persona": ("rgba(168, 85, 247, 0.7)", "rgba(168, 85, 247, 1)"),
+}
+
+
 def _score_color(score: int | float) -> str:
     if score >= 80:
         return "#16a34a"  # green
@@ -39,11 +47,11 @@ def _render_tc_table(test_cases: list[dict], label: str) -> str:
         return f"<p class='empty'>Nessun test case {_esc(label)}.</p>"
     rows = ""
     for tc in test_cases:
-        tid = _esc(tc.get("test_id", "—"))
-        title = _esc(tc.get("title", "—"))
-        tc_type = _esc(tc.get("type", "—"))
-        priority = _esc(tc.get("priority", "—"))
-        traced = ", ".join(tc.get("traced_criteria", [])) or "—"
+        tid = _esc(tc.get("test_id", "\u2014"))
+        title = _esc(tc.get("title", "\u2014"))
+        tc_type = _esc(tc.get("type", "\u2014"))
+        priority = _esc(tc.get("priority", "\u2014"))
+        traced = ", ".join(tc.get("traced_criteria", [])) or "\u2014"
         rows += (
             f"<tr>"
             f"<td class='mono'>{tid}</td>"
@@ -71,8 +79,8 @@ def _render_issues_table(
         return "<p class='empty'>Nessun elemento.</p>"
     rows = ""
     for item in items:
-        v1 = _esc(item.get(key1, "—"))
-        v2 = _esc(item.get(key2, "—"))
+        v1 = _esc(item.get(key1, "\u2014"))
+        v2 = _esc(item.get(key2, "\u2014"))
         rows += f"<tr><td class='mono'>{v1}</td><td>{v2}</td></tr>\n"
     return f"""
     <table class="data-table">
@@ -87,7 +95,7 @@ def _render_redundancies_table(items: list[dict]) -> str:
     rows = ""
     for item in items:
         ids = ", ".join(item.get("test_ids", []))
-        detail = _esc(item.get("detail", "—"))
+        detail = _esc(item.get("detail", "\u2014"))
         rows += f"<tr><td class='mono'>{_esc(ids)}</td><td>{detail}</td></tr>\n"
     return f"""
     <table class="data-table">
@@ -177,8 +185,8 @@ def _render_set_section(
 def generate_evaluation_html(
     evaluation: dict,
     requirement: dict,
-    indirect_tc: list[dict],
-    direct_tc: list[dict],
+    tc_sets: dict[str, list[dict]],
+    chain_metadata: dict[str, dict],
     model: str = "",
 ) -> str:
     """Genera una pagina HTML completa con il report di valutazione.
@@ -186,8 +194,8 @@ def generate_evaluation_html(
     Parametri:
         evaluation: risultato della valutazione (JSON dal modello)
         requirement: requisito originale
-        indirect_tc: test cases indiretti inviati al modello
-        direct_tc: test cases diretti inviati al modello
+        tc_sets: {"direct": [...], "indirect_ac": [...], ...} — TC inviati
+        chain_metadata: {"direct": {"label": "...", "naming": "..."}, ...}
         model: nome del modello utilizzato
     """
     req_code = _esc(requirement.get("code", "UNKNOWN"))
@@ -197,31 +205,57 @@ def generate_evaluation_html(
     req_priority = _esc(requirement.get("priority", ""))
     acceptance_criteria = requirement.get("acceptance_criteria", [])
     now = datetime.now().strftime("%d/%m/%Y %H:%M")
+    total_ac = len(acceptance_criteria)
 
-    # Dati evaluation
-    indirect_data = evaluation.get("indirect", {})
-    direct_data = evaluation.get("direct", {})
+    # Dati comparison
     comparison = evaluation.get("comparison", {})
     winner = comparison.get("winner", "")
+    ranking = comparison.get("ranking", [])
     reasoning = _esc(comparison.get("reasoning", ""))
 
-    indirect_score = indirect_data.get("coherence_score", 0)
-    direct_score = direct_data.get("coherence_score", 0)
+    # --- Confronto: card dinamiche ---
+    comparison_cards = ""
+    for key in tc_sets:
+        label = chain_metadata.get(key, {}).get("label", key)
+        data = evaluation.get(key, {})
+        score = data.get("coherence_score", 0)
+        is_winner = key == winner
+        # Posizione in classifica
+        rank_pos = (ranking.index(key) + 1) if key in ranking else ""
+        rank_badge = f"<div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#{rank_pos}</div>" if rank_pos else ""
+        winner_class = "winner" if is_winner else ""
+        winner_html = (
+            "<div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>"
+            if is_winner else ""
+        )
+        comparison_cards += f"""
+    <div class="comparison-card {winner_class}">
+      <div class="comparison-score" style="color:{_score_color(score)}">{score}</div>
+      <div class="comparison-label">{_esc(label)}</div>
+      {rank_badge}
+      {winner_html}
+    </div>"""
 
-    # Sezioni dei set
-    total_ac = len(acceptance_criteria)
-    indirect_section = _render_set_section(
-        indirect_data, "Set Indiretti (da User Stories)", winner == "indirect", total_ac
-    )
-    direct_section = _render_set_section(
-        direct_data, "Set Diretti (da Requisito)", winner == "direct", total_ac
-    )
+    # --- Sezioni set ---
+    set_sections = ""
+    for key in tc_sets:
+        label = chain_metadata.get(key, {}).get("label", key)
+        data = evaluation.get(key, {})
+        is_winner = key == winner
+        set_sections += _render_set_section(data, label, is_winner, total_ac)
 
-    # Tabelle TC di input
-    indirect_tc_table = _render_tc_table(indirect_tc, "indiretti")
-    direct_tc_table = _render_tc_table(direct_tc, "diretti")
+    # --- Blocchi details per dati di input ---
+    input_details = ""
+    for key, tc_list in tc_sets.items():
+        label = chain_metadata.get(key, {}).get("label", key)
+        tc_table = _render_tc_table(tc_list, label)
+        input_details += f"""
+  <details>
+    <summary>{_esc(label)} &mdash; {len(tc_list)} TC inviati</summary>
+    {tc_table}
+  </details>"""
 
-    # JSON del requisito pre-computato (non puo stare dentro l'f-string)
+    # JSON del requisito pre-computato
     req_json_pretty = _esc(json.dumps(
         {
             "code": requirement.get("code", ""),
@@ -235,40 +269,40 @@ def generate_evaluation_html(
         ensure_ascii=False,
     ))
 
-    # Dati per Chart.js
-    indirect_metrics = {
-        "ac_coperti": indirect_data.get("ac_coverage", {}).get("covered_ac", 0),
-        "info_aggiunte": len(indirect_data.get("added_info", [])),
-        "info_mancanti": len(indirect_data.get("missing_info", [])),
-        "ridondanze": len(indirect_data.get("redundancies", [])),
-    }
-    direct_metrics = {
-        "ac_coperti": direct_data.get("ac_coverage", {}).get("covered_ac", 0),
-        "info_aggiunte": len(direct_data.get("added_info", [])),
-        "info_mancanti": len(direct_data.get("missing_info", [])),
-        "ridondanze": len(direct_data.get("redundancies", [])),
-    }
+    # --- Chart.js: dataset dinamici ---
+    chart_labels = ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"]
+    chart_datasets: list[dict] = []
+    for key in tc_sets:
+        label = chain_metadata.get(key, {}).get("label", key)
+        data = evaluation.get(key, {})
+        bg, border = CHART_COLORS.get(key, ("rgba(100,100,100,0.7)", "rgba(100,100,100,1)"))
+        chart_datasets.append({
+            "label": label,
+            "data": [
+                data.get("ac_coverage", {}).get("covered_ac", 0),
+                len(data.get("added_info", [])),
+                len(data.get("missing_info", [])),
+                len(data.get("redundancies", [])),
+            ],
+            "backgroundColor": bg,
+            "borderColor": border,
+            "borderWidth": 1,
+        })
 
     chart_data_json = json.dumps(
-        {
-            "labels": [
-                "AC coperti",
-                "Info aggiunte",
-                "Info mancanti",
-                "Ridondanze",
-            ],
-            "indirect": list(indirect_metrics.values()),
-            "direct": list(direct_metrics.values()),
-        },
+        {"labels": chart_labels, "datasets": chart_datasets},
         ensure_ascii=False,
     )
+
+    # Griglia confronto: auto-fit per N card
+    grid_cols = f"repeat({len(tc_sets)}, 1fr)"
 
     return f"""<!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Valutazione coerenza — {req_code}</title>
+<title>Valutazione coerenza &mdash; {req_code}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -302,7 +336,7 @@ def generate_evaluation_html(
   .ac-num {{ font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }}
 
   /* Confronto */
-  .comparison-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }}
+  .comparison-grid {{ display: grid; grid-template-columns: {grid_cols}; gap: 1.5rem; margin: 1rem 0; }}
   .comparison-card {{
     text-align: center; padding: 1.5rem; border-radius: 10px;
     border: 2px solid #e2e8f0; position: relative;
@@ -361,7 +395,7 @@ def generate_evaluation_html(
   .empty {{ color: #94a3b8; font-style: italic; padding: 0.5rem 0; }}
 
   /* Chart */
-  .chart-container {{ max-width: 500px; margin: 1.5rem auto; }}
+  .chart-container {{ max-width: 600px; margin: 1.5rem auto; }}
 
   /* Input data */
   .input-section {{ background: #fffbeb; border: 1px solid #fde68a; }}
@@ -385,11 +419,12 @@ def generate_evaluation_html(
 <body>
 
 <div class="header">
-  <h1>Valutazione coerenza — {req_code}</h1>
+  <h1>Valutazione coerenza &mdash; {req_code}</h1>
   <div class="subtitle">{req_title}</div>
   <div class="meta">
     <span>Data: {now}</span>
     <span>Modello: {_esc(model) if model else "N/A"}</span>
+    <span>Set valutati: {len(tc_sets)}</span>
   </div>
 </div>
 
@@ -411,16 +446,7 @@ def generate_evaluation_html(
 <div class="section">
   <h2>Confronto</h2>
   <div class="comparison-grid">
-    <div class="comparison-card {"winner" if winner == "indirect" else ""}">
-      <div class="comparison-score" style="color:{_score_color(indirect_score)}">{indirect_score}</div>
-      <div class="comparison-label">Indiretti (da US)</div>
-      {"<div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>" if winner == "indirect" else ""}
-    </div>
-    <div class="comparison-card {"winner" if winner == "direct" else ""}">
-      <div class="comparison-score" style="color:{_score_color(direct_score)}">{direct_score}</div>
-      <div class="comparison-label">Diretti (da REQ)</div>
-      {"<div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>" if winner == "direct" else ""}
-    </div>
+    {comparison_cards}
   </div>
   <div class="reasoning"><strong>Motivazione:</strong> {reasoning}</div>
 
@@ -429,11 +455,8 @@ def generate_evaluation_html(
   </div>
 </div>
 
-<!-- Set Indiretti -->
-{indirect_section}
-
-<!-- Set Diretti -->
-{direct_section}
+<!-- Sezioni set -->
+{set_sections}
 
 <!-- Dati di input inviati al modello -->
 <div class="section input-section">
@@ -447,15 +470,7 @@ def generate_evaluation_html(
     <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{req_json_pretty}</pre>
   </details>
 
-  <details>
-    <summary>Test Cases Indiretti — {len(indirect_tc)} TC inviati</summary>
-    {indirect_tc_table}
-  </details>
-
-  <details>
-    <summary>Test Cases Diretti — {len(direct_tc)} TC inviati</summary>
-    {direct_tc_table}
-  </details>
+  {input_details}
 </div>
 
 <script>
@@ -464,22 +479,7 @@ new Chart(document.getElementById('comparisonChart'), {{
   type: 'bar',
   data: {{
     labels: chartData.labels,
-    datasets: [
-      {{
-        label: 'Indiretti (da US)',
-        data: chartData.indirect,
-        backgroundColor: 'rgba(37, 99, 235, 0.7)',
-        borderColor: 'rgba(37, 99, 235, 1)',
-        borderWidth: 1,
-      }},
-      {{
-        label: 'Diretti (da REQ)',
-        data: chartData.direct,
-        backgroundColor: 'rgba(22, 163, 74, 0.7)',
-        borderColor: 'rgba(22, 163, 74, 1)',
-        borderWidth: 1,
-      }},
-    ],
+    datasets: chartData.datasets,
   }},
   options: {{
     responsive: true,

@@ -4,10 +4,13 @@
 
 Valutare la **coerenza** tra test cases generati e il requisito di business originale. Il requisito e l'unica fonte di verita: ogni informazione presente nei test cases deve essere tracciabile al requisito, e ogni informazione presente nel requisito deve essere coperta dai test cases.
 
-Riceverai due set di test cases generati dallo stesso requisito con due metodi diversi:
+Riceverai da **2 a 3 set** di test cases generati dallo stesso requisito con metodi diversi. Le catene di produzione possibili sono:
 
-- **Set indiretto**: test cases generati passando per user stories intermedie. Identificabili dalla naming convention `{REQ}.US{NN}.TC{NN}` dove NN e un progressivo a **due cifre con zero-padding** (01, 02, ..., 10, 11, ...). Esempio: `REQ-F-001.US01.TC01`
-- **Set diretto**: test cases generati direttamente dal requisito. Identificabili dalla naming convention `{REQ}.TC{NN}` dove NN e un progressivo a **due cifre con zero-padding** (01, 02, ...). Esempio: `REQ-F-001.TC01`
+- **`direct`** — Test cases generati direttamente dal requisito. Naming convention: `{REQ}.TC{NN}` (NN = due cifre con zero-padding). Esempio: `REQ-F-001.TC01`
+- **`indirect_ac`** — Test cases generati passando per user stories AC-based. Naming convention: `{REQ}.US{NN}.TC{NN}` (NN = due cifre con zero-padding). Esempio: `REQ-F-001.US01.TC01`
+- **`indirect_persona`** — Test cases generati passando per user stories persona-based. Naming convention: `{REQ}.US{NN}.TC{NN}` (NN = due cifre con zero-padding). Esempio: `REQ-F-001.US01.TC01`
+
+**Nota:** `indirect_ac` e `indirect_persona` condividono la stessa naming convention. Sono distinguibili solo dalla chiave nel campo `tc_sets`.
 
 ---
 
@@ -27,13 +30,15 @@ Il tuo compito e verificare la coerenza, non la qualita stilistica. Non giudichi
 
 ## Input
 
-Riceverai un blocco JSON con tre sezioni:
+Riceverai un blocco JSON con due sezioni:
 
 - `requirement`: il requisito originale (code, title, description, category, priority, acceptance_criteria)
-- `indirect_tc`: array di test cases generati via user stories (NON vuoto)
-- `direct_tc`: array di test cases generati direttamente dal requisito (NON vuoto)
+- `tc_sets`: un oggetto con **2 o 3 chiavi** (tra `direct`, `indirect_ac`, `indirect_persona`). Ogni chiave contiene:
+  - `label`: etichetta descrittiva del set
+  - `naming_convention`: pattern della naming convention dei test_id
+  - `test_cases`: array di test cases (NON vuoto)
 
-Tutti e tre i campi sono obbligatori e devono contenere dati validi.
+Entrambi i campi (`requirement` e `tc_sets`) sono obbligatori e devono contenere dati validi.
 
 ---
 
@@ -42,10 +47,11 @@ Tutti e tre i campi sono obbligatori e devono contenere dati validi.
 Prima di procedere con la valutazione, verifica che l'input sia conforme. **Rifiuta** l'input se ricorre almeno una di queste condizioni:
 
 - `requirement` e assente, vuoto o non contiene almeno `code`, `description` e `acceptance_criteria`
-- `indirect_tc` e assente o e un array vuoto
-- `direct_tc` e assente o e un array vuoto
-- I test cases in `indirect_tc` non seguono la naming convention `{REQ}.US{NN}.TC{NN}` (NN = due cifre con zero-padding, es. US01.TC01, US02.TC03)
-- I test cases in `direct_tc` non seguono la naming convention `{REQ}.TC{NN}` (NN = due cifre con zero-padding, es. TC01, TC02)
+- `tc_sets` e assente o contiene meno di 2 chiavi
+- Le chiavi di `tc_sets` non sono tra `direct`, `indirect_ac`, `indirect_persona`
+- Un qualsiasi `test_cases` dentro `tc_sets` e assente o e un array vuoto
+- I test cases in `direct` non seguono la naming convention `{REQ}.TC{NN}` (NN = due cifre con zero-padding)
+- I test cases in `indirect_ac` o `indirect_persona` non seguono la naming convention `{REQ}.US{NN}.TC{NN}`
 - Il `requirement_id` nei test cases non corrisponde al `code` del requisito fornito
 
 Se l'input **NON supera la validazione**, restituisci un oggetto di rifiuto (vedi formato sotto).
@@ -55,7 +61,7 @@ Se l'input **supera la validazione**, procedi con la valutazione.
 
 ## Metriche di valutazione
 
-Per ogni set di test cases, valuta le seguenti metriche:
+Per **ciascun set** di test cases presente in `tc_sets`, valuta le seguenti metriche:
 
 ### 1. Copertura AC (`ac_coverage`)
 
@@ -119,11 +125,11 @@ Il punteggio riflette la coerenza con il requisito, non la qualita stilistica de
 
 ## Confronto tra set (OBBLIGATORIO)
 
-Devi sempre produrre un confronto finale con un **vincitore obbligatorio**.
+Devi sempre produrre un confronto finale con un **vincitore obbligatorio** e una **classifica completa**.
 
-Nel campo `comparison.winner` devi indicare `"direct"` oppure `"indirect"`. Non sono ammessi pareggi, risposte diplomatiche o formulazioni ambigue. Scegli il set piu coerente con il requisito.
-
-Il campo `comparison.reasoning` deve spiegare in modo specifico perche il set vincitore e preferibile, citando le metriche.
+- `comparison.winner`: la chiave del set piu coerente (es. `"direct"`, `"indirect_ac"`, `"indirect_persona"`). Non sono ammessi pareggi, risposte diplomatiche o formulazioni ambigue.
+- `comparison.ranking`: array ordinato dal migliore al peggiore contenente tutte le chiavi dei set valutati. Esempio per 3 set: `["direct", "indirect_persona", "indirect_ac"]`. Esempio per 2 set: `["direct", "indirect_ac"]`.
+- `comparison.reasoning`: motivazione specifica che spiega perche il set vincitore e preferibile, citando le metriche.
 
 ---
 
@@ -131,13 +137,25 @@ Il campo `comparison.reasoning` deve spiegare in modo specifico perche il set vi
 
 Restituisci **esclusivamente** un blocco JSON valido, senza testo prima o dopo.
 
-### Caso OK — input valido
+### Caso OK — input valido (esempio con 2 set)
 
 ```json
 {
   "status": "ok",
   "requirement_id": "REQ-F-001",
-  "indirect": {
+  "direct": {
+    "tc_count": 10,
+    "coherence_score": 85,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [],
+    "missing_info": [],
+    "redundancies": []
+  },
+  "indirect_ac": {
     "tc_count": 15,
     "coherence_score": 78,
     "ac_coverage": {
@@ -164,21 +182,48 @@ Restituisci **esclusivamente** un blocco JSON valido, senza testo prima o dopo.
       }
     ]
   },
+  "comparison": {
+    "winner": "direct",
+    "ranking": ["direct", "indirect_ac"],
+    "reasoning": "Il set diretto ha copertura AC completa (3/3 vs 2/3), nessuna informazione aggiunta e nessuna informazione mancante. Il set indirect_ac ha una informazione aggiunta e un AC non coperto."
+  }
+}
+```
+
+### Caso OK — input valido (esempio con 3 set)
+
+```json
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-001",
   "direct": {
     "tc_count": 10,
     "coherence_score": 85,
-    "ac_coverage": {
-      "total_ac": 3,
-      "covered_ac": 3,
-      "uncovered_ac": []
-    },
+    "ac_coverage": { "total_ac": 3, "covered_ac": 3, "uncovered_ac": [] },
     "added_info": [],
+    "missing_info": [],
+    "redundancies": []
+  },
+  "indirect_ac": {
+    "tc_count": 15,
+    "coherence_score": 78,
+    "ac_coverage": { "total_ac": 3, "covered_ac": 2, "uncovered_ac": ["AC-3: ..."] },
+    "added_info": [{ "test_id": "REQ-F-001.US02.TC03", "detail": "..." }],
+    "missing_info": [{ "source": "AC-3", "detail": "..." }],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 80,
+    "ac_coverage": { "total_ac": 3, "covered_ac": 3, "uncovered_ac": [] },
+    "added_info": [{ "test_id": "REQ-F-001.US01.TC02", "detail": "..." }],
     "missing_info": [],
     "redundancies": []
   },
   "comparison": {
     "winner": "direct",
-    "reasoning": "Il set diretto ha copertura AC completa (3/3 vs 2/3), nessuna informazione aggiunta e nessuna informazione mancante. Il set indiretto ha una informazione aggiunta e un AC non coperto."
+    "ranking": ["direct", "indirect_persona", "indirect_ac"],
+    "reasoning": "Il set diretto ha il punteggio piu alto (85) con copertura AC completa e nessuna anomalia. Il set indirect_persona segue (80) con copertura completa ma una informazione aggiunta. Il set indirect_ac e ultimo (78) con un AC scoperto e un'informazione aggiunta."
   }
 }
 ```
@@ -204,13 +249,11 @@ Il campo `reasons` deve contenere una lista di motivazioni specifiche che spiega
 
 ## Vincoli importanti
 
-NON:
-
-- assegnare punteggi basati sulla qualita stilistica o sulla verbosita dei test cases
-- penalizzare un set perche ha piu o meno test cases dell'altro
-- dare pareggi o risposte diplomatiche nel confronto
-- aggiungere testo, commenti o spiegazioni fuori dal blocco JSON
-- inventare problemi non riscontrabili confrontando TC e requisito
-- considerare le user stories intermedie come fonte di verita (solo il requisito lo e)
+- NON assegnare punteggi basati sulla qualita stilistica o sulla verbosita dei test cases
+- NON penalizzare un set perche ha piu o meno test cases dell'altro
+- NON dare pareggi o risposte diplomatiche nel confronto
+- NON aggiungere testo, commenti o spiegazioni fuori dal blocco JSON
+- NON inventare problemi non riscontrabili confrontando TC e requisito
+- NON considerare le user stories intermedie come fonte di verita (solo il requisito lo e)
 
 ---

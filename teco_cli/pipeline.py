@@ -2,10 +2,10 @@
 
 Per ogni requisito:
 0. Validazione sintattica (Python) — skip se campi obbligatori mancanti
-1. Invia il singolo requisito + prompt_user_stories → validazione semantica LLM
+1. Invia il singolo requisito + prompt US (ac_based / persona_based) → validazione semantica LLM
    - Se status=rejected → registra e passa al prossimo
    - Se status=ok → ottiene user stories JSON
-2. Invia le user stories + prompt_test_cases → ottiene test cases JSON
+2. Invia le user stories + prompt TC (from_user_stories) → ottiene test cases JSON
 """
 
 import json
@@ -16,6 +16,7 @@ from pathlib import Path
 
 from .config import AzureOpenAIConfig
 from .llm import call_azure_openai
+from .paths import PromptFiles, OutputDirs
 
 MIN_DESCRIPTION_LENGTH = 20
 
@@ -51,6 +52,32 @@ def _serialize_requirement(req: dict) -> str:
         "acceptance_criteria": req.get("acceptance_criteria", []),
     }
     return json.dumps(fields, indent=2, ensure_ascii=False)
+
+
+def extract_personas_context(requirements: list[dict]) -> tuple[str, list[dict]]:
+    """Separa i requisiti PERSONAS dal resto e serializza il contesto personas.
+
+    Restituisce:
+      (personas_json, non_persona_reqs)
+      - personas_json: stringa JSON con l'array delle personas
+      - non_persona_reqs: lista dei requisiti filtrati (senza PERSONAS)
+    """
+    personas: list[dict] = []
+    non_persona_reqs: list[dict] = []
+
+    for req in requirements:
+        if req.get("category", "").upper() == "PERSONAS":
+            personas.append({
+                "code": req.get("code", ""),
+                "title": req.get("title", ""),
+                "description": req.get("description", ""),
+                "acceptance_criteria": req.get("acceptance_criteria", []),
+            })
+        else:
+            non_persona_reqs.append(req)
+
+    personas_json = json.dumps(personas, indent=2, ensure_ascii=False)
+    return personas_json, non_persona_reqs
 
 
 def _validate_syntax(req: dict) -> list[str]:
@@ -96,6 +123,7 @@ def process_requirement_to_us(
     temperature: float,
     max_tokens: int,
     verbose: bool,
+    personas_context: str | None = None,
 ) -> dict:
     """Singolo requisito → user stories (validazione sintattica + semantica + LLM).
 
@@ -114,12 +142,22 @@ def process_requirement_to_us(
 
     # Chiamata LLM
     req_json = _serialize_requirement(req)
-    user_content = (
-        f"Valida e trasforma il seguente requisito in user stories:\n\n{req_json}"
-    )
+    if personas_context is not None:
+        user_content = (
+            f"## Contesto — Personas del progetto\n\n"
+            f"{personas_context}\n\n"
+            f"## Requisito da trasformare\n\n"
+            f"Valida e trasforma il seguente requisito in user stories:\n\n{req_json}"
+        )
+    else:
+        user_content = (
+            f"Valida e trasforma il seguente requisito in user stories:\n\n{req_json}"
+        )
 
     if verbose:
-        print(f"  [step 1] Invio a Azure OpenAI per validazione + user stories...")
+        print(f"  [step 1] Invio a Azure OpenAI...")
+        print(f"  [step 1]   Prompt di sistema: {len(system_prompt)} char")
+        print(f"  [step 1]   Payload utente:    {len(user_content)} char")
 
     try:
         t0 = time.time()
@@ -134,7 +172,11 @@ def process_requirement_to_us(
         elapsed = time.time() - t0
 
         if verbose:
-            print(f"  [step 1] Risposta ricevuta in {elapsed:.1f}s ({len(raw_us)} char)")
+            print(
+                f"  [step 1] Risposta ricevuta in {elapsed:.1f}s ({len(raw_us)} char)"
+                f"  —  token: {llm_resp.prompt_tokens}+{llm_resp.completion_tokens}"
+                f"={llm_resp.total_tokens}"
+            )
 
         if llm_resp.truncated:
             return {
@@ -205,7 +247,9 @@ def process_us_to_tc(
     )
 
     if verbose:
-        print(f"  [step 2] Invio a Azure OpenAI per test cases...")
+        print(f"  [step 2] Invio a Azure OpenAI...")
+        print(f"  [step 2]   Prompt di sistema: {len(system_prompt)} char")
+        print(f"  [step 2]   Payload utente:    {len(user_content)} char")
 
     try:
         t0 = time.time()
@@ -220,7 +264,11 @@ def process_us_to_tc(
         elapsed = time.time() - t0
 
         if verbose:
-            print(f"  [step 2] Risposta ricevuta in {elapsed:.1f}s ({len(raw_tc)} char)")
+            print(
+                f"  [step 2] Risposta ricevuta in {elapsed:.1f}s ({len(raw_tc)} char)"
+                f"  —  token: {llm_resp.prompt_tokens}+{llm_resp.completion_tokens}"
+                f"={llm_resp.total_tokens}"
+            )
 
         if llm_resp.truncated:
             return {
@@ -295,7 +343,9 @@ def process_requirement_to_tc_direct(
     )
 
     if verbose:
-        print(f"  [direct] Invio a Azure OpenAI per test cases diretti...")
+        print(f"  [direct] Invio a Azure OpenAI...")
+        print(f"  [direct]   Prompt di sistema: {len(system_prompt)} char")
+        print(f"  [direct]   Payload utente:    {len(user_content)} char")
 
     try:
         t0 = time.time()
@@ -310,7 +360,11 @@ def process_requirement_to_tc_direct(
         elapsed = time.time() - t0
 
         if verbose:
-            print(f"  [direct] Risposta ricevuta in {elapsed:.1f}s ({len(raw_tc)} char)")
+            print(
+                f"  [direct] Risposta ricevuta in {elapsed:.1f}s ({len(raw_tc)} char)"
+                f"  —  token: {llm_resp.prompt_tokens}+{llm_resp.completion_tokens}"
+                f"={llm_resp.total_tokens}"
+            )
 
         if llm_resp.truncated:
             return {
@@ -355,8 +409,8 @@ def process_requirement_to_tc_direct(
 
 def evaluate_test_cases(
     requirement: dict,
-    indirect_tc: list[dict],
-    direct_tc: list[dict],
+    tc_sets: dict[str, list[dict]],
+    chain_metadata: dict[str, dict],
     system_prompt: str,
     config: AzureOpenAIConfig,
     temperature: float,
@@ -365,7 +419,12 @@ def evaluate_test_cases(
 ) -> dict:
     """Valuta la coerenza dei test cases rispetto al requisito originale.
 
-    Entrambi i set (indirect_tc e direct_tc) sono obbligatori e non vuoti.
+    Accetta da 2 a 3 set di test cases (chiavi: "direct", "indirect_ac",
+    "indirect_persona"). Ogni set deve essere non vuoto.
+
+    Parametri:
+      tc_sets: {"direct": [...], "indirect_ac": [...], ...}
+      chain_metadata: {"direct": {"label": "...", "naming": "..."}, ...}
 
     Restituisce:
       {"status": "ok",       "evaluation": {...}}
@@ -375,6 +434,15 @@ def evaluate_test_cases(
     code = requirement.get("code", "UNKNOWN")
 
     # Assembla il payload JSON per il prompt
+    tc_sets_payload = {}
+    for key, tc_list in tc_sets.items():
+        meta = chain_metadata.get(key, {})
+        tc_sets_payload[key] = {
+            "label": meta.get("label", key),
+            "naming_convention": meta.get("naming", ""),
+            "test_cases": tc_list,
+        }
+
     payload = {
         "requirement": {
             "code": requirement.get("code", ""),
@@ -384,17 +452,19 @@ def evaluate_test_cases(
             "priority": requirement.get("priority", ""),
             "acceptance_criteria": requirement.get("acceptance_criteria", []),
         },
-        "indirect_tc": indirect_tc,
-        "direct_tc": direct_tc,
+        "tc_sets": tc_sets_payload,
     }
 
     user_content = (
-        f"Valuta la coerenza dei seguenti test cases rispetto al requisito:\n\n"
+        f"Valuta la coerenza dei seguenti test cases rispetto al requisito.\n"
+        f"I set da valutare sono {len(tc_sets)}.\n\n"
         f"{json.dumps(payload, indent=2, ensure_ascii=False)}"
     )
 
     if verbose:
-        print(f"  [eval] Invio a Azure OpenAI per valutazione coerenza...")
+        print(f"  [eval] Invio a Azure OpenAI...")
+        print(f"  [eval]   Prompt di sistema: {len(system_prompt)} char")
+        print(f"  [eval]   Payload utente:    {len(user_content)} char")
 
     try:
         t0 = time.time()
@@ -409,7 +479,11 @@ def evaluate_test_cases(
         elapsed = time.time() - t0
 
         if verbose:
-            print(f"  [eval] Risposta ricevuta in {elapsed:.1f}s ({len(raw_eval)} char)")
+            print(
+                f"  [eval] Risposta ricevuta in {elapsed:.1f}s ({len(raw_eval)} char)"
+                f"  —  token: {llm_resp.prompt_tokens}+{llm_resp.completion_tokens}"
+                f"={llm_resp.total_tokens}"
+            )
 
         if llm_resp.truncated:
             return {
@@ -463,6 +537,7 @@ def run_pipeline(
     max_tokens: int = 16384,
     verbose: bool = False,
     limit: int | None = None,
+    strategy: str = "ac",
 ) -> None:
     """Esegue la pipeline completa: requisiti → user stories → test cases."""
 
@@ -478,30 +553,62 @@ def run_pipeline(
         print(f"[pipeline] Caricati {len(all_requirements)} requisiti, elaborazione limitata ai primi {limit}")
     else:
         requirements = all_requirements
+
+    # --- Strategia: estrai personas se necessario ---
+    personas_ctx: str | None = None
+    if strategy in ("persona", "both"):
+        personas_ctx, requirements = extract_personas_context(requirements)
+        personas_list = json.loads(personas_ctx)
+        print(f"[pipeline] Personas individuate: {len(personas_list)}")
+        for p in personas_list:
+            print(f"  - {p.get('code', '?')} | {p.get('title', 'N/A')}")
+        print(f"[pipeline] Requisiti da elaborare (senza PERSONAS): {len(requirements)}")
+        if verbose:
+            print(f"[pipeline] Contesto personas JSON:\n{personas_ctx}")
+
+    if strategy == "both":
+        print(f"[pipeline] Strategia: entrambe (AC + persona)")
+    elif strategy == "persona":
+        print(f"[pipeline] Strategia: persona-based")
+    else:
+        print(f"[pipeline] Strategia: AC-based")
+
     total = len(requirements)
     print(f"[pipeline] Requisiti da elaborare: {total}")
 
     prompts_path = Path(prompts_dir)
-    prompt_us_file = prompts_path / "prompt_user_stories.md"
-    prompt_tc_file = prompts_path / "prompt_test_cases.md"
-
-    if not prompt_us_file.is_file():
-        print(f"[pipeline] Prompt non trovato: {prompt_us_file}", file=sys.stderr)
-        sys.exit(1)
+    prompt_tc_file = prompts_path / PromptFiles.TC_FROM_US
     if not prompt_tc_file.is_file():
         print(f"[pipeline] Prompt non trovato: {prompt_tc_file}", file=sys.stderr)
         sys.exit(1)
-
-    system_prompt_us = prompt_us_file.read_text(encoding="utf-8")
     system_prompt_tc = prompt_tc_file.read_text(encoding="utf-8")
+
+    # Determina i passaggi US da eseguire
+    # Tupla: (label, prompt_us, us_dir_name, tc_dir_name, personas_ctx)
+    if strategy == "both":
+        us_passes = [
+            ("ac", PromptFiles.US_AC, OutputDirs.US_AC, OutputDirs.TC_FROM_US_AC, None),
+            ("persona", PromptFiles.US_PERSONA, OutputDirs.US_PERSONA, OutputDirs.TC_FROM_US_PERSONA, personas_ctx),
+        ]
+    elif strategy == "persona":
+        us_passes = [
+            ("persona", PromptFiles.US_PERSONA, OutputDirs.US_PERSONA, OutputDirs.TC_FROM_US_PERSONA, personas_ctx),
+        ]
+    else:
+        us_passes = [
+            ("ac", PromptFiles.US_AC, OutputDirs.US_AC, OutputDirs.TC_FROM_US_AC, None),
+        ]
+
+    # Verifica che i prompt esistano
+    for _, prompt_name, _, _, _ in us_passes:
+        prompt_file = prompts_path / prompt_name
+        if not prompt_file.is_file():
+            print(f"[pipeline] Prompt non trovato: {prompt_file}", file=sys.stderr)
+            sys.exit(1)
 
     # --- Directory di output ---
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
-    us_dir = out_path / "user_stories"
-    tc_dir = out_path / "test_cases_from_us"
-    us_dir.mkdir(exist_ok=True)
-    tc_dir.mkdir(exist_ok=True)
 
     # --- Risultati aggregati ---
     all_user_stories: list = []
@@ -510,113 +617,126 @@ def run_pipeline(
     rejected: list[dict] = []
     skipped_syntax: list[dict] = []
 
-    for i, req in enumerate(requirements, 1):
-        code = req.get("code", f"REQ-{i}")
-        print(f"\n[pipeline] [{i}/{total}] Elaborazione {code}...")
+    for pass_label, prompt_name, us_dir_name, tc_dir_name, pass_personas_ctx in us_passes:
+        system_prompt_us = (prompts_path / prompt_name).read_text(encoding="utf-8")
+        us_dir = out_path / us_dir_name
+        tc_dir = out_path / tc_dir_name
+        us_dir.mkdir(parents=True, exist_ok=True)
+        tc_dir.mkdir(parents=True, exist_ok=True)
 
-        # === Step 1: Requisito → User Stories ===
-        us_result = process_requirement_to_us(
-            req=req,
-            system_prompt=system_prompt_us,
-            config=config,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            verbose=verbose,
-        )
+        if len(us_passes) > 1:
+            print(f"\n{'='*60}")
+            print(f"[pipeline] === Passaggio US: {pass_label} ===")
+            print(f"{'='*60}")
 
-        if us_result["status"] == "skipped":
-            print(f"  [validazione] SKIP - problemi sintattici:")
-            for p in us_result["problems"]:
-                print(f"    - {p}")
-            skipped_syntax.append({
-                "requirement_id": code,
-                "problems": us_result["problems"],
-            })
-            continue
+        for i, req in enumerate(requirements, 1):
+            code = req.get("code", f"REQ-{i}")
+            print(f"\n[pipeline] [{i}/{total}] Elaborazione {code} ({pass_label})...")
 
-        if us_result["status"] == "rejected":
-            print(f"  [step 1] REJECTED dal modello:")
-            for r in us_result["reasons"]:
-                print(f"    - {r}")
-            raw_response = us_result["raw_response"]
-            rejected.append({
-                "requirement_id": raw_response.get("requirement_id", code),
-                "reasons": us_result["reasons"],
-            })
-            rej_file = us_dir / f"{code}_REJECTED.json"
-            rej_file.write_text(
-                json.dumps(raw_response, indent=2, ensure_ascii=False),
+            # === Step 1: Requisito → User Stories ===
+            us_result = process_requirement_to_us(
+                req=req,
+                system_prompt=system_prompt_us,
+                config=config,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                verbose=verbose,
+                personas_context=pass_personas_ctx,
+            )
+
+            if us_result["status"] == "skipped":
+                print(f"  [validazione] SKIP - problemi sintattici:")
+                for p in us_result["problems"]:
+                    print(f"    - {p}")
+                skipped_syntax.append({
+                    "requirement_id": code,
+                    "problems": us_result["problems"],
+                })
+                continue
+
+            if us_result["status"] == "rejected":
+                print(f"  [step 1] REJECTED dal modello:")
+                for r in us_result["reasons"]:
+                    print(f"    - {r}")
+                raw_response = us_result["raw_response"]
+                rejected.append({
+                    "requirement_id": raw_response.get("requirement_id", code),
+                    "reasons": us_result["reasons"],
+                })
+                rej_file = us_dir / f"{code}_REJECTED.json"
+                rej_file.write_text(
+                    json.dumps(raw_response, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                continue
+
+            if us_result["status"] == "error":
+                print(f"  [step 1] ERRORE: {us_result['error']}", file=sys.stderr)
+                if us_result.get("raw_text"):
+                    raw_file = us_dir / f"{code}_user_stories_RAW.txt"
+                    raw_file.write_text(us_result["raw_text"], encoding="utf-8")
+                errors.append({"code": code, "step": "user_stories", "error": us_result["error"]})
+                continue
+
+            # status == "ok"
+            user_stories = us_result["user_stories"]
+            us_file = us_dir / f"{code}_user_stories.json"
+            us_file.write_text(
+                json.dumps(user_stories, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            continue
 
-        if us_result["status"] == "error":
-            print(f"  [step 1] ERRORE: {us_result['error']}", file=sys.stderr)
-            if us_result.get("raw_text"):
-                raw_file = us_dir / f"{code}_user_stories_RAW.txt"
-                raw_file.write_text(us_result["raw_text"], encoding="utf-8")
-            errors.append({"code": code, "step": "user_stories", "error": us_result["error"]})
-            continue
+            if isinstance(user_stories, list):
+                all_user_stories.extend(user_stories)
+            else:
+                all_user_stories.append(user_stories)
 
-        # status == "ok"
-        user_stories = us_result["user_stories"]
-        us_file = us_dir / f"{code}_user_stories.json"
-        us_file.write_text(
-            json.dumps(user_stories, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
+            us_count = len(user_stories) if isinstance(user_stories, list) else 1
+            print(f"  [step 1] OK - {us_count} user stories generate")
 
-        if isinstance(user_stories, list):
-            all_user_stories.extend(user_stories)
-        else:
-            all_user_stories.append(user_stories)
+            # === Step 2: User Stories → Test Cases ===
+            tc_result = process_us_to_tc(
+                user_stories=user_stories,
+                system_prompt=system_prompt_tc,
+                config=config,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                verbose=verbose,
+            )
 
-        us_count = len(user_stories) if isinstance(user_stories, list) else 1
-        print(f"  [step 1] OK - {us_count} user stories generate")
+            if tc_result["status"] == "rejected":
+                print(f"  [step 2] REJECTED dal modello:")
+                for r in tc_result["reasons"]:
+                    print(f"    - {r}")
+                errors.append({"code": code, "step": "test_cases", "error": f"Rejected: {'; '.join(tc_result['reasons'])}"})
+                continue
 
-        # === Step 2: User Stories → Test Cases ===
-        tc_result = process_us_to_tc(
-            user_stories=user_stories,
-            system_prompt=system_prompt_tc,
-            config=config,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            verbose=verbose,
-        )
+            if tc_result["status"] == "error":
+                print(f"  [step 2] ERRORE: {tc_result['error']}", file=sys.stderr)
+                if tc_result.get("raw_text"):
+                    raw_file = tc_dir / f"{code}_test_cases_RAW.txt"
+                    raw_file.write_text(tc_result["raw_text"], encoding="utf-8")
+                errors.append({"code": code, "step": "test_cases", "error": tc_result["error"]})
+                continue
 
-        if tc_result["status"] == "rejected":
-            print(f"  [step 2] REJECTED dal modello:")
-            for r in tc_result["reasons"]:
-                print(f"    - {r}")
-            errors.append({"code": code, "step": "test_cases", "error": f"Rejected: {'; '.join(tc_result['reasons'])}"})
-            continue
+            # status == "ok"
+            test_cases = tc_result["test_cases"]
+            tc_file = tc_dir / f"{code}_test_cases.json"
+            tc_file.write_text(
+                json.dumps(test_cases, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
 
-        if tc_result["status"] == "error":
-            print(f"  [step 2] ERRORE: {tc_result['error']}", file=sys.stderr)
-            if tc_result.get("raw_text"):
-                raw_file = tc_dir / f"{code}_test_cases_RAW.txt"
-                raw_file.write_text(tc_result["raw_text"], encoding="utf-8")
-            errors.append({"code": code, "step": "test_cases", "error": tc_result["error"]})
-            continue
+            if isinstance(test_cases, list):
+                all_test_cases.extend(test_cases)
+            else:
+                all_test_cases.append(test_cases)
 
-        # status == "ok"
-        test_cases = tc_result["test_cases"]
-        tc_file = tc_dir / f"{code}_test_cases.json"
-        tc_file.write_text(
-            json.dumps(test_cases, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-
-        if isinstance(test_cases, list):
-            all_test_cases.extend(test_cases)
-        else:
-            all_test_cases.append(test_cases)
-
-        tc_count = sum(
-            len(item.get("test_cases", []))
-            for item in (test_cases if isinstance(test_cases, list) else [test_cases])
-        )
-        print(f"  [step 2] OK - {tc_count} test cases generati")
+            tc_count = sum(
+                len(item.get("test_cases", []))
+                for item in (test_cases if isinstance(test_cases, list) else [test_cases])
+            )
+            print(f"  [step 2] OK - {tc_count} test cases generati")
 
     if rejected:
         rej_file = out_path / "rejected_requirements.json"

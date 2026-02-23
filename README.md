@@ -65,14 +65,16 @@ La pipeline elabora ogni requisito individualmente (ADR-002) in quattro step:
 
 ## Prompt di sistema
 
+I prompt sono organizzati in `teco_cli/prompts/` con struttura gerarchica per fase:
+
 | File | Funzione |
 |------|----------|
-| `prompt_user_stories.md` | Requisito → User stories (decomposizione per acceptance criterion) |
-| `prompt_user_stories_persona.md` | Requisito → User stories (decomposizione alternativa per persona) |
-| `prompt_test_cases.md` | User stories → Test cases (percorso indiretto) |
-| `prompt_test_cases_direct.md` | Requisito → Test cases (percorso diretto) |
-| `prompt_evaluate_tc.md` | Valutazione coerenza tra test cases indiretti e diretti |
-| `strict_check/` | Varianti dei prompt con validazione più rigorosa |
+| `user_stories/ac_based.md` | Requisito → User stories (decomposizione per acceptance criterion) |
+| `user_stories/persona_based.md` | Requisito → User stories (decomposizione alternativa per persona) |
+| `test_cases/from_user_stories.md` | User stories → Test cases (percorso indiretto) |
+| `test_cases/from_requirements.md` | Requisito → Test cases (percorso diretto) |
+| `evaluation/coherence.md` | Valutazione coerenza tra test cases indiretti e diretti |
+| `*/strict_check/` | Varianti dei prompt con validazione più rigorosa |
 
 ## Catena di tracciabilità
 
@@ -89,13 +91,22 @@ REQ-F-001.TC01             → test case 1 diretto (senza user stories)
 
 ```
 output/
-├── user_stories/              User stories generate (step 1)
-├── test_cases_from_us/        Test cases da user stories (step 2, indiretti)
-├── test_cases_from_req/       Test cases da requisiti (step 3, diretti)
-└── evaluations/               Report di valutazione coerenza (step 4)
-    └── REQ-F-001/
-        ├── evaluation.json
-        └── evaluation_report.html
+├── percorso_indiretto/
+│   ├── ac_based/
+│   │   ├── user_stories/          User stories AC-based (step 1)
+│   │   └── test_cases/            Test cases da US AC-based (step 2, indiretti)
+│   └── persona_based/
+│       ├── user_stories/          User stories persona-based (step 1)
+│       └── test_cases/            Test cases da US persona-based (step 2, indiretti)
+├── percorso_diretto/
+│   └── test_cases/                Test cases da requisiti (step 3, diretti)
+├── valutazioni/                   Report di valutazione coerenza (step 4)
+│   └── REQ-F-001/
+│       ├── evaluation.json
+│       └── evaluation_report.html
+├── rejected_requirements.json
+├── skipped_syntax.json
+└── errors.json
 ```
 
 ## Stack tecnologico

@@ -1,17 +1,18 @@
-# ADR-001: Decomposizione dei requisiti in user stories per acceptance criterion
+# ADR-001: Strategie di decomposizione dei requisiti in user stories
 
 **Data**: 2026-02-19
-**Stato**: Accettata
+**Ultimo aggiornamento**: 2026-02-23
+**Stato**: Aggiornata
 **Decisori**: Team TECO_LLM_cli
 
 
-L'obiettivo è trasformare questi requisiti in test cases tracciabili, completi e pronti per l'esecuzione (manuale o automatizzata). 
+L'obiettivo è trasformare i requisiti di business in test cases tracciabili, completi e pronti per l'esecuzione (manuale o automatizzata).
 
 ## La scelta da compiere
 
-Il passaggio intermedio attraverso le user stories deve produrre test cases consistenti con quanto validato dal business. Tuttavia, le user stories offrono un livello di scomposizione che migliora la qualita e la tracciabilita dei test cases a valle. Questa ADR non discute se usare le user stories (la pipeline le prevede), ma **come decomporle** a partire dal requisito.
+Il passaggio intermedio attraverso le user stories deve produrre test cases consistenti con quanto validato dal business. Le user stories offrono un livello di scomposizione che migliora la qualita e la tracciabilita dei test cases a valle. Questa ADR non discute se usare le user stories (la pipeline le prevede), ma **come decomporle** a partire dal requisito.
 
-Ogni requisito contiene piu acceptance criteria, ciascuno dei quali descrive un aspetto verificabile del comportamento atteso. La scelta chiave e: quale dimensione del requisito deve guidare la generazione delle user stories? L'attore, il criterio di accettazione, o una combinazione dei due?
+Ogni requisito contiene piu acceptance criteria e puo coinvolgere piu personas. La scelta chiave e: quale dimensione del requisito deve guidare la generazione delle user stories? L'attore, il criterio di accettazione, o una combinazione dei due?
 
 La regola di decomposizione scelta ha impatto diretto su:
 
@@ -22,21 +23,21 @@ La regola di decomposizione scelta ha impatto diretto su:
 
 ## Opzioni valutate
 
-### Opzione 1 — Una user story per ogni persona/attore
+### Opzione 1 — Una user story per ogni persona/attore (persona-based)
 
-Ogni attore menzionato nel requisito (es. cliente, operatore, amministratore) genera una user story dedicata.
+Ogni attore menzionato nel requisito (es. cliente, operatore, amministratore) genera una user story dedicata. Le personas vengono estratte dai requisiti di categoria PERSONAS e fornite come contesto al modello.
 
-- **Cardinalita**: un requisito produce N stories, dove N = numero di attori distinti
-- **Pro**: il numero di stories e prevedibile; nessuna sovrapposizione tra requisiti
-- **Contro**: se il requisito coinvolge un solo attore (caso frequente), si ottiene comunque una sola story che copre tutti gli acceptance criteria. Una story cosi ampia produce test cases generici e poco mirati, riducendo la qualita della copertura a valle. Il numero di stories dipende da *chi* usa il sistema, non da *cosa* il sistema deve fare — ma e il "cosa" che determina la complessita da testare
+- **Cardinalita**: un requisito produce N stories, dove N = numero di attori coinvolti
+- **Pro per i test cases**: i test cases prodotti a valle sono organizzati per prospettiva dell'utente; questo favorisce test di accettazione end-to-end e scenari multicanale (es. lo stesso flusso visto dal cliente web vs dall'operatore di sportello). La copertura dei canali e dei permessi per ruolo e esplicita
+- **Contro per i test cases**: se il requisito coinvolge un solo attore (caso frequente), si ottiene una sola story che copre tutti gli acceptance criteria. Una story cosi ampia puo produrre test cases generici e poco mirati. Il numero di stories dipende da *chi* usa il sistema, non da *cosa* il sistema deve fare — ma e il "cosa" che determina la complessita da testare. I test cases rischiano di non coprire uniformemente tutti gli AC se la story e troppo ampia
 
-### Opzione 2 — Una user story per ogni acceptance criterion
+### Opzione 2 — Una user story per ogni acceptance criterion (AC-based)
 
 Ogni acceptance criterion del requisito genera una user story dedicata.
 
 - **Cardinalita**: un requisito produce N stories, dove N = numero di acceptance criteria
-- **Pro**: il numero di stories e prevedibile (basta contare i criteri nel JSON); ogni story e tracciabile a un singolo criterio verificabile; la generazione dei test cases a valle e piu precisa perche ogni story descrive un comportamento specifico
-- **Contro**: requisiti con molti criteri producono molte stories; criteri strettamente correlati potrebbero risultare artificialmente separati
+- **Pro per i test cases**: ogni story descrive un singolo comportamento verificabile, quindi i test cases generati a valle sono precisi e mirati. La tracciabilita e lineare: Requisito → AC → User Story → Test Cases. Il numero di test cases prodotti e proporzionale alla complessita funzionale del requisito
+- **Contro per i test cases**: requisiti con molti criteri producono molte stories e di conseguenza molti test cases; criteri strettamente correlati, se separati artificialmente, possono generare test cases ridondanti o con setup duplicato
 
 ### Opzione 3 — Una user story per ogni combinazione persona x scenario
 
@@ -44,7 +45,7 @@ Per ogni incrocio tra attore e acceptance criterion si genera una user story.
 
 - **Cardinalita**: un requisito puo produrre fino a (attori x criteri) stories; requisiti diversi possono generare stories sovrapponibili
 - **Pro**: massima copertura teorica
-- **Contro**: il numero di stories non e prevedibile (dipende dall'interpretazione del modello); requisiti diversi che menzionano la stessa persona con scenari simili producono duplicati; richiede una fase aggiuntiva di deduplicazione che la pipeline attuale non prevede
+- **Contro**: il numero di stories e test cases non e prevedibile (dipende dall'interpretazione del modello); requisiti diversi che menzionano la stessa persona con scenari simili producono duplicati; richiede una fase aggiuntiva di deduplicazione che la pipeline attuale non prevede
 
 ## Confronto sintetico
 
@@ -55,14 +56,23 @@ Per ogni incrocio tra attore e acceptance criterion si genera una user story.
 | Sovrapposizioni tra requisiti? | No | No | Si |
 | Serve deduplicazione? | No | No | Si |
 | N riflette la complessita funzionale? | No | Si | Parzialmente |
+| TC mirati per singolo comportamento? | Parzialmente | Si | Si |
+| TC coprono prospettiva utente/canale? | Si | Parzialmente | Si |
 
 ## Decisione
 
-**Opzione 2 — Una user story per ogni acceptance criterion.**
+**La CLI supporta entrambe le strategie — AC-based (opzione 2) e persona-based (opzione 1) — selezionabili dall'utente ad ogni generazione.**
 
-Ogni acceptance criterion presente nel requisito genera una user story dedicata. La relazione tra requisiti e user stories e 1:N, dove N corrisponde al numero di acceptance criteria del requisito.
+Le due strategie producono user stories con caratteristiche complementari, che si traducono in test cases con punti di forza diversi. Invece di sceglierne una sola, la pipeline permette di usarle entrambe per confrontare i risultati e valutare quale approccio produce test cases piu adeguati al contesto del progetto.
+
+- **AC-based** (`--strategy ac`, default): ogni acceptance criterion genera una user story. Produce test cases granulari e mirati al singolo comportamento.
+- **Persona-based** (`--strategy persona`): ogni persona coinvolta nel requisito genera una user story. Produce test cases organizzati per prospettiva dell'utente e canale di interazione.
+
+Le user stories persona-based vengono salvate in una directory dedicata (`user_stories_persona/`) per distinguerle da quelle AC-based (`user_stories/`).
 
 ## Motivazioni
+
+### Perche mantenere AC-based come default
 
 1. **Prevedibilita**: il numero di user stories attese e noto prima di chiamare il modello. Basta contare gli acceptance criteria nel JSON di input per sapere quante stories aspettarsi in output. Questo permette di verificare automaticamente la completezza della risposta.
 
@@ -74,15 +84,29 @@ Ogni acceptance criterion presente nel requisito genera una user story dedicata.
 
 4. **Semplicita della pipeline**: non serve alcuno step intermedio di deduplicazione o merge. Ogni requisito e autocontenuto e non genera sovrapposizioni con altri requisiti.
 
-5. **Granularita proporzionale alla complessita**: un requisito con 5 acceptance criteria produce 5 user stories; uno con 2 ne produce 2. Il volume dell'output riflette la complessita effettiva del requisito, non caratteristiche accessorie come il numero di attori.
+5. **Granularita proporzionale alla complessita**: un requisito con 5 acceptance criteria produce 5 user stories; uno con 2 ne produce 2. Il volume dell'output riflette la complessita effettiva del requisito.
 
-## Eccezione consentita
+### Perche supportare anche persona-based
+
+1. **Copertura multicanale**: in progetti con piu personas che interagiscono sugli stessi flussi (es. cliente digitale vs operatore di sportello), la decomposizione per persona evidenzia differenze di canale, permessi e comportamento atteso che la strategia AC-based puo non rendere esplicite.
+
+2. **Test di accettazione end-to-end**: i test cases derivati da user stories persona-based sono naturalmente organizzati come scenari end-to-end dal punto di vista dell'utente, utili per test di accettazione e UAT.
+
+3. **Confronto tra approcci**: avere entrambe le strategie permette di generare test cases da due prospettive diverse sullo stesso requisito e confrontarne qualita, copertura e ridondanza — anche tramite la funzione di valutazione coerenza gia presente nella pipeline.
+
+## Eccezione consentita (AC-based)
 
 Se due acceptance criteria sono strettamente correlati e non testabili separatamente, il modello puo accorparli in una singola user story. In tal caso deve indicare nel campo `notes` quali criteri originali sono stati uniti e perche.
 
+## Eccezione consentita (persona-based)
+
+Se il requisito non coinvolge nessuna delle personas fornite nel contesto (es. requisiti puramente tecnici), il modello deve usare la persona convenzionale "Sistema" e segnalarlo nel campo `assumptions`.
+
 ## Conseguenze
 
-- Il prompt che guida il modello (`prompt_user_stories.md`) e stato aggiornato per rendere obbligatoria questa regola di decomposizione
-- Requisiti con molti acceptance criteria producono un numero proporzionato di user stories. Questo aumenta il volume dell'output ma migliora la copertura e la testabilita
-- Il conteggio delle user stories e verificabile a posteriori: se un requisito ha 3 AC e produce 3 US, il risultato e coerente; se ne produce 1, qualcosa non ha funzionato
-- Primo test su REQ-F-001 (3 acceptance criteria): il modello ha generato correttamente 3 user stories distinte, successivamente trasformate in 14 test cases
+- Il prompt `user_stories/ac_based.md` implementa la strategia AC-based
+- Il prompt `user_stories/persona_based.md` implementa la strategia persona-based; riceve come contesto le personas estratte dai requisiti di categoria PERSONAS
+- La scelta della strategia e disponibile sia nel menu interattivo (`teco-interactive`) sia come flag CLI (`teco-pipeline --strategy ac|persona`)
+- Le user stories persona-based vengono salvate in `percorso_indiretto/persona_based/user_stories/`, quelle AC-based in `percorso_indiretto/ac_based/user_stories/`
+- I requisiti di categoria PERSONAS vengono automaticamente esclusi dal loop di trasformazione quando si usa la strategia persona-based (servono solo come contesto)
+- Primo test AC-based su REQ-F-001 (3 acceptance criteria): il modello ha generato correttamente 3 user stories distinte, successivamente trasformate in 14 test cases

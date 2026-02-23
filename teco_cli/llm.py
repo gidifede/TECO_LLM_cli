@@ -13,6 +13,9 @@ class LLMResponse:
 
     content: str
     finish_reason: str  # "stop" = completo, "length" = troncato per max_tokens
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
     @property
     def truncated(self) -> bool:
@@ -60,7 +63,11 @@ def call_azure_openai(
     response = client.chat.completions.create(**kwargs)
 
     choice = response.choices[0]
+    usage = response.usage
     return LLMResponse(
         content=choice.message.content or "",
         finish_reason=choice.finish_reason or "unknown",
+        prompt_tokens=usage.prompt_tokens if usage else 0,
+        completion_tokens=usage.completion_tokens if usage else 0,
+        total_tokens=usage.total_tokens if usage else 0,
     )
