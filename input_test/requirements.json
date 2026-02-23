@@ -1,0 +1,2188 @@
+[
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d0c"
+    },
+    "title": "Obiettivo NBO: ottimizzare cross-selling riducendo offerte irrilevanti",
+    "description": "Il sistema deve includere una logica Next Best Offer (NBO) il cui obiettivo primario, come dichiarato dall'utente, è ottimizzare le attività di cross-selling riducendo la proposta di offerte irrilevanti. Questo requisito definisce il comportamento atteso verso la rilevanza delle proposte: le offerte esposte devono essere orientate a massimizzare il cross-selling e minimizzare le proposte non pertinenti al cliente, in base agli input e alle regole disponibili (senza richiedere qui la specifica di come vengano calcolate le propensioni).",
+    "code": "REQ-F-001",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La funzionalità NBO è attivata e documentata come obiettivo primario della logica di proposta delle offerte.",
+        "Il motore espone offerte filtrate/rilevanti in output rispetto a un input di raccomandazioni esterne e alle regole configurate (vedere criteri di integrazione e configuratore).",
+        "È possibile verificare tramite test funzionali che il motore non proponga offerte manifestamente non pertinenti in scenari di prova forniti dall'utente."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.714Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-c9225f4288a5"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d0e"
+    },
+    "title": "Possibilità di configurare eccezioni manuali per casi particolari",
+    "description": "Deve essere consentito, come indicato dall'utente, di configurare eccezioni manuali in alcuni casi particolari. La funzionalità deve permettere la creazione di eccezioni che siano applicabili a casi limitati e specifici (per esempio a una combinazione o a un cliente/signature temporale), in modo da deviare il comportamento standard della configurazione automatica quando necessario. L'utente ha inoltre specificato che questa capacità è prevista ma ha carattere marginale rispetto al funzionamento ordinario basato sulle regole.",
+    "code": "REQ-F-003",
+    "category": "FUNZIONALE",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È possibile creare una eccezione manuale tramite la dashboard per uno o più casi specifici.",
+        "L'eccezione è applicabile con ambito e durata configurabile dall'utente che la inserisce.",
+        "La creazione di un'eccezione non prevista dal flusso standard è possibile solo dai ruoli autorizzati (vedi requisito RBAC)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.732Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-ec8eabba5b51"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d0b"
+    },
+    "title": "Attori coinvolti (Personas) univoci",
+    "description": "Elenco univoco degli attori direttamente menzionati nella conversazione che interagiranno con il Motore di Offerte o ne saranno destinatari: 1) Clienti finali sui canali fisico (UP) e digitali (es. App, Web) che ricevono le offerte proposte; 2) Operatori di sportello negli uffici postali identificati come OSP; 3) Operatori abilitati alla vendita (OFE) negli uffici postali; 4) Figure di sala che svolgono attività di consulenza finanziaria all'interno degli uffici postali; 5) Team Marketing che utilizza la dashboard per configurare combinazioni, sconti, target e eccezioni; 6) Team Compliance (inteso come competence center incusi Legal, ARRA, etc.) che valutano la conformità delle offerte generate con quanto previsto da legge, autorità competenti, etc.  . Questi attori sono stati esplicitamente citati dall'utente e costituiscono la lista di personas da considerare per il progetto.",
+    "code": "REQ-P-001",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La lista di personas contiene esattamente e solo i ruoli citati nella conversazione: clienti digitali, OSP, OFE, figure di sala, team marketing.",
+        "Ogni persona è documentata con il relativo canale di interazione (digital per clienti, front-end commerciale per OSP/OFE/figure di sala, dashboard per marketing).",
+        "Non sono state aggiunte personas non menzionate nella conversazione."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.705Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:44:50.511Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-62e486707cbd",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d10"
+    },
+    "title": "Visibilità omnicanale delle offerte (digitali e front-end commerciale ufficio postale)",
+    "description": "Le offerte generate dal Motore devono essere rese visibili ai clienti finali sui canali digitali (es. App, Web) e devono essere rese visibili al front end commerciale usato nel canale fisico degli uffici postali. La conversazione specifica che sui canali fisici si intende l'ufficio postale con operatori OSP e OFE e figure di sala; pertanto la presentazione delle offerte deve essere disponibile sia al cliente digitale sia alle interfacce utilizzate dagli operatori in ufficio postale.",
+    "code": "REQ-UI-001",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esistono meccanismi (API, endpoint o canali concordati) per trasmettere le offerte ai canali digitali cliente e al front end commerciale degli uffici postali.",
+        "In esercitazioni o demo, offerte generate dal motore sono visualizzabili correttamente sia in un mockup di App/Web sia in un mockup di front end per OSP/OFE/figure di sala.",
+        "La visualizzazione rende disponibile le informazioni minime necessarie all'utente del canale (prodotto suggerito, eventuale sconto/condizione, motivazione se prevista) come concordato con il team marketing."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.749Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-1d3e2b71b24a"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d11"
+    },
+    "title": "Consumo di raccomandazioni prioritarie da sistema esterno con informazioni addizionali",
+    "description": "Il Motore deve poter ricevere come input raccomandazioni già prioritizzate da un sistema esterno di prioritizzazione basato sulle propensioni d’acquisto. L'utente ha specificato che questi input includono, oltre ai prodotti suggeriti in ordine prioritario, informazioni aggiuntive come il cluster di appartenenza del cliente e le motivazioni della raccomandazione. Questo requisito stabilisce che il motore tratti tali raccomandazioni come input primario esterno e sia in grado di elaborarle secondo le regole interne configurate.",
+    "code": "REQ-I-001",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È disponibile un canale di integrazione per ricevere una lista ordinata di raccomandazioni da un sistema esterno.",
+        "Il payload di input supporta campi per identificatore prodotto, ordine/priorità, cluster cliente e motivazione della raccomandazione.",
+        "Il motore processa gli input ricevuti e lo fa rispettando le configurazioni locali (es. filtri, matrix, regole di frequenza) definite in altri requisiti."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.759Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-4924302a6d16"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d13"
+    },
+    "title": "Applicazione e persistenza delle configurazioni della matrice e delle eccezioni",
+    "description": "Tutte le configurazioni definite nella dashboard (matrice delle combinazioni, flag vietato/interessante, sconti, durate promozionali, target, eccezioni manuali) devono essere persistite e rese disponibili al motore in modo affidabile. L'utente ha indicato che le configurazioni sono modificabili tramite dashboard dal marketing, pertanto è necessario che queste modifiche vengano salvate e applicate dal sistema in produzione.",
+    "code": "REQ-D-001",
+    "category": "DATI",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "Le modifiche effettuate in dashboard persistono in un datastore e sono recuperabili dal motore per il calcolo delle proposte.",
+        "Dopo una modifica via dashboard, il motore legge e applica la nuova configurazione entro un tempo prevedibile e documentato.",
+        "Gli oggetti di configurazione includono i campi necessari indicati nella conversazione: stato combinazione, sconto, periodo di validità e target."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.775Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-156acc9ff26e"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d12"
+    },
+    "title": "Controllo accessi e autorizzazioni per inserimento/approvazione eccezioni e modifica configurazioni",
+    "description": "Deve essere implementato un meccanismo di controllo degli accessi (Role-Based Access Control) che garantisca che solo determinati ruoli autorizzati possano inserire o approvare eccezioni manuali e modificare le configurazioni critiche nella dashboard del marketing. Questo requisito copre l'autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte.",
+    "code": "REQ-NF-001",
+    "category": "NON_FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste una definizione dei ruoli autorizzati (almeno: team marketing con permessi di modifica, ruoli specifici autorizzati ad inserire/approvare eccezioni).",
+        "Gli utenti non appartenenti ai ruoli autorizzati non possono accedere alle funzioni di inserimento/approvazione eccezioni né modificare la matrice.",
+        "I tentativi di accesso non autorizzato sono bloccati e segnalati secondo le policy aziendali (esito negativo verificabile in test di sicurezza)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.767Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:23:03.192Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-373fc84c02fa",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d14"
+    },
+    "title": "Applicazione dei vincoli regolatori tramite flag combinazioni vietate",
+    "description": "Nel configuratore è previsto che alcune combinazioni siano contrassegnate come vietate per motivi regolatori, come dichiarato dall'utente. Il motore deve pertanto considerare questi flag come vincoli obbligatori: qualsiasi combinazione contrassegnata come vietata non deve essere proposta ai clienti nei canali supportati, salvo che non siano previste eccezioni manuali esplicitamente autorizzate (se e come definite dalla configurazione/ruoli).",
+    "code": "REQ-V-001",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La matrice di configurazione permette di impostare chiaramente lo stato 'vietata' per una combinazione.",
+        "Il motore non propone combinazioni etichettate come 'vietata' nei test funzionali standard.",
+        "Eventuali eccezioni manuali che autorizzano proposte vietate sono possibili solo tramite le funzionalità di eccezione e solo se create da ruoli autorizzati (conformemente al requisito RBAC)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.783Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-7c45cd26f44e"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d37"
+    },
+    "title": "Persona: Team Marketing",
+    "description": "Team incaricato di revisionare, modificare e creare le descrizioni delle offerte; gestire varianti testuali in funzione del tipo di offerta o segmenti/cluster di clientela. Questo attore deve poter intervenire sui testi prodotti automaticamente e creare contenuti da zero per specifiche situazioni commerciali.",
+    "code": "REQ-P-004",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione include la persona 'Team Marketing' e i relativi compiti di editing e creazione testi.",
+        "Esistono ruoli/autorizzazioni definiti che permettono al team marketing di accedere all'area di editing.",
+        "Test dimostrano che membri del team marketing possono modificare, creare e salvare varianti di descrizioni."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.004Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-aa51147769a6"
+},
+{
+    "_id": {
+        "$oid": "69331125035a33788aeb3d35"
+    },
+    "title": "Persona: Cliente (fisico o digitale)",
+    "description": "Cliente fisico: persona che accede al canale fisico UP e che riceve le proposte di offerte integrate da OSP/OFE/SCX.\nCliente digitale: persona che utilizza i canali digitali (App, Web) per consultare e acquistare prodotti e offerte in modalità self-service. Questo attore esegue l'intero processo di selezione e acquisto senza assistenza dell'operatore e si aspetta un'esperienza autonoma e chiara sui dispositivi digitali.\nCliente fisico e digitale potrebbero coincidere nella stessa persona in base al canale utilizzato (web/app o fisico)",
+    "code": "REQ-P-002",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione dei requisiti include la persona 'Cliente (fisico o digitale)' con ruolo e aspettative chiaramente descritte.",
+        "Le user story o flussi prevedono percorsi distinti per questa persona in base al canale",
+        "Test di accettazione mostrano che un utente digitale può completare il processo senza intervento dell'operatore in scenari rappresentativi."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:45.986Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T15:27:26.042Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v004-807398f6a7d3",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3b"
+    },
+    "title": "Interfaccia operatore: visualizzazione a card per ogni offerta",
+    "description": "La schermata destinata all'operatore deve adottare una visualizzazione a card, con ogni offerta rappresentata come una card separata e chiaramente distinguibile. L'organizzazione a card facilita la consultazione rapida e la presentazione delle singole proposte al cliente.",
+    "code": "REQ-UI-002",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "L'interfaccia operatore mostra le offerte in formato card come layout predefinito.",
+        "Ogni card è visivamente separata e contiene controlli per espandere informazioni o selezionare l'offerta.",
+        "Test utente confermano che l'operatore può identificare e selezionare rapidamente le offerte dalla vista a card."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.035Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-16beacb3bcfd"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3d"
+    },
+    "title": "Evidenziazione grafica tramite colori e icone per sconti e urgenze",
+    "description": "Le card e gli elementi dell'interfaccia devono utilizzare colori e icone per evidenziare offerte con sconti rilevanti o situazioni di urgenza (es. scadenze imminenti). L'uso di questi segnali visivi deve rendere immediatamente identificabili le offerte che richiedono attenzione speciale da parte dell'operatore.",
+    "code": "REQ-UI-004",
+    "category": "INTERFACCIA",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "Le offerte con sconto significativo o scadenza mostrano una marcatura grafica evidente (colore e/o icona).",
+        "Sono definite e implementate icone specifiche per segnali come 'offerta top' o 'scadenza imminente'.",
+        "Test di usabilità confermano che gli operatori riconoscono correttamente le evidenze grafiche e reagiscono di conseguenza."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.053Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-46dfbb9a12db"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3c"
+    },
+    "title": "Regole di contenuto delle card: nome prodotto e sconto sempre visibili, dettagli su richiesta",
+    "description": "Ogni card dell'offerta deve sempre mostrare in modo immediato il nome del prodotto, descrizione sintetica dell'offerta, della unique selling proposition e il valore dello sconto riservato al cliente. Tutti gli altri dettagli (descrizione completa, benefici estesi, motivazione, condizioni particolari) devono essere accessibili tramite un pulsante 'maggiori info' o equivalente per non appesantire la vista principale.",
+    "code": "REQ-UI-003",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Ogni card mostra sempre in modo evidente il nome prodotto e il valore dello sconto in area visibile senza click.",
+        "È presente un pulsante o controllo 'maggiori info' che espande o apre i dettagli completi della proposta.",
+        "Test funzionali dimostrano che i dettagli non visibili di default sono recuperabili con il pulsante 'maggiori info'."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.044Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T17:15:32.640Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-b3ad07b6fd12",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3a"
+    },
+    "title": "Generazione automatica con possibilità di editing e creazione da parte del marketing",
+    "description": "Inteegrazione al REQ-F-006: la generazione delle descrizioni deve avvenire automaticamente, ma il team marketing deve poter intervenire: correggere le bozze generate, creare descrizioni completamente nuove da zero e gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela. Deve essere fornita un'interfaccia (dashboard) per queste operazioni con controllo delle versioni e assegnazione delle varianti.",
+    "code": "REQ-F-007",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il sistema genera automaticamente una bozza di descrizione per ogni suggerimento.",
+        "Il team marketing può aprire la bozza e modificarla tramite una dashboard di editing.",
+        "Il team marketing può creare descrizioni da zero e salvarle come nuove varianti.",
+        "La dashboard supporta la gestione di versioni/varianti e l'assegnazione delle stesse a tipologie di offerta o cluster."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.028Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T12:57:53.710Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-112a090765ff",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d39"
+    },
+    "title": "Generazione di descrizioni personalizzate per ogni prodotto suggerito",
+    "description": "Per ciascun prodotto suggerito dal motore, il sistema deve generare automaticamente una descrizione breve e personalizzata che includa in modo esplicito: i benefici associati al prodotto, il valore dello sconto riservato al cliente e la motivazione della proposta. Le descrizioni devono essere fruibili dall'operatore (canale fisico) e coerenti con il contesto cliente/prodotto.\n\nLe suddette descrizioni devono essere accessibili anche ai clienti in modalità self sui touchpoint digitali.\n\n",
+    "code": "REQ-F-006",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per ogni prodotto suggerito il sistema espone un testo breve che contiene: beneficio, sconto e motivazione.",
+        "Esempi di output automatico sono verificabili e contengono i tre elementi richiesti per più casi di test (diversi prodotti e contesti cliente).",
+        "L'operatore vede la descrizione generata accanto alla proposta nel canale fisico."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.020Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T12:58:05.972Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-287d95e18d90",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3e"
+    },
+    "title": "Vincolo visuale: rispetto degli standard visual aziendali con aggiunta di icone promozionali",
+    "description": "L'interfaccia deve conformarsi agli standard visual aziendali (palette colori, tipografia, linee guida di brand) per garantire coerenza di brand. Contestualmente è richiesto poter integrare icone specifiche per le promozioni/urgenze che non contravvengano alle linee guida aziendali ma siano comunque distintive per gli operatori.",
+    "code": "REQ-V-002",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La guida di stile e i componenti UI rispettano la palette e le regole visual aziendali ufficiali.",
+        "Le icone promozionali sono aggiunte in modo coerente con le linee guida e sono visibili nelle card quando appropriate.",
+        "Un controllo di conformità (review grafica) valida l'aderenza al brand e l'uso appropriato delle icone prima del rilascio."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.064Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-a0c226a8383a"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d3f"
+    },
+    "title": "Gestione varianti di descrizione assegnabili ai cluster di clientela",
+    "description": "Il sistema deve supportare la gestione e l'assegnazione di varianti testuali delle descrizioni delle offerte in funzione di segmenti o cluster di clientela. Il team marketing deve poter associare specifiche varianti a determinati cluster in modo che, quando il cliente appartiene a quel cluster, venga mostrata la relativa variante della descrizione.",
+    "code": "REQ-D-002",
+    "category": "DATI",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È possibile creare e salvare più varianti testuali per la stessa offerta nella dashboard marketing.",
+        "Ogni variante può essere associata a uno o più identificatori di cluster/segmento.",
+        "Nei casi di test dove il cliente è contrassegnato con un determinato cluster, l'interfaccia mostra la variante di descrizione corrispondente."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.074Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-26e29b7e6091"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d5f"
+    },
+    "title": "PERSONA: Team Marketing",
+    "description": "Team interno responsabile della configurazione di bundle, regole di pricing, parametri di validità, campagne commerciali e gestione della matrice delle combinazioni. Questo attore deve poter accedere, in base ai ruoli definiti, agli strumenti di configurazione del Motore di Offerte e consultare i log rilevanti relativi alle proprie azioni e agli effetti sul comportamento del motore.",
+    "code": "REQ-P-005",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esistenza di un profilo utente/ruolo riconducibile a 'Marketing' nel sistema di accesso.",
+        "L'utente Marketing può accedere all'interfaccia di configurazione bundle e campagne in base ai ruoli a lui associati.",
+        "L'utente Marketing può consultare la dashboard dei log per verificare le proprie azioni e gli effetti sulle proposte in base ai ruoli a lui associati."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.271Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:38:42.807Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-bc9e2e0393e1",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d62"
+    },
+    "title": "PERSONA: Cliente digitale",
+    "description": "Utente finale consumer autenticato sui canali digitali che può consultare le offerte attive e dettagliate, accedere ai funnel di sottoscrizione e, se necessario, ricevere proposta di adesione al programma Connect all'interno del flow.",
+    "code": "REQ-P-008",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Un cliente autenticato può visualizzare offerte personalizzate su App/Web.",
+        "Il cliente può accedere al funnel di sottoscrizione da canali digitali.",
+        "Se non è aderente a Connect, il sistema propone l'adesione durante il flow."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.302Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:01:38.848Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-738e5fa25e08",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d64"
+    },
+    "title": "Identificazione Next Best Offer (NBO) basata su cluster e propensity",
+    "description": "Il motore deve essere in grado di identificare automaticamente i prodotti più rilevanti da proporre in abbinamento (logica di Next Best Offer) sulla base delle caratteristiche dei cluster di clientela e dei modelli di propensity associati. Le proposte devono escludere prodotti già posseduti, salvo eccezioni configurate dal marketing come specificato in REQ-F-004).",
+    "code": "REQ-F-009",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il motore genera proposte NBO basate su cluster e propensity memorizzati/forniti.",
+        "I prodotti già posseduti dal cliente non vengono proposti a meno che non esista una regola esplicita di marketing.",
+        "È possibile tracciare la regola/modello che ha generato ciascuna proposta nel log delle decisioni."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.318Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:09:18.356Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-3b5a0b25c7bd",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d66"
+    },
+    "title": "Percorso di vendita unificato per combinazioni integrate",
+    "description": "Dove possibile il motore deve abilitare un unico funnel di vendita per la combinazione proposta che unifichi le fasi di identificazione cliente, sottoscrizione e pagamento, riducendo la duplicazione dei task all'interno del funnel e migliorando l'esperienza cliente.",
+    "code": "REQ-F-011",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per bundle abilitati, esiste un funnel unico che copre identificazione, sottoscrizione e pagamento.",
+        "Il funnel unificato è testabile da canali digitali e, se previsto, da sportello.",
+        "Le transizioni di stato del funnel sono tracciate e loggate."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.335Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:30:26.867Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-52af03af40e1",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d68"
+    },
+    "title": "Presentazione offerte: priorità configurabile e ordering con propensity",
+    "description": "Le offerte devono essere presentate secondo una priorità configurabile dall'utente marketing per prodotto singolo o bundle, oltre ad essere associabili a specifici touchpoint (REQ-F-005). \n\nIl sistema deve poter integrare modelli di propensity per ordinare automaticamente le offerte in base alla probabilità di interesse del cliente.",
+    "code": "REQ-F-013",
+    "category": "FUNZIONALE",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È possibile definire priorità configurabili per offerte/bundle e per touchpoint.",
+        "Il sistema supporta l'ordering automatico basato su modelli di propensity.",
+        "L'ordine risultante è tracciato nei log di proposta per eventuale audit."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.351Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:50:29.600Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v004-a7baa75d7e62",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d6c"
+    },
+    "title": "Schema di log per proposte di bundle",
+    "description": "Per ogni evento di proposta di una combinazione/bundle il log minimo deve contenere: identificativo del bundle proposto, identificativo cliente (o riferimento identificativo previsto), cluster di appartenenza del cliente, motivazione della proposta (es. regola marketing, modello di propensity, stato di sottoscrivibilità), data/ora dell'evento e canale/touchpoint su cui è stata mostrata la proposta.",
+    "code": "REQ-D-003",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Un esempio di record di log per proposta contiene: bundle_id, cliente_id, cluster_id, motivo_proposta, timestamp, canale.",
+        "I log proposte possono essere filtrati per bundle, cliente, cluster e periodo temporale nella dashboard.",
+        "I campi obbligatori sono sempre popolati per ogni evento di proposta."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.383Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-b94d4dedf4ba"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d6d"
+    },
+    "title": "Schema di log per azioni di configurazione",
+    "description": "Per ogni modifica eseguita dal marketing il log minimo deve registrare: utente che ha effettuato l'azione, data/ora, tipologia di operazione (creazione, update, cancellazione), dettaglio dello stato della regola/bundle/campagna prima e dopo la modifica, e eventuale motivazione inserita dall'utente in caso di modifiche critiche.",
+    "code": "REQ-D-004",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Ogni operazione di configurazione genera un record con user_id, operation_type, timestamp, before_state, after_state.",
+        "Se previsto, la motivazione della modifica è salvata ed è obbligatoria per modifiche di regole critiche.",
+        "I record di configurazione sono disponibili per la consultazione e l'esportazione."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.390Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-427e2b04975e"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d6e"
+    },
+    "title": "Accesso consultazione log: dashboard e esportazione",
+    "description": "I log devono essere resi disponibili tramite una dashboard interna per consultazione rapida da parte dei team Marketing e Compliance e deve essere prevista la possibilità di esportare automaticamente i log verso i sistemi di audit aziendali con frequenza configurabile (es. quotidiana, settimanale o personalizzata).",
+    "code": "REQ-UI-005",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste una dashboard che consente a Marketing e Compliance di cercare, filtrare e visualizzare i log.",
+        "È disponibile una funzione di esportazione automatica verso i sistemi di audit con frequenza configurabile.",
+        "I permessi di accesso alla dashboard rispettano la segregazione dei ruoli (Marketing/Compliance)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.397Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-98cd8f9505ee"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d6f"
+    },
+    "title": "Visualizzazione stato proponibilità e azioni di sanatoria",
+    "description": "Per ciascun cliente il sistema deve mostrare lo stato di proponibilità/sottoscrivibilità di un prodotto, incluse eventuali condizioni mancanti, e indicare le azioni necessarie per sanare tali condizioni (es. aggiornamento documenti). In canale fisico UP, l'operatore deve poter eseguire direttamente azioni di sanatoria dove previsto.",
+    "code": "REQ-UI-006",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "L'interfaccia cliente e operatore mostra in modo chiaro le condizioni mancanti per la sottoscrivibilità.",
+        "Vengono indicate le azioni necessarie per sanare le condizioni e, se possibile, è previsto il workflow di sanatoria a sportello.",
+        "Le azioni intraprese per sanare una condizione sono tracciate nei log."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.406Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T08:43:59.575Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-767ab23cc50a",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d70"
+    },
+    "title": "Conformità a policy aziendali di retention e privacy",
+    "description": "Il sistema di tracciamento dei log deve rispettare le policy aziendali di retention e privacy già in vigore presso Poste Italiane. Questo include conservazione, accessibilità, eventuale anonimizzazione e modalità di gestione dei dati personali nei log secondo le normative e le policy interne.",
+    "code": "REQ-V-003",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La retention dei log segue le policy aziendali senza override locale.",
+        "La gestione della privacy e dell'eventuale anonimizzazione è conforme alle direttive interne.",
+        "Le procedure di accesso e conservazione sono documentate e verificabili in sede di audit."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.413Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-9f72c70d8543"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d71"
+    },
+    "title": "Enforcement di combinazioni non permesse e verifiche di sottoscrivibilità pre-acquisto",
+    "description": "Il motore deve gestire e applicare regole di business che proibiscono specifiche combinazioni di prodotti. Le verifiche sulle condizioni di sottoscrivibilità devono essere effettuate prima dell'acquisto per evitare che il cliente proceda con offerte non valide.",
+    "code": "REQ-V-004",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il sistema blocca e segnala le combinazioni non permesse secondo la business logic.",
+        "Le verifiche di sottoscrivibilità sono eseguite e validate prima che l'utente completi l'acquisto.",
+        "Eventuali esiti di esclusione o errore sono tracciati nei log delle decisioni."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.420Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-80de6a3e2b19"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d72"
+    },
+    "title": "Supporto ai canali di vendita e lista prodotti everyday (aggiornamento descrizione)",
+    "description": "Il motore deve supportare tutti i canali di vendita di Poste Italiane indicati nella descrizione (OSP/OFE, App, Web) e operare sui prodotti everyday specificati (fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto), come indicato dall'aggiornamento del requisito di progetto fornito dall'utente.",
+    "code": "REQ-V-005",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il sistema è disponibile e coerente su canali OSP/OFE, App e Web per le funzionalità previste.",
+        "I prodotti elencati sono gestiti come tipologie supportate nella matrice di combinazioni.",
+        "Le offerte relative a questi prodotti sono tracciate e correlate ai relativi log di decisione e provisioning."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.428Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-50fd158debc8"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d73"
+    },
+    "title": "Personalizzazione di prezzi, cashback e punti integrati con Framework Connect",
+    "description": "Per ogni combinazione il sistema deve associare la scontistica prevista per il cliente selezionato, variabile per tipologia di cliente, canale e combinazione, e deve integrare l'erogazione di extra-cashback e punti nel Framework Connect in caso di acquisto contestuale o entro periodi definiti.",
+    "code": "REQ-I-002",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È possibile configurare pricing, cashback e punti per bundle/cliente/canale.",
+        "Il sistema è integrato con il Framework Connect per la registrazione e l'erogazione di cashback e punti.",
+        "I dettagli dell'erogazione (cashback/points) sono tracciati nei log e visibili al cliente e al marketing."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.435Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-59a155f48b36"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d89"
+    },
+    "title": "Persona: Cliente digitale",
+    "description": "Attore principale umano della journey descritta nella conversazione: l'utente finale che utilizza i canali digitali (APP e sito web) per acquistare prodotti. Nel contesto specifico si tratta del cliente che ha già acquistato o sta acquistando un primo prodotto e che può ricevere proposte per l'acquisto di un secondo prodotto tramite il motore di bundle. È il destinatario delle proposte, dell'esperienza pop-up prima del checkout, delle notifiche o promozioni nella sezione Loyalty di Gruppo e colui che compila eventuali questionari integrati nel percorso di acquisto.",
+    "code": "REQ-P-009",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione di progetto include la definizione 'Cliente digitale' come attore primario della journey.",
+        "Sono elencati i touchpoint digitali in cui il cliente interagisce (pop-up pre-checkout, sezione Loyalty di Gruppo in APP e sito, funnel di sottoscrizione).",
+        "I requisiti funzionali e di interfaccia fanno esplicito riferimento a questo persona come destinatario delle proposte e delle azioni (es. aggiunta al carrello)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.119Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-c2f0b6641b48"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d8c"
+    },
+    "title": "Trigger della proposta: comparsa prima del checkout",
+    "description": "Il sistema deve attivare la proposta di bundle in corrispondenza di un evento che si verifica prima del checkout (ad esempio l'inserimento del primo prodotto in carrello o, laddove non fosse possibile, raggiungimento di una pagina comunque precedente alla finalizzazione dell'acquisto del primo prodotto.",
+    "code": "REQ-F-018",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il motore di bundle genera e invia la proposta al canale digitale prima che l'utente entri nella schermata di checkout.",
+        "Test end-to-end dimostrano la comparsa del pop-up nelle condizioni previste (ad es. dopo inserimento del primo prodotto).",
+        "Il trigger è ripetibile e documentato nei casi di test."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.148Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:01:41.629Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-8c95fd22c8d6",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d8b"
+    },
+    "title": "Mappatura della journey digitale per acquisto del secondo prodotto",
+    "description": "La journey digitale del cliente deve includere:\n- trigger di innesco per un cliente che inizia l'acquisto di un singolo prodotto A, nel caso in cui tale prodotto sia in una offerta valida in un bundle con B per cui il cliente è in target;\n- visualizzazione della proposta di bundle prima del checkout\n- interazioni possibili (aggiunta al carrello, chiusura, posticipo), \n- nel caso in cui l'utente rifiuti il bundle e perfezioni l'acquisto del prodotto A, persistenza dell'offerta di upgrade ad (A, B) nella sezione Loyalty di Gruppo, in base alle regole di abilitazione all'upgrade definite dall'utente marketing per lo specifico bundle (A, B).\n\nSe invece l'utente accetta di acquistare il bundle (A,B) all'interno del journey iniziato per A, allora le fasi di inserimento dati (eventualmente mancanti) del cliente, questionari, prese visioni o firme di documenti per A e B vanno accorpate, se possibile  in modo omogeneo nel task flow del cliente (si veda il REQ-F-018).\n\nL'area loyalty del cliente mostra sempre al cliente le offerte di singoli prodotti e bundle sottoscrivibili, al netto dei bundle già in possesso (NB: se il cliente possiede un prodotto A, i bundle che includono A e per i quali NON è possibile l'upgrade non sono sottoscrivibili e non vanno quindi mostrati). Per ciascuna offerta dell'area Loyalty il cliente deve poter vedere i testi/grafiche delle promo e le call ti action di sottoscrizione.",
+    "code": "REQ-F-017",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste un diagramma o documento che descrive ogni step della journey dal trigger all'acquisto del secondo prodotto.",
+        "La mappatura include la condizione di trigger (prima del checkout) e la visualizzazione come pop-up.",
+        "La mappatura specifica la persistenza della proposta nella sezione Loyalty di Gruppo e la finestra temporale di validità.",
+        "La mappatura indica che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.138Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:02:29.856Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-710d49f84aac",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d8f"
+    },
+    "title": "Questionario obbligatorio integrato nel percorso di checkout per alcuni prodotti",
+    "description": "Per i prodotti che richiedono un questionario aggiuntivo, la compilazione del questionario è obbligatoria e il questionario deve apparire integrato all'interno del percorso di checkout, immediatamente dopo la selezione del prodotto, in modo da garantire che i clienti forniscano le informazioni richieste prima del completamento della vendita.",
+    "code": "REQ-F-021",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per i prodotti contrassegnati come 'richiedono questionario', il sistema presenta il questionario immediatamente dopo la selezione del prodotto e prima delle fasi finali del checkout.",
+        "Il questionario è obbligatorio: il sistema impedisce il completamento della sottoscrizione senza la compilazione quando previsto.",
+        "Test di flusso verificano che il questionario sia integrato nel funnel e non come schermata separata non collegata al checkout."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.174Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:05:36.486Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-209f7f9de66d",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d90"
+    },
+    "title": "Visualizzazione proposta come pop-up con offerte suggerite",
+    "description": "La proposta di bundle deve essere presentata al cliente tramite un pop-up nella pagina del canale digitale (APP o sito) prima del checkout. Il pop-up è il canale primario di esposizione e deve essere implementato esattamente come modalità di presentazione iniziale della proposta, coerente con la descrizione fornita dall'utente.",
+    "code": "REQ-UI-007",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La UI mostra la proposta attraverso un pop-up prima del checkout sui touchpoint APP e web.",
+        "Il pop-up appare nelle condizioni di trigger documentate.",
+        "L'aspetto e il comportamento del pop-up sono verificabili in test utente su APP e sito."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.182Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:14:43.852Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-ffbe826e1b09",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d91"
+    },
+    "title": "Contenuto obbligatorio del pop-up: nome, immagine e prezzo scontato con sconto suggerito",
+    "description": "Il pop-up deve mostrare obbligatoriamente il nome del prodotto suggerito, l'immagine del prodotto, il prezzo scontato e il valore dello sconto suggerito. Queste informazioni sono state esplicitamente indicate dall'utente come contenuto minimo necessario per la proposta e devono essere chiaramente visibili e leggibili all'interno del pop-up.",
+    "code": "REQ-UI-008",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Ogni pop-up di proposta mostra il nome del prodotto, un'immagine rappresentativa, il prezzo scontato e l'indicazione del valore dello sconto.",
+        "I testi e i prezzi sono leggibili e conformi alle linee guida grafiche (dimensioni, contrasto) nelle versioni APP e web.",
+        "Test funzionali verificano la presenza e la correttezza dei valori mostrati."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.193Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-8ce650482b21"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d92"
+    },
+    "title": "Posizionamento dell'offerta nella sezione Loyalty di Gruppo su APP e sito",
+    "description": "L'offerta deve essere visibile nella sezione dedicata alla Loyalty di Gruppo sia nell'app mobile che nella versione web del sito. L'utente ha specificato espressamente che la proposta compare in questa sezione, pertanto il requisito richiede che l'interfaccia Loyalty mostri le offerte temporanee e permetta al cliente di riaprire la proposta, visualizzare i dettagli e procedere all'acquisto entro il periodo di validità.",
+    "code": "REQ-UI-009",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La sezione Loyalty di Gruppo elenca le offerte personali e include la proposta generata dal pop-up se non accettata.",
+        "L'utente può riaprire la proposta dalla sezione Loyalty e procedere all'acquisto (es. aggiungere al carrello) entro la scadenza.",
+        "La visualizzazione in Loyalty mostra nome, immagine e prezzo scontato come nell'interazione iniziale."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.202Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-f0f43f4d6459"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d95"
+    },
+    "title": "Utilizzo delle regole marketing gestite dalla dashboard esterna",
+    "description": "Eventuali regole aggiuntive di marketing (campagne, esclusioni, personalizzazioni) sono gestite dalla dashboard di marketing esterna già descritta dall'utente. Il motore di bundle deve fare riferimento e rispettare queste regole gestite manualmente nella dashboard: cioè la logica di selezione e le eventuali esclusioni o parametri commerciali non devono essere duplicate ma devono essere ottenute o consultate dalla dashboard di marketing quando applicabile.",
+    "code": "REQ-I-003",
+    "category": "INTEGRAZIONE",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È documentata l'interdipendenza operativa: il motore utilizza le regole provenienti dalla dashboard di marketing per modificare/escludere proposte.",
+        "Sono presenti test che dimostrano che regole attivate nella dashboard influiscono sulle proposte presentate al cliente (es. inclusioni/esclusioni).",
+        "La documentazione tecnica specifica i punti in cui il motore legge/rispetta le regole definite nella dashboard."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.228Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-015cb1f7dc03"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d94"
+    },
+    "title": "Persistenza dati offerta e stato della proposta (presentata / aggiunta / ignorata) con scadenza",
+    "description": "Il sistema deve registrare e mantenere lo stato delle proposte per ciascun cliente: la registrazione deve includere l'identificativo della proposta, il prodotto suggerito, l'immagine di riferimento, il prezzo scontato, il valore dello sconto suggerito, lo stato corrente della proposta (es. presentata, aggiunta al carrello, accettata/completata, ignorata) e la data/ora di scadenza della promozione (es. 10 giorni dalla vendita del primo prodotto nel caso esposto dall'utente). Questi dati devono essere disponibili per controlli lato canale.",
+    "code": "REQ-D-006",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per ogni proposta generata esiste un record persistente contenente: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato e data di scadenza.",
+        "I cambiamenti di stato (es. da 'presentata' a 'aggiunta al carrello') sono registrati e riproducibili per audit.",
+        "I record vengono espirati o resi non disponibili dopo la data di scadenza e questo comportamento è verificato nei test."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.220Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T08:41:26.302Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-69fc799f88f5",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc0"
+    },
+    "title": "Gestione casi limite e fallback per calcolo NBO",
+    "description": "Il Motore deve prevedere la gestione esplicita dei casi limite relativi al calcolo della NBO, inclusi ma non limitati a: cluster non identificato, modelli di propensity assenti o incoerenti, raccomandazioni esterne mancanti o inconsistenti e input errati. Per queste condizioni deve esistere una gestione strutturata che preveda il rilevamento della condizione, l'applicazione di una logica di fallback configurabile (o comportamenti alternativi definiti in configurazione) e la registrazione dell'evento per audit e analisi. Il requisito richiede che tali casi non rimangano non gestiti e che siano disponibili configurazioni per definire il comportamento desiderato in presenza di dati incompleti o incongruenti.",
+    "code": "REQ-F-023",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il sistema rileva e categorizza automaticamente i casi di: cluster non identificato, propensity assente/incoerente, raccomandazione esterna mancante o contraddittoria.",
+        "Per ogni tipo di caso limite è possibile definire e attivare una strategia di fallback tramite configurazione (ad es. comportamenti alternativi o regole di default).",
+        "Tutti gli eventi di caso limite vengono registrati con dettaglio (tipo, dati in input, timestamp) nel sistema di log/audit.",
+        "In assenza di una strategia di fallback esplicita, il sistema non lascia la condizione non gestita ma registra l'evento per successiva analisi operativa."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.247Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-88fd9a4b1922"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc2"
+    },
+    "title": "Regola configurabile di frequenza di presentazione per lo stesso prodotto",
+    "description": "Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. Deve essere possibile impostare un intervallo minimo (ad esempio in giorni) che determina il tempo minimo tra una presentazione e la successiva dello stesso prodotto per lo stesso cliente. Tale parametro deve essere modificabile da team autorizzati tramite i meccanismi di configurazione previsti e deve essere applicato coerentemente su tutte le presentazioni generate dal Motore.",
+    "code": "REQ-F-025",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste un parametro configurabile che definisce l'intervallo minimo di riproposizione per prodotto (es. X giorni).",
+        "Per un cliente che ha ricevuto una proposta di prodotto, il sistema non ripropone lo stesso prodotto prima del termine dell'intervallo configurato, salvo eccezioni configurate.",
+        "L'intervallo è modificabile tramite l'interfaccia/configurazione da utenti autorizzati e la modifica è tracciata con audit trail.",
+        "Automated tests dimostrano che la regola è rispettata per presentazioni generate su canali differenti."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.263Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-09f53c6a057a"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dbf"
+    },
+    "title": "Next Best Offer basata su cluster di clientela e modelli di propensity",
+    "description": "Il Motore deve identificare automaticamente i prodotti più rilevanti da proporre in abbinamento in logica di Next Best Offer (NBO) secondo i criteri di priorità impostati dall'utente marketing. La selezione deve basarsi sulle caratteristiche dei cluster di clientela e sui modelli di propensity associati a ciascun cliente, in aggiunta ai suddetti criteri di priorità. Le proposte devono escludere prodotti che il cliente possiede già, salvo eccezioni esplicitamente configurate dal team marketing. Questo requisito definisce la capacità core del sistema di calcolare e fornire proposte personalizzate in tempo reale o in batch a partire dalle informazioni di cluster e propensity disponibili.",
+    "code": "REQ-F-022",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per un campione di clienti il sistema propone prodotti ordinati secondo la propensione calcolata per il cluster di riferimento.",
+        "Nessuna proposta include prodotti già posseduti dal cliente, salvo che non esista una eccezione configurata per quel cliente/prodotto.",
+        "La logica NBO utilizza come input esplicito i dati di cluster e i valori di propensity associati e produce una lista ordinata di raccomandazioni.",
+        "I risultati della NBO sono replicabili e verificabili in un ambiente di test con dati noti."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.238Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T17:03:05.428Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-59924b19607b",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc3"
+    },
+    "title": "Eccezione per campagne speciali che annullano temporaneamente la regola di frequenza",
+    "description": "La regola di frequenza deve prevedere eccezioni legate a eventi esterni: in particolare la partecipazione a campagne speciali può annullare temporaneamente la regola di intervallo per determinati clienti coinvolti nella campagna. Deve essere possibile configurare quali campagne o eventi esterni abilitano l'override temporaneo e per quali clienti, e tali eccezioni devono essere applicate solo ai clienti selezionati dalla campagna.",
+    "code": "REQ-F-026",
+    "category": "FUNZIONALE",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È possibile associare al cliente un flag/campagna che abilita l'override della regola di frequenza.",
+        "Per i clienti coinvolti nella campagna il Motore consente la riproposizione immediata se la campagna lo prevede; per gli altri clienti la regola rimane in vigore.",
+        "La configurazione delle campagne/override è tracciata e reversibile.",
+        "Test dimostrano che l'override si applica solo ai clienti target della campagna."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.272Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-5f145447c3cc"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc4"
+    },
+    "title": "Matrice di abilitazione prodotti per OSP, OFE e consulenti di sala",
+    "description": "Poiché OSP, OFE e consulenti di sala si differenziano operativamente per il diverso insieme di prodotti a cui sono abilitati alla vendita, il sistema deve prevedere una matrice di abilitazione che mappi i prodotti sulle singole figure professionali. La matrice deve essere consultabile dal Motore in fase di generazione di proposte per applicare il vincolo di vendita in base al profilo dell'operatore/ruolo e impedire la proposta di prodotti non consentiti per la figura che esegue la vendita.",
+    "code": "REQ-F-027",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste una matrice che mappa prodotti vs ruoli (OSP, OFE, consulente sala) e tale matrice è consultata dal Motore prima di generare proposte per canali operatore.",
+        "Il Motore non propone prodotti non abilitati al ruolo in test end-to-end con profili operatore differenti.",
+        "La matrice è esportabile e verificabile in report per audit."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.280Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-5ee92dd62a13"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc5"
+    },
+    "title": "Gestione centrale delle abilitazioni tramite workflow formale integrato",
+    "description": "Le abilitazioni (matrice prodotti vs figure) devono essere definite centralmente e aggiornabili soltanto attraverso un workflow formale integrato con il Motore di Offerte. Non sono ammesse modifiche ad-hoc non tracciate: ogni variazione alla matrice deve transitare per un processo formale (approvazione/revisione) e rimanere con audit trail leggibile. Questo garantisce controllo, compliance e tracciabilità delle modifiche sulle abilitazioni di vendita.",
+    "code": "REQ-F-028",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Le modifiche alla matrice di abilitazione possono essere effettuate solo attraverso il workflow integrato e non tramite editing diretto non autorizzato.",
+        "Ogni modifica è registrata con autore, timestamp e stato di approvazione; è possibile ricostruire la storia delle modifiche.",
+        "Tentativi di modifica fuori dal workflow sono respinti e generano log di tentativo non autorizzato."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.288Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-c4f910da7ea7"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc6"
+    },
+    "title": "Matrice centralizzata di configurazione utilizzata da tutti i canali",
+    "description": "Tutte le regole operative (inclusa la regola di frequenza di presentazione e altre configurazioni correlate) devono essere alimentate da una matrice di configurazione unica e centralizzata. Tutti i canali di proposizione (App, Web, OSP/OFE, ecc.) devono consultare e basarsi sulla stessa matrice per assicurare applicazione uniforme delle regole e prevenire inconsistenze tra canali. La matrice deve essere la fonte di verità per le regole di business e le relative eccezioni.",
+    "code": "REQ-I-004",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Tutti i canali leggono le regole dalla medesima fonte centralizzata in ambiente di integrazione test.",
+        "La stessa configurazione produce comportamenti coerenti su almeno due canali distinti (es. App e sportello) in test end-to-end.",
+        "Le modifiche alla matrice centrale sono immediatamente o prevedibilmente riproducibili dai canali secondo la politica di propagazione definita.",
+        "Esistono meccanismi di versioning o timestamp per la matrice centralizzata per ricostruire lo stato storico."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.296Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-a0c9efe19e2c"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc7"
+    },
+    "title": "Gestione errori di sincronizzazione tra canali: solo tracciamento, nessun blocco del servizio",
+    "description": "In caso di errori di sincronizzazione o di aggiornamento delle regole tra i canali (ad esempio incoerenze temporanee tra canali che mostrano o meno una proposta, oppure race condition nella modifica della regola), il comportamento richiesto è il solo tracciamento dell'anomalia nei log tecnici. Non deve essere effettuato alcun blocco della riproposizione dei prodotti o sospensione del servizio a seguito di tali errori; la continuità operativa rimane prioritaria e l'anomalia viene gestita tramite monitoring e logging per successivo intervento umano.",
+    "code": "REQ-NF-002",
+    "category": "NON_FUNZIONALE",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "Di fronte a una inconsistenza simulata tra canali, il servizio continua a proporre offerte secondo la regola applicata localmente mentre l'evento è registrato nei log.",
+        "Viene creato un log tecnico dettagliato per ogni evento di sincronizzazione anomalo con timestamp e descrizione.",
+        "Nessuna funzionalità di proposizione risulta bloccata durante un incidente di sincronizzazione simulato."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.304Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-c4f958f07ea2"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc9"
+    },
+    "title": "Vincolo: rispetto dei flag regolatori 'vietato' per combinazioni",
+    "description": "Nel configuratore alcune combinazioni possono essere contrassegnate con un flag 'vietato' per motivi regolatori. Il Motore deve considerare questi flag come vincoli obbligatori: qualsiasi combinazione contrassegnata come vietata non deve essere proposta ai clienti nei canali supportati. Sono ammesse eccezioni manuali solo se esplicitamente autorizzate e definite nella configurazione dei ruoli/permessi; in assenza di autorizzazione la combinazione resta proibita. Questo requisito stabilisce un vincolo normativo inderogabile per la generazione delle offerte.",
+    "code": "REQ-V-006",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Tutte le combinazioni contrassegnate come 'vietato' non vengono proposte ai clienti su nessun canale in ambiente di test.",
+        "Una eccezione manuale produce proposta solo se esiste esplicita autorizzazione e la relativa azione è tracciata con audit trail.",
+        "Il sistema rifiuta automaticamente proposte che contengono combinazioni vietate quando non è presente l'override autorizzato."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.319Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-4af6854b24dc"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dca"
+    },
+    "title": "Blocco delle proposte in caso di incertezza sul vincolo regolatorio",
+    "description": "Se si verifica una situazione di incertezza relativa al vincolo regolatorio (ad esempio flag 'vietato' rimosso accidentalmente, conflitto tra override manuale e configurazione standard, o errori di propagazione), il sistema non deve procedere alla proposta commerciale della combinazione finché non è effettuata una revisione manuale da parte dei responsabili (es. team compliance o marketing). Questa regola garantisce che in presenza di dubbi normativi la proposta non venga esposta, tutelando la compliance aziendale e normativa.",
+    "code": "REQ-V-007",
+    "category": "VINCOLO",
+    "priority": "high",
+    "acceptance_criteria": [
+        "In scenari di incertezza simulati la combinazione rimane bloccata e non viene proposta a clienti né operatori.",
+        "La combinazione bloccata risulta marcata nello stato del sistema come 'in attesa di revisione manuale'.",
+        "Solo dopo un'azione esplicita di revisione/approvazione da parte dei ruoli autorizzati la combinazione può essere riabilitata e proporre."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.327Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-aecd46c16d65"
+},
+{
+    "_id": {
+        "$oid": "69331d15035a33788aeb3df7"
+    },
+    "title": "Segnalazione obbligo questionario al prodotto verticale senza gestione del questionario",
+    "description": "Quando un prodotto richiede la compilazione di un questionario obbligatorio, il Motore di Offerte deve limitarsi a segnalare la condizione (ad esempio tramite un flag o metadato nella proposta) che indica che il questionario è richiesto. La realizzazione, presentazione, validazione, salvataggio dei dati, gestione di input incompleti o errori e i workflow di correzione devono essere eseguiti dall'applicativo verticale di prodotto. In caso di anomalie nel questionario, la gestione è esclusiva del verticale e non del Motore di Offerte.",
+    "code": "REQ-F-030",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il Motore include nel payload di proposta un’indicazione chiara ('questionario richiesto' flag) per i prodotti che lo prevedono",
+        "Il Motore non implementa logiche di validazione, salvataggio o ripristino dei dati del questionario",
+        "La responsabilità operativa di gestione errori e salvataggi temporanei è documentata come appartenente all'applicativo verticale di prodotto"
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331a94035a33788aeb3dcc",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:57:41.555Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-4fe1f41be33e"
+},
+{
+    "_id": {
+        "$oid": "69331d15035a33788aeb3df6"
+    },
+    "title": "Responsabilità limitata: il Motore propone offerte e sconti ma non finalizza vendite né esegue provisioning",
+    "description": "Il Motore di Offerte (motore di sconti) deve limitare la propria responsabilità alla generazione e proposizione di combinazioni di prodotti, alternative commerciali e scontistiche personalizzate. Non deve eseguire operazioni di finalizzazione della vendita, non deve avviare provisioning di servizi/prodotti né sostituirsi ai sistemi di vendita o provisioning. La finalizzazione della vendita, le chiamate per attivazione/provisioning e la gestione operativa correlata rimangono esclusiva responsabilità dei sistemi di vendita/provisioning esterni. Il comportamento del Motore deve essere coerente con questa separazione dei compiti: fornisce proposte, prezzi e condizioni; non compie azioni che comportino l'attivazione o erogazione tecnica di prodotti/servizi.",
+    "code": "REQ-F-029",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il Motore produce proposte commerciali (liste di alternative, combinazioni e sconti) senza eseguire operazioni di provisioning o attivazione dei prodotti",
+        "Non esistono processi nel motore che effettuino la finalizzazione della vendita: tutti i flussi di completamento ordine/provisioning sono invocati e gestiti da altri sistemi",
+        "Verifica che il codice e la documentazione mostrino esplicitamente l'assenza di chiamate di provisioning o di azioni di attivazione originate dal Motore"
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331a94035a33788aeb3dcc",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:57:41.544Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-a97f0166f769"
+},
+{
+    "_id": {
+        "$oid": "69331f89035a33788aeb3e0f"
+    },
+    "title": "Conservazione dei log di proposte, modifiche di configurazione e accessi autorizzati",
+    "description": "Il Motore deve conservare in modo completo e persistente i log relativi a: tutte le proposte generate dal sistema, tutte le variazioni e modifiche alla configurazione (cambi di regole, parametri, matrici di combinazioni, ecc.) e gli accessi effettuati dagli utenti autorizzati. La conservazione deve garantire che gli eventi siano tracciati con dettaglio sufficiente per audit e verifiche successive, includendo la tipologia di evento e l'indicazione dell'utente autorizzato che ha effettuato l'azione (ove applicabile).",
+    "code": "REQ-D-007",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Ogni proposta generata dal Motore è registrata come evento di log persistente.",
+        "Ogni modifica di configurazione è registrata con evidenza dell'evento e dell'utente che ha eseguito la modifica.",
+        "Ogni accesso di utenti autorizzati è registrato nei log con timestamp e identificativo utente.",
+        "I log sono salvati in un'area di persistenza consultabile/esportabile dal Motore."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331ea7035a33788aeb3dfe",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:08:09.618Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-fe954186a2ab"
+},
+{
+    "_id": {
+        "$oid": "69331f89035a33788aeb3e11"
+    },
+    "title": "Esportazione dei log verso sistemi di audit esterni",
+    "description": "Il Motore deve fornire la possibilità di esportare i log conservati in modo da poterli trasferire e rendere disponibili ai sistemi di audit esterni già in uso. L'esportazione deve essere una funzione prevista e utilizzabile per consentire verifiche, controlli e integrazioni con processi di audit esterni, rispettando le modalità di selezione dei dati indicate (filtri) e i requisiti di sicurezza generali.",
+    "code": "REQ-I-006",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste una funzionalità che consente di esportare i log dal Motore verso sistemi esterni.",
+        "L'esportazione può essere eseguita in modo manuale tramite interfaccia/API.",
+        "Gli artefatti prodotti dall'export sono utilizzabili/importabili dai sistemi di audit esterni (file prodotti nei formati richiesti).",
+        "Le operazioni di export sono registrate nei log del sistema (audit trail dell'export)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331ea7035a33788aeb3dfe",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:08:09.635Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-5b7917700722"
+},
+{
+    "_id": {
+        "$oid": "69331f89035a33788aeb3e12"
+    },
+    "title": "Filtri di esportazione log degli eventi di offerta per periodo temporale e tipo di evento",
+    "description": "Durante l'operazione di esportazione dei log deve essere possibile applicare filtri selezionabili in fase di export. I filtri minimi richiesti sono: intervallo temporale (data/ora di inizio e fine) e tipologia di evento (es. proposta generata, modifica di configurazione, accesso utente). Questo permette di limitare il dataset esportato e agevolare le attività di audit su periodi o categorie specifiche.",
+    "code": "REQ-F-031",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "L'interfaccia/API di export permette di specificare un intervallo temporale per l'export.",
+        "L'interfaccia/API di export permette di selezionare uno o più tipi di evento da includere nell'export.",
+        "Il file esportato contiene esclusivamente gli eventi che soddisfano i filtri impostati.",
+        "I filtri sono applicabili sia per export manuale che per export programmato (se previsto)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331ea7035a33788aeb3dfe",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:08:09.652Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:16:29.611Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-3dcb7fdec96c",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331f89035a33788aeb3e10"
+    },
+    "title": "Formati di export supportati",
+    "description": "Le esportazioni dei log sono funzionalità disponibili a un utente rispetto alle autorizzazioni associate al suo specifico ruolo. Esse devono poter essere prodotte nei principali formati disponibili per le analisi (sicuramente csv/excel) ed eventuali altri formati come JSON e XML, assicurando compatibilità con i sistemi di audit già in uso. I file prodotti devono rispettare gli standard di formato (JSON valido, XML ben formato) in modo che possano essere processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste.",
+    "code": "REQ-D-008",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "L'export dei log è disponibile solo agli utenti autorizzati.",
+        "I file JSON, XML, CSV/excel sono sono validi in base ai relativi standard e contengono le informazioni richieste (evento, timestamp, utente quando presente).",
+        "Un file di esempio per ciascun formato può essere scaricato/esportato dal sistema."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331ea7035a33788aeb3dfe",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:08:09.626Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:51:27.097Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-b89f65b0ba62",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331f89035a33788aeb3e13"
+    },
+    "title": "Sicurezza dell'operazione di export",
+    "description": "Le funzionalità di export dei log devono essere rese disponibili agli utenti in base alle loro autorizzazioni. Le funzionalità di export dei log devono lasciare traccia dell'operazione e dell'utente che l'ha effettuata.",
+    "code": "REQ-NF-005",
+    "category": "NON_FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "L'operazione di export può essere avviata solo da utenti/soggetti autorizzati (controllo accessi abilitato).",
+        "Tutte le operazioni di export sono registrate nei log di sistema con dettaglio dell'operatore che ha effettuato l'export e del momento dell'operazione."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331ea7035a33788aeb3dfe",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:08:09.662Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:57:09.210Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-095516ee5370",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e27"
+    },
+    "title": "Team Marketing (persona)",
+    "description": "Il team di Marketing è l'attore principale che dovrà gestire in autonomia la dashboard di configurazione e monitoraggio delle offerte all'interno del Motore. Questo ruolo sarà autorizzato all'accesso alle funzionalità di creazione/modifica della matrice n x n delle combinazioni, impostazione parametri commerciali (sconti, durata promozione, target), visualizzazione insight sulle performance e utilizzo delle funzionalità di export di dati previste.",
+    "code": "REQ-P-013",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste una definizione del ruolo 'Marketing' nel sistema con permessi di gestione sulla dashboard in base alle autorizzazioni.",
+        "Utenti assegnati al ruolo Marketing possono accedere all'intera UI di configurazione della matrice e alle funzionalità di monitoraggio e export in base alle autorizzazioni.",
+        "Il ruolo Marketing può effettuare operazioni di creazione, modifica e salvataggio delle configurazioni nella dashboard in base alle autorizzazioni."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.559Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:45:22.943Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-d1864fb74aca",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e2a"
+    },
+    "title": "Monitoraggio delle performance offerte",
+    "description": "L'utente richiede che esista anche uno strumento di analisi dati e reportistica che consenta: visualizzazione del tipo e del numero di offerte integrate disponibili (attive e storicizzate), con possibilità di ottenere insight per ciascuna offerta relativamente ad andamenti di vendita per periodo temporale, KPI di conversione per fase del funnel, andamento delle proposte accettate e rifiutate, il tutto filtrabile per canale/touchpoint, cluster di clientela e singole offerte o aggregazioni di offerte. Si chiarisce che tale strumento deve essere implementato all'interno del sistema di reporting aziendale e che il motore di offerte dovrà esportare verso tale strumento i dati necessari seguendo regole che saranno successivamente definite. Si chiarisce inoltre che l'accesso alle funzionalità di analisi dati e reporting su tale strumento dovranno essere soggette alle regole di autorizzazione definite per ciascuno dei ruoli utente.",
+    "code": "REQ-F-033",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "I dati vengono alimentati dal motore di offerte verso lo strumento di analisi dati e reporting secondo le regole di frequenza e storicizzazione che saranno definite in sede di progettazione."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.588Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T12:22:26.226Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-111f9b6ac9cb",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e2c"
+    },
+    "title": "Dashboard integrata nel Motore gestita dal team Marketing",
+    "description": "L'utente ha esplicitamente richiesto che la dashboard di configurazione delle offerte sia integrata all'interno del Motore e gestita in autonomia dal team Marketing. Pertanto l'interfaccia per creare/modificare/configurare le combinazioni deve risiedere nel Motore (non esternamente) e fornire al team Marketing i privilegi necessari per l'uso completo delle funzionalità della dashboard. La conversazione definisce questa collocazione come vincolo di deployment funzionale deciso dall'utente.",
+    "code": "REQ-UI-010",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La dashboard è parte dell'applicazione Motore (distribuita/deployata insieme al Motore).",
+        "Il team Marketing può autenticarsi e accedere alle funzionalità di gestione/configurazione direttamente dalla dashboard integrata.",
+        "Non è richiesto l'uso di un sistema esterno per le operazioni di configurazione richiese dall'utente."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.607Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-ae1b766c84a8"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e2d"
+    },
+    "title": "Dashboard interattiva con filtri su cluster, periodi e canali",
+    "description": "L'utente ha richiesto esplicitamente una dashboard interattiva che consenta di applicare filtri su cluster di clientela, intervalli temporali e canali di vendita. L'interattività deve permettere agli utenti di esplorare i dati, combinare filtri e visualizzare le informazioni rilevanti per analisi rapide e decisioni di marketing. La preferenza dell'utente è una dashboard interattiva (non solo tabelle statiche).",
+    "code": "REQ-UI-011",
+    "category": "INTERFACCIA",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La UI offre controlli di filtro per cluster, periodo e canale.",
+        "L'applicazione aggiorna le visualizzazioni in modo interattivo quando vengono applicati i filtri.",
+        "Le visualizzazioni risultanti riflettono correttamente i filtri selezionati."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.615Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-ed454fd105fb"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e2f"
+    },
+    "title": "Gestione regole di accesso ai dati",
+    "description": "I dati visualizzati sulle interfacce applicative verso gli utenti del sistema devono essere visibili solamente ai ruoli autorizzati. Questo requisito riguarda la sicurezza, la privacy e la governance delle informazioni nella dashboard e impone l'implementazione di regole di accesso differenziate (controllo degli accessi basato sui ruoli) per la visualizzazione dei dati. Le funzionalità di sistema relative all'esportazione dei dati (es. salvataggio dei dati su file) devono essere rese disponibili solo agli utenti autorizzati.",
+    "code": "REQ-NF-006",
+    "category": "NON_FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È implementato un controllo degli accessi basato sui ruoli che limita la visualizzazione dei dati solo ai ruoli autorizzati.",
+        "I permessi di visualizzazione possono essere configurati e verificati tramite l'interfaccia di amministrazione dei ruoli."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.633Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:28:05.239Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-3ed4f10921c3",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69332744035a33788aeb3e46"
+    },
+    "title": "Persona: Motore di Offerte",
+    "description": "Attore principale responsabile della generazione, gestione logica, persistenza e aggiornamento dello stato delle proposte/offerte. Nella conversazione l'utente identifica il \"Motore\" come il componente che deve tracciare, persistere e determinare la validità temporale delle offerte e che deve aggiornare autonomamente lo stato delle proposte basandosi sui dati e sugli eventi provenienti dai verticali di vendita. Il Motore non è responsabile della presentazione UI della sezione Loyalty.",
+    "code": "REQ-P-015",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il documento di analisi indica chiaramente il Motore di Offerte come attore responsabile di generazione, persistenza e aggiornamento dello stato delle proposte.",
+        "Sono elencate le API e i punti di integrazione che il Motore espone verso i sistemi esterni (verticali di vendita e Loyalty) con ruoli e responsabilità chiaramente definiti.",
+        "Il modello di dominio include l'entità 'proposta/offerta' gestita dal Motore con attributi di stato e validità temporale."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693325e2035a33788aeb3e37",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:41:08.407Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-99bb6d0bf95c"
+},
+{
+    "_id": {
+        "$oid": "69332744035a33788aeb3e48"
+    },
+    "title": "Persona: Verticali di vendita",
+    "description": "Attori che rappresentano i sistemi verticali di vendita (es. sistemi di backend che gestiscono vendite effettive e transazioni). Dalla conversazione l'utente stabilisce che i verticali di vendita sono la fonte di verità per gli eventi che determinano le transizioni di stato delle proposte; il Motore deve attingere direttamente a questi verticali per aggiornare lo stato delle offerte.",
+    "code": "REQ-P-017",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Sono documentati i tipi di eventi e i formati che i verticali di vendita esporranno al Motore per permettere l'aggiornamento degli stati delle proposte.",
+        "Sono presenti test end-to-end in cui eventi provenienti dai verticali causano le transizioni di stato attese nel Motore.",
+        "La progettazione mostra chiaramente che i verticali sono la sorgente primaria degli eventi di stato e non la Loyalty."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693325e2035a33788aeb3e37",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:41:08.426Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-e62a7efa9e57"
+},
+{
+    "_id": {
+        "$oid": "69332744035a33788aeb3e47"
+    },
+    "title": "Persona: Sezione Loyalty di Gruppo (APP e sito)",
+    "description": "Attore che rappresenta la componente di presentazione (APP mobile e versione web) denominata 'Sezione Loyalty di Gruppo'. Dalla conversazione emerge che questa componente è responsabile esclusivamente della visualizzazione delle offerte e non deve inviare feedback operativi al Motore. Riceve i dati/proposte dal Motore o dal sistema terzo che li espone e li presenta secondo le proprie logiche di UI/UX.",
+    "code": "REQ-P-016",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione di integrazione descrive la Sezione Loyalty come componente read-only rispetto allo stato delle proposte.",
+        "Non vengono definite API operative per l'invio di eventi di stato dalla Loyalty al Motore (nessun endpoint operativo atteso dalla Loyalty per accept/ignore).",
+        "Test di integrazione dimostrano che la Loyalty recupera e visualizza le offerte senza modificare lo stato dell'offerta lato Motore."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693325e2035a33788aeb3e37",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:41:08.416Z"
+    },
+    "updated_at": null,
+    "creation_type": "AIGenerated",
+    "version": "v001-d3ea2f90061e"
+},
+{
+    "_id": {
+        "$oid": "69332744035a33788aeb3e4d"
+    },
+    "title": "Aggiornamento autonomo dello stato delle proposte basato sui verticali di vendita",
+    "description": "Il Motore deve aggiornare autonomamente lo stato delle proposte attingendo direttamente dai verticali di vendita: i verticali sono gli unici sistemi che comandano le transizioni di stato (vendita effettiva, altri trigger). Questo requisito definisce il flusso dei dati e gli eventi: il Motore si integra con i verticali di vendita per ricevere eventi che innescano le transizioni di stato delle offerte.",
+    "code": "REQ-I-007",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Sono definiti e implementati i canali/endpoint tramite cui i verticali di vendita inviano eventi al Motore e questi eventi aggiornano lo stato della proposta in modo riproducibile.",
+        "Test end-to-end mostrano che un evento proveniente da un verticale di vendita causa la transizione di stato attesa nel Motore e che questa transizione è resa disponibile su tutte le interfacce che acquisiscono dal motore l'elenco delle offerte disponibili per un dato cliente."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693325e2035a33788aeb3e37",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:41:08.471Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:10:16.617Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-14c448caf105",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69332744035a33788aeb3e4c"
+    },
+    "title": "Il Motore è responsabile della persistenza e del calcolo della durata/validità delle offerte",
+    "description": "Il Motore deve gestire la persistenza delle offerte e il calcolo della scadenza/validità temporale. Il Motore espone per ciascun cliente l'elenco delle offerte per lui applicabili e in corso di validità ed espone inoltre tutti i dati necessari per la presentazione di ciascuna offerta sulle interfacce verso i clienti, gli operatori dell'UP e gli eventuali ulteriori sistemi e attori che potranno in futuro acquisire tali offerte.",
+    "code": "REQ-I-006",
+    "category": "INTEGRAZIONE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Specifiche di integrazione descrivono il Motore come repository primario per le offerte con responsabilità di calcolo della validità e persistenza.",
+        "La Loyalty utilizza esclusivamente call di lettura per ottenere lo stato e la validità dell'offerta.",
+        "Test di integrazione dimostrano che aggiornamenti delle offerte e relativa validità gestiti dal Motore vengono correttamente visualizzati da tutte le interfacce che acquisiscono tali dati dal motore."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693325e2035a33788aeb3e37",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:41:08.460Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:03:44.085Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-abe8fc41b5f4",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d0d"
+    },
+    "title": "Configuratore matrice n x n per combinazioni e parametri commerciali",
+    "description": "Deve essere previsto un configuratore, accessibile tramite dashboard ai team di marketing (come dichiarato dall'utente), che consenta di definire una matrice n x n delle possibili combinazioni di suggerimenti tra prodotti. Per ogni cella/combinazione la dashboard deve permettere: contrassegnare la combinazione come vietata per motivi regolatori, contrassegnare la combinazione come disponibile/interessante per marketing, associare l'eventuale sconto applicabile, definire la durata della promozione e il target a cui la promozione si applica. Tutte queste configurazioni devono essere modificabili dalla dashboard dai marketing, come esplicitato dall'utente.\n\nSempre per motivi regolatori, deve essere possibile associare a una offerta i touchpoint su cui tale offerta PUÒ oppure NON PUÒ essere venduta (i touchpoint sono sia quelli digitali, ossia Web e app, sia, in senso lato, gli operatori umani che sono oppure non sono abilitati alla vendita di determinati prodotti - OSP, OFE, consulenti in sala UP, consulenti remoti).\n\nNota bene: il concetto di matrice NxN è un concetto logico, non d'interfaccia; ciò significa che l'interfaccia dovrà consentire semplicemente di definire i bundle EFFETTIVAMENTE ideati dalle funzioni di Marketing come coppie (A, B) di prodotti, senza fare data entry di tutte le combinazioni teoricamente possibili di prodotti.\nPer ogni bundle (A,B), fermi restando i parametri di offerta indicati, deve essere possibile l'attivazione o spegnimento, per consentire la cessazione o sospensione di una offerta senza cancellarne definizione e parametrizzazioni. L'interfaccia consente quindi di selezionare le coppie (A, B) e di associare a ciascun prodotto A, B, C... regole specifiche di NON associabilità ad altri specifici prodotti.",
+    "code": "REQ-F-002",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La dashboard consente la definizione di una matrice n x n con tutte le combinazioni di prodotti rilevanti.",
+        "Per ciascuna combinazione è possibile impostare lo stato (vietata/regolare), flag marketing, sconto, periodo di validità (data inizio/fine) e target di applicazione.",
+        "Le modifiche fatte tramite dashboard sono persistenti e hanno effetto sulle proposte generate dal motore entro i tempi di propagazione concordati."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.724Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:55:04.732Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-28a3c8ff6642",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "6932ed08035a33788aeb3d0f"
+    },
+    "title": "Regola configurabile di abilitazione di presentazione (frequenza per evitare riproposizione ravvicinata, offerte a chi già possiede un prodotto in bundle)",
+    "description": "Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. L'utente ha indicato che deve essere prevista una regola configurabile di frequenza di presentazione per la stessa proposta: l'intervallo minimo tra una presentazione e la successiva dello stesso prodotto deve poter essere impostato (per esempio in giorni) e modificato dai team autorizzati.\n\nL'utente Marketing deve inoltre poter associare a una offerta un flag che decide se tale offerta può essere proposta a chi già possiede uno dei prodotti in bundle (per default: NO) e di decidere se consentire tale \"upgrade\" almeno per i clienti che abbiano acquistato tale prodotto negli ultimi X giorni. Riferimento ulteriore: REQ-F-25/26",
+    "code": "REQ-F-004",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È possibile configurare, tramite la dashboard o interfaccia dedicata, il tempo minimo di ri-esposizione di uno stesso prodotto per cliente.",
+        "Il motore rispetta tale configurazione ed evita di proporre lo stesso prodotto al cliente prima del termine dell'intervallo configurato.",
+        "Test di integrazione dimostrano che, dopo una proposta, un successivo evento di richiesta offerta non ri-esporrà il prodotto prima del periodo configurato."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6932e926035a33788aeb3cea",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T14:32:40.741Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:13:44.692Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v004-5cb26456843c",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331125035a33788aeb3d36"
+    },
+    "title": "Persona: Operatore in ufficio postale (sportello/sala)",
+    "description": "Persona (collega) che opera in canale fisico (sportello o sala: OSP/OFE/SCX) e utilizza il motore di offerte per proporre prodotti al cliente in contesto assistito. L'operatore è responsabile di selezionare e presentare le proposte generate dal motore e di dialogare con il cliente per chiudere la vendita, visualizza e propone al cliente solo le offerte attive e sottoscrivibili. Deve poter vedere le condizioni mancanti e avere la possibilità di sanare tali condizioni a sportello quando previsto.",
+    "code": "REQ-P-003",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione identifica la persona 'Operatore sportello/sala' con responsabilità di proposta guidata.",
+        "Sono definite interfacce e flussi specifici per l'operatore differenti rispetto al canale digitale.",
+        "Test di accettazione mostrano che l'operatore può ricevere, visualizzare e proporre offerte tramite l'interfaccia dedicata.",
+        "L'operatore vede un elenco di offerte attive e sottoscrivibili filtrate per cliente.",
+        "L'interfaccia mostra le condizioni mancanti per la sottoscrivibilità e le azioni possibili per sanarle.",
+        "L'operatore può avviare procedure a sportello per sanare le condizioni (es. aggiornamento documenti)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:45.996Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T12:56:59.033Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-53e0b2bb1a11",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d63"
+    },
+    "title": "Tracciamento decisioni motore e azioni di configurazione e proposte",
+    "description": "Il sistema deve tracciare in modo completo sia le decisioni automatiche del Motore di Offerte (quali offerte/bundle sono state proposte, escluse o ordinate e le motivazioni) sia tutte le modifiche di configurazione effettuate dal Team Marketing (creazione, modifica, cancellazione di bundle, regole di pricing, campagne e parametri). Il tracciamento deve essere eseguito per ogni evento rilevante generato dal motore o dagli utenti di configurazione.\n\nAltri dati rilevanti di tracciamento: touchpoint dove avviene la proposta (UP, Web, app), timestampp (data, orario) della proposta, esito (abbandono ovvero finalizzazione offerta lato operatore o lato cliente in modalità \"self\" sui canali digitali).\n\nIl suddetto tracciamento delle proposte/condizioni/motivazioni/messaggi promozionali  generate per un cliente in UP o sui canali digitali, insieme all'esito della proposta, deve essere storicizzato al fine di consentire agli utenti Marketing di effettuare analisi per studiare l'efficacia delle offerte, dei messaggi proozionali/USP utilizzati",
+    "code": "REQ-F-008",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Per ogni proposta o esclusione generata dal motore viene creato un record di log.",
+        "Per ogni operazione di configurazione (creazione/modifica/cancellazione) viene creato un record di log.",
+        "I log sono consultabili tramite la dashboard prevista per marketing e compliance."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.310Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:05:41.301Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-cc0c7e3a4f90",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d65"
+    },
+    "title": "Configuratore matrice combinazioni prodotti",
+    "description": "Il sistema deve consentire la gestione e la configurazione di una matrice parametrizzabile delle combinazioni commerciali (bundle), intesa come insieme delle coppie (A, B) di prodotti per i quali il Marketing crea, attiva e disattiva i bundle e con quali condizioni di pricing, validità (intervallo temporale) e target, come specificato in dettaglio in REQ-F-002.\n\nUlteriori campi associati a ciascun bundle sono descritti in REQ-F-004 e REQ-F-005.\n\nI target consistono in cluster predefiniti selezionabili tramite apposita interfaccia dal configuratore. Tali cluster dovranno essere definiti utilizzando un altro tool che consenta la selezione di clienti in base a dati anagrafici, di possesso prodotto e comportamentali, lo studio degli insiemi generati, il loro salvataggio e relativa messa a disposizione del configuratore (è da discutere con DTO se tale tool esista già e possa essere integrato con il configuratore del presente requisito oppure se esso debba essere sviluppato ad hoc)\n\nPer le regole di dettaglio ",
+    "code": "REQ-F-010",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Il marketing può creare, modificare e cancellare combinazioni/bundle tramite l'interfaccia di configurazione.",
+        "Ogni bundle ha metadati configurabili: nome commerciale, durata, target, periodo di acquistabilità (osia data inizio e data fine della promozione), stato di attivazione, testo promo/USP, .",
+        "Le modifiche ai bundle generano i log di configurazione obbligatori (before/after)."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.328Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:29:03.492Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v004-f370f0ca3add",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d67"
+    },
+    "title": "Configurazione pricing e parametri Connect per il bundle",
+    "description": "Il marketing deve poter configurare per ogni offerta bundle le regole di pricing, sconti e/o cashback, i punti Connect che si applicano all'intera offerta.\n(Per altriparametri associati al bundle si vedano i REQ-F-002/3/4/5/6/7/10/13)",
+    "code": "REQ-F-012",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esistere un'interfaccia per impostare pricing, punti, cashback e metadati di validità per ogni bundle.",
+        "Supporto per regole temporali specifiche per clienti già possessori di prodotti.",
+        "Ogni modifica è soggetta a log di configurazione con before/after."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.343Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T13:37:26.767Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-65e126e4c88d",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d8a"
+    },
+    "title": "Persona: Motore di offerte",
+    "description": "Attore sistema identificato nella conversazione come componente che genera e propone combinazioni di prodotto (bundle) al cliente digitale sul canale digitale (web/App) e all'operatore in UP sul canale fisico. È il sistema che decide quali prodotti proporre in abbinamento al primo prodotto, si interfaccia con i canali digitali per mostrare le proposte e determina la logica di proposta basata su propensioni e possesso prodotti attuale.",
+    "code": "REQ-P-010",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "La documentazione di progetto include il ruolo 'Motore di offerte' come componente che elabora e propone bundle.",
+        "Gli use case di proposta bundle (trigger, formato dell'output, integrazione con canali) fanno riferimento esplicito a questo attore.",
+        "Sono definiti i punti di integrazione e le responsabilità del motore di bundle nella deliverable tecnica."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.129Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:18:44.353Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v005-0b1d815d3eff",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d6a"
+    },
+    "title": "Provisioning e notifica post-sottoscrizione",
+    "description": "A valle della sottoscrizione di una data offerta, i sistemi verticali di vendita (e non il motore di sconti) devono garantire il provisioning dei prodotti e l'attivazione del Framework Connect, notificando il cliente tramite canali digitali e rendendo visibile la corretta attivazione sia all'operatore che al cliente.",
+    "code": "REQ-F-015",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Al completamento della sottoscrizione parte il processo di provisioning per i prodotti acquisiti.",
+        "Il Framework Connect riceve le informazioni necessarie per la registrazione di cashback/points.",
+        "Clienti e operatori ricevono notifiche di avvenuta attivazione e lo stato è consultabile nel sistema."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.367Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T14:01:50.364Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-8f086a8f4fb0",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d8d"
+    },
+    "title": "Azione dal trigger di acquisto bundle: aggiunta diretta al carrello",
+    "description": "Il trigger di proposta di bundle, associato a un elemento visivo e testuale che segnala l'opportunità (popup, tasca a comparsa o altro)  deve prevedere una call to action per aggiungere immediatamente il prodotto suggerito al carrello con un'azione diretta (es. pulsante 'Aggiungi al carrello').",
+    "code": "REQ-F-019",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esiste un pulsante o controllo nel pop-up che consente l'aggiunta immediata del prodotto al carrello.",
+        "L'azione aggiorna lo stato del carrello e riflette l'aggiunta senza errori (verificata tramite test end-to-end).",
+        "Se l'aggiunta richiede la conferma di variant/opzioni, il flusso guida l'utente senza interrompere il processo di aggiunta."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.156Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T15:58:17.729Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-3e40734fdcff",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331d15035a33788aeb3df5"
+    },
+    "title": "Elenco univoco delle entità logiche che interagiscono con il motore",
+    "description": "Elencare in modo univoco gli attori che interagiscono con il Motore di Offerte o sono rilevanti per definire responsabilità e boundary del progetto, così come emerso nella conversazione. L'elenco deve includere tutti i ruoli e sistemi citati dall'utente: il Motore di Offerte (motore di sconti) come applicativo centrale, il Cliente finale fisico o digitale (utente che riceve/procede all'acquisto), l'Operatore (personale di sportello o front-office che può visualizzare proposte), i Sistemi di Vendita (applicativi che finalizzano la sottoscrizione e gestiscono provisioning e visibilità degli errori), l'Applicativo Verticale di Prodotto (che gestisce questionari obbligatori e relativi flussi/salvataggi), i Sistemi di Provisioning (responsabili dell'attivazione dei prodotti/servizi), i Sistemi di Privacy/Compliance aziendali (che definiscono regole, autorizzazioni, polity di retention/anonimizzazione), e il team/ambito Marketing. Questo requisito serve a stabilire i confini funzionali e di responsabilità tra i soggetti coinvolti.",
+    "code": "REQ-P-012",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È fornita una lista unica e non ridondante di tutte le personas citate dall'utente nella conversazione",
+        "Ogni persona ha un ruolo/descrizione sintetica che ne chiarisce la responsabilità rispetto al Motore di Offerte",
+        "La lista è coerente con le affermazioni dell'utente che delimitano responsabilità (es. questionario gestito dal verticale)"
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331a94035a33788aeb3dcc",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:57:41.535Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:20:07.997Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v004-423c2a045d23",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331a83035a33788aeb3dc1"
+    },
+    "title": "Comportamento in caso di conflitto tra regole manuali e raccomandazioni automatizzate o esterne",
+    "description": "Se si verifica un conflitto tra regole manuali configurate (ad esempio regole definite dal marketing) e raccomandazioni automatizzate o esterne, il Motore non deve proporre alcuna offerta. In presenza di tale conflitto la decisione operativa è di non esporre proposte al cliente o all'operatore e di registrare il motivo del mancato suggerimento in un log interno. Non devono essere mostrati messaggi di errore né alert all'operatore o al cliente: il comportamento è silente dal punto di vista dell'interfaccia utente, mentre l'informazione è disponibile nei log per successivi controlli operativi e audit.",
+    "code": "REQ-F-024",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Quando viene riprodotto un conflitto tra regole manuali e raccomandazioni esterne in ambiente di test, il Motore non propone offerte al cliente né all'operatore.",
+        "Il motivo del mancato suggerimento è registrato nei log interni con dettaglio sufficiente a ricostruire il conflitto (regola A vs regola B, timestamp, id entità coinvolte).",
+        "Nessuna notifica visibile viene mostrata al cliente o all'operatore a seguito del conflitto (comportamento silente).",
+        "I log relativi al conflitto sono accessibili per verifica e audit da parte dei ruoli autorizzati."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "693317e6035a33788aeb3d96",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:46:43.255Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:12:06.909Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-c809d4683898",
+    "updated_by": "larosa33@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "69331126035a33788aeb3d38"
+    },
+    "title": "Esperienze distinte tra digitale self-service e fisico guidato dall'operatore e possibilità di differenziazione di offerta tra touchpoint e operatori",
+    "description": "L'applicazione deve supportare due percorsi utente distinti e coerenti: 1) Canale digitale: esperienza self-service dove il cliente esegue autonomamente tutte le operazioni di consultazione e acquisto; \n\n2) Canale fisico: esperienza guidata dove l'operatore riceve le proposte dal motore e le propone al cliente. I flussi, le interfacce e i comportamenti devono essere differenziati per rispondere ai bisogni di ciascun canale.\n\nL'utente Marketing deve poter associare una certa offerta a uno specifico canale, ossia indicare se tale offerta è disponibile in UP, su Web, in app o combinazioni (default: tutti e tre i touchpoint), fermi restando i vincoli regolamentari relativi ai touchpoint definibili in REQ-F-002 per ciascun prodotto (in altri termini, un utente Marketing non può abilitare un certo touchpoint alla vendita di una data offerta, se in REQ-F-002 tale offerta è stata marcata come \"non vendibile\" su tale touchpoint. Si veda anche REQ-F-027\n\nQuanto sopra serve a implementare promo speciali disponibili solo su digitale o solo in UP, a seconda degli obiettivi. \n",
+    "code": "REQ-F-005",
+    "category": "FUNZIONALE",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Sono documentati due flussi distinti (digitale e fisico) e le rispettive user story.",
+        "L'implementazione fornisce endpoint/interfacce o modalità operative distinte per i due canali.",
+        "Test end-to-end verificano che un cliente digitale compia il processo autonomamente e che un operatore in ufficio riceva e proponga offerte tramite l'interfaccia operatore."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69330aa2035a33788aeb3d15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:06:46.012Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-09T16:43:14.422Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v007-972dc35ace72",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693317c5035a33788aeb3d93"
+    },
+    "title": "Persistenza dell'offerta e visibilità in Loyalty di Gruppo con periodo di validità",
+    "description": "L'area Loyalty di gruppo è una delle interfacce web/App tramite cui il motore di offerte presenta al cliente le offerte per lui applicabili e in corso di validità. Di conseguenza la persistenza di una certa offerta per un dato periodo e a determinate condizioni è stabilita dal motore di offerte secondo le configurazioni definite dall'utente marketing nel motore stesso. Se il cliente non aggiunge immediatamente il prodotto dal pop-up, il motore renderà la proposta disponibile nella sezione 'Loyalty di Gruppo' sia nell'APP che nel sito web.",
+    "code": "REQ-D-005",
+    "category": "DATI",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Le offerte non accettate appaiono nella sezione Loyalty di Gruppo su APP e sito.",
+        "Ogni offerta salvata contiene un campo di scadenza che definisce la validità (es. 10 giorni dalla vendita del primo prodotto) ed è rispettato dal sistema.",
+        "I test verificano che l'offerta non sia più disponibile alla scadenza e che i dettagli (nome, immagine, prezzo scontato) siano coerenti con quanto mostrato originariamente."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933158f035a33788aeb3d59",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:35:01.211Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T08:39:20.414Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v003-4a71d6eb8c4d",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e28"
+    },
+    "title": "Ruoli autorizzati alle funzionalità e ai dati del motore di offerte",
+    "description": "Esistono ruoli che devono avere accessi differenziati alle funzionalità di configurazione e alle interfacce di monitoraggio dati del motore di offerte: alcuni ruoli potranno visualizzare solo dati aggregati/totali mentre altri ruoli autorizzati potranno vedere i dati dettagliati. La conversazione non elenca nomi specifici per questi ruoli, ma definisce classi funzionali di utenti rispetto alla dashboard: utenti con accesso dettagliato, utenti con accesso solo ai totali/aggregati, utenti con capability di esportazione.",
+    "code": "REQ-P-014",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "È definita almeno una classe di 'ruoli autorizzati' che può visualizzare dati dettagliati nella dashboard.",
+        "È definita almeno una classe di 'altri utenti' che visualizza solo dati aggregati/totali nella dashboard.",
+        "Le regole di visibilità tra classi sono applicabili e verificabili da UI (es. utenti non autorizzati non possono accedere ai dettagli).",
+        "È definita almeno una classe di 'utenti con capability di esportazione'.",
+        "Un utente può appartenere a più classi"
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.570Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:35:38.362Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-892f8669b595",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693315d6035a33788aeb3d60"
+    },
+    "title": "PERSONA: Team Compliance",
+    "description": "Team interno responsabile di verificare la conformità delle regole commerciali, di auditare le decisioni del motore e di consultare i log di sistema. Deve poter accedere alle informazioni di auditing e ai report esportati per scopi di controllo e verifica regolatoria in base ai ruoli autorizzati.",
+    "code": "REQ-P-006",
+    "category": "PERSONAS",
+    "priority": "high",
+    "acceptance_criteria": [
+        "Esistenza di un profilo utente/ruolo 'Compliance' a cui è possibile associare autorizzazioni di lettura ed esportazione di log e report.",
+        "L'utente Compliance autorizzato può visualizzare e filtrare i log tramite la dashboard dedicata."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "69331217035a33788aeb3d41",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T17:26:46.282Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:42:06.010Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-cf31ded9d4b0",
+    "updated_by": "maria243@posteitaliane.it"
+},
+{
+    "_id": {
+        "$oid": "693321a9035a33788aeb3e2e"
+    },
+    "title": "Export dei dati con priorità alla rappresentazione; export automatico programmato opzionale",
+    "description": "L'utente ha indicato che la priorità è la rappresentazione dei dati nella dashboard e che la funzionalità di export automatico programmato è un'aggiunta opzionale. In modo esplicito l'utente ha richiesto 'configurazione combinazioni e monitoraggio, export, gestione regole di accesso' e successivamente ha dichiarato che l'export automatico programmato è una funzionalità aggiuntiva. Pertanto il sistema deve almeno fornire la capacità di esportare i dati (manuale) dalla dashboard; la programmazione di export automatici è riconosciuta come funzionalità secondaria/aggiuntiva. Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.",
+    "code": "REQ-D-009",
+    "category": "DATI",
+    "priority": "medium",
+    "acceptance_criteria": [
+        "È disponibile almeno un meccanismo di export manuale dei dati dalla dashboard (es. scarica dataset visualizzato) in base alle autorizzazioni.",
+        "La rappresentazione dei dati nella dashboard è completa e consultabile prima di ogni export.",
+        "La possibilità di configurare export automatici è prevista come funzionalità opzionale/documentata ma non obbligatoria per il rilascio iniziale."
+    ],
+    "task_id": "692d9f5db263c2ca2850530c",
+    "chat_id": "6933204e035a33788aeb3e15",
+    "user_id": "iannot48@posteitaliane.it",
+    "name": "IANNOTTI ARTURO (MSG)",
+    "created_at": {
+        "$date": "2025-12-05T18:17:13.625Z"
+    },
+    "updated_at": {
+        "$date": "2025-12-10T09:54:16.164Z"
+    },
+    "creation_type": "AIGenerated",
+    "version": "v002-cc362ad45f14",
+    "updated_by": "maria243@posteitaliane.it"
+}
+]

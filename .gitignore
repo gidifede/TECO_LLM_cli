@@ -1,0 +1,12 @@
+# Credentials
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Output generati dalla pipeline
+output_test/
