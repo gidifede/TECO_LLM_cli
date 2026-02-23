@@ -468,8 +468,12 @@ def _generate_tc(
     tc_dir: Path,
     errors: list[dict],
     log_level: str = _LOG_VERBOSE,
+    ac_by_req: dict[str, list[str]] | None = None,
 ) -> list | None:
     """Genera test cases. Chiede all'utente l'ambito, poi elabora per-requisito.
+
+    ``ac_by_req`` mappa codice requisito → acceptance_criteria originali,
+    usato per la tracciabilità nei test cases generati.
 
     Restituisce la lista aggregata di test cases, o None se l'utente torna indietro.
     """
@@ -511,6 +515,8 @@ def _generate_tc(
             return None
 
         print(f"\n[pipeline] Generazione test cases per 1 user story...")
+        # Deriva il codice requisito dallo story_id (es. REQ-F-001.US01 → REQ-F-001)
+        us_req_code = us_code.rsplit(".US", 1)[0] if ".US" in us_code else us_code
         tc_result = process_us_to_tc(
             user_stories=tc_stories,
             system_prompt=system_prompt_tc,
@@ -518,6 +524,7 @@ def _generate_tc(
             temperature=args.temperature,
             max_tokens=args.max_tokens,
             verbose=verbose,
+            requirement_ac=(ac_by_req or {}).get(us_req_code),
         )
         _handle_tc_result(tc_result, tc_dir, errors, all_test_cases, us_code, log_level)
 
@@ -537,6 +544,7 @@ def _generate_tc(
                 temperature=args.temperature,
                 max_tokens=args.max_tokens,
                 verbose=verbose,
+                requirement_ac=(ac_by_req or {}).get(req_code),
             )
             _handle_tc_result(tc_result, tc_dir, errors, all_test_cases, req_code, log_level)
 
@@ -1200,6 +1208,12 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                         )
                     )
 
+                # Mappa codice requisito → acceptance_criteria per tracciabilità
+                ac_by_req = {
+                    r.get("code"): r.get("acceptance_criteria", [])
+                    for r in selected
+                }
+
                 # Fase 2: genera TC indiretti (da US)
                 if us_by_req:
                     effective_tc_dir = tc_dir
@@ -1226,6 +1240,7 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                             temperature=args.temperature,
                             max_tokens=args.max_tokens,
                             verbose=verbose,
+                            requirement_ac=ac_by_req.get(req_code),
                         )
                         _handle_tc_result(
                             tc_result, effective_tc_dir, errors,
@@ -1255,6 +1270,7 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                             temperature=args.temperature,
                             max_tokens=args.max_tokens,
                             verbose=verbose,
+                            requirement_ac=ac_by_req.get(req_code),
                         )
                         _handle_tc_result(
                             tc_result, tc_dir_persona, errors,
@@ -1439,6 +1455,18 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                     f"({len(us_by_req)} requisiti)"
                 )
 
+                # Carica requisiti per la tracciabilità AC
+                req_path = _ask_requirements_file(Path(args.requirements))
+                if req_path is None:
+                    continue
+                requirements_for_ac: list[dict] = json.loads(
+                    req_path.read_text(encoding="utf-8")
+                )
+                ac_by_req_tc: dict[str, list[str]] = {
+                    r.get("code", ""): r.get("acceptance_criteria", [])
+                    for r in requirements_for_ac
+                }
+
                 system_prompt_tc = (
                     prompts_path / PromptFiles.TC_FROM_US
                 ).read_text(encoding="utf-8")
@@ -1452,6 +1480,7 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                     tc_dir=tc_dir,
                     errors=errors,
                     log_level=log_level,
+                    ac_by_req=ac_by_req_tc,
                 )
 
                 if tc_result_list is not None:

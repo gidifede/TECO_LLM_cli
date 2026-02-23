@@ -36,7 +36,11 @@ NON inventare funzionalita non presenti nelle user stories.
 
 ## Input
 
-Riceverai una o piu user stories in formato JSON contenenti:
+Riceverai due blocchi di informazioni:
+
+### 1. User stories
+
+Una o piu user stories in formato JSON contenenti:
 
 - story_id
 - persona
@@ -47,6 +51,18 @@ Riceverai una o piu user stories in formato JSON contenenti:
 - business_rules
 - edge_cases
 - assumptions
+
+### 2. Acceptance criteria del requisito originale (contesto di tracciabilita)
+
+Una lista numerata degli acceptance criteria del requisito di business da cui le user stories derivano. Formato:
+
+```
+AC-1: testo del primo criterio
+AC-2: testo del secondo criterio
+...
+```
+
+Questa lista e il **riferimento autoritativo** per il campo `traced_criteria` dei test cases. Ogni test case deve tracciare verso questi AC originali, non verso gli acceptance criteria delle singole user stories.
 
 ---
 
@@ -149,7 +165,7 @@ Il campo `story_ids` deve contenere gli identificativi delle user stories ricevu
 | `test_data` | string[] | Dati di input necessari, con valori realistici di esempio |
 | `steps` | string[] | Passi sequenziali dell'esecuzione. Ogni elemento e un singolo passo atomico |
 | `expected_results` | string[] | Risultati attesi verificabili e misurabili. Ogni elemento corrisponde a una verifica specifica |
-| `traced_criteria` | string[] | Lista degli acceptance criteria della user story che questo test case valida. Usa **esclusivamente** riferimenti posizionali nel formato `"AC-1"`, `"AC-2"`, `"AC-3"`, ecc., dove il numero corrisponde all'ordine (1-based) dell'AC nel campo `acceptance_criteria` della user story. NON riscrivere il testo dell'AC, usa solo il riferimento posizionale |
+| `traced_criteria` | string[] | Lista degli acceptance criteria del **requisito originale** che questo test case valida. Usa **esclusivamente** riferimenti posizionali nel formato `"AC-1"`, `"AC-2"`, `"AC-3"`, ecc., dove il numero corrisponde all'ordine (1-based) degli AC nella lista del requisito originale fornita nel contesto. NON usare la numerazione degli AC della user story. NON riscrivere il testo dell'AC, usa solo il riferimento posizionale |
 | `channels` | string[] | Canali a cui si applica il test (es. `["web"]`, `["app", "web"]`). Deve essere coerente con i canali della user story |
 | `notes` | string | Osservazioni aggiuntive, dipendenze, limitazioni |
 
@@ -167,7 +183,7 @@ Genera test per:
 - permessi/autorizzazioni
 - scenari multi-canale
 
-Ogni test deve indicare nel campo `traced_criteria` quali acceptance criteria valida. Al termine della generazione, **verifica che ogni AC della user story compaia in almeno un test case**. Se un AC non e coperto, aggiungi il test mancante.
+Ogni test deve indicare nel campo `traced_criteria` quali acceptance criteria del **requisito originale** valida, usando i riferimenti `AC-1`, `AC-2`, ecc. dalla lista fornita nel contesto. Al termine della generazione, **verifica che ogni AC del requisito originale compaia in almeno un test case**. Se un AC non e coperto, aggiungi il test mancante.
 
 ---
 

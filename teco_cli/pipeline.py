@@ -233,8 +233,12 @@ def process_us_to_tc(
     temperature: float,
     max_tokens: int,
     verbose: bool,
+    requirement_ac: list[str] | None = None,
 ) -> dict:
     """Lista di user stories → test cases (chiamata LLM).
+
+    Se ``requirement_ac`` è fornito, viene aggiunto al messaggio utente
+    come contesto di tracciabilità per il campo ``traced_criteria``.
 
     Restituisce:
       {"status": "ok",       "test_cases": [...]}
@@ -245,6 +249,15 @@ def process_us_to_tc(
         f"Genera i test cases per le seguenti user stories:\n\n"
         f"{json.dumps(user_stories, indent=2, ensure_ascii=False)}"
     )
+
+    if requirement_ac:
+        ac_lines = "\n".join(
+            f"AC-{i}: {ac}" for i, ac in enumerate(requirement_ac, 1)
+        )
+        user_content += (
+            f"\n\n## Acceptance criteria del requisito originale\n\n"
+            f"{ac_lines}"
+        )
 
     if verbose:
         print(f"  [step 2] Invio a Azure OpenAI...")
@@ -702,6 +715,7 @@ def run_pipeline(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 verbose=verbose,
+                requirement_ac=req.get("acceptance_criteria"),
             )
 
             if tc_result["status"] == "rejected":
