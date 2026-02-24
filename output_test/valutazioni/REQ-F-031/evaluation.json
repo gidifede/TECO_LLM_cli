@@ -1,0 +1,143 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-031",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 68,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-031.TC01",
+        "detail": "Introduzione di canali specifici ('web') non esplicitati nel requisito (che parla genericamente di interfaccia/API)."
+      },
+      {
+        "test_id": "REQ-F-031.TC01",
+        "detail": "Precondizione su permessi utente per export ('L'utente ha permessi...') non menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.TC03",
+        "detail": "Comportamento di validazione input per intervallo non valido (blocco export + messaggio) non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.TC04",
+        "detail": "Gestione 'nessun tipo evento selezionato' con regole alternative (errore vs default tutti/nessuno) non specificata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.TC05",
+        "detail": "Assunzione sull'accettazione di intervallo puntuale (inizio=fine) e sul matching esatto del timestamp/precisione, non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.TC06",
+        "detail": "Dettagli operativi di schedulazione (esecuzione tra 2-5 minuti) e modalità di recupero file (area download/repository/endpoint) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.TC07",
+        "detail": "Scenario di indisponibilità servizio export, codici 5xx/timeout, stato job 'fallito' e requisito di non generare file parziale/corrotto: aspetti di resilienza/errore non richiesti dal requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 13,
+    "coherence_score": 47,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-031.US01.TC01",
+        "detail": "Attori/persona e contesto ('Team Marketing', 'dashboard') non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC01",
+        "detail": "Tipi evento non tracciabili agli esempi del requisito per i log di offerta (LOGIN, PURCHASE, PASSWORD_RESET)."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC02",
+        "detail": "Requisiti di autorizzazione/RBAC (utente senza permessi, ruolo 'Viewer Marketing') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC03",
+        "detail": "Comportamento di validazione input per intervallo non valido (blocco export + messaggio) non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC04",
+        "detail": "Scenario 'nessun evento corrispondente' e aspettativa 'file vuoto o sola intestazione/metadata' non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC05",
+        "detail": "Gestione 'nessun tipo evento selezionato' con politiche alternative (errore vs default tutti) non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC06",
+        "detail": "Validazione di 'tipo evento non riconosciuto' e manipolazione payload/API intercettabile: comportamento non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC07",
+        "detail": "Dettagli di feature flag ('feature flag ON'), strumenti per forzare scheduler/job: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC08",
+        "detail": "Indisponibilità servizio export/backend log, messaggistica errore e requisito di 'riprovare' senza blocchi: non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC01",
+        "detail": "Seconda persona ('Team Compliance') e tipi evento (ACCESS_GRANTED, ACCESS_DENIED, PROFILE_UPDATE) non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC02",
+        "detail": "Requisiti di autorizzazione/RBAC (utente 'Compliance Viewer' senza permessi) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC03",
+        "detail": "Comportamento di validazione input per intervallo non valido (blocco export + messaggio) non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC04",
+        "detail": "Validazione 'tipo evento non riconosciuto' e manipolazione payload/API: comportamento non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC05",
+        "detail": "Dettagli di feature flag e forzatura scheduler/job: non presenti nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-F-031.US01.TC01",
+        "detail": "Scenario sostanzialmente duplicato con REQ-F-031.US02.TC01 (export manuale con filtri temporali + multi-tipo e verifica contenuto)."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC02",
+        "detail": "Scenario duplicato con REQ-F-031.US02.TC02 (autorizzazione: utente senza permesso non può esportare)."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC03",
+        "detail": "Scenario duplicato con REQ-F-031.US02.TC03 (validazione intervallo temporale non valido)."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC06",
+        "detail": "Scenario duplicato con REQ-F-031.US02.TC04 (tipo evento non riconosciuto rifiutato)."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC07",
+        "detail": "Scenario molto simile a REQ-F-031.US02.TC05 (export programmato con filtri, se previsto)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-4). Tuttavia il set direct introduce meno informazioni non tracciabili al requisito (7 elementi aggiunti, nessuna ridondanza) rispetto al set indirect_persona che aggiunge molti dettagli non richiesti (ruoli/persona, RBAC, feature flag, validazioni extra, scenari non richiesti) e presenta anche 5 ridondanze. Di conseguenza il punteggio di coerenza del direct (68) risulta superiore a quello dell'indirect_persona (47)."
+  }
+}

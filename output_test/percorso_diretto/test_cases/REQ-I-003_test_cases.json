@@ -1,0 +1,177 @@
+[
+  {
+    "test_id": "REQ-I-003.TC01",
+    "title": "Applicazione di una regola di esclusione attiva in dashboard: proposta rimossa dal risultato del motore bundle",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con integrazione attiva tra motore bundle e dashboard marketing (endpoint/connector configurato).",
+      "Esiste un catalogo/proposte nel motore bundle che include almeno le proposte: P-BASE-001 e P-ADD-009.",
+      "È possibile attivare/disattivare regole marketing dalla dashboard esterna (accesso disponibile per test).",
+      "Nessuna altra regola marketing attiva che impatti P-ADD-009 (per isolare il test)."
+    ],
+    "test_data": [
+      "Cliente: C-10001 (segmento: STANDARD)",
+      "Contesto richiesta bundle: canale=web, prodotto_base=P-BASE-001, data_richiesta=2026-02-23",
+      "Regola dashboard: R-EXC-ADD-009 (tipo=esclusione proposta, target_proposta=P-ADD-009, stato=ATTIVA, ambito=globale)"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing esterna con un utente abilitato alla gestione regole.",
+      "Creare o aggiornare la regola R-EXC-ADD-009 impostando stato=ATTIVA e target_proposta=P-ADD-009.",
+      "Salvare e pubblicare/applicare la regola in dashboard.",
+      "Invocare il motore bundle per il cliente C-10001 con prodotto_base=P-BASE-001 e canale=web.",
+      "Acquisire l'elenco delle proposte restituite dal motore bundle."
+    ],
+    "expected_results": [
+      "La proposta P-ADD-009 non è presente nell'elenco delle proposte restituite dal motore bundle.",
+      "Le altre proposte ammissibili (diverse da P-ADD-009) sono restituite normalmente, senza errori di elaborazione.",
+      "Nei log/telemetria del motore (se disponibili) risulta una lettura/consultazione delle regole dalla dashboard per la richiesta eseguita (evidenza di integrazione)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (utente marketing e consumatore del motore bundle) e il canale 'web' sono stati inferiti dal contesto. Il requisito non specifica formato/latency di propagazione delle regole: si assume che la regola sia efficace dopo la pubblicazione in dashboard."
+  },
+  {
+    "test_id": "REQ-I-003.TC02",
+    "title": "Disattivazione della regola in dashboard: la proposta precedentemente esclusa ricompare nel risultato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Stesse precondizioni di REQ-I-003.TC01.",
+      "La regola R-EXC-ADD-009 esiste ed è attualmente ATTIVA in dashboard.",
+      "Il motore bundle è raggiungibile e funzionante."
+    ],
+    "test_data": [
+      "Cliente: C-10001 (segmento: STANDARD)",
+      "Contesto richiesta bundle: canale=web, prodotto_base=P-BASE-001, data_richiesta=2026-02-23",
+      "Regola dashboard: R-EXC-ADD-009 (stato=DISATTIVA)"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing esterna con un utente abilitato alla gestione regole.",
+      "Impostare la regola R-EXC-ADD-009 in stato=DISATTIVA.",
+      "Salvare e pubblicare/applicare la modifica in dashboard.",
+      "Invocare il motore bundle per il cliente C-10001 con prodotto_base=P-BASE-001 e canale=web.",
+      "Acquisire l'elenco delle proposte restituite dal motore bundle."
+    ],
+    "expected_results": [
+      "La proposta P-ADD-009 è presente nell'elenco delle proposte restituite dal motore bundle (salvo altre regole attive non considerate in questo test).",
+      "Nei log/telemetria del motore (se disponibili) risulta una lettura/consultazione delle regole dalla dashboard per la richiesta eseguita."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce la priorità tra più regole o la presenza di caching; il test assume che la disattivazione sia effettiva dopo la pubblicazione e che non vi sia cache non invalidata."
+  },
+  {
+    "test_id": "REQ-I-003.TC03",
+    "title": "Applicazione di una regola di inclusione/personalizzazione: modifica dell'ordine o della visibilità delle proposte in base a regola dashboard",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Integrazione attiva tra motore bundle e dashboard marketing.",
+      "Esistono almeno due proposte alternative: P-ADD-010 e P-ADD-011 entrambe normalmente eleggibili per C-20002.",
+      "La dashboard supporta una regola che influenza la selezione (es. inclusione forzata o priorità) e tale regola è consultata dal motore bundle."
+    ],
+    "test_data": [
+      "Cliente: C-20002 (segmento: PREMIUM)",
+      "Contesto richiesta bundle: canale=web, prodotto_base=P-BASE-001, data_richiesta=2026-02-23",
+      "Regola dashboard: R-INCL-ADD-011 (tipo=inclusione/prioritizzazione, target_proposta=P-ADD-011, stato=ATTIVA, ambito=segmento PREMIUM)"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing esterna con un utente abilitato alla gestione regole.",
+      "Creare o aggiornare la regola R-INCL-ADD-011 impostando stato=ATTIVA e ambito=segmento PREMIUM.",
+      "Salvare e pubblicare/applicare la regola in dashboard.",
+      "Invocare il motore bundle per il cliente C-20002 con prodotto_base=P-BASE-001 e canale=web.",
+      "Acquisire l'elenco delle proposte restituite e l'eventuale ordinamento/priorità."
+    ],
+    "expected_results": [
+      "La proposta P-ADD-011 risulta inclusa tra le proposte presentate al cliente C-20002.",
+      "Se la regola è di prioritizzazione, P-ADD-011 risulta in posizione più alta rispetto a P-ADD-010 (o con indicazione di priorità coerente con l'implementazione).",
+      "Nei log/telemetria del motore (se disponibili) risulta una lettura/consultazione delle regole dalla dashboard per la richiesta eseguita."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita 'campagne, esclusioni, personalizzazioni' ma non definisce il modello dati delle regole né l'effetto esatto (ordinamento vs inclusione). Il test interpreta la 'personalizzazione' come inclusione/prioritizzazione verificabile. Adeguare l'assert specifico (posizione/flag) alla UI/risposta API effettiva del motore."
+  },
+  {
+    "test_id": "REQ-I-003.TC04",
+    "title": "Gestione indisponibilità dashboard marketing: il motore bundle segnala errore di integrazione (timeout/5xx) senza duplicare logiche locali",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Integrazione attiva tra motore bundle e dashboard marketing.",
+      "Possibilità di simulare indisponibilità della dashboard (es. spegnimento servizio, blocco rete, mock che restituisce 503 o timeout).",
+      "Esiste almeno una regola attiva in dashboard che impatterebbe la risposta (es. esclusione P-ADD-009) per rendere il consulto 'applicabile'."
+    ],
+    "test_data": [
+      "Cliente: C-10001 (segmento: STANDARD)",
+      "Contesto richiesta bundle: canale=web, prodotto_base=P-BASE-001",
+      "Simulazione: endpoint dashboard marketing restituisce HTTP 503 oppure timeout a 10s"
+    ],
+    "steps": [
+      "Attivare in dashboard una regola che impatta la selezione (es. esclusione P-ADD-009) e pubblicarla.",
+      "Configurare la simulazione di indisponibilità della dashboard (HTTP 503 o timeout).",
+      "Invocare il motore bundle per il cliente C-10001 con prodotto_base=P-BASE-001 e canale=web.",
+      "Raccogliere la risposta del motore bundle e gli eventuali log/metriche."
+    ],
+    "expected_results": [
+      "Il motore bundle non restituisce una risposta 'silenziosamente' incoerente: la richiesta fallisce con un errore tecnico chiaramente identificabile (es. codice errore/HTTP 5xx o messaggio di integrazione) oppure con un comportamento di fallback documentato e tracciabile (se previsto dall'implementazione).",
+      "Nei log/telemetria è presente evidenza del fallimento di chiamata/consultazione alla dashboard (timeout/503) correlabile alla richiesta.",
+      "Non risultano applicate regole 'duplicate' localmente in assenza della dashboard (assenza di evidenze di un motore regole locale che sostituisca la dashboard), salvo meccanismi esplicitamente documentati."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento atteso in caso di indisponibilità della dashboard (fallback vs errore). Questo test verifica almeno la tracciabilità e l'assenza di applicazione 'silenziosa' non controllata. Definire con gli stakeholder la policy di resilienza per rendere l'assert completamente deterministico."
+  },
+  {
+    "test_id": "REQ-I-003.TC05",
+    "title": "Verifica documentazione: interdipendenza operativa e punti di lettura regole dalla dashboard sono descritti in documentazione tecnica",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "È disponibile la documentazione tecnica aggiornata del motore bundle (es. README, ADR, wiki, specifica integrazione).",
+      "È disponibile la documentazione/contratto di integrazione con la dashboard marketing (es. OpenAPI, endpoint, eventi, mapping regole)."
+    ],
+    "test_data": [
+      "Documentazione tecnica motore bundle: versione rilasciata corrente (es. v1.8.0) o commit/tag di riferimento",
+      "Sezione attesa: 'Integrazione Dashboard Marketing' (o equivalente)"
+    ],
+    "steps": [
+      "Aprire la documentazione tecnica del motore bundle relativa all'integrazione con la dashboard marketing.",
+      "Verificare che sia descritta l'interdipendenza operativa tra motore bundle e dashboard (uso delle regole esterne per modificare/escludere proposte).",
+      "Individuare e verificare i punti del flusso/architettura in cui il motore legge/consulta e rispetta le regole (es. endpoint chiamati, eventi consumati, componenti responsabili, timing).",
+      "Verificare che siano riportati almeno: modalità di recupero regole (pull/push), identificativi/parametri principali, e gestione errori/caching se presente."
+    ],
+    "expected_results": [
+      "La documentazione descrive esplicitamente che il motore bundle utilizza le regole provenienti dalla dashboard marketing per modificare/escludere proposte (interdipendenza operativa).",
+      "La documentazione elenca in modo verificabile i punti del sistema in cui il motore legge/rispetta le regole (componenti/moduli e/o endpoint/eventi).",
+      "Le informazioni sono sufficienti a tracciare l'origine delle regole (dashboard) e a evitare duplicazioni di logica nel motore (esplicitazione del principio di non duplicazione)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito include criteri di accettazione legati a 'documentazione' (AC-1 e AC-3) che sono parzialmente dichiarativi; il test li rende verificabili tramite checklist su contenuti minimi attesi. Il canale è stato inferito: l'oggetto del requisito è l'integrazione back-end, quindi il canale è poco rilevante."
+  }
+]

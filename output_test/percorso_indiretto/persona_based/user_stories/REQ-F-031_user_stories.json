@@ -1,0 +1,71 @@
+[
+  {
+    "story_id": "REQ-F-031.US01",
+    "title": "Applicare filtri temporali e per tipo evento nell’export dei log (Marketing)",
+    "persona": "Team Marketing",
+    "goal": "selezionare in fase di esportazione dei log un intervallo temporale e uno o più tipi di evento",
+    "benefit": "ottenere dataset esportati mirati per analisi e verifiche su periodi/categorie specifiche",
+    "user_story": "Come Team Marketing\nVoglio applicare in fase di export dei log un intervallo temporale e uno o più tipi di evento\nIn modo che il file esportato contenga solo i dati utili alle mie analisi e verifiche",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO avvio un export manuale dei log ALLORA posso specificare una data/ora di inizio e una data/ora di fine come filtro temporale.",
+      "QUANDO avvio un export manuale dei log ALLORA posso selezionare uno o più tipi di evento da includere nell’export.",
+      "QUANDO confermo l’export con filtri impostati ALLORA il file esportato contiene esclusivamente eventi che ricadono nell’intervallo temporale selezionato e appartengono ai tipi evento selezionati.",
+      "QUANDO configuro un export programmato (se disponibile) ALLORA posso impostare gli stessi filtri (intervallo temporale e tipi evento) e il file generato rispetta tali filtri."
+    ],
+    "business_rules": [
+      "I filtri minimi supportati in export sono: intervallo temporale (data/ora inizio-fine) e tipologia di evento.",
+      "È consentita la selezione di uno o più tipi di evento per singolo export."
+    ],
+    "edge_cases": [
+      "Intervallo temporale non valido (fine precedente all’inizio): l’export non parte e viene mostrato un errore.",
+      "Intervallo temporale senza eventi corrispondenti: l’export produce un file vuoto o con sola intestazione (da definire).",
+      "Nessun tipo evento selezionato: comportamento da definire (blocco con errore vs default “tutti i tipi”).",
+      "Tipi evento selezionati non riconosciuti (es. valore non valido via API): l’export viene rifiutato con errore di validazione.",
+      "Export programmato non disponibile nel rilascio: la parte “programmato” non è testabile e va esclusa/feature-flag."
+    ],
+    "assumptions": [
+      "L’export è fruibile dal Team Marketing tramite dashboard e/o API, coerentemente con il requisito che cita interfaccia/API.",
+      "Il formato del file esportato (CSV/JSON/altro) non è specificato dal requisito e non impatta la verifica dei filtri.",
+      "Per “intervallo temporale” si intende il timestamp dell’evento nei log (non l’ora di esecuzione dell’export)."
+    ],
+    "notes": "AC condivisi con REQ-F-031.US02 (Team Compliance) perché il comportamento di filtro in export è trasversale. L’AC 'export programmato (se previsto)' è condizionale: si assume esistenza di export programmato solo se presente nel prodotto; in caso contrario va gestito come out of scope o dietro configurazione."
+  },
+  {
+    "story_id": "REQ-F-031.US02",
+    "title": "Filtrare l’export dei log per supportare audit (Compliance)",
+    "persona": "Team Compliance",
+    "goal": "esportare log applicando filtri per intervallo temporale e tipologia di evento",
+    "benefit": "agevolare attività di audit e controllo focalizzando l’estrazione su periodi e categorie rilevanti",
+    "user_story": "Come Team Compliance\nVoglio esportare i log applicando filtri per intervallo temporale e tipologia di evento\nIn modo che possa effettuare audit mirati su periodi o categorie specifiche",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO avvio un export manuale dei log ALLORA posso specificare una data/ora di inizio e una data/ora di fine come filtro temporale.",
+      "QUANDO avvio un export manuale dei log ALLORA posso selezionare uno o più tipi di evento da includere nell’export.",
+      "QUANDO confermo l’export con filtri impostati ALLORA il file esportato contiene esclusivamente eventi che ricadono nell’intervallo temporale selezionato e appartengono ai tipi evento selezionati.",
+      "QUANDO configuro un export programmato (se disponibile) ALLORA posso impostare gli stessi filtri (intervallo temporale e tipi evento) e il file generato rispetta tali filtri."
+    ],
+    "business_rules": [
+      "I filtri minimi supportati in export sono: intervallo temporale (data/ora inizio-fine) e tipologia di evento.",
+      "È consentita la selezione di uno o più tipi di evento per singolo export."
+    ],
+    "edge_cases": [
+      "Intervallo temporale non valido (fine precedente all’inizio): l’export non parte e viene mostrato un errore.",
+      "Intervallo temporale senza eventi corrispondenti: l’export produce un file vuoto o con sola intestazione (da definire).",
+      "Nessun tipo evento selezionato: comportamento da definire (blocco con errore vs default “tutti i tipi”).",
+      "Tipi evento selezionati non riconosciuti (es. valore non valido via API): l’export viene rifiutato con errore di validazione.",
+      "Export programmato non disponibile nel rilascio: la parte “programmato” non è testabile e va esclusa/feature-flag."
+    ],
+    "assumptions": [
+      "Il Team Compliance accede alle funzionalità di visualizzazione/esportazione log tramite dashboard dedicata, coerentemente con la definizione persona.",
+      "Il requisito non specifica i valori ammessi per 'tipologia di evento' oltre agli esempi: si assume esistenza di un elenco controllato (enumerazione) selezionabile in UI/API."
+    ],
+    "notes": "AC condivisi con REQ-F-031.US01 (Team Marketing) perché il comportamento di filtro in export è trasversale. L’AC 'export programmato (se previsto)' richiede chiarimento di roadmap/feature: se non implementato, va marcato come non applicabile o gestito con flag."
+  }
+]

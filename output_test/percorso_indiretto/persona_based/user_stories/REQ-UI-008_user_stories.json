@@ -1,0 +1,40 @@
+[
+  {
+    "story_id": "REQ-UI-008.US01",
+    "title": "Visualizzare nel pop-up i contenuti minimi della proposta (nome, immagine, prezzo scontato, sconto)",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare nel pop-up di proposta il nome del prodotto suggerito, l'immagine rappresentativa, il prezzo scontato e il valore dello sconto suggerito in modo chiaro e leggibile",
+    "benefit": "valutare rapidamente e correttamente la convenienza della proposta prima di proseguire nel percorso digitale",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare nel pop-up di proposta il nome del prodotto suggerito, l'immagine rappresentativa, il prezzo scontato e il valore dello sconto suggerito in modo chiaro e leggibile\nIn modo che io possa valutare rapidamente e correttamente la convenienza della proposta prima di proseguire nel percorso digitale",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO viene mostrato un pop-up di proposta sul canale digitale ALLORA il pop-up visualizza il nome del prodotto suggerito.",
+      "QUANDO viene mostrato un pop-up di proposta sul canale digitale ALLORA il pop-up visualizza un'immagine rappresentativa del prodotto suggerito.",
+      "QUANDO viene mostrato un pop-up di proposta sul canale digitale ALLORA il pop-up visualizza il prezzo scontato del prodotto suggerito.",
+      "QUANDO viene mostrato un pop-up di proposta sul canale digitale ALLORA il pop-up visualizza l'indicazione del valore dello sconto suggerito.",
+      "QUANDO il pop-up è visualizzato su App ALLORA testi e prezzi risultano leggibili e conformi alle linee guida grafiche (dimensioni e contrasto).",
+      "QUANDO il pop-up è visualizzato su Web ALLORA testi e prezzi risultano leggibili e conformi alle linee guida grafiche (dimensioni e contrasto).",
+      "QUANDO vengono eseguiti test funzionali sul pop-up ALLORA viene verificata la presenza di nome, immagine, prezzo scontato e valore dello sconto e la correttezza dei valori mostrati rispetto ai dati forniti dal sistema."
+    ],
+    "business_rules": [
+      "Il pop-up deve includere obbligatoriamente: nome prodotto, immagine prodotto, prezzo scontato, valore dello sconto suggerito.",
+      "Le informazioni devono essere chiaramente visibili e leggibili su entrambi i canali digitali (App e Web) nel rispetto delle linee guida grafiche (dimensioni e contrasto)."
+    ],
+    "edge_cases": [
+      "Immagine prodotto non disponibile: il pop-up non può essere mostrato oppure deve usare un placeholder conforme alle linee guida (da chiarire).",
+      "Prezzo scontato o valore sconto non valorizzati: il pop-up non deve risultare incompleto (comportamento atteso da chiarire).",
+      "Testi troppo lunghi (nome prodotto): gestione di truncation/wrapping per mantenere leggibilità (da chiarire in base alle linee guida).",
+      "Differenze di rendering tra dispositivi/app browser: verificare leggibilità minima su risoluzioni supportate (elenco device/browser non fornito)."
+    ],
+    "assumptions": [
+      "Il requisito si applica ai pop-up di proposta mostrati sui canali digitali (App e Web) come indicato nei criteri di accettazione.",
+      "La definizione di 'linee guida grafiche' (dimensioni, contrasto) è disponibile in un documento/UI kit esterno e verrà usata come riferimento per i test.",
+      "La 'correttezza dei valori mostrati' è verificata confrontando i valori visualizzati con i dati di input forniti al canale (es. payload/DTO del pop-up), poiché la fonte dati non è specificata nel requisito."
+    ],
+    "notes": "Requisito focalizzato su contenuto e leggibilità del pop-up lato canali digitali. Dipendenza esterna: disponibilità delle linee guida grafiche/UI kit per rendere verificabile la conformità (dimensioni/contrasto)."
+  }
+]

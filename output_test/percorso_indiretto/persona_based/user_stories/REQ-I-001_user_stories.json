@@ -1,0 +1,34 @@
+[
+  {
+    "story_id": "REQ-I-001.US01",
+    "title": "Ricevere raccomandazioni prioritarie da sistema esterno con metadati",
+    "persona": "Motore di Offerte",
+    "goal": "ricevere tramite un canale di integrazione una lista ordinata di raccomandazioni da un sistema esterno, includendo cluster cliente e motivazione",
+    "benefit": "utilizzare un input primario esterno già prioritizzato e arricchito per elaborare le proposte secondo le regole interne configurate",
+    "user_story": "Come Motore di Offerte\nVoglio ricevere tramite un canale di integrazione una lista ordinata di raccomandazioni già prioritizzate da un sistema esterno, includendo cluster cliente e motivazione\nIn modo che possa trattarle come input primario ed elaborarle rispettando le configurazioni locali",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il sistema esterno invia una lista ordinata di raccomandazioni sul canale di integrazione previsto ALLORA il Motore di Offerte riceve l'elenco mantenendo l'ordine/priorità fornito.",
+      "QUANDO il Motore di Offerte riceve una raccomandazione ALLORA il payload acquisito include i campi: identificatore prodotto, ordine/priorità, cluster cliente e motivazione della raccomandazione.",
+      "QUANDO il Motore di Offerte elabora le raccomandazioni ricevute ALLORA applica le configurazioni locali disponibili (es. filtri, matrice, regole di frequenza) prima di produrre l'output di proposta."
+    ],
+    "business_rules": [
+      "Le raccomandazioni provenienti dal sistema esterno sono trattate come input primario per l'elaborazione del Motore.",
+      "L'elaborazione delle raccomandazioni deve rispettare le configurazioni locali del Motore (es. filtri, matrice, regole di frequenza) definite in requisiti separati."
+    ],
+    "edge_cases": [
+      "Lista di raccomandazioni vuota: il Motore riceve correttamente la richiesta ma non genera elementi elaborabili a partire da tale input.",
+      "Presenza di raccomandazioni con identificatore prodotto mancante/non valorizzato: il Motore non può elaborare quella raccomandazione e deve gestire l'anomalia senza bloccare l'intero batch.",
+      "Ordine/priorità duplicato o non coerente (es. due elementi con stessa posizione): il Motore gestisce l'anomalia preservando l'ordine ricevuto o applicando una regola deterministica interna (da definire).",
+      "Cluster cliente o motivazione non valorizzati: il Motore accetta comunque la raccomandazione se l'identificatore prodotto e la priorità sono presenti (comportamento di fallback da confermare).",
+      "Canale di integrazione non disponibile/errore di trasporto: il Motore non riceve l'input e deve gestire l'errore di integrazione (retry/errore applicativo da definire)."
+    ],
+    "assumptions": [
+      "Il requisito non nomina la persona/sistema esterno: si assume esista un sistema esterno di prioritizzazione che invia le raccomandazioni al Motore tramite un canale di integrazione.",
+      "Il formato tecnico del canale (API sincrona, evento, batch) non è specificato: si assume verrà definito in analisi tecnica.",
+      "Non sono specificate regole di validazione obbligatorietà dei campi (es. cluster/motivazione): si assume che identificatore prodotto e priorità siano minimi per l'elaborazione, mentre gli altri campi siano opzionali fino a specifica."
+    ],
+    "notes": "Il requisito coinvolge principalmente l'attore 'Motore di Offerte'. I riferimenti alle configurazioni locali (filtri/matrice/regole di frequenza) sono dipendenze da requisiti esterni non inclusi qui; l'AC relativo è stato reso testabile assumendo che tali configurazioni siano già disponibili e applicabili in fase di elaborazione."
+  }
+]

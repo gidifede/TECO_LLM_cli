@@ -1,0 +1,145 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-008",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 68,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-008.TC01",
+        "detail": "Introduzione di ruolo specifico 'Auditor', utente 'auditor1', UI 'sezione consultazione log' e azione 'Esporta' non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-D-008.TC01",
+        "detail": "Assunzione di filtro temporale 'ultime 24 ore' e di almeno 3 record; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-008.TC01",
+        "detail": "Expected su 'apribile con Excel/LibreOffice senza errori di parsing' e intestazione/colonne specifiche: il requisito richiede validità standard e campi richiesti, ma non impone tool o struttura tabellare dettagliata."
+      },
+      {
+        "test_id": "REQ-D-008.TC02",
+        "detail": "Assunzione che il formato Excel sia specificamente XLSX e che esista un 'foglio' con intestazioni; il requisito dice 'CSV/excel' ma non specifica estensione/struttura."
+      },
+      {
+        "test_id": "REQ-D-008.TC03",
+        "detail": "Dettaglio tecnico di validazione tramite 'parser JSON standard' e assunzioni su presenza/assenza del campo 'utente' (assente vs null) non determinate dal requisito (che richiede solo 'utente quando presente' e JSON valido)."
+      },
+      {
+        "test_id": "REQ-D-008.TC04",
+        "detail": "Dettaglio tecnico di validazione tramite 'parser XML standard' e scelta elementi/attributi; il requisito richiede XML ben formato ma non impone rappresentazione."
+      },
+      {
+        "test_id": "REQ-D-008.TC05",
+        "detail": "Tentativo di chiamata diretta a un endpoint e citazione HTTP 403: il requisito non menziona API/endpoint né codici di errore."
+      },
+      {
+        "test_id": "REQ-D-008.TC06",
+        "detail": "Assunzione che esista una specifica 'funzionalità file di esempio' in UI/area documentazione e che per Excel esista un file di esempio separato: il requisito richiede scaricabilità di un esempio per ciascun formato, ma non il canale/UI."
+      },
+      {
+        "test_id": "REQ-D-008.TC08",
+        "detail": "Scenario di indisponibilità del 'servizio di generazione file', gestione errori e resilienza UI: non previsto dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'assicurando compatibilità con i sistemi di audit già in uso' e 'processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste'",
+        "detail": "Nessun test verifica esplicitamente la compatibilità/consumabilità da parte di sistemi di audit esterni (es. import in un sistema di audit, o verifica di vincoli richiesti da tali sistemi)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-008.TC03",
+          "REQ-D-008.TC07"
+        ],
+        "detail": "Entrambi verificano export JSON e presenza campi minimi (evento, timestamp, utente quando presente); TC07 è in gran parte un sottoinsieme/specializzazione di TC03."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 48,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-008.US01.TC01",
+        "detail": "Introduzione di 'dashboard', sezione 'Export log' e canale 'dashboard' non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC01",
+        "detail": "Assunzione 'area download/esportazioni' e requisito che i file 'non risultino vuoti' se esistono log: il requisito non richiede non-vuotezza, solo validità standard e campi richiesti."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC01",
+        "detail": "Accetta 'CSV o Excel' come alternativa (se CSV non disponibile): il requisito indica supporto CSV/excel (entrambi citati) e non esplicita che uno possa sostituire l'altro."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC02",
+        "detail": "Ruolo/organizzazione 'Team Compliance' e permesso 'export abilitato/disabilitato' non esplicitati nel requisito (che parla genericamente di utenti autorizzati)."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC03",
+        "detail": "Vincolo/aspettativa su formato timestamp 'es. ISO-8601' e dati di esempio specifici: il requisito non definisce formato timestamp."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC05",
+        "detail": "Assunzioni su 'colonne fisse' vs 'struttura dinamica' per CSV/Excel: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC07",
+        "detail": "Scenario di rifiuto formato non supportato (YAML/TXT), codici 400, e requisito di non esporre stack trace: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC08",
+        "detail": "Gestione caratteri speciali/escaping CSV e preservazione caratteri: non richiesto esplicitamente dal requisito (che parla di validità standard, non di casi speciali di escaping)."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC09",
+        "detail": "Scenario dataset molto grande (500.000 record), timeout/SLA e gestione file parziali: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC10",
+        "detail": "Assunzione che lo scarico file di esempio richieda la stessa autorizzazione dell'export: il requisito non lo specifica."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'assicurando compatibilità con i sistemi di audit già in uso' e 'processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste'",
+        "detail": "Come nel set direct, manca una verifica esplicita di compatibilità con sistemi di audit esterni (integrazione/import o vincoli specifici richiesti)."
+      },
+      {
+        "source": "AC-2: 'I file JSON, XML, CSV/excel sono validi ...'",
+        "detail": "La validazione esplicita di CSV/Excel rispetto a uno 'standard' è trattata come 'apribile' e presenza colonne; non c'è una verifica oggettiva di conformità (es. CSV RFC/dialetto definito) né una chiara validazione del formato Excel oltre l'apertura."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-008.US01.TC03",
+          "REQ-D-008.US01.TC04",
+          "REQ-D-008.US01.TC05"
+        ],
+        "detail": "Tre TC molto simili che ripetono lo stesso pattern (export + verifica campi minimi + utente quando presente) cambiando solo il formato; ridondanza parziale rispetto a un approccio parametrico."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (3/3), ma il set direct introduce meno informazioni non tracciabili (meno 'added_info') e ha meno elementi extra-requisito (es. formati non supportati, dataset enormi, sicurezza/stack trace). Inoltre nel set indirect_persona c'e una deviazione potenziale sull'interpretazione di 'CSV/excel' come alternativa (TC01) e piu scenari non richiesti, che abbassano maggiormente la coerenza. Per questo il punteggio del direct (68) supera quello dell'indirect_persona (48)."
+  }
+}

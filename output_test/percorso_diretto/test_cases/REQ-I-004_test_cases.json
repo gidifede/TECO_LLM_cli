@@ -1,0 +1,239 @@
+[
+  {
+    "test_id": "REQ-I-004.TC01",
+    "title": "Verifica in ambiente di integrazione test che tutti i canali leggano le regole dalla stessa matrice centralizzata",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di integrazione test disponibile",
+      "Servizio/DB della matrice centralizzata raggiungibile dai canali",
+      "Canali disponibili: App, Web, OSP/OFE (o equivalenti in ambiente di test)",
+      "Logging/tracing abilitato sui canali o sul servizio matrice per identificare l'origine delle regole (es. endpoint/connection string/correlation-id)"
+    ],
+    "test_data": [
+      "Matrice centralizzata: regola 'frequenza_presentazione' impostata a '1 volta ogni 7 giorni' per Prodotto=PROD_X, Segmento=SEG_A",
+      "Identificativo cliente: CL_10001 appartenente a Segmento=SEG_A",
+      "Offerta/Proposizione: OFF_X associata a Prodotto=PROD_X"
+    ],
+    "steps": [
+      "Impostare nella matrice centralizzata la regola 'frequenza_presentazione=7 giorni' per PROD_X/SEG_A",
+      "Eseguire dal canale App l'azione che richiede la valutazione della regola (tentativo di presentazione OFF_X a CL_10001)",
+      "Raccogliere dal canale App evidenze di lettura regole (log/tracing con riferimento a matrice centralizzata e versione/timestamp se presente)",
+      "Eseguire dal canale Web la stessa azione (tentativo di presentazione OFF_X a CL_10001)",
+      "Raccogliere dal canale Web evidenze di lettura regole (log/tracing con riferimento a matrice centralizzata e versione/timestamp se presente)",
+      "Eseguire dal canale OSP/OFE la stessa azione (tentativo di presentazione OFF_X a CL_10001)",
+      "Raccogliere dal canale OSP/OFE evidenze di lettura regole (log/tracing con riferimento a matrice centralizzata e versione/timestamp se presente)",
+      "Confrontare per tutti i canali l'origine della regola (stessa fonte/endpoint/istanza) e i metadati di configurazione (versione/timestamp) utilizzati"
+    ],
+    "expected_results": [
+      "Per App, Web e OSP/OFE risulta una chiamata/lettura alla stessa matrice centralizzata (stesso endpoint/istanza o medesimo identificativo sorgente configurato)",
+      "Per App, Web e OSP/OFE la regola applicata corrisponde al valore presente nella matrice centralizzata ('7 giorni')",
+      "Non risultano letture da fonti locali/alternative di configurazione (es. file locali, tabelle canale-specifiche) per la regola testata"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app",
+      "web",
+      "osp/ofe"
+    ],
+    "notes": "Gli attori/canali sono stati inferiti dalla descrizione (App, Web, OSP/OFE). Il requisito non specifica come provare 'medesima fonte': si assume disponibilità di log/tracing o metadati di configurazione per dimostrare l'origine della lettura."
+  },
+  {
+    "test_id": "REQ-I-004.TC02",
+    "title": "Coerenza E2E su due canali: stessa configurazione produce lo stesso esito di frequenza presentazione",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente E2E disponibile con almeno due canali distinti (App e sportello/OSP-OFE)",
+      "Matrice centralizzata popolata e consultabile da entrambi i canali",
+      "Cliente CL_20002 esistente e profilato con Segmento=SEG_B",
+      "Esiste una funzionalità che tenta la presentazione di OFF_Y al cliente e applica la regola di frequenza"
+    ],
+    "test_data": [
+      "Matrice centralizzata: regola 'frequenza_presentazione=30 giorni' per Prodotto=PROD_Y, Segmento=SEG_B",
+      "Cliente: CL_20002 (Segmento=SEG_B)",
+      "Offerta: OFF_Y (Prodotto=PROD_Y)",
+      "Storico presentazioni: una presentazione di OFF_Y a CL_20002 registrata in data odierna (T0)"
+    ],
+    "steps": [
+      "Impostare nella matrice centralizzata 'frequenza_presentazione=30 giorni' per PROD_Y/SEG_B",
+      "Assicurare che nello storico presentazioni risulti OFF_Y presentata a CL_20002 in data T0 (oggi)",
+      "Da canale App, tentare una nuova presentazione di OFF_Y a CL_20002 in data T0",
+      "Registrare l'esito e l'eventuale messaggio/motivazione di blocco per la frequenza",
+      "Da canale sportello (OSP/OFE), tentare una nuova presentazione di OFF_Y a CL_20002 in data T0",
+      "Registrare l'esito e l'eventuale messaggio/motivazione di blocco per la frequenza",
+      "Confrontare gli esiti tra i due canali"
+    ],
+    "expected_results": [
+      "Il canale App blocca la presentazione perché non sono trascorsi 30 giorni da T0",
+      "Il canale sportello (OSP/OFE) blocca la presentazione per la stessa motivazione (frequenza 30 giorni non rispettata)",
+      "Gli esiti (consentito/non consentito) risultano coerenti tra i due canali a parità di configurazione e dati"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "app",
+      "osp/ofe"
+    ],
+    "notes": "Il requisito non specifica il formato dei messaggi o codici errore: la verifica si concentra su esito funzionale coerente (blocco/consenso) e motivazione riconducibile alla regola di frequenza."
+  },
+  {
+    "test_id": "REQ-I-004.TC03",
+    "title": "Propagazione modifiche: aggiornamento della matrice centrale reso disponibile ai canali secondo politica definita (scenario 'immediato')",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di integrazione test disponibile",
+      "Matrice centralizzata modificabile con tracciamento di versione/timestamp",
+      "Canali App e Web disponibili e configurati per consultare la matrice",
+      "Politica di propagazione definita come 'immediata' oppure canali configurati senza cache o con cache invalidabile"
+    ],
+    "test_data": [
+      "Configurazione iniziale: 'frequenza_presentazione=7 giorni' per PROD_Z/SEG_C",
+      "Configurazione aggiornata: 'frequenza_presentazione=1 giorno' per PROD_Z/SEG_C",
+      "Cliente: CL_30003 (Segmento=SEG_C)",
+      "Offerta: OFF_Z (Prodotto=PROD_Z)",
+      "Storico presentazioni: OFF_Z presentata a CL_30003 in data T0 (oggi)"
+    ],
+    "steps": [
+      "Impostare in matrice 'frequenza_presentazione=7 giorni' per PROD_Z/SEG_C",
+      "Da canale App, tentare presentazione OFF_Z a CL_30003 in data T0 e registrare l'esito",
+      "Aggiornare la matrice impostando 'frequenza_presentazione=1 giorno' per PROD_Z/SEG_C e annotare versione/timestamp della modifica",
+      "Da canale App, ripetere il tentativo di presentazione OFF_Z a CL_30003 in data T0 e registrare l'esito e la versione/timestamp letti",
+      "Da canale Web, eseguire il tentativo di presentazione OFF_Z a CL_30003 in data T0 e registrare l'esito e la versione/timestamp letti"
+    ],
+    "expected_results": [
+      "Con configurazione iniziale (7 giorni), la presentazione in T0 risulta bloccata per frequenza non rispettata",
+      "Dopo l'aggiornamento (1 giorno), i canali App e Web applicano la nuova regola senza utilizzare il valore precedente",
+      "App e Web mostrano/evidenziano (via log/tracing o metadati) la lettura della versione/timestamp aggiornati della matrice"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "L'AC-3 è parzialmente non verificabile senza una 'politica di propagazione' formalizzata (immediata vs a intervalli). Questo test assume propagazione immediata o cache invalidabile; se la politica reale è differente, adattare l'aspettativa temporale e introdurre attese controllate."
+  },
+  {
+    "test_id": "REQ-I-004.TC04",
+    "title": "Propagazione modifiche: aggiornamento della matrice centrale disponibile ai canali entro finestra temporale prevista (scenario 'prevedibile')",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di integrazione test disponibile",
+      "Politica di propagazione definita con una finestra temporale massima (es. refresh ogni 15 minuti) oppure un meccanismo schedulato noto",
+      "Canali App e Web disponibili e configurati con eventuale cache/refresh secondo policy",
+      "Possibilità di misurare il tempo di effettiva applicazione della nuova configurazione (timestamp lato matrice e log canale)"
+    ],
+    "test_data": [
+      "Policy di propagazione (da documentazione/config): refresh massimo = 15 minuti",
+      "Configurazione iniziale: 'frequenza_presentazione=14 giorni' per PROD_W/SEG_D",
+      "Configurazione aggiornata: 'frequenza_presentazione=2 giorni' per PROD_W/SEG_D",
+      "Cliente: CL_40004 (Segmento=SEG_D)",
+      "Offerta: OFF_W (Prodotto=PROD_W)",
+      "Storico presentazioni: OFF_W presentata a CL_40004 in data T0 (oggi)"
+    ],
+    "steps": [
+      "Impostare in matrice 'frequenza_presentazione=14 giorni' per PROD_W/SEG_D",
+      "Verificare da canale Web che in T0 la presentazione OFF_W a CL_40004 sia bloccata (baseline)",
+      "Aggiornare la matrice a 'frequenza_presentazione=2 giorni' e annotare timestamp della modifica (Tmod)",
+      "Eseguire tentativi di presentazione da canale Web a intervalli regolari (es. ogni 2 minuti) fino a 15 minuti da Tmod, registrando per ogni tentativo l'esito e la versione/timestamp letti",
+      "Ripetere il monitoraggio a intervalli regolari anche da canale App fino a 15 minuti da Tmod"
+    ],
+    "expected_results": [
+      "Entro 15 minuti da Tmod, sia Web sia App applicano la configurazione aggiornata (2 giorni) e non continuano ad applicare il valore precedente (14 giorni)",
+      "Per ciascun canale è identificabile il primo tentativo in cui viene letta/applicata la versione/timestamp aggiornati",
+      "Non si osservano oscillazioni non deterministiche tra vecchia e nuova configurazione dopo che un canale ha iniziato ad applicare la nuova versione"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Questo test richiede una policy temporale esplicita (es. 15 minuti). Se non esiste o non è misurabile, l'AC-3 resta parzialmente non verificabile; in tal caso sostituire la finestra con il parametro reale o con un evento di invalidazione cache."
+  },
+  {
+    "test_id": "REQ-I-004.TC05",
+    "title": "Versioning/timestamp: ricostruzione dello stato storico della matrice per una data/ora specifica",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Matrice centralizzata con meccanismo di versioning o timestamp consultabile (API o query) per ottenere lo stato a una versione specifica o a una data/ora",
+      "Permessi tecnici per leggere metadati di versione/timestamp e storico modifiche",
+      "Canale Web (o tool tecnico) disponibile per consultazione/diagnostica"
+    ],
+    "test_data": [
+      "Regola target: 'frequenza_presentazione' per PROD_H/SEG_E",
+      "Versione V1 (timestamp T1): frequenza_presentazione=10 giorni",
+      "Versione V2 (timestamp T2): frequenza_presentazione=5 giorni",
+      "Cliente: CL_50005 (Segmento=SEG_E)",
+      "Offerta: OFF_H (Prodotto=PROD_H)"
+    ],
+    "steps": [
+      "Impostare in matrice la versione V1 con frequenza_presentazione=10 giorni e annotare T1/ID versione",
+      "Aggiornare la matrice creando la versione V2 con frequenza_presentazione=5 giorni e annotare T2/ID versione",
+      "Recuperare tramite API/query lo stato della matrice alla versione V1 (o al timestamp T1) per PROD_H/SEG_E",
+      "Recuperare tramite API/query lo stato della matrice alla versione V2 (o al timestamp T2) per PROD_H/SEG_E",
+      "Eseguire una valutazione regola (anche via canale o servizio) forzando/indicando l'uso della versione V1 (se supportato) oppure verificando che lo stato storico recuperato sia utilizzabile per audit",
+      "Eseguire una valutazione regola (anche via canale o servizio) con la configurazione corrente (V2)"
+    ],
+    "expected_results": [
+      "Il sistema consente di recuperare lo stato storico della regola a V1/T1 con valore '10 giorni'",
+      "Il sistema consente di recuperare lo stato della regola a V2/T2 con valore '5 giorni'",
+      "Le due versioni risultano distinguibili e tracciate tramite metadati (ID versione e/o timestamp) in modo univoco",
+      "È possibile ricostruire in modo deterministico quale configurazione fosse attiva a una specifica data/ora tra T1 e T2 (auditabilità)"
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "L'AC-4 non specifica se i canali possono 'forzare' una versione storica: il test verifica almeno la disponibilità di versioning/timestamp e la possibilità di ricostruzione storica via API/query o strumenti di audit."
+  },
+  {
+    "test_id": "REQ-I-004.TC06",
+    "title": "Gestione indisponibilità matrice: i canali falliscono in modo controllato se la fonte di verità non è raggiungibile",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di integrazione test disponibile",
+      "Canali App e Web disponibili",
+      "Possibilità di simulare indisponibilità della matrice centralizzata (es. stop servizio, firewall, DNS errato, fault injection) senza impattare altri test",
+      "Logging abilitato per verificare errori di chiamata/timeout"
+    ],
+    "test_data": [
+      "Cliente: CL_60006",
+      "Offerta: OFF_ERR",
+      "Simulazione errore: matrice centralizzata non raggiungibile (timeout 10s o HTTP 503)"
+    ],
+    "steps": [
+      "Rendere non raggiungibile la matrice centralizzata (simulare timeout o 503)",
+      "Da canale Web, avviare l'azione che richiede la lettura delle regole (tentativo di presentazione OFF_ERR a CL_60006)",
+      "Rilevare l'esito lato UI/servizio e i log di errore",
+      "Da canale App, avviare la stessa azione che richiede la lettura delle regole",
+      "Rilevare l'esito lato UI/servizio e i log di errore",
+      "Ripristinare la raggiungibilità della matrice centralizzata"
+    ],
+    "expected_results": [
+      "Il canale Web non applica regole divergenti/locali in assenza della matrice centralizzata e termina l'operazione con errore controllato (es. messaggio di servizio non disponibile o errore tecnico tracciato)",
+      "Il canale App non applica regole divergenti/locali in assenza della matrice centralizzata e termina l'operazione con errore controllato",
+      "Nei log è presente evidenza di fallimento della chiamata alla matrice (timeout/503) con correlation-id o dettagli utili al troubleshooting"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Il requisito non definisce un comportamento di fallback; questo test verifica almeno che non vengano usate configurazioni canale-specifiche che creino inconsistenze e che l'errore sia gestito in modo controllato."
+  }
+]

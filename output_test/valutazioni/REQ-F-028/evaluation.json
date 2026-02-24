@@ -1,0 +1,111 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-028",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 66,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-028.TC01",
+        "detail": "Introduce ruoli/attori specifici ('Gestore Abilitazioni', 'Responsabile Compliance') e stati di workflow esemplificativi; il requisito parla di workflow formale con approvazione/revisione ma non definisce ruoli né stati."
+      },
+      {
+        "test_id": "REQ-F-028.TC01",
+        "detail": "Assume una verifica operativa tramite 'Identificativo offerta' e ricalcolo/validazione nel Motore di Offerte; il requisito richiede integrazione col Motore di Offerte ma non specifica che debbano esistere offerte né una validazione offerta come evidenza."
+      },
+      {
+        "test_id": "REQ-F-028.TC02",
+        "detail": "Assume UI con filtri (ultimi 90 giorni), ordinamento e visualizzazione 'prima/dopo' nel dettaglio; il requisito richiede audit trail leggibile e ricostruibilità della storia, ma non specifica filtri/ordinamenti né la presenza esplicita del diff 'prima/dopo'."
+      },
+      {
+        "test_id": "REQ-F-028.TC03",
+        "detail": "Introduce dettagli tecnici non richiesti (endpoint 'PUT /abilitazioni/matrice', codici HTTP 401/403); il requisito richiede respingimento e logging, non specifica API né protocolli."
+      },
+      {
+        "test_id": "REQ-F-028.TC04",
+        "detail": "Introduce un requisito implicito di autorizzazioni per avvio workflow (ruolo 'Operatore Commerciale') e che il tentativo non crei alcuna richiesta; il requisito non parla di gestione permessi/ruoli né di comportamento in caso di tentativo da utente non autorizzato."
+      },
+      {
+        "test_id": "REQ-F-028.TC05",
+        "detail": "Gestisce indisponibilità del Motore di Offerte (timeout/503) e richiede stati specifici ('Errore di integrazione', 'In attesa di sincronizzazione') e log tecnico dell'errore; il requisito non menziona gestione errori di integrazione, retry o stati specifici."
+      },
+      {
+        "test_id": "REQ-F-028.TC06",
+        "detail": "Assume campi obbligatori (Figura, motivazione) e comportamento bozza/validazione; il requisito non definisce campi del workflow né obbligatorietà della motivazione."
+      },
+      {
+        "test_id": "REQ-F-028.TC01",
+        "detail": "Introduce canale 'web' come vincolo di test; il requisito non menziona canali."
+      },
+      {
+        "test_id": "REQ-F-028.TC03",
+        "detail": "Introduce canale 'api' come canale di modifica fuori workflow; il requisito parla genericamente di tentativi fuori workflow, non di canali."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 8,
+    "coherence_score": 53,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-028.US01.TC01",
+        "detail": "Introduce contesto 'Team Marketing', 'dashboard' e una specifica UI/sezioni; il requisito non menziona team, dashboard o canali."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC02",
+        "detail": "Introduce tolleranza sul timestamp ('pochi minuti'); il requisito richiede registrazione timestamp ma non definisce tolleranze/criteri di coerenza temporale."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC04",
+        "detail": "Dettaglia il tentativo fuori workflow come chiamata API/endpoint e richiede accesso a console/SIEM; il requisito non specifica tecnologia/strumenti di osservabilità."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC05",
+        "detail": "Afferma che il tentativo di un utente senza permessi via workflow sia 'loggato' come non autorizzato; il requisito richiede logging per tentativi fuori workflow, non per tentativi nel workflow da utenti senza permessi."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC07",
+        "detail": "Introduce gestione collisioni/concorrenza (blocco/coda/merge) e tracciamento dell'esito; il requisito non menziona concorrenza né regole di collisione."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC08",
+        "detail": "Introduce fault injection/mock del Motore di Offerte, errori HTTP 500/timeout e requisiti di atomicità ('nessuna applicazione parziale'); il requisito non tratta la gestione dei fallimenti di integrazione."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC01",
+        "detail": "Richiede che non esista alcuna modalità di editing diretto (es. inline editing) come vincolo di UI; il requisito vieta modifiche ad-hoc non tracciate, ma non impone specifiche scelte UI."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC01",
+        "detail": "Introduce canale 'dashboard' come canale primario; il requisito non menziona canali."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-F-028.US01.TC02",
+        "detail": "Scenario molto sovrapposto a REQ-F-028.US01.TC03: entrambi verificano presenza di autore/timestamp/stato in audit trail; differiscono principalmente per contesto (singola richiesta vs storico)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia, il set direct introduce meno informazioni non tracciabili al requisito (9 added_info vs 8 ma nel set indirect_persona ci sono aggiunte più strutturali e pervasive su canale/dashboard/team, più una ridondanza), e ottiene un punteggio di coerenza maggiore (66 vs 53). Il set indirect_persona aggiunge anche scenari non richiesti (collisioni concorrenti) e logging per tentativi 'nel workflow' da utenti senza permessi, che non è previsto dal requisito."
+  }
+}

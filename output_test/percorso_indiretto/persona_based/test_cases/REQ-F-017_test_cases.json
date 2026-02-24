@@ -1,0 +1,728 @@
+[
+  {
+    "story_id": "REQ-F-017.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-017.US01.TC01",
+        "title": "Visualizzazione pop-up bundle pre-checkout per cliente in target con bundle (A,B) valido (Web)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e utente non autenticato o autenticato secondo journey standard (come previsto per l'acquisto di A)",
+          "Esiste un prodotto A acquistabile e avviabile in journey",
+          "Esiste un bundle (A,B) marcato come valido dal Motore di Offerte per il canale Web",
+          "Il cliente risulta 'in target' per il bundle (A,B) secondo il Motore di Offerte",
+          "La journey di A prevede un passo 'prima del checkout' identificabile (es. pagina di riepilogo prima del pagamento)"
+        ],
+        "test_data": [
+          "Prodotto A: 'ProdottoA_Base' (SKU/ID: A-1001)",
+          "Prodotto B: 'ProdottoB_Addon' (SKU/ID: B-2001)",
+          "Bundle: (A-1001,B-2001) stato: 'valido'",
+          "Cliente: ID C-3001, attributi tali da risultare 'in target' per (A,B)"
+        ],
+        "steps": [
+          "Aprire il canale Web e accedere alla pagina di avvio acquisto del prodotto A",
+          "Avviare la journey di acquisto del prodotto A",
+          "Proseguire fino allo step immediatamente precedente al checkout (prima del pagamento/conferma finale)",
+          "Osservare la UI nello step pre-checkout"
+        ],
+        "expected_results": [
+          "Prima del checkout viene mostrato un pop-up di proposta bundle relativo a (A,B)",
+          "Il pop-up è visualizzato senza impedire la visualizzazione della pagina di pre-checkout sottostante"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La definizione di 'in target' e 'bundle valido' dipende dal Motore di Offerte; il test richiede un ambiente/dataset che consenta di forzare tali condizioni."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC02",
+        "title": "Visualizzazione pop-up bundle pre-checkout per cliente in target con bundle (A,B) valido (App)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "App disponibile e utente non autenticato o autenticato secondo journey standard (come previsto per l'acquisto di A)",
+          "Esiste un prodotto A acquistabile e avviabile in journey",
+          "Esiste un bundle (A,B) marcato come valido dal Motore di Offerte per il canale App",
+          "Il cliente risulta 'in target' per il bundle (A,B) secondo il Motore di Offerte",
+          "La journey di A su App prevede un passo 'prima del checkout' identificabile"
+        ],
+        "test_data": [
+          "Prodotto A: 'ProdottoA_Base' (SKU/ID: A-1001)",
+          "Prodotto B: 'ProdottoB_Addon' (SKU/ID: B-2001)",
+          "Bundle: (A-1001,B-2001) stato: 'valido'",
+          "Cliente: ID C-3001, attributi tali da risultare 'in target' per (A,B)"
+        ],
+        "steps": [
+          "Aprire l'App e accedere alla pagina di avvio acquisto del prodotto A",
+          "Avviare la journey di acquisto del prodotto A",
+          "Proseguire fino allo step immediatamente precedente al checkout (prima del pagamento/conferma finale)",
+          "Osservare la UI nello step pre-checkout"
+        ],
+        "expected_results": [
+          "Prima del checkout viene mostrato un pop-up di proposta bundle relativo a (A,B)",
+          "Il pop-up è visualizzato correttamente in App (layout e contenuti leggibili) senza bloccare la navigazione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Verifica di UI limitata alla presenza del pop-up; dettagli grafici/testuali non sono specificati dalla US01."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC03",
+        "title": "Azioni disponibili sul pop-up bundle: aggiungi al carrello, chiudi, posticipa",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per (A,B) e bundle valido",
+          "Pop-up bundle visualizzato prima del checkout durante la journey di A (come in TC01/TC02)"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Cliente: C-3001"
+        ],
+        "steps": [
+          "Visualizzare il pop-up bundle prima del checkout",
+          "Verificare la presenza dell'azione 'Aggiungi al carrello' sul pop-up",
+          "Verificare la presenza dell'azione 'Chiudi' sul pop-up",
+          "Verificare la presenza dell'azione 'Posticipa' sul pop-up"
+        ],
+        "expected_results": [
+          "Il pop-up espone un controllo/CTA per 'Aggiungi al carrello'",
+          "Il pop-up espone un controllo per 'Chiudi'",
+          "Il pop-up espone un controllo per 'Posticipa'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il comportamento di 'posticipa' (quando e come riproporre) non è definito; qui si verifica solo la disponibilità dell'azione."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC04",
+        "title": "Aggiunta del bundle al carrello: il secondo prodotto segue lo stesso funnel del primo",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per (A,B) e bundle valido",
+          "Pop-up bundle visualizzato prima del checkout",
+          "Disponibile mappatura della journey che descrive che il funnel di sottoscrizione di B è lo stesso di A (stessi macro-step)"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Cliente: C-3001",
+          "Pagamento: metodo valido (es. carta di test autorizzata) secondo ambiente"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A fino alla visualizzazione del pop-up pre-checkout",
+          "Selezionare l'azione 'Aggiungi al carrello' sul pop-up bundle",
+          "Proseguire nel flusso di sottoscrizione previsto per il bundle fino al completamento",
+          "Raccogliere l'elenco degli step/macro-step attraversati per la sottoscrizione di A",
+          "Raccogliere l'elenco degli step/macro-step attraversati per la sottoscrizione di B"
+        ],
+        "expected_results": [
+          "Dopo 'Aggiungi al carrello' il sistema include il secondo prodotto B nel percorso di sottoscrizione previsto",
+          "Gli step/macro-step del funnel di B risultano coerenti con quelli del funnel di A come da mappatura (stessa sequenza logica e tipologia di step)",
+          "Il flusso consente di arrivare al completamento della sottoscrizione del secondo prodotto senza deviazioni non previste dalla mappatura"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Dipendenza: dettagli dell'accorpamento fasi/questionari/firme per acquisto bundle non sono specificati qui (citata dipendenza esterna). La verifica è a livello di macro-step coerenti con la mappatura."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC05",
+        "title": "Chiusura della proposta: proseguimento e completamento acquisto di A senza blocchi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per (A,B) e bundle valido",
+          "Pop-up bundle visualizzato prima del checkout"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Cliente: C-3001",
+          "Pagamento: metodo valido (es. carta di test autorizzata) secondo ambiente"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A fino alla visualizzazione del pop-up pre-checkout",
+          "Selezionare l'azione 'Chiudi' sul pop-up",
+          "Proseguire nel funnel di acquisto di A fino al checkout",
+          "Completare l'acquisto di A"
+        ],
+        "expected_results": [
+          "Il pop-up viene chiuso e non impedisce la prosecuzione del funnel",
+          "Il checkout per A è raggiungibile e completabile",
+          "L'acquisto di A risulta completato con esito positivo"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Non si valida la persistenza in Loyalty (coperta da US02/US03)."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC06",
+        "title": "Posticipo della proposta: proseguimento e completamento acquisto di A senza blocchi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per (A,B) e bundle valido",
+          "Pop-up bundle visualizzato prima del checkout"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Cliente: C-3001",
+          "Pagamento: metodo valido (es. carta di test autorizzata) secondo ambiente"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A fino alla visualizzazione del pop-up pre-checkout",
+          "Selezionare l'azione 'Posticipa' sul pop-up",
+          "Proseguire nel funnel di acquisto di A fino al checkout",
+          "Completare l'acquisto di A"
+        ],
+        "expected_results": [
+          "Il sistema registra l'azione di posticipo e consente di continuare il funnel",
+          "Il checkout per A è raggiungibile e completabile",
+          "L'acquisto di A risulta completato con esito positivo"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il significato di 'posticipo' non è specificato; qui si verifica solo che non blocchi l'acquisto di A."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC07",
+        "title": "Cliente non in target: il pop-up bundle non viene mostrato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un bundle (A,B) valido",
+          "Il cliente risulta 'non in target' per (A,B) secondo il Motore di Offerte",
+          "Journey di acquisto di A avviabile"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Cliente: ID C-3002, attributi tali da risultare 'non in target' per (A,B)"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A con il cliente C-3002",
+          "Proseguire fino allo step pre-checkout",
+          "Osservare la UI nello step pre-checkout"
+        ],
+        "expected_results": [
+          "Nello step pre-checkout non viene mostrato alcun pop-up di proposta bundle (A,B)",
+          "Il cliente può procedere verso il checkout di A senza interruzioni"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non descrive messaggi alternativi; il test verifica solo assenza pop-up e continuità del funnel."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC08",
+        "title": "Bundle non valido al trigger: il pop-up bundle non viene mostrato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente risulta 'in target' per (A,B)",
+          "Il bundle (A,B) risulta 'non valido' al momento del trigger (es. scaduto o disabilitato)",
+          "Journey di acquisto di A avviabile"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Bundle: (A-1001,B-2001) stato: 'non valido'",
+          "Cliente: C-3001 (in target)"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A con il cliente C-3001",
+          "Proseguire fino allo step pre-checkout",
+          "Osservare la UI nello step pre-checkout"
+        ],
+        "expected_results": [
+          "Nello step pre-checkout non viene mostrato alcun pop-up di proposta bundle (A,B)",
+          "Il cliente può procedere verso il checkout di A senza interruzioni"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Richiede possibilità di configurare/forzare lo stato di validità del bundle nel Motore di Offerte."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC09",
+        "title": "Errore tecnico di caricamento pop-up: il cliente può proseguire con l'acquisto di A",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per (A,B) e bundle valido",
+          "Possibilità di simulare errore UI/tecnico di caricamento pop-up (es. risposta 500 del servizio pop-up o risorsa UI non disponibile)",
+          "Journey di acquisto di A avviabile"
+        ],
+        "test_data": [
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Cliente: C-3001",
+          "Simulazione errore: endpoint pop-up/proposta bundle restituisce HTTP 500 o timeout"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A con il cliente C-3001",
+          "Proseguire fino allo step pre-checkout",
+          "Indurre l'errore di caricamento del pop-up secondo la configurazione di test",
+          "Tentare di proseguire nel funnel verso il checkout di A",
+          "Completare l'acquisto di A"
+        ],
+        "expected_results": [
+          "Il mancato caricamento del pop-up non blocca la navigazione verso il checkout",
+          "Il checkout di A è raggiungibile e completabile",
+          "L'acquisto di A risulta completato con esito positivo"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica messaggistica di errore; la verifica è focalizzata sull'assenza di blocchi."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC10",
+        "title": "Verifica documentazione: la mappatura descrive journey end-to-end e include pop-up pre-checkout",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Documento/diagramma di mappatura della journey disponibile e accessibile (repository o link aziendale)",
+          "Versione del documento riferita alla release in test"
+        ],
+        "test_data": [
+          "Riferimento documento: 'JourneyBundle_AB_vX.Y' (link o ID documento)"
+        ],
+        "steps": [
+          "Aprire il documento/diagramma di mappatura della journey indicato per la funzionalità bundle (A,B)",
+          "Verificare che il documento descriva gli step dal trigger fino all'acquisto del secondo prodotto",
+          "Verificare che il trigger sia posizionato 'prima del checkout'",
+          "Verificare che la visualizzazione della proposta sia indicata come pop-up"
+        ],
+        "expected_results": [
+          "La mappatura descrive ogni step della journey dal trigger all'acquisto del secondo prodotto",
+          "La mappatura include esplicitamente la condizione 'prima del checkout' come punto di trigger",
+          "La mappatura include esplicitamente la visualizzazione della proposta come pop-up"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Test documentale: rende verificabili AC dichiarativi tramite controllo di contenuto del documento."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-017.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-017.US02.TC01",
+        "title": "Loyalty mostra solo offerte sottoscrivibili ed esclude bundle già in possesso",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato e abilitato alla visualizzazione area Loyalty",
+          "Backend/servizio Loyalty disponibile e popolato con offerte",
+          "Il cliente possiede già un bundle (A,B) o equivalente identificabile come 'già in possesso'",
+          "Sono presenti anche offerte sottoscrivibili (singoli prodotti e/o bundle) non in possesso"
+        ],
+        "test_data": [
+          "Cliente: C-4001",
+          "Bundle posseduto: (A-1001,B-2001) stato possesso: 'attivo'",
+          "Offerta sottoscrivibile singolo prodotto: 'ProdottoC' (SKU/ID: C-3001)",
+          "Offerta sottoscrivibile bundle: (D-1100,E-2200) stato: 'sottoscrivibile'"
+        ],
+        "steps": [
+          "Accedere all'area Loyalty del cliente C-4001",
+          "Osservare l'elenco delle offerte mostrate",
+          "Cercare nell'elenco la presenza del bundle (A-1001,B-2001) già in possesso",
+          "Verificare la presenza di almeno un'offerta sottoscrivibile attesa (es. ProdottoC o bundle (D,E))"
+        ],
+        "expected_results": [
+          "L'elenco offerte in Loyalty non include il bundle già in possesso dal cliente",
+          "L'elenco offerte include solo offerte marcate come sottoscrivibili dal backend",
+          "Almeno un'offerta sottoscrivibile attesa è visibile"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito originale non dettaglia la logica di 'sottoscrivibile'; qui si verifica l'effetto in UI (filtro) e la coerenza con quanto fornito dal backend."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC02",
+        "title": "Cliente possiede A: non mostrare bundle che includono A se upgrade non possibile",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato e abilitato alla visualizzazione area Loyalty",
+          "Il cliente possiede il prodotto A",
+          "Esiste un bundle che include A per cui l'upgrade NON è possibile e quindi non è sottoscrivibile"
+        ],
+        "test_data": [
+          "Cliente: C-4002",
+          "Prodotto posseduto: A-1001",
+          "Bundle candidato: (A-1001,B-2001) flag upgrade: 'non possibile' / sottoscrivibile: 'false'"
+        ],
+        "steps": [
+          "Accedere all'area Loyalty del cliente C-4002",
+          "Osservare l'elenco delle offerte mostrate",
+          "Cercare il bundle (A-1001,B-2001) nell'elenco"
+        ],
+        "expected_results": [
+          "Il bundle (A-1001,B-2001) che include A e non prevede upgrade non è mostrato in Loyalty"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La regola di upgrade è esterna; il test richiede dataset in cui il backend indichi chiaramente che l'upgrade non è possibile."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC03",
+        "title": "Ogni offerta mostrata in Loyalty espone contenuti promo e CTA di sottoscrizione",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato e abilitato alla visualizzazione area Loyalty",
+          "In Loyalty sono presenti almeno 2 offerte sottoscrivibili da mostrare"
+        ],
+        "test_data": [
+          "Cliente: C-4003",
+          "Offerta 1: ProdottoC (C-3001) sottoscrivibile",
+          "Offerta 2: Bundle (D-1100,E-2200) sottoscrivibile"
+        ],
+        "steps": [
+          "Accedere all'area Loyalty del cliente C-4003",
+          "Per la prima offerta mostrata, verificare la presenza di testo e/o grafica promozionale",
+          "Per la prima offerta mostrata, verificare la presenza della CTA di sottoscrizione",
+          "Ripetere le verifiche di contenuto promo e CTA per la seconda offerta mostrata"
+        ],
+        "expected_results": [
+          "Per ogni offerta mostrata è visibile almeno un contenuto promozionale (testo e/o grafica)",
+          "Per ogni offerta mostrata è visibile una CTA di sottoscrizione attivabile"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Edge case 'dati offerta incompleti' non è specificato: questo test assume che le offerte mostrate debbano avere contenuti e CTA; eventuali fallback vanno chiariti."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC04",
+        "title": "Dopo rifiuto bundle e acquisto A: proposta upgrade (A,B) persistita visibile in Loyalty entro finestra di validità",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente in target per bundle (A,B) durante la journey di A",
+          "Bundle (A,B) valido e pop-up disponibile pre-checkout",
+          "Upgrade (A,B) configurato come 'valido e abilitato' lato Motore di Offerte",
+          "Area Loyalty disponibile per il cliente",
+          "Finestra temporale di validità definita nella mappatura della journey (valore non necessariamente numerico nel requisito, ma deve esistere una regola/periodo)"
+        ],
+        "test_data": [
+          "Cliente: C-5001",
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Upgrade (A,B): abilitato = true",
+          "Pagamento: metodo valido per completare acquisto A"
+        ],
+        "steps": [
+          "Avviare la journey di acquisto di A per il cliente C-5001 fino al pop-up bundle pre-checkout",
+          "Selezionare l'azione 'Chiudi' (rifiuto) sul pop-up bundle",
+          "Completare l'acquisto del prodotto A",
+          "Accedere all'area Loyalty del cliente C-5001",
+          "Cercare la proposta di upgrade (A,B) tra le offerte disponibili"
+        ],
+        "expected_results": [
+          "Dopo il completamento dell'acquisto di A, la proposta di upgrade (A,B) risulta disponibile in Loyalty (se valida e abilitata)",
+          "La proposta di upgrade è presentata come offerta sottoscrivibile entro la finestra temporale di validità prevista dalla mappatura"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La durata esatta della finestra non è nel requisito; la verifica è 'entro finestra' usando un tempo di esecuzione immediatamente successivo all'acquisto. La persistenza è implementata dal Motore (coperta anche da US03)."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC05",
+        "title": "Refresh Loyalty: offerta non più sottoscrivibile viene rimossa/non mostrata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato e abilitato alla visualizzazione area Loyalty",
+          "Esiste un'offerta inizialmente sottoscrivibile e visibile in Loyalty",
+          "È possibile cambiare lo stato dell'offerta a 'non sottoscrivibile' lato backend (o simulare la risposta)"
+        ],
+        "test_data": [
+          "Cliente: C-4004",
+          "Offerta: Bundle (D-1100,E-2200) stato iniziale: sottoscrivibile=true; stato successivo: sottoscrivibile=false"
+        ],
+        "steps": [
+          "Accedere all'area Loyalty del cliente C-4004 e verificare che l'offerta (D,E) sia visibile",
+          "Aggiornare lo stato dell'offerta (D,E) a 'non sottoscrivibile' lato backend o tramite stub",
+          "Eseguire refresh/ricarica dell'area Loyalty",
+          "Verificare la presenza dell'offerta (D,E) nell'elenco"
+        ],
+        "expected_results": [
+          "Dopo il refresh, l'offerta non più sottoscrivibile non è mostrata in Loyalty"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica cache/TTL; il test assume che un refresh comporti una nuova valutazione delle offerte sottoscrivibili."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC06",
+        "title": "Verifica documentazione: persistenza proposta in Loyalty e finestra temporale di validità",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Documento/diagramma di mappatura della journey disponibile e accessibile",
+          "Versione del documento riferita alla release in test"
+        ],
+        "test_data": [
+          "Riferimento documento: 'JourneyBundle_AB_vX.Y' (link o ID documento)"
+        ],
+        "steps": [
+          "Aprire il documento/diagramma di mappatura della journey indicato",
+          "Verificare che il documento descriva la persistenza della proposta in Sezione Loyalty di Gruppo",
+          "Verificare che il documento descriva una finestra temporale di validità della proposta persistita (regola/periodo)"
+        ],
+        "expected_results": [
+          "La mappatura specifica la persistenza della proposta nella sezione Loyalty di Gruppo",
+          "La mappatura specifica una finestra temporale di validità per la proposta persistita"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Test documentale: il requisito non quantifica la finestra; si verifica che esista una definizione esplicita (anche qualitativa) nel documento."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-017.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-017.US03.TC01",
+        "title": "Persistenza upgrade (A,B) nel Motore dopo rifiuto bundle e perfezionamento acquisto A (upgrade abilitato)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Regole Marketing: upgrade per bundle (A,B) abilitato",
+          "Disponibile un meccanismo per inviare al Motore l'evento 'rifiuto bundle' e 'acquisto A perfezionato' (event bus o API di integrazione)",
+          "Cliente identificabile univocamente nel Motore"
+        ],
+        "test_data": [
+          "Cliente: C-6001",
+          "Prodotto A: A-1001",
+          "Prodotto B: B-2001",
+          "Bundle: (A-1001,B-2001)",
+          "Evento 1: 'bundle_rifiutato' con timestamp T0",
+          "Evento 2: 'acquisto_A_perfezionato' con timestamp T1>T0"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento di rifiuto della proposta bundle (A,B) per il cliente C-6001",
+          "Inviare al Motore l'evento di acquisto perfezionato del prodotto A per il cliente C-6001",
+          "Richiedere al Motore (o al canale di consultazione previsto) le offerte disponibili/persistite per il cliente C-6001",
+          "Individuare la presenza di una proposta di upgrade relativa a (A,B)"
+        ],
+        "expected_results": [
+          "Il Motore persiste una proposta di upgrade (A,B) per il cliente C-6001 quando l'upgrade è abilitato",
+          "La proposta di upgrade (A,B) risulta consultabile dai canali di consultazione previsti (es. Loyalty) come offerta disponibile (entro validità)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La fonte evento e il contratto non sono specificati nel requisito; il test richiede definizione dell'interfaccia di integrazione (topic/event type o API)."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC02",
+        "title": "Gestione finestra temporale: proposta upgrade persistita include validità e risulta disponibile entro la finestra",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Upgrade (A,B) abilitato da regole Marketing",
+          "Disponibile un modo per leggere i metadati della proposta persistita (es. validFrom/validTo o TTL) oppure per verificare disponibilità in funzione del tempo",
+          "Finestra temporale definita nella mappatura della journey (regola/periodo) e configurata nel Motore o nei sistemi collegati"
+        ],
+        "test_data": [
+          "Cliente: C-6002",
+          "Bundle: (A-1001,B-2001)",
+          "Timestamp persistenza: T1",
+          "Tempo di verifica: T1 + delta (delta minore della finestra di validità configurata)"
+        ],
+        "steps": [
+          "Generare persistenza upgrade (A,B) per il cliente C-6002 (come in TC01)",
+          "Interrogare il Motore per ottenere i dettagli della proposta persistita (o verificarne la disponibilità) al tempo T1 + delta",
+          "Rilevare l'informazione di validità temporale associata alla proposta (se esposta) oppure la sua disponibilità"
+        ],
+        "expected_results": [
+          "La proposta persistita risulta associata a una finestra temporale di validità coerente con la mappatura (presenza di metadati di validità o comportamento equivalente)",
+          "Entro la finestra temporale la proposta risulta disponibile ai canali di consultazione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non impone un formato tecnico della validità; la verifica può essere fatta via metadati o via comportamento temporale."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC03",
+        "title": "Scadenza finestra temporale: proposta upgrade non più disponibile dopo la scadenza",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Upgrade (A,B) abilitato e proposta persistibile",
+          "Disponibile un modo per simulare il passare del tempo (time travel in ambiente test) oppure finestra molto breve in ambiente di test",
+          "Disponibile un canale di consultazione o API per verificare le offerte disponibili"
+        ],
+        "test_data": [
+          "Cliente: C-6003",
+          "Bundle: (A-1001,B-2001)",
+          "Finestra validità: configurata in ambiente test (es. 5 minuti) oppure controllo clock",
+          "Tempo di verifica post-scadenza: T_expired"
+        ],
+        "steps": [
+          "Generare persistenza upgrade (A,B) per il cliente C-6003 (come in TC01)",
+          "Attendere la scadenza della finestra temporale configurata oppure avanzare il tempo di sistema fino a T_expired",
+          "Interrogare il Motore (o il canale di consultazione) per le offerte disponibili del cliente C-6003",
+          "Cercare la proposta di upgrade (A,B) tra le offerte disponibili"
+        ],
+        "expected_results": [
+          "Dopo la scadenza della finestra temporale, la proposta di upgrade (A,B) non risulta più disponibile come offerta sottoscrivibile per i canali di consultazione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Richiede capacità di test temporale (clock controllabile o configurazione TTL ridotta)."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC04",
+        "title": "Upgrade non abilitato da regole Marketing: il Motore non persiste la proposta",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Regole Marketing: upgrade per bundle (A,B) disabilitato",
+          "Disponibile integrazione per inviare eventi di rifiuto bundle e acquisto A perfezionato"
+        ],
+        "test_data": [
+          "Cliente: C-6004",
+          "Bundle: (A-1001,B-2001)",
+          "Evento 1: 'bundle_rifiutato' (T0)",
+          "Evento 2: 'acquisto_A_perfezionato' (T1)"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento di rifiuto della proposta bundle (A,B) per il cliente C-6004",
+          "Inviare al Motore l'evento di acquisto perfezionato del prodotto A per il cliente C-6004",
+          "Interrogare il Motore (o il canale di consultazione) per le offerte disponibili/persistite del cliente C-6004",
+          "Cercare la proposta di upgrade (A,B)"
+        ],
+        "expected_results": [
+          "La proposta di upgrade (A,B) non viene persistita e non risulta disponibile come offerta sottoscrivibile quando l'upgrade è disabilitato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "L'AC originale non dettaglia le regole Marketing; il test assume che il Motore applichi un flag/condizione di abilitazione all'upgrade."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC05",
+        "title": "Verifica documentazione: journey end-to-end include persistenza e finestra temporale validità",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Documento/diagramma di mappatura della journey disponibile e accessibile",
+          "Versione del documento riferita alla release in test"
+        ],
+        "test_data": [
+          "Riferimento documento: 'JourneyBundle_AB_vX.Y' (link o ID documento)"
+        ],
+        "steps": [
+          "Aprire il documento/diagramma di mappatura della journey indicato",
+          "Verificare che il documento descriva ogni step dal trigger fino all'acquisto del secondo prodotto",
+          "Verificare che il documento includa la persistenza della proposta in Loyalty",
+          "Verificare che il documento includa la finestra temporale di validità della proposta"
+        ],
+        "expected_results": [
+          "La mappatura descrive ogni step della journey dal trigger all'acquisto del secondo prodotto",
+          "La mappatura include persistenza della proposta nella sezione Loyalty di Gruppo",
+          "La mappatura include una finestra temporale di validità per la proposta persistita"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Test documentale per AC dichiarativi. La quantificazione della finestra non è richiesta, ma deve essere esplicitata una regola/periodo."
+      }
+    ]
+  }
+]

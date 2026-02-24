@@ -2,7 +2,7 @@
 
 Per ogni requisito:
 0. Validazione sintattica (Python) — skip se campi obbligatori mancanti
-1. Invia il singolo requisito + prompt US (ac_based / persona_based) → validazione semantica LLM
+1. Invia il singolo requisito + prompt US (persona_based) → validazione semantica LLM
    - Se status=rejected → registra e passa al prossimo
    - Se status=ok → ottiene user stories JSON
 2. Invia le user stories + prompt TC (from_user_stories) → ottiene test cases JSON
@@ -432,11 +432,11 @@ def evaluate_test_cases(
 ) -> dict:
     """Valuta la coerenza dei test cases rispetto al requisito originale.
 
-    Accetta da 2 a 3 set di test cases (chiavi: "direct", "indirect_ac",
-    "indirect_persona"). Ogni set deve essere non vuoto.
+    Accetta 2 set di test cases (chiavi: "direct", "indirect_persona").
+    Ogni set deve essere non vuoto.
 
     Parametri:
-      tc_sets: {"direct": [...], "indirect_ac": [...], ...}
+      tc_sets: {"direct": [...], "indirect_persona": [...]}
       chain_metadata: {"direct": {"label": "...", "naming": "..."}, ...}
 
     Restituisce:
@@ -550,9 +550,8 @@ def run_pipeline(
     max_tokens: int = 16384,
     verbose: bool = False,
     limit: int | None = None,
-    strategy: str = "ac",
 ) -> None:
-    """Esegue la pipeline completa: requisiti → user stories → test cases."""
+    """Esegue la pipeline completa: requisiti → user stories (persona-based) → test cases."""
 
     # --- Carica i file ---
     req_path = Path(requirements_path)
@@ -567,24 +566,17 @@ def run_pipeline(
     else:
         requirements = all_requirements
 
-    # --- Strategia: estrai personas se necessario ---
-    personas_ctx: str | None = None
-    if strategy in ("persona", "both"):
-        personas_ctx, requirements = extract_personas_context(requirements)
-        personas_list = json.loads(personas_ctx)
-        print(f"[pipeline] Personas individuate: {len(personas_list)}")
-        for p in personas_list:
-            print(f"  - {p.get('code', '?')} | {p.get('title', 'N/A')}")
-        print(f"[pipeline] Requisiti da elaborare (senza PERSONAS): {len(requirements)}")
-        if verbose:
-            print(f"[pipeline] Contesto personas JSON:\n{personas_ctx}")
+    # --- Estrai personas ---
+    personas_ctx, requirements = extract_personas_context(requirements)
+    personas_list = json.loads(personas_ctx)
+    print(f"[pipeline] Personas individuate: {len(personas_list)}")
+    for p in personas_list:
+        print(f"  - {p.get('code', '?')} | {p.get('title', 'N/A')}")
+    print(f"[pipeline] Requisiti da elaborare (senza PERSONAS): {len(requirements)}")
+    if verbose:
+        print(f"[pipeline] Contesto personas JSON:\n{personas_ctx}")
 
-    if strategy == "both":
-        print(f"[pipeline] Strategia: entrambe (AC + persona)")
-    elif strategy == "persona":
-        print(f"[pipeline] Strategia: persona-based")
-    else:
-        print(f"[pipeline] Strategia: AC-based")
+    print(f"[pipeline] Strategia: persona-based")
 
     total = len(requirements)
     print(f"[pipeline] Requisiti da elaborare: {total}")
@@ -596,21 +588,10 @@ def run_pipeline(
         sys.exit(1)
     system_prompt_tc = prompt_tc_file.read_text(encoding="utf-8")
 
-    # Determina i passaggi US da eseguire
-    # Tupla: (label, prompt_us, us_dir_name, tc_dir_name, personas_ctx)
-    if strategy == "both":
-        us_passes = [
-            ("ac", PromptFiles.US_AC, OutputDirs.US_AC, OutputDirs.TC_FROM_US_AC, None),
-            ("persona", PromptFiles.US_PERSONA, OutputDirs.US_PERSONA, OutputDirs.TC_FROM_US_PERSONA, personas_ctx),
-        ]
-    elif strategy == "persona":
-        us_passes = [
-            ("persona", PromptFiles.US_PERSONA, OutputDirs.US_PERSONA, OutputDirs.TC_FROM_US_PERSONA, personas_ctx),
-        ]
-    else:
-        us_passes = [
-            ("ac", PromptFiles.US_AC, OutputDirs.US_AC, OutputDirs.TC_FROM_US_AC, None),
-        ]
+    # Unico passaggio US: persona-based
+    us_passes = [
+        ("persona", PromptFiles.US_PERSONA, OutputDirs.US_PERSONA, OutputDirs.TC_FROM_US_PERSONA, personas_ctx),
+    ]
 
     # Verifica che i prompt esistano
     for _, prompt_name, _, _, _ in us_passes:

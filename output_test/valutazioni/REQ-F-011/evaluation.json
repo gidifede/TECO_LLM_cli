@@ -1,0 +1,159 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-011",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 60,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-011.TC01",
+        "detail": "Introduzione di dettagli non presenti nel requisito: PSP sandbox, dati carta di test, importo atteso, elenco puntuale di stati/eventi loggati (avvio, completamento fasi, esito), assunzione di funnelId/correlationId e timestamp come campi verificabili."
+      },
+      {
+        "test_id": "REQ-F-011.TC02",
+        "detail": "Assunzioni non tracciabili: prerequisiti di autenticazione/onboarding app, uso PSP sandbox, esito 'successo' come stato, presenza di funnelId/correlationId e timestamp nei log."
+      },
+      {
+        "test_id": "REQ-F-011.TC03",
+        "detail": "Elementi non esplicitati dal requisito: operatore di sportello con credenziali/abilitazioni, 'CRM/applicazione operatore', metodo pagamento specifico (POS virtuale), dettagli su esito 'OK'."
+      },
+      {
+        "test_id": "REQ-F-011.TC04",
+        "detail": "Scenario 'bundle non abilitato' e aspettativa di comportamento alternativo (funnel separati/altro) non menzionati dal requisito/AC; il requisito parla solo di 'Per bundle abilitati' e 'dove possibile'."
+      },
+      {
+        "test_id": "REQ-F-011.TC05",
+        "detail": "Scenario refresh/back e regole di ripristino stato/istanza (stessa URL, ripresa dall'ultimo step) non presenti nel requisito; inoltre assume assenza di duplicazioni verificabile tramite transizioni duplicate nei log."
+      },
+      {
+        "test_id": "REQ-F-011.TC06",
+        "detail": "Gestione timeout/errore pagamento, stati specifici ('pagamento fallito', 'in attesa pagamento'), possibilità di retry e non riavvio delle fasi: non richiesti dal requisito (che richiede solo funnel unico e logging transizioni)."
+      },
+      {
+        "test_id": "REQ-F-011.TC07",
+        "detail": "Validazioni di campi obbligatori (es. Codice Fiscale), messaggi UI e regole su quali eventi siano loggati in caso di errore: non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: \"riducendo la duplicazione dei task all'interno del funnel\"",
+        "detail": "Copertura solo indiretta/assuntiva: i TC verificano 'non ripetizione' tramite refresh/retry, ma non esiste un TC che validi in modo esplicito e generale la riduzione della duplicazione dei task come requisito trasversale del funnel (oltre a specifici edge case)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-011.TC01",
+          "REQ-F-011.TC02"
+        ],
+        "detail": "Scenari molto simili: E2E funnel unificato su canale digitale con verifica logging; differiscono principalmente per il canale (web vs app)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 19,
+    "coherence_score": 24,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-011.US01.TC03",
+        "detail": "Introduce concetti non presenti nel requisito: 'cliente fisico con assistenza operatore' e 'front-end commerciale' come canale/contesto specifico (il requisito cita solo 'sportello' se previsto)."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC05",
+        "detail": "Regola 'bundle non previsto a sportello' come configurazione/eligibility e conseguente indisponibilità del funnel: non esplicitata nel requisito (che dice solo 'se previsto, da sportello' senza definire una regola di previsione per bundle)."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC06",
+        "detail": "Ripresa da 'area pratiche/in corso o entry-point equivalente' e gestione recovery sessione: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC03",
+        "detail": "Aspetti di 'Authorization', deep link/azione forzata e negazione accesso: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC02",
+        "detail": "Metodo pagamento 'POS/contanti': contanti non menzionato nel requisito; il requisito non dettaglia metodi di pagamento."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC01",
+        "detail": "Introduce 'Motore di Offerte' e verifica via API del percorso di vendita: non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC02",
+        "detail": "Verifica interazioni tecniche canale↔Motore di Offerte e raccolta evidenze di chiamate/tracing: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC03",
+        "detail": "Integrazione front-end commerciale↔Motore di Offerte: non citata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC04",
+        "detail": "Richiede campi minimi nel log (stato precedente/successivo) e ordinamento temporale: il requisito richiede solo che le transizioni siano tracciate e loggate, non quali attributi debbano essere presenti."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC05",
+        "detail": "Concetto di 'bundle non eleggibile' e regole di eleggibilità ('dove possibile' falso) come configurazione specifica: non definito nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC06",
+        "detail": "Gestione indisponibilità del servizio di logging (fail-open/fail-closed) e requisiti di coerenza stato in fault: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC07",
+        "detail": "Concorrenza/idempotenza e prevenzione di duplicazioni 'anomale' nel logging: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC04",
+        "detail": "Scenario 'bundle non abilitato' con aspettativa di messaggio/assenza entry-point: non esplicitato dal requisito (che non descrive il comportamento per bundle non abilitati)."
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC05",
+        "detail": "Errore pagamento a sportello e stati pratica/ordine ('in corso', 'pagamento fallito'): non richiesti dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-3: \"Le transizioni di stato del funnel sono tracciate e loggate.\"",
+        "detail": "Molti TC tracciano solo AC-1/AC-2 e non verificano logging; la copertura di AC-3 è delegata a pochi casi (US03.TC04/TC06/TC07) e non è collegata esplicitamente ai canali citati in AC-2 (digitale/sportello) in modo sistematico (es. logging verificato anche su sportello)."
+      },
+      {
+        "source": "AC-2: \"Il funnel unificato è testabile da canali digitali e, se previsto, da sportello.\"",
+        "detail": "Uso del canale 'digital' come etichetta generica nei TC (channels=['digital'] o channels=[]), senza distinguere chiaramente Web vs App vs Sportello come canali del requisito; questo rende parziale la tracciabilità della copertura per canale rispetto al testo dell'AC."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-011.US01.TC03",
+          "REQ-F-011.US02.TC02"
+        ],
+        "detail": "Entrambi testano E2E a sportello/front-end commerciale per bundle previsto sportello con esito completamento."
+      },
+      {
+        "test_ids": [
+          "REQ-F-011.US01.TC05",
+          "REQ-F-011.US02.TC04"
+        ],
+        "detail": "Entrambi testano l'indisponibilità del funnel a sportello per bundle non previsto sportello."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct risulta più coerente perché, pur introducendo varie assunzioni tecniche (es. dettagli di log e pagamento), resta ancorato ai tre AC e li copre in modo esplicito sui canali (web/app/sportello) con verifiche dirette del funnel unico e del logging (score 60). Il set indirect_persona aggiunge molte più informazioni non tracciabili al requisito (Motore di Offerte, API, authorization/deep link, eleggibilità, concorrenza, fault logging) e presenta anche lacune di tracciabilità per canale e per AC-3 in diversi casi (score 24)."
+  }
+}

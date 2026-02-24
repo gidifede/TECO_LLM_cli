@@ -1,0 +1,275 @@
+[
+  {
+    "test_id": "REQ-F-012.TC01",
+    "title": "Creazione configurazione pricing/punti/cashback e validità per un bundle (happy path)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle.",
+      "Interfaccia di configurazione pricing/punti/cashback disponibile (feature attiva)."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Pricing: Prezzo base 49,90 EUR",
+      "Sconto: 10% (tipo: percentuale)",
+      "Cashback: 5,00 EUR",
+      "Punti Connect: 150",
+      "Validità: dal 2026-03-01 00:00 al 2026-03-31 23:59"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Impostare il prezzo base a 49,90 EUR.",
+      "Impostare lo sconto al 10% (percentuale).",
+      "Impostare il cashback a 5,00 EUR.",
+      "Impostare i punti Connect a 150.",
+      "Impostare la finestra di validità dal 2026-03-01 00:00 al 2026-03-31 23:59.",
+      "Salvare la configurazione."
+    ],
+    "expected_results": [
+      "La configurazione viene salvata per il bundle 'BND-STARTER-001' senza errori.",
+      "Riaprendo la configurazione del bundle, i valori risultano: prezzo 49,90 EUR, sconto 10%, cashback 5,00 EUR, punti Connect 150, validità 2026-03-01 00:00 - 2026-03-31 23:59.",
+      "È presente una nuova voce nel log di configurazione riferita al salvataggio effettuato."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attore (Marketing) inferito dalla descrizione. Il requisito non specifica canali: si assume interfaccia web di backoffice."
+  },
+  {
+    "test_id": "REQ-F-012.TC02",
+    "title": "Modifica configurazione esistente e verifica log before/after",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una configurazione già salvata per il bundle 'BND-STARTER-001'.",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle.",
+      "Funzionalità di log configurazioni attiva e consultabile."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Valori iniziali: Prezzo base 49,90 EUR; Sconto 10%; Cashback 5,00 EUR; Punti 150; Validità 2026-03-01 00:00 - 2026-03-31 23:59",
+      "Nuovi valori: Prezzo base 44,90 EUR; Sconto 15%; Cashback 0,00 EUR; Punti 200; Validità 2026-03-05 00:00 - 2026-03-31 23:59"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Modificare il prezzo base a 44,90 EUR.",
+      "Modificare lo sconto al 15%.",
+      "Impostare cashback a 0,00 EUR.",
+      "Modificare i punti Connect a 200.",
+      "Modificare la data/ora di inizio validità a 2026-03-05 00:00.",
+      "Salvare la configurazione.",
+      "Aprire la sezione di log configurazioni relativa al bundle 'BND-STARTER-001'.",
+      "Selezionare l'ultima voce di log associata alla modifica appena effettuata."
+    ],
+    "expected_results": [
+      "La configurazione aggiornata viene salvata senza errori.",
+      "Nel log è presente una voce per l'operazione di modifica con dettaglio before/after per ciascun campo modificato (prezzo, sconto, cashback, punti, validità).",
+      "Nel log i valori 'before' corrispondono ai valori iniziali e i valori 'after' corrispondono ai nuovi valori inseriti."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il formato del log: si verifica almeno la presenza di before/after per i campi oggetto del requisito."
+  },
+  {
+    "test_id": "REQ-F-012.TC03",
+    "title": "Configurazione regola temporale dedicata a clienti già possessori di prodotti (in finestra di validità)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle.",
+      "L'interfaccia supporta la definizione di regole temporali per segmento 'clienti già possessori di prodotti'."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Segmento/regola: 'Clienti già possessori di prodotti' = Sì",
+      "Finestra temporale regola: 2026-03-10 00:00 - 2026-03-20 23:59",
+      "Pricing per la regola: Prezzo base 39,90 EUR",
+      "Punti Connect per la regola: 250",
+      "Cashback per la regola: 10,00 EUR"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Aggiungere una nuova regola temporale per il segmento 'clienti già possessori di prodotti'.",
+      "Impostare la finestra temporale della regola a 2026-03-10 00:00 - 2026-03-20 23:59.",
+      "Impostare il prezzo base della regola a 39,90 EUR.",
+      "Impostare i punti Connect della regola a 250.",
+      "Impostare il cashback della regola a 10,00 EUR.",
+      "Salvare la configurazione."
+    ],
+    "expected_results": [
+      "La regola temporale per 'clienti già possessori di prodotti' viene salvata e risulta associata al bundle selezionato.",
+      "Riaprendo la configurazione del bundle, la regola risulta presente con finestra temporale e valori (prezzo/punti/cashback) coerenti con quanto inserito.",
+      "È presente una voce nel log di configurazione relativa all'aggiunta della regola con dettaglio before/after."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 non specifica il modello dati (quali prodotti, come si identifica il possesso): il test verifica la possibilità di configurare una regola temporale dedicata al segmento indicato, come da requisito."
+  },
+  {
+    "test_id": "REQ-F-012.TC04",
+    "title": "Validazione campi obbligatori: tentativo di salvataggio senza metadati di validità",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Pricing: Prezzo base 49,90 EUR",
+      "Sconto: 10%",
+      "Cashback: 5,00 EUR",
+      "Punti Connect: 150",
+      "Validità: NON valorizzata (data/ora inizio e fine mancanti)"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Impostare prezzo, sconto, cashback e punti come da test data.",
+      "Lasciare vuoti i campi di validità (inizio/fine).",
+      "Tentare il salvataggio della configurazione."
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della configurazione.",
+      "Il sistema mostra un messaggio di validazione che indica chiaramente che i metadati di validità sono obbligatori (inizio e fine).",
+      "Non viene creata alcuna nuova voce di log di configurazione relativa a un salvataggio riuscito."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita 'metadati di validità' ma non esplicita obbligatorietà: si assume che la validità sia necessaria per rendere la configurazione applicabile e verificabile; in caso contrario, adeguare l'esito atteso secondo regole di dominio."
+  },
+  {
+    "test_id": "REQ-F-012.TC05",
+    "title": "Edge case validità: data fine antecedente alla data inizio",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Pricing: Prezzo base 49,90 EUR",
+      "Punti Connect: 150",
+      "Validità: dal 2026-03-31 23:59 al 2026-03-01 00:00 (fine < inizio)"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Impostare prezzo base e punti Connect come da test data.",
+      "Impostare la validità con data fine antecedente alla data inizio.",
+      "Tentare il salvataggio della configurazione."
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della configurazione.",
+      "Il sistema mostra un messaggio di validazione che indica che la data/ora fine deve essere successiva alla data/ora inizio.",
+      "Non viene creata alcuna nuova voce di log di configurazione relativa a un salvataggio riuscito."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Regola di coerenza temporale dedotta dai 'metadati di validità' per rendere il requisito verificabile."
+  },
+  {
+    "test_id": "REQ-F-012.TC06",
+    "title": "Autorizzazioni: utente non Marketing non può accedere/modificare la configurazione bundle",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente autenticato con ruolo diverso da Marketing (es. 'CustomerCare') senza permessi di configurazione bundle."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001"
+    ],
+    "steps": [
+      "Accedere al sistema con l'utente 'CustomerCare'.",
+      "Tentare di aprire l'interfaccia di configurazione bundle.",
+      "Se l'interfaccia è visibile, tentare di selezionare il bundle 'BND-STARTER-001' e modificare un valore (es. punti Connect).",
+      "Tentare di salvare."
+    ],
+    "expected_results": [
+      "L'utente senza permessi non può accedere alla funzione di configurazione, oppure la visualizza in sola lettura senza possibilità di salvataggio (in base all'implementazione).",
+      "In nessun caso l'utente senza permessi riesce a salvare modifiche alla configurazione.",
+      "Non viene creata alcuna voce di log di configurazione riconducibile a un salvataggio effettuato dall'utente senza permessi."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita RBAC/ruoli, ma l'attore 'marketing deve poter configurare' implica necessità di controllo accessi; comportamento accesso negato vs sola lettura dipende dalle policy di prodotto."
+  },
+  {
+    "test_id": "REQ-F-012.TC07",
+    "title": "Integrazione: indisponibilità del servizio di audit/log impedisce salvataggio o segnala errore coerente",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle configurabile nel sistema (es. Bundle 'BND-STARTER-001').",
+      "Utente con ruolo Marketing autenticato e abilitato alla configurazione offerte bundle.",
+      "Possibilità di simulare indisponibilità del componente/servizio di log (es. audit service in errore 500 o timeout)."
+    ],
+    "test_data": [
+      "Bundle: BND-STARTER-001",
+      "Pricing: Prezzo base 49,90 EUR",
+      "Punti Connect: 150",
+      "Cashback: 5,00 EUR",
+      "Validità: 2026-03-01 00:00 - 2026-03-31 23:59",
+      "Fault injection: audit/log service = timeout (es. 30s) oppure HTTP 500"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione bundle con l'utente Marketing.",
+      "Selezionare il bundle 'BND-STARTER-001'.",
+      "Impostare i valori di configurazione come da test data.",
+      "Abilitare la condizione di errore sul servizio di audit/log (timeout o 500).",
+      "Tentare il salvataggio della configurazione.",
+      "Ripristinare la disponibilità del servizio di audit/log.",
+      "Verificare lo stato della configurazione del bundle e la presenza di log."
+    ],
+    "expected_results": [
+      "Il sistema gestisce l'indisponibilità del log in modo deterministico: o blocca il salvataggio con messaggio di errore, oppure completa il salvataggio ma segnala chiaramente l'impossibilità di registrare il log (comportamento da definire).",
+      "Non devono esistere stati incoerenti: se il salvataggio risulta 'riuscito', deve essere possibile riscontrare la configurazione persistita; se risulta 'fallito', la configurazione non deve risultare aggiornata.",
+      "Al ripristino del servizio, eventuali operazioni ripetute devono generare correttamente una voce di log con before/after."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la policy in caso di failure del logging (hard fail vs soft fail). Il test verifica assenza di inconsistenze e gestione esplicita dell'errore; definire comportamento atteso in analisi di dettaglio."
+  }
+]

@@ -1,0 +1,174 @@
+[
+  {
+    "test_id": "REQ-F-029.TC01",
+    "title": "Generazione proposta commerciale: il Motore restituisce alternative/combinazioni/sconti senza attivare o provisionare",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore di Offerte deployato e raggiungibile via API/servizio applicativo",
+      "Logging applicativo e audit/telemetria abilitati (tracciamento chiamate in uscita e eventi di dominio)",
+      "Eventuali endpoint/servizi di provisioning e order management esterni (mock o reali) disponibili per rilevare eventuali chiamate indesiderate"
+    ],
+    "test_data": [
+      "Cliente: ID=CLI-100045, segmento=Consumer, area=IT, anzianità=24 mesi",
+      "Carrello/input prodotti: [\"MOBILE_VOICE\", \"DATA_100GB\"]",
+      "Canale richiesta: web",
+      "Data richiesta: 2026-02-23"
+    ],
+    "steps": [
+      "Invocare il Motore di Offerte con i dati cliente e l'input prodotti per ottenere una proposta",
+      "Acquisire la risposta del Motore (payload proposta)",
+      "Verificare nei log/trace del Motore le chiamate in uscita effettuate durante l'elaborazione",
+      "Verificare sui sistemi esterni (o mock) di provisioning/order management eventuali richieste ricevute nello stesso intervallo temporale"
+    ],
+    "expected_results": [
+      "La risposta contiene una o più proposte commerciali con almeno: lista alternative/combinazioni e sconti/prezzi/condizioni associati",
+      "Nei log/trace del Motore non risultano chiamate verso endpoint/servizi di provisioning/attivazione o completamento ordine",
+      "I sistemi esterni di provisioning/order management non ricevono alcuna richiesta originata dal Motore durante la generazione della proposta"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori e canale non sono esplicitati nel requisito: sono stati inferiti (utente/sistema di vendita che invoca il Motore; canale web come esempio)."
+  },
+  {
+    "test_id": "REQ-F-029.TC02",
+    "title": "Tentativo di finalizzazione vendita: assenza di funzionalità/endpoint di checkout o completamento ordine nel Motore",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore di Offerte deployato",
+      "Disponibilità della specifica API (OpenAPI/Swagger) e/o catalogo endpoint esposti dal Motore",
+      "Accesso a console/ingress per effettuare richieste HTTP verso il Motore"
+    ],
+    "test_data": [
+      "Richiesta HTTP verso endpoint ipotetico di finalizzazione: POST /orders/complete (o equivalente naming)",
+      "Payload esempio: {\"proposalId\":\"PROP-778899\",\"paymentMethod\":\"CARD\",\"acceptTerms\":true}"
+    ],
+    "steps": [
+      "Consultare la documentazione API esposta dal Motore (Swagger/OpenAPI o equivalente)",
+      "Verificare se sono presenti endpoint/operazioni riconducibili a finalizzazione vendita, creazione ordine, pagamento, checkout o provisioning",
+      "Eseguire una chiamata HTTP verso un endpoint ipotetico di finalizzazione (se non documentato, usare un path comune concordato in test, es. /orders/complete)",
+      "Raccogliere lo status code e il body della risposta"
+    ],
+    "expected_results": [
+      "La documentazione API del Motore non espone operazioni di finalizzazione vendita/checkout/pagamento/creazione ordine/provisioning",
+      "La chiamata verso endpoint di finalizzazione non è supportata e viene rifiutata (es. 404 Not Found o 405 Method Not Allowed) senza generare alcun side-effect",
+      "Non vengono generati eventi/azioni interne che implichino completamento ordine o avvio provisioning"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i nomi degli endpoint: il test verifica l'assenza di capability tramite documentazione API e comportamento HTTP standard (404/405)."
+  },
+  {
+    "test_id": "REQ-F-029.TC03",
+    "title": "Integrazione: durante la proposta non devono partire chiamate verso sistemi di provisioning/attivazione (timeout/errore simulato)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore di Offerte deployato",
+      "Disponibilità di un mock server per servizi esterni di provisioning/attivazione (es. /provisioning/*) configurato per rispondere con timeout o 500",
+      "Configurazione di rete/observability per intercettare eventuali chiamate in uscita del Motore (APM, service mesh, proxy o log HTTP client)"
+    ],
+    "test_data": [
+      "Cliente: ID=CLI-200010, segmento=Business",
+      "Input prodotti: [\"FIBER_1G\", \"VOICE_UNLIMITED\"]",
+      "Configurazione mock provisioning: risponde 500 su qualsiasi richiesta ricevuta"
+    ],
+    "steps": [
+      "Configurare il mock server provisioning per registrare tutte le richieste in ingresso e rispondere 500",
+      "Invocare il Motore per generare una proposta commerciale con i dati indicati",
+      "Verificare se il mock provisioning ha ricevuto richieste durante l'elaborazione",
+      "Verificare nei log/trace del Motore eventuali tentativi di chiamata verso provisioning/attivazione"
+    ],
+    "expected_results": [
+      "Il Motore restituisce comunque la proposta commerciale (o un errore coerente con regole di calcolo interne) senza dipendere da provisioning/attivazione",
+      "Il mock provisioning non riceve alcuna richiesta dal Motore",
+      "Nei log/trace non risultano tentativi di invocazione di servizi di provisioning/attivazione (nessun retry/timeout verso tali endpoint)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia dipendenze esterne specifiche; il test usa un mock di provisioning come sentinella per dimostrare l'assenza di chiamate."
+  },
+  {
+    "test_id": "REQ-F-029.TC04",
+    "title": "Edge case: input con flag/parametri che suggeriscono attivazione non deve causare provisioning o finalizzazione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test con Motore di Offerte deployato e raggiungibile",
+      "Logging/trace abilitati per chiamate in uscita",
+      "Mock o monitoraggio sistemi esterni per rilevare chiamate indesiderate"
+    ],
+    "test_data": [
+      "Cliente: ID=CLI-300077, segmento=Consumer",
+      "Input prodotti: [\"TV_PREMIUM\"]",
+      "Parametri extra nella richiesta (se accettati dal contratto): {\"action\":\"ACTIVATE\",\"confirm\":true,\"submitOrder\":true}"
+    ],
+    "steps": [
+      "Invocare il Motore con i dati cliente, input prodotti e i parametri extra indicati (se il contratto li rifiuta, includerli comunque per testare robustezza)",
+      "Acquisire la risposta del Motore",
+      "Verificare nei log/trace del Motore le chiamate in uscita durante l'elaborazione",
+      "Verificare sui sistemi esterni (o mock) eventuali richieste ricevute"
+    ],
+    "expected_results": [
+      "Il Motore non avvia alcuna attivazione/provisioning né finalizzazione vendita indipendentemente dai parametri extra ricevuti",
+      "Se i parametri extra non sono previsti dal contratto, la richiesta è rifiutata con errore di validazione (es. 400 Bad Request) senza side-effect",
+      "Non risultano chiamate verso sistemi di provisioning/attivazione/ordine nei log/trace e nei mock esterni"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Assunzione per rendere verificabile: esiste un contratto API che può ignorare o rifiutare parametri non previsti; in entrambi i casi non devono esserci side-effect."
+  },
+  {
+    "test_id": "REQ-F-029.TC05",
+    "title": "Verifica statica: codice e documentazione evidenziano l'assenza di chiamate di provisioning/attivazione originate dal Motore",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Accesso in sola lettura al repository del codice del Motore di Offerte (permessi adeguati)",
+      "Accesso alla documentazione tecnica/architetturale del Motore (README, ADR, diagrammi, OpenAPI, wiki)",
+      "Disponibilità di strumenti di ricerca nel codice (grep/ripgrep) e/o analisi dipendenze"
+    ],
+    "test_data": [
+      "Lista parole chiave/indicatori da ricercare: \"provision\", \"provisioning\", \"activation\", \"activate\", \"order\", \"checkout\", \"submitOrder\", \"fulfillment\", \"OMS\", \"CRM\"",
+      "Lista di package/moduli noti di provisioning (se presenti in azienda): es. com.company.provisioning.*, com.company.fulfillment.*"
+    ],
+    "steps": [
+      "Eseguire una ricerca nel repository del Motore per riferimenti a SDK/client o endpoint di provisioning/attivazione/checkout/ordine",
+      "Analizzare le dipendenze dichiarate (build file) per verificare l'assenza di librerie/client di provisioning/OMS",
+      "Verificare la documentazione tecnica/architetturale per una dichiarazione esplicita di separazione responsabilità (Motore propone, sistemi esterni finalizzano/attivano)",
+      "Verificare la specifica API pubblicata dal Motore per l'assenza di operazioni di provisioning/attivazione/finalizzazione"
+    ],
+    "expected_results": [
+      "Nel codice del Motore non sono presenti client, chiamate HTTP, producer di eventi o integrazioni che avviino provisioning/attivazione o finalizzazione ordine",
+      "Le dipendenze del Motore non includono librerie/SDK specifici per provisioning/OMS/fulfillment (o, se presenti per motivi trasversali, non sono utilizzati per attivazioni/provisioning e l'uso è giustificato e tracciabile)",
+      "La documentazione tecnica/architetturale dichiara esplicitamente che il Motore genera proposte/prezzi/condizioni e non esegue provisioning/attivazione/finalizzazione",
+      "La documentazione API non include endpoint/operazioni di provisioning/attivazione/finalizzazione"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il criterio AC-3 richiede verifica su codice e documentazione: questo test è di natura ispettiva e necessita accessi autorizzati (da qui il type 'Authorization')."
+  }
+]

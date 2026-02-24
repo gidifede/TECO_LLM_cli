@@ -1,0 +1,42 @@
+[
+  {
+    "story_id": "REQ-F-010.US01",
+    "title": "Gestione matrice combinazioni (bundle) e metadati da configuratore",
+    "persona": "Team Marketing",
+    "goal": "creare, modificare e cancellare combinazioni/bundle (coppie prodotto A,B) configurandone metadati, validità, target e stato di attivazione tramite interfaccia di configurazione",
+    "benefit": "gestire in autonomia le campagne/bundle e governare cosa viene proposto ai clienti in base a condizioni commerciali e target",
+    "user_story": "Come Team Marketing\nVoglio creare, modificare e cancellare combinazioni/bundle (A,B) e i relativi metadati tramite un configuratore\nIn modo che possa attivare/disattivare bundle e governarne pricing, validità e target senza interventi tecnici",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente Team Marketing accede all'interfaccia di configurazione dei bundle ALLORA può creare una nuova combinazione/bundle definendo almeno la coppia di prodotti (A,B).",
+      "QUANDO un utente Team Marketing seleziona un bundle esistente ALLORA può modificarne i dati e salvare le modifiche.",
+      "QUANDO un utente Team Marketing seleziona un bundle esistente ALLORA può cancellarlo tramite l'interfaccia di configurazione.",
+      "QUANDO un utente Team Marketing crea o modifica un bundle ALLORA il sistema consente di configurare i seguenti metadati: nome commerciale, durata, target, periodo di acquistabilità (data inizio e data fine promozione), stato di attivazione, testo promo/USP.",
+      "QUANDO un utente Team Marketing imposta il target di un bundle ALLORA può selezionare uno o più cluster predefiniti resi disponibili al configuratore.",
+      "QUANDO un utente Team Marketing salva una creazione/modifica/cancellazione di un bundle ALLORA il sistema genera log di configurazione obbligatori contenenti almeno il before/after della variazione."
+    ],
+    "business_rules": [
+      "La matrice delle combinazioni è intesa come insieme di coppie (A,B) di prodotti configurabili dal Team Marketing.",
+      "I target dei bundle sono cluster predefiniti selezionabili da interfaccia del configuratore e resi disponibili da un tool esterno (da definire/integrare).",
+      "Per ogni operazione di creazione/modifica/cancellazione devono essere prodotti log obbligatori con rappresentazione before/after.",
+      "Metadati minimi configurabili per bundle: nome commerciale, durata, target, periodo di acquistabilità (data inizio/fine), stato di attivazione, testo promo/USP."
+    ],
+    "edge_cases": [
+      "QUANDO il Team Marketing tenta di salvare un bundle con data fine promozione antecedente alla data inizio ALLORA il sistema impedisce il salvataggio e segnala l'errore.",
+      "QUANDO il Team Marketing tenta di salvare un bundle senza target selezionato ALLORA il sistema gestisce il caso secondo regola da definire (blocco o target 'tutti') e lo comunica in modo esplicito.",
+      "QUANDO i cluster target non sono disponibili dal tool esterno o l'integrazione è indisponibile ALLORA il sistema segnala l'indisponibilità e impedisce (o limita) il salvataggio del target secondo regola da definire.",
+      "QUANDO la generazione dei log fallisce ALLORA l'operazione di salvataggio viene gestita secondo regola da definire (es. rollback e messaggio di errore) per garantire l'obbligatorietà dei log.",
+      "QUANDO due utenti Team Marketing modificano lo stesso bundle in parallelo ALLORA il sistema gestisce il conflitto (modalità da definire: lock ottimistico/pessimistico)."
+    ],
+    "assumptions": [
+      "Il requisito rimanda a REQ-F-002 per le condizioni di pricing/validità/target di dettaglio: in assenza del dettaglio, la story si limita a richiedere la configurabilità dei campi elencati e non specifica ulteriori regole di calcolo/validazione.",
+      "Il requisito rimanda a REQ-F-004 e REQ-F-005 per ulteriori campi del bundle: in assenza del contenuto, non vengono inclusi altri metadati oltre a quelli esplicitati negli acceptance criteria.",
+      "La modalità di integrazione con il tool di definizione cluster (esistente vs sviluppare ad hoc) non è definita: si assume che il configuratore riceva un elenco di cluster 'predefiniti' selezionabili.",
+      "Non sono specificate regole di autorizzazione/ruoli per l'accesso al configuratore: si assume che l'utente Team Marketing sia già autorizzato ad operare sulla dashboard."
+    ],
+    "notes": "Dipendenze esterne: definizione e disponibilità del tool per creare/salvare cluster target e metterli a disposizione del configuratore (da discutere con DTO). Il requisito cita regole di dettaglio e campi aggiuntivi in REQ-F-002/004/005 non forniti: la story potrebbe richiedere refinement/scomposizione quando tali riferimenti saranno disponibili."
+  }
+]

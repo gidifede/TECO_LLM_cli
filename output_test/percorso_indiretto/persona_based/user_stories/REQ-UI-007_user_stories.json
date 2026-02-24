@@ -1,0 +1,36 @@
+[
+  {
+    "story_id": "REQ-UI-007.US01",
+    "title": "Visualizzare la proposta bundle in pop-up prima del checkout (canali digitali)",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare la proposta di bundle tramite un pop-up prima del checkout su App e sito",
+    "benefit": "valutare e comprendere l’offerta suggerita nel momento più rilevante del percorso di acquisto",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare la proposta di bundle tramite un pop-up prima del checkout su App e sito\nIn modo che possa valutare l’offerta suggerita prima di completare l’acquisto",
+    "channels": [
+      "app",
+      "web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO sono un Cliente digitale e mi trovo nel percorso di acquisto su APP ALLORA la UI mostra la proposta attraverso un pop-up prima del checkout.",
+      "QUANDO sono un Cliente digitale e mi trovo nel percorso di acquisto su web ALLORA la UI mostra la proposta attraverso un pop-up prima del checkout.",
+      "QUANDO si verificano le condizioni di trigger documentate ALLORA il pop-up della proposta viene mostrato prima del checkout (su APP e su web).",
+      "QUANDO viene eseguito un test utente su APP ALLORA l’aspetto e il comportamento del pop-up risultano verificabili rispetto a quanto previsto.",
+      "QUANDO viene eseguito un test utente su sito web ALLORA l’aspetto e il comportamento del pop-up risultano verificabili rispetto a quanto previsto."
+    ],
+    "business_rules": [
+      "Il pop-up è il canale primario di esposizione e deve essere implementato come modalità di presentazione iniziale della proposta prima del checkout.",
+      "Il pop-up deve essere disponibile e coerente sui touchpoint digitali APP e web."
+    ],
+    "edge_cases": [
+      "QUANDO le condizioni di trigger non sono soddisfatte ALLORA il pop-up non deve essere mostrato.",
+      "QUANDO il cliente accede al checkout tramite percorsi alternativi/non standard ALLORA il pop-up deve comunque rispettare la regola 'prima del checkout' se il trigger è soddisfatto (in caso contrario non viene mostrato).",
+      "QUANDO la UI non riesce a renderizzare il pop-up per un errore tecnico lato canale ALLORA l’evento deve essere gestito senza bloccare la prosecuzione verso il checkout (comportamento di fallback non specificato)."
+    ],
+    "assumptions": [
+      "Le 'condizioni di trigger documentate' sono definite in un artefatto esterno non incluso nel requisito (es. regole del motore/journey); la story assume che tali trigger siano disponibili e testabili.",
+      "I criteri 'aspetto e comportamento verificabili in test utente' sono interpretati come disponibilità di requisiti UI/UX (mock, design system o specifiche) e di una checklist di verifica per APP e web."
+    ],
+    "notes": "Il requisito è focalizzato sulla UI del canale digitale e non cita altre personas. Dipendenza esterna: definizione puntuale delle condizioni di trigger e delle specifiche UI/UX necessarie per rendere i test 'verificabili'."
+  }
+]

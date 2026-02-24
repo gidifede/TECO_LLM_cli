@@ -1,0 +1,147 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-022",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 53,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-022.TC01",
+        "detail": "Introduce dettagli non presenti nel requisito: job batch schedulabile manualmente, TOP_N=3, regola di tie-break specifica (priorità_marketing e product_id), e formalizzazione di una tabella/feature flag per eccezioni."
+      },
+      {
+        "test_id": "REQ-F-022.TC03",
+        "detail": "Assume disponibilità di logging/telemetria, metadati di output (cluster usato, timestamp, versione modello) e possibilità di interrogare tali metadati: non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-022.TC04",
+        "detail": "Assume gestione di non-determinismo tramite randomizzazione/seed fissato e introduce concetto di tolleranza numerica sui punteggi: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-022.TC05",
+        "detail": "Definisce un comportamento di errore per cluster mancante (codice errore tipo 'CLUSTER_MANCANTE') e vieta output parziali: il requisito non specifica la gestione degli input mancanti."
+      },
+      {
+        "test_id": "REQ-F-022.TC06",
+        "detail": "Definisce comportamento fail-fast con errore per propensity NULL/NaN e richiede dettagli errore (cliente e causa): non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-022.TC07",
+        "detail": "Assume architettura con sorgente propensity esterna/servizio, simulazioni HTTP 500/timeout e metriche: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-F-022.TC08",
+        "detail": "Richiede una motivazione 'tracciabile' per lista vuota (messaggio/causale): il requisito non lo richiede esplicitamente."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"in tempo reale o in batch\"",
+        "detail": "I test coprono solo il canale batch; manca almeno un test esplicito in modalità real-time per dimostrare che la capacità core vale anche in tempo reale (come indicato in descrizione)."
+      },
+      {
+        "source": "Description: \"secondo i criteri di priorità impostati dall'utente marketing\"",
+        "detail": "Non c'è un test che dimostri in modo esplicito l'effetto dei criteri marketing sull'ordinamento/sele­zione (oltre a una regola di tie-break assunta). Manca uno scenario in cui la priorità marketing cambia l'ordine rispetto alla sola propensity."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-022.TC05",
+          "REQ-F-022.TC06"
+        ],
+        "detail": "Entrambi test negativi su input mancanti/non validi con atteso 'errore tracciabile'; scenari diversi (cluster vs propensity) ma struttura e obiettivo molto simili."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 14,
+    "coherence_score": 36,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-022.US01.TC01",
+        "detail": "Introduce canale e funzionalità UI ('dashboard'), autenticazione/ruoli e flusso di configurazione non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC02",
+        "detail": "Assume esistenza di dashboard e verifiche UI per assenza eccezione: non citate nel requisito."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC03",
+        "detail": "Gestione prodotto non a catalogo (blocco salvataggio o 'non applicabile') non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC04",
+        "detail": "Gestione duplicati/conflitti e regole di prevalenza (es. 'ultima modifica vince') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC05",
+        "detail": "Test di autorizzazione (ruolo Sales vs Team Marketing) non tracciabile: il requisito non parla di permessi né di UI."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC01",
+        "detail": "Assume un contratto di invocazione con input espliciti nel payload e/o metadati/audit; il requisito richiede uso di cluster/propensity ma non specifica endpoint/contratto."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC05",
+        "detail": "Introduce vincoli su metadati di calcolo (versione modello/dati) come requisito di confronto; non esplicitati dall'AC-4."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC06",
+        "detail": "Prevede 'fallback controllato' per cluster mancante come alternativa all'errore: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC07",
+        "detail": "Prevede 'ordinamento parziale' o regole di posizionamento in coda per propensity mancanti: non specificato."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC08",
+        "detail": "Introduce indisponibilità del servizio possesso (timeout/5xx) e requisiti di warning/limitazioni: non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"secondo i criteri di priorità impostati dall'utente marketing\"",
+        "detail": "Manca una validazione esplicita e deterministica dell'applicazione dei criteri di priorità marketing sull'ordinamento/sele­zione (non solo 'salvo regole di priorità configurate')."
+      },
+      {
+        "source": "Description: \"in tempo reale o in batch\"",
+        "detail": "I test non dichiarano esplicitamente la copertura di entrambe le modalità; il canale è spesso vuoto e non c'è un TC che distingua chiaramente real-time vs batch."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-022.US01.TC01",
+          "REQ-F-022.US02.TC04"
+        ],
+        "detail": "Entrambi verificano l'inclusione di un prodotto posseduto quando esiste un'eccezione cliente/prodotto; cambiano i canali/contesto ma lo scenario core è lo stesso."
+      },
+      {
+        "test_ids": [
+          "REQ-F-022.US01.TC02",
+          "REQ-F-022.US02.TC03"
+        ],
+        "detail": "Entrambi verificano l'esclusione di un prodotto posseduto in assenza di eccezioni; scenario sostanzialmente duplicato."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-4). Tuttavia il set indirect_persona introduce molte più informazioni non tracciabili (dashboard, ruoli/autorizzazioni, gestione catalogo/duplicati, fallback e indisponibilità servizi), accumulando più 'added_info' e anche più ridondanze. Il set direct, pur avendo diverse assunzioni tecniche (logging, error handling, sorgenti esterne) e due mancanze rispetto alla descrizione (assenza test real-time e applicazione esplicita delle priorità marketing), resta complessivamente più vicino al requisito e quindi ottiene un punteggio di coerenza superiore (53 vs 36)."
+  }
+}

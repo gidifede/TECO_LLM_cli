@@ -1,0 +1,155 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-029",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 83,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-029.TC01",
+        "detail": "Introduce canale 'web' e dati cliente/segmento/area/data non citati nel requisito (il requisito non parla di canali né di segmentazione cliente)."
+      },
+      {
+        "test_id": "REQ-F-029.TC01",
+        "detail": "Assume invocazione via API/servizio applicativo e presenza di telemetria/audit per tracciare chiamate in uscita: il requisito non specifica modalità di integrazione né strumenti di osservabilità."
+      },
+      {
+        "test_id": "REQ-F-029.TC01",
+        "detail": "Assume esistenza di sistemi esterni 'order management' e 'provisioning' interrogabili o mockabili con meccanismi di rilevazione richieste: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-029.TC02",
+        "detail": "Assume endpoint e semantiche HTTP specifiche (es. POST /orders/complete, 404/405): il requisito richiede assenza di finalizzazione, ma non impone protocolli, path o codici di risposta."
+      },
+      {
+        "test_id": "REQ-F-029.TC03",
+        "detail": "Assume esistenza/configurabilità di un mock server provisioning e pattern di errore (timeout/500) per dimostrare assenza chiamate; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.TC03",
+        "detail": "Afferma che il Motore 'restituisce comunque la proposta' anche con provisioning in errore: il requisito non dichiara alcuna dipendenza o comportamento in caso di indisponibilità di sistemi esterni."
+      },
+      {
+        "test_id": "REQ-F-029.TC04",
+        "detail": "Introduce parametri extra (action/confirm/submitOrder) e comportamento di validazione (400 Bad Request): il requisito non definisce contratto API né gestione parametri non previsti."
+      },
+      {
+        "test_id": "REQ-F-029.TC05",
+        "detail": "Introduce dettagli implementativi/organizzativi non richiesti: nomi package aziendali (com.company.*), SBOM/strumenti specifici, e lista keyword estesa (OMS/CRM/fulfillment) non citata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.TC05",
+        "detail": "Type 'Authorization' e presupposti di accesso al repository/documentazione: il requisito chiede verifica su codice/documentazione (AC-3) ma non parla di permessi/ruoli o modalità di accesso."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'La finalizzazione della vendita, le chiamate per attivazione/provisioning e la gestione operativa correlata rimangono esclusiva responsabilità dei sistemi di vendita/provisioning esterni.'",
+        "detail": "I TC verificano bene l’assenza di azioni originate dal Motore, ma non validano esplicitamente (con un test dedicato) che tali azioni siano effettivamente gestite da sistemi esterni nel flusso reale; resta implicito o demandato a controlli indiretti su mock/log."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-029.TC01",
+          "REQ-F-029.TC03"
+        ],
+        "detail": "Entrambi validano la generazione proposta e l’assenza di chiamate a provisioning/ordine tramite log/trace e controllo su sistemi esterni/mock; TC03 aggiunge solo la simulazione errore/timeout."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-029.US01.TC01",
+        "detail": "Assume endpoint specifici (es. /proposals), header (X-Correlation-Id) e APM/tracing: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC01",
+        "detail": "Precondizione 'non esistono credenziali/configurazioni nel Motore per invocare provisioning/attivazione': il requisito chiede assenza di chiamate/azioni originate dal Motore, non vincoli di configurazione/credenziali."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC02",
+        "detail": "Introduce regole di integrazione non definite ('ignorare o rifiutare', 4xx con messaggio esplicito) e parametri finalizeOrder/provisioning/action: il requisito non specifica contratto né gestione input."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC03",
+        "detail": "Introduce canali/consumer specifici (portale web o app) e scenario di presentazione UI: il requisito non menziona canali o UX."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC04",
+        "detail": "Assume esistenza di host/endpoint esterni specifici e possibilità di blocco rete/DNS (sales.example.local, prov.example.local): non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC04",
+        "detail": "Afferma che il Motore dovrebbe restituire proposta o fallire solo per motivi interni: il requisito non definisce resilienza/comportamento in caso di indisponibilità esterna."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC05",
+        "detail": "Introduce pipeline CI, SBOM, allowlist endpoint, archiviazione evidenze per release: non richiesti dal requisito (che chiede solo evidenza di assenza chiamate in codice/documentazione)."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC01",
+        "detail": "Introduce attore 'Verticale di vendita', flusso di selezione proposta e checkout E2E con tracing multi-sistema: il requisito parla di 'sistemi esterni di vendita/provisioning' in generale, non definisce Verticali né step di checkout."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC02",
+        "detail": "Richiede accesso a configurazioni/diagrammi del Verticale e lista endpoint consentiti: non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC03",
+        "detail": "Introduce concetto di proposta con TTL/scadenza e gestione UX lato Verticale: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC04",
+        "detail": "Introduce requisito implicito di continuità del checkout con Motore indisponibile e opzioni di comportamento (prosegue/mette in attesa): non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC05",
+        "detail": "Introduce struttura documentale specifica E2E (sezioni checklist, sequence diagram checkout) e vincoli di versioning documentazione: non specificati dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-3: 'Verifica che il codice e la documentazione mostrino esplicitamente l'assenza di chiamate di provisioning o di azioni di attivazione originate dal Motore'",
+        "detail": "Coperto, ma la parte 'codice' è mescolata con molte assunzioni di processo (CI/SBOM/allowlist/archiviazione evidenze). Non manca copertura, ma manca un focus minimo e diretto sull’evidenza 'esplicita' richiesta (es. dichiarazione architetturale del confine) senza introdurre requisiti di governance non richiesti."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-029.US01.TC01",
+          "REQ-F-029.US01.TC03"
+        ],
+        "detail": "Entrambi verificano che durante la generazione proposta non partano chiamate a provisioning/finalizzazione; TC03 aggiunge solo il contesto E2E con canale di presentazione."
+      },
+      {
+        "test_ids": [
+          "REQ-F-029.US01.TC04",
+          "REQ-F-029.US01.TC02"
+        ],
+        "detail": "Entrambi mirano a dimostrare assenza di azioni operative anche in condizioni 'anomale' (parametri di finalizzazione vs indisponibilità endpoint esterni), con expected molto simili centrati su 'nessuna chiamata/side-effect'."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1/2/3). Tuttavia il set direct introduce meno informazioni non tracciabili (added_info piu contenute e piu legate a dettagli di testabilità) e presenta meno ridondanze. Il set indirect_persona amplia molto lo scope con elementi non richiesti (Verticale, UX, TTL proposta, CI/SBOM/allowlist, comportamenti di resilienza), accumulando molte added_info e quindi un punteggio di coerenza inferiore (55 vs 83)."
+  }
+}

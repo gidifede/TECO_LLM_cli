@@ -1,0 +1,105 @@
+[
+  {
+    "story_id": "REQ-D-004.US01",
+    "title": "Tracciamento minimo delle azioni di configurazione effettuate dal Marketing",
+    "persona": "Team Marketing",
+    "goal": "generare automaticamente un log completo delle operazioni di configurazione (creazione/aggiornamento/cancellazione) con stato prima/dopo e motivazione dove richiesta",
+    "benefit": "avere tracciabilità delle modifiche e poter consultare/esportare i record per controllo interno e analisi",
+    "user_story": "Come Team Marketing\nVoglio che ogni mia operazione di configurazione generi un record di log con i dettagli minimi richiesti e con motivazione obbligatoria per modifiche critiche\nIn modo che sia garantita la tracciabilità delle modifiche e io possa consultare ed esportare lo storico delle configurazioni",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente Marketing esegue un'operazione di configurazione (creazione, aggiornamento, cancellazione) ALLORA il sistema genera un record di log contenente almeno: user_id, operation_type, timestamp, before_state, after_state.",
+      "QUANDO l'operazione riguarda una modifica a una regola definita come critica ALLORA il sistema richiede l'inserimento di una motivazione e non consente il salvataggio della modifica senza motivazione.",
+      "QUANDO l'operazione non riguarda una modifica a una regola critica ALLORA la motivazione, se prevista dal flusso, viene salvata nel record di log.",
+      "QUANDO un utente Marketing accede alla sezione di consultazione dei log ALLORA può visualizzare i record di configurazione registrati.",
+      "QUANDO un utente Marketing richiede l'esportazione dei log ALLORA il sistema rende disponibili i record di configurazione per l'esportazione."
+    ],
+    "business_rules": [
+      "Ogni operazione di configurazione deve essere tracciata con i campi minimi: user_id, operation_type, timestamp, before_state, after_state.",
+      "operation_type deve assumere uno dei valori: creazione, update, cancellazione.",
+      "La motivazione è obbligatoria per modifiche di regole critiche; in assenza di motivazione la modifica non può essere completata.",
+      "I record di configurazione devono essere consultabili ed esportabili dagli utenti autorizzati (Marketing)."
+    ],
+    "edge_cases": [
+      "Tentativo di salvare una modifica a regola critica senza motivazione: il sistema blocca l'operazione e mostra un errore.",
+      "Errore nella generazione del record di log dopo una modifica: la modifica non deve risultare tracciata in modo incompleto (comportamento atteso da chiarire: rollback dell'operazione o segnalazione di failure).",
+      "before_state o after_state troppo grandi o non serializzabili: il sistema deve gestire l'errore e garantire comunque un record coerente (dettagli da chiarire).",
+      "Operazioni concorrenti sulla stessa regola/bundle/campagna: i log devono mantenere l'ordine temporale e la corretta associazione utente/operazione (dettagli di ordinamento da chiarire).",
+      "Utente non autorizzato tenta di consultare/esportare i record: accesso negato (se applicabile ai ruoli)."
+    ],
+    "assumptions": [
+      "Si assume che esista una classificazione di 'regole critiche' determinata da configurazione o metadato, non definita in questo requisito.",
+      "Si assume che 'consultazione' ed 'esportazione' avvengano tramite la dashboard e siano permesse agli utenti Marketing in base ai ruoli/autorizzazioni.",
+      "Si assume che before_state e after_state rappresentino una serializzazione dello stato della regola/bundle/campagna prima e dopo la modifica."
+    ],
+    "notes": "AC 'I record di configurazione sono disponibili per la consultazione e l'esportazione' è stato interpretato come disponibilità tramite dashboard per utenti Marketing autorizzati; i dettagli di formato export, filtri e retention non sono specificati nel requisito e restano dipendenze di definizione. Il requisito è focalizzato sullo schema minimo del log; eventuali regole di rollback in caso di failure del logging non sono definite."
+  },
+  {
+    "story_id": "REQ-D-004.US02",
+    "title": "Persistenza e disponibilità dei record di log di configurazione nel Motore di Offerte",
+    "persona": "Motore di Offerte",
+    "goal": "registrare e persistere un record di log per ogni operazione di configurazione con campi minimi e motivazione obbligatoria per modifiche critiche, rendendolo consultabile ed esportabile",
+    "benefit": "garantire tracciabilità tecnica e auditabilità delle modifiche di configurazione nel tempo",
+    "user_story": "Come Motore di Offerte\nVoglio registrare e persistere un record di log per ogni operazione di configurazione con stato prima/dopo e motivazione obbligatoria per modifiche critiche\nIn modo che le modifiche siano tracciabili e i record siano disponibili per consultazione ed esportazione",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO viene eseguita un'operazione di configurazione ALLORA il Motore di Offerte persiste un record di log contenente almeno: user_id, operation_type, timestamp, before_state, after_state.",
+      "QUANDO l'operazione è una modifica di regola critica ALLORA il Motore di Offerte persiste anche la motivazione e rifiuta la richiesta se la motivazione non è presente.",
+      "QUANDO i record sono richiesti per consultazione ALLORA il Motore di Offerte li rende disponibili al canale di consultazione autorizzato.",
+      "QUANDO i record sono richiesti per esportazione ALLORA il Motore di Offerte li rende disponibili al canale di esportazione autorizzato."
+    ],
+    "business_rules": [
+      "Il log minimo deve includere user_id, operation_type, timestamp, before_state, after_state per ogni operazione di configurazione.",
+      "Per modifiche critiche la motivazione è un campo obbligatorio e la richiesta deve essere rifiutata se mancante.",
+      "I record devono essere disponibili per consultazione ed esportazione (meccanismo/endpoint non specificati nel requisito)."
+    ],
+    "edge_cases": [
+      "Richiesta di configurazione senza user_id tracciabile: il Motore deve rifiutare o gestire secondo policy (da definire).",
+      "Timestamp non coerente (es. mancante o non valido): il Motore deve valorizzarlo in modo affidabile (da definire: server-side).",
+      "Persistenza fallita del record di log: comportamento atteso non definito (necessaria decisione su atomicità tra modifica e logging).",
+      "Richieste di consultazione/esportazione con volumi elevati: necessarie paginazione/limiti (non definiti nel requisito)."
+    ],
+    "assumptions": [
+      "La determinazione di 'modifica critica' è fornita al Motore (flag/metadato/regola) ma non è definita in questo requisito.",
+      "La disponibilità per consultazione/esportazione implica l'esistenza di interfacce/servizi di lettura, non dettagliati qui.",
+      "I controlli di autorizzazione per consultazione/esportazione sono gestiti da ruoli a monte o dal Motore, ma il dettaglio non è nel requisito."
+    ],
+    "notes": "AC 'I record di configurazione sono disponibili per la consultazione e l'esportazione' è trasversale e condiviso con la US del Team Marketing (ridondanza intenzionale). Mancano dettagli su atomicità tra salvataggio configurazione e salvataggio log, su retention e su formato/endpoint di export: da definire in refinement."
+  },
+  {
+    "story_id": "REQ-D-004.US03",
+    "title": "Consultazione ed esportazione dei log di configurazione per audit",
+    "persona": "Team Compliance",
+    "goal": "consultare ed esportare i record di log delle configurazioni con dettagli di chi/cosa/quando e stato prima/dopo, inclusa motivazione per modifiche critiche",
+    "benefit": "eseguire verifiche di conformità e audit sulle modifiche alle regole/bundle/campagne",
+    "user_story": "Come Team Compliance\nVoglio consultare ed esportare i record di log delle operazioni di configurazione con stato prima/dopo e motivazione per modifiche critiche\nIn modo che possa svolgere attività di audit e verifica di conformità",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Team Compliance accede alla dashboard di consultazione log con autorizzazioni valide ALLORA può visualizzare i record di configurazione registrati.",
+      "QUANDO il Team Compliance visualizza un record di log ALLORA sono presenti almeno: user_id, operation_type, timestamp, before_state, after_state.",
+      "QUANDO il record riguarda una modifica di regola critica ALLORA la motivazione risulta disponibile nel record consultato.",
+      "QUANDO il Team Compliance richiede l'esportazione ALLORA il sistema rende disponibili i record di configurazione per l'esportazione."
+    ],
+    "business_rules": [
+      "Il Team Compliance può accedere in lettura ai log e, se autorizzato, può esportarli.",
+      "I record consultati/esportati devono includere i campi minimi previsti dal requisito."
+    ],
+    "edge_cases": [
+      "Utente Compliance senza permessi di esportazione tenta l'export: operazione negata.",
+      "Record con motivazione mancante su modifica critica: scenario anomalo da evidenziare come non conforme (gestione da definire).",
+      "Impossibilità temporanea di recuperare i log: la dashboard segnala errore e non mostra dati parziali (dettagli da definire)."
+    ],
+    "assumptions": [
+      "Si assume che il Team Compliance abbia una dashboard dedicata o una sezione di dashboard con permessi di lettura/esportazione, come da contesto persona.",
+      "Si assume che l'esportazione sia una funzionalità disponibile anche per Compliance in base ai ruoli, ma i dettagli di formato e filtri non sono nel requisito."
+    ],
+    "notes": "AC 'I record di configurazione sono disponibili per la consultazione e l'esportazione' è condiviso con Team Marketing e Motore di Offerte; ridondanza intenzionale per tracciabilità per persona. Il requisito non specifica filtri, formati di export, retention o mascheramenti: aspetti da chiarire con le regole di autorizzazione/visibilità."
+  }
+]

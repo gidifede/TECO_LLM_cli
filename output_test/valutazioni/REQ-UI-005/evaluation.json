@@ -1,0 +1,178 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-005",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 60,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-005.TC01",
+        "detail": "Assunzione di canale 'web' e di campi minimi del log (timestamp/livello/messaggio) e log 'indicizzati'; il requisito non specifica canale, schema o indicizzazione."
+      },
+      {
+        "test_id": "REQ-UI-005.TC01",
+        "detail": "Uso di livelli log specifici (INFO/ERROR) e keyword nel messaggio ('consenso'); il requisito non definisce livelli o campi ricercabili."
+      },
+      {
+        "test_id": "REQ-UI-005.TC02",
+        "detail": "Uso di livelli log specifici (INFO/WARN/ERROR) e keyword ('audit'); il requisito non definisce livelli o campi ricercabili."
+      },
+      {
+        "test_id": "REQ-UI-005.TC03",
+        "detail": "Introduzione ruolo 'Sales' e aspettativa su comportamento UI (voce menu nascosta/disabilitata) e deep link/URL diretto con messaggio/redirect; il requisito richiede segregazione ruoli ma non specifica ruoli extra né modalità (menu/URL) di enforcement."
+      },
+      {
+        "test_id": "REQ-UI-005.TC04",
+        "detail": "Validazione specifica su intervallo date invertito e relativo messaggio; il requisito non definisce regole di validazione input."
+      },
+      {
+        "test_id": "REQ-UI-005.TC05",
+        "detail": "Dettagli di integrazione non presenti: endpoint/chiavi, identificativo connessione (AUDIT_TEST_01), finestra dati 'ultime 24 ore', evidenze di consegna (file/lotto) e stato 'SUCCESS'."
+      },
+      {
+        "test_id": "REQ-UI-005.TC06",
+        "detail": "Dettagli di scheduling non richiesti: giorno specifico (domenica), vincolo 'nessuna esecuzione fuori pianificazione' e modalità di simulazione tempo; il requisito parla solo di frequenza configurabile."
+      },
+      {
+        "test_id": "REQ-UI-005.TC07",
+        "detail": "Frequenza personalizzata concretizzata come 'ogni 6 ore', introduzione di tolleranza temporale e stati SUCCESS/FAIL; non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.TC08",
+        "detail": "Gestione indisponibilità/timeout del sistema di audit e tracciamento FAIL/SUCCESS; il requisito non richiede esplicitamente gestione errori o tracciatura esiti dell'export."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"dashboard interna\"",
+        "detail": "I test assumono canale web ma non validano esplicitamente che sia una dashboard interna (es. accessibile solo internamente). Il requisito parla di 'dashboard interna' come caratteristica."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-UI-005.TC01 / REQ-UI-005.TC02",
+        "detail": "Scenario sostanzialmente duplicato (ricerca/filtri/visualizzazione) replicato per Marketing e Compliance con variazioni minime di dati."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 16,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-005.US01.TC01",
+        "detail": "Assunzioni non presenti: accesso da rete interna/SSO, concetto di log con 'visibilità Marketing' e dipendenza da 'servizio backend dei log'."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC02",
+        "detail": "Assunzione di filtri specifici (data, severità INFO/ERROR) e che il backend supporti tali filtri; il requisito non definisce quali filtri o attributi."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC03",
+        "detail": "Assunzione di viste/funzionalità 'Compliance-only' (es. /logs/compliance); il requisito non richiede viste separate per ruolo, solo segregazione accessi."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC04",
+        "detail": "Introduzione funzionalità 'Azzera filtri' e gestione stato vuoto; non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC05",
+        "detail": "Gestione indisponibilità backend (500/timeout), no dati parziali e non esposizione di dettagli sensibili (stack trace/token); non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC06",
+        "detail": "Gestione sessione scaduta e re-auth (SSO/token refresh); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC01",
+        "detail": "Assunzioni non presenti: accesso da rete interna/SSO, concetto di log con 'visibilità Compliance' e dipendenza da backend."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC02",
+        "detail": "Assunzione di filtri specifici (data, severità) e supporto backend; non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC03",
+        "detail": "Assunzione di viste/funzionalità 'Marketing-only' (es. /logs/marketing); non richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC04",
+        "detail": "Introduzione ruolo 'Employee' e contesto 'rete interna'; il requisito non elenca ruoli extra né vincoli di rete."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC05",
+        "detail": "Introduzione 'Azzera filtri' e gestione stato vuoto; non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC06",
+        "detail": "Gestione indisponibilità backend e non esposizione dettagli sensibili; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC01",
+        "detail": "Introduzione di un attore/ruolo 'export.admin1' e di dettagli di scheduler osservabile (API/DB/log), oltre a fuso orario Europe/Rome; il requisito non specifica attori, scheduler né fuso."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC02",
+        "detail": "Dettagli di integrazione inventati: endpoint mock HTTPS, frequenza 'ogni 5 minuti' per test, correlazione export_run_id; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC03",
+        "detail": "Estensione della segregazione ruoli alla modifica configurazione export; il requisito parla di permessi di accesso alla dashboard, non della configurazione/export."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC04",
+        "detail": "Assunzione di regole di validazione min/max o formato cron per frequenza personalizzata; il requisito non definisce vincoli né formato."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC05",
+        "detail": "Afferma che il requisito richiede gestione fallimento e tracciatura errore; in realtà il requisito non menziona gestione errori/logging dell'export."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC06",
+        "detail": "Idempotenza/deduplicazione/checkpointing per evitare duplicazioni dopo interruzione; non presente nel requisito e indicato come 'da definire' (quindi non tracciabile)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-3: \"I permessi di accesso alla dashboard rispettano la segregazione dei ruoli (Marketing/Compliance).\"",
+        "detail": "Manca una verifica esplicita che entrambi i ruoli autorizzati (Marketing e Compliance) possano accedere alla dashboard mentre altri ruoli no, senza introdurre assunzioni di viste 'role-only'. Esiste un TC per utente non autorizzato (US02.TC04) ma non è ancorato a un modello di permessi descritto e aggiunge contesto (rete interna)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-UI-005.US01.TC01 / REQ-UI-005.US02.TC01",
+        "detail": "Stesso scenario (accesso e visualizzazione elenco) duplicato per Marketing e Compliance."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC02 / REQ-UI-005.US02.TC02",
+        "detail": "Stesso scenario (filtri data/severità) duplicato per Marketing e Compliance."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC05 / REQ-UI-005.US02.TC06",
+        "detail": "Stesso scenario (backend log indisponibile e gestione errore) duplicato per Marketing e Compliance."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC04 / REQ-UI-005.US02.TC05",
+        "detail": "Stesso scenario (nessun risultato e reset filtri) duplicato per Marketing e Compliance."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct mantiene una coerenza superiore (60) perché copre tutti gli AC con un numero limitato di assunzioni extra, principalmente dettagli tecnici per rendere testabile dashboard/export. Il set indirect_persona, pur coprendo formalmente gli AC, introduce molte più informazioni non tracciabili (SSO/rete interna, viste role-only, gestione sessione, sicurezza messaggi, scheduler/fuso, idempotenza) e presenta più ridondanze, riducendo drasticamente il punteggio (16)."
+  }
+}

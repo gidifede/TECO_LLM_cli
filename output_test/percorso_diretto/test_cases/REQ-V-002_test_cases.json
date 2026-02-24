@@ -1,0 +1,237 @@
+[
+  {
+    "test_id": "REQ-V-002.TC01",
+    "title": "Verifica conformità UI a palette colori e tipografia aziendale su schermate principali",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con build candidata al rilascio",
+      "Disponibile la guida di stile/brand book ufficiale (palette con codici colore, font, gerarchie tipografiche)",
+      "Accesso a una pagina dell'applicazione che utilizza componenti UI standard (es. lista con card, header, pulsanti)"
+    ],
+    "test_data": [
+      "Brand book ufficiale: elenco colori con codici HEX/RGB (es. Primario #005BBB, Secondario #FFD500, Neutri #111111/#FFFFFF) e font ufficiali (es. 'Corporate Sans')",
+      "Schermate da verificare: Home, Lista card, Dettaglio card"
+    ],
+    "steps": [
+      "Aprire la schermata Home dell'applicazione",
+      "Verificare i colori di sfondo, header e principali elementi di navigazione confrontandoli con la palette ufficiale",
+      "Verificare font family e dimensioni di titoli, sottotitoli e testo base confrontandoli con la tipografia ufficiale",
+      "Navigare alla schermata con lista di card",
+      "Verificare colori e tipografia di card (titolo, descrizione, badge/label, pulsanti/CTA) rispetto alla guida di stile",
+      "Navigare alla schermata di dettaglio di una card",
+      "Verificare coerenza di colori e tipografia anche nella vista di dettaglio"
+    ],
+    "expected_results": [
+      "Tutti i colori utilizzati per elementi UI verificati corrispondono ai valori definiti nella palette ufficiale (nessun colore fuori palette per gli elementi controllati)",
+      "La font family utilizzata corrisponde al font aziendale ufficiale per i componenti verificati",
+      "Le gerarchie tipografiche (titolo/sottotitolo/testo) rispettano dimensioni e pesi previsti dalla guida di stile nelle schermate verificate",
+      "Non sono presenti stili discordanti o non conformi (es. font non previsto, colori non autorizzati) nelle schermate verificate"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli standard visual aziendali sono citati in modo dichiarativo: per rendere verificabile il test si assume l'esistenza di un brand book con codici colore e specifiche tipografiche misurabili. Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC02",
+    "title": "Visualizzazione icona promozionale su card quando la promozione è appropriata",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con build candidata al rilascio",
+      "Esiste una sezione che mostra card operative (es. lista pratiche/offerte) dove possono comparire promozioni/urgenze",
+      "Disponibile un meccanismo per rendere una card 'promozionale/urgente' (dato di backend, flag, configurazione o dataset)"
+    ],
+    "test_data": [
+      "Card A con attributo promozione/urgenza impostato (es. promoFlag=true)",
+      "Card B senza attributo promozione/urgenza (es. promoFlag=false)"
+    ],
+    "steps": [
+      "Aprire la schermata con la lista di card",
+      "Individuare la Card A marcata come promozionale/urgente",
+      "Osservare la presenza dell'icona promozionale sulla Card A",
+      "Individuare la Card B non promozionale",
+      "Osservare l'assenza dell'icona promozionale sulla Card B"
+    ],
+    "expected_results": [
+      "La Card A mostra un'icona promozionale/urgenza in posizione prevista dal layout della card",
+      "L'icona promozionale è chiaramente visibile (non sovrapposta a testo/CTA, non tagliata, non fuori area card)",
+      "La Card B non mostra alcuna icona promozionale/urgenza"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il concetto di 'quando appropriate' non è definito: si assume l'esistenza di un attributo/flag dati che abilita l'icona sulla card. Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC03",
+    "title": "Conformità grafica delle icone promozionali alle linee guida (colori, stile, dimensioni)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Disponibile guida di stile/brand book ufficiale con regole su icone (stile, spessore linee, colori consentiti, dimensioni min/max, area di rispetto)",
+      "Disponibile almeno una card con icona promozionale visibile"
+    ],
+    "test_data": [
+      "Specifiche icona promozionale: set colori consentiti (es. solo colori di palette), dimensione (es. 16px/20px), stile (outline/filled) come da linee guida",
+      "Card A promozionale (promoFlag=true)"
+    ],
+    "steps": [
+      "Aprire la schermata con la lista di card contenente la Card A promozionale",
+      "Verificare che l'icona promozionale utilizzi esclusivamente colori presenti nella palette aziendale",
+      "Verificare che lo stile dell'icona (outline/filled, spessore linee) corrisponda alle regole del brand book",
+      "Verificare che la dimensione dell'icona e l'allineamento rispettino le specifiche (dimensione e margini/area di rispetto)",
+      "Verificare che l'icona risulti distintiva rispetto agli altri elementi della card senza violare la gerarchia visiva prevista"
+    ],
+    "expected_results": [
+      "I colori dell'icona promozionale risultano conformi alla palette aziendale (nessun colore non autorizzato)",
+      "Lo stile grafico dell'icona (tratto/riempimento) è coerente con le linee guida aziendali",
+      "Dimensione, allineamento e spaziature dell'icona rispettano le specifiche del brand book",
+      "L'icona risulta distinguibile all'interno della card senza compromettere leggibilità e gerarchia visiva"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "L'AC-2 richiede coerenza e distintività ma non fornisce misure: il test assume che il brand book contenga specifiche verificabili (dimensioni, colori, stile). Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC04",
+    "title": "Gestione condizione negativa: card non deve mostrare icone promozionali in assenza di dati/flag",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile",
+      "Disponibile una lista di card con almeno una card priva del dato promozione/urgenza (campo assente o nullo) oppure esplicitamente non promozionale"
+    ],
+    "test_data": [
+      "Card C con campo promozione/urgenza assente o nullo (es. promoFlag=null oppure campo non presente nella risposta)"
+    ],
+    "steps": [
+      "Aprire la schermata con la lista di card che include la Card C",
+      "Osservare la Card C",
+      "Verificare la presenza/assenza di qualsiasi icona promozionale/urgenza sulla Card C"
+    ],
+    "expected_results": [
+      "La Card C non mostra icone promozionali/urgenza quando il dato promozione/urgenza è assente o nullo",
+      "La card mantiene un layout coerente (nessuno spazio vuoto anomalo o placeholder icona visibile)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Assunzione: in assenza del dato promozionale il comportamento atteso è non mostrare l'icona. Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC05",
+    "title": "Integrazione: comportamento UI in caso di mancato caricamento risorse icone promozionali",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test disponibile",
+      "Presente almeno una card promozionale (promoFlag=true)",
+      "Possibilità di simulare errore di caricamento asset icona (es. blocco CDN, risposta 404/500, timeout) tramite proxy o configurazione ambiente"
+    ],
+    "test_data": [
+      "Card A promozionale (promoFlag=true)",
+      "Simulazione errore asset: richiesta risorsa icona promozionale con risposta HTTP 404 oppure timeout > 10s"
+    ],
+    "steps": [
+      "Attivare la simulazione di errore per il caricamento dell'asset dell'icona promozionale",
+      "Aprire la schermata con la lista di card contenente la Card A promozionale",
+      "Osservare il rendering della Card A",
+      "Disattivare la simulazione di errore e ricaricare la pagina"
+    ],
+    "expected_results": [
+      "In caso di errore di caricamento dell'icona, l'interfaccia non si rompe (nessun crash, layout della card stabile)",
+      "In caso di errore, l'icona non viene mostrata come elemento corrotto (es. immagine rotta) oppure viene mostrato un fallback coerente con lo stile (se previsto dall'implementazione)",
+      "Dopo il ripristino del caricamento asset, l'icona promozionale torna visibile sulla Card A"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica comportamento di fallback: il test verifica almeno la robustezza del layout e l'assenza di artefatti evidenti. Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC06",
+    "title": "E2E: completamento del controllo di conformità (review grafica) con esito approvato prima del rilascio",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un processo/strumento tracciabile per la review grafica (es. ticketing, checklist di conformità, approvazione in pipeline) associato alla build candidata",
+      "Disponibile un artefatto di rilascio identificabile (es. numero build/commit/tag)",
+      "Disponibile un revisore grafico/brand owner o ruolo equivalente abilitato ad approvare"
+    ],
+    "test_data": [
+      "Build candidata: 2026.02.23-rc1 (esempio)",
+      "Checklist review grafica: voci su palette, tipografia, componenti UI, icone promozionali",
+      "Esito review: 'APPROVATO' con data/ora e identificativo revisore"
+    ],
+    "steps": [
+      "Aprire l'artefatto di review grafica associato alla build candidata (ticket/checklist/pipeline gate)",
+      "Verificare che la checklist includa controlli su palette/tipografia e su icone promozionali",
+      "Eseguire (o verificare eseguita) la review grafica sulla build candidata secondo la checklist",
+      "Registrare l'esito della review come 'APPROVATO' con identificativo del revisore e data/ora",
+      "Verificare che il rilascio risulti consentito solo dopo l'esito 'APPROVATO' (gate di processo o evidenza di approvazione prima del deploy)"
+    ],
+    "expected_results": [
+      "Esiste un'evidenza tracciabile della review grafica per la build candidata",
+      "La review copre sia la conformità al brand (palette/tipografia/componenti) sia l'uso appropriato delle icone promozionali",
+      "L'esito 'APPROVATO' è registrato con data/ora e identificativo del revisore",
+      "La build candidata risulta rilasciabile solo dopo l'approvazione (o risulta documentato che l'approvazione è avvenuta prima del rilascio)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "L'AC-3 descrive un controllo di processo più che una funzionalità applicativa: il test valida la presenza di un gate/evidenza di review prima del rilascio. Strumento e ruoli non sono specificati: sono stati inferiti (ticket/checklist/pipeline e revisore grafico). Il canale è stato inferito (web) poiché non esplicitato nel requisito."
+  },
+  {
+    "test_id": "REQ-V-002.TC07",
+    "title": "Condizione negativa di processo: blocco rilascio in assenza di review grafica approvata",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un processo/strumento tracciabile per la review grafica associato alla build candidata",
+      "Disponibile una build candidata al rilascio senza approvazione registrata (esito mancante o 'RIFIUTATO')",
+      "Esiste un meccanismo di controllo rilascio (pipeline gate o procedura) che può impedire il deploy"
+    ],
+    "test_data": [
+      "Build candidata: 2026.02.23-rc2 (esempio)",
+      "Stato review grafica: 'NON PRESENTE' oppure 'RIFIUTATO'"
+    ],
+    "steps": [
+      "Aprire l'artefatto di review grafica associato alla build candidata rc2",
+      "Verificare che non sia presente un esito 'APPROVATO' per rc2 (mancante o 'RIFIUTATO')",
+      "Tentare di avviare il rilascio/deploy della build rc2 tramite il processo previsto",
+      "Osservare l'esito del tentativo di rilascio"
+    ],
+    "expected_results": [
+      "La build rc2 non risulta conforme al requisito di pre-rilascio perché manca l'approvazione della review grafica",
+      "Il processo di rilascio viene bloccato oppure risulta presente una non conformità tracciata che impedisce il rilascio fino ad approvazione"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita come venga applicato il blocco: il test accetta come evidenza sia un gate tecnico (pipeline) sia un controllo procedurale tracciato che impedisca il rilascio. Canale inferito (web) poiché non esplicitato."
+  }
+]

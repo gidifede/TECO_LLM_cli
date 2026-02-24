@@ -1,0 +1,401 @@
+[
+  {
+    "story_id": "REQ-UI-010.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-010.US01.TC01",
+        "title": "Accesso riuscito alla dashboard integrata per utente con ruolo Marketing",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione offerte è raggiungibile all'URL del Motore (ambiente di test disponibile)",
+          "Esiste un utente attivo con ruolo/permessi 'Marketing' (o equivalente) abilitato all'accesso alla dashboard",
+          "L'utente Marketing non è autenticato (sessione assente)"
+        ],
+        "test_data": [
+          "URL dashboard (integrata nel Motore): https://motore-test.example.it/dashboard-offerte",
+          "Utente Marketing: mkt_user_01",
+          "Password valida: P@ssw0rd!23"
+        ],
+        "steps": [
+          "Aprire l'URL della dashboard integrata nel Motore",
+          "Inserire username dell'utente Marketing",
+          "Inserire la password valida",
+          "Confermare l'autenticazione"
+        ],
+        "expected_results": [
+          "L'autenticazione va a buon fine",
+          "L'utente accede all'area di gestione/configurazione offerte della dashboard",
+          "L'interfaccia mostra che la sessione utente è attiva (es. nome utente/voce di logout visibile)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il meccanismo di autenticazione (SSO/credenziali/MFA) non è specificato: il test valida l'esito funzionale (sessione autenticata e accesso all'area)."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC02",
+        "title": "Disponibilità delle funzionalità di creazione/modifica/configurazione combinazioni per utente Marketing autenticato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo/permessi 'Marketing' autenticato nella dashboard",
+          "La dashboard è disponibile e caricata correttamente"
+        ],
+        "test_data": [
+          "Utente Marketing autenticato: mkt_user_01",
+          "Nome combinazione (nuova): Combo_Spring_2026",
+          "Nome combinazione (modifica): Combo_Spring_2026_v2"
+        ],
+        "steps": [
+          "Accedere alla sezione della dashboard dedicata alle combinazioni/offerte",
+          "Verificare la presenza dell'azione 'Crea' (o equivalente) per una nuova combinazione",
+          "Avviare la creazione di una nuova combinazione",
+          "Inserire il nome combinazione 'Combo_Spring_2026'",
+          "Salvare la combinazione",
+          "Selezionare la combinazione appena creata",
+          "Avviare la modifica/configurazione della combinazione",
+          "Aggiornare il nome in 'Combo_Spring_2026_v2'",
+          "Salvare le modifiche"
+        ],
+        "expected_results": [
+          "Le azioni di creazione e modifica/configurazione delle combinazioni sono visibili e accessibili all'utente Marketing autenticato",
+          "La combinazione 'Combo_Spring_2026' viene creata con successo ed è presente nell'elenco",
+          "La combinazione viene aggiornata con successo e risulta con nome 'Combo_Spring_2026_v2'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non dettaglia campi/attributi delle combinazioni: il test verifica l'accesso e l'esecuzione delle operazioni indicate (creare/modificare/configurare) senza introdurre ulteriori funzionalità."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC03",
+        "title": "Accesso negato alla dashboard per utente senza permessi Marketing",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente attivo senza ruolo/permessi 'Marketing' (es. ruolo 'Viewer' o altro)",
+          "L'utente non Marketing non è autenticato (sessione assente)",
+          "La dashboard è raggiungibile"
+        ],
+        "test_data": [
+          "URL dashboard (integrata nel Motore): https://motore-test.example.it/dashboard-offerte",
+          "Utente non Marketing: ops_user_01",
+          "Password valida: P@ssw0rd!23"
+        ],
+        "steps": [
+          "Aprire l'URL della dashboard integrata nel Motore",
+          "Inserire username dell'utente non Marketing",
+          "Inserire la password valida",
+          "Confermare l'autenticazione"
+        ],
+        "expected_results": [
+          "L'utente non ottiene accesso all'area di gestione/configurazione offerte",
+          "Il sistema mostra un messaggio di autorizzazione insufficiente (o equivalente)",
+          "Non sono visibili né utilizzabili le funzionalità di creazione/modifica/configurazione combinazioni"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story specifica che l'accesso è consentito solo al Team Marketing; si valida il comportamento di autorizzazione e il messaggio di errore."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC04",
+        "title": "Autenticazione fallita: credenziali non valide impediscono l'accesso alle funzionalità",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo/permessi 'Marketing'",
+          "L'utente non è autenticato (sessione assente)",
+          "La dashboard è raggiungibile"
+        ],
+        "test_data": [
+          "URL dashboard (integrata nel Motore): https://motore-test.example.it/dashboard-offerte",
+          "Utente Marketing: mkt_user_01",
+          "Password non valida: WrongPass!999"
+        ],
+        "steps": [
+          "Aprire l'URL della dashboard integrata nel Motore",
+          "Inserire username dell'utente Marketing",
+          "Inserire una password non valida",
+          "Confermare l'autenticazione"
+        ],
+        "expected_results": [
+          "L'autenticazione fallisce",
+          "L'utente rimane nella schermata di autenticazione (o equivalente) senza entrare nell'area di gestione/configurazione",
+          "Il sistema mostra un messaggio di errore di autenticazione (es. credenziali non valide)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo cita anche sessione scaduta; il dettaglio della gestione sessione è coperto da un test separato."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC05",
+        "title": "Sessione scaduta: richiesta di nuova autenticazione e blocco delle operazioni di configurazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo/permessi 'Marketing' autenticato nella dashboard",
+          "È possibile simulare/forzare la scadenza sessione (es. riduzione TTL in ambiente QA o invalidazione sessione lato server)"
+        ],
+        "test_data": [
+          "Utente Marketing: mkt_user_01",
+          "Combinazione esistente: Combo_Spring_2026_v2"
+        ],
+        "steps": [
+          "Accedere alla sezione combinazioni/offerte della dashboard",
+          "Forzare la scadenza della sessione utente (es. attendere TTL o invalidare la sessione)",
+          "Tentare di aprire la combinazione 'Combo_Spring_2026_v2' in modifica/configurazione",
+          "Tentare di salvare una modifica"
+        ],
+        "expected_results": [
+          "Il sistema richiede nuovamente l'autenticazione (redirect a login o messaggio di sessione scaduta)",
+          "Le operazioni di configurazione non vengono eseguite finché l'utente non si autentica di nuovo",
+          "Nessuna modifica viene salvata a seguito del tentativo con sessione scaduta"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di scadenza sessione non è specificata: il test richiede una capacità di test/strumentazione per simulare la scadenza."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC06",
+        "title": "Operazioni di configurazione eseguibili senza reindirizzamenti o dipendenze da sistemi esterni",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo/permessi 'Marketing' autenticato nella dashboard",
+          "Strumento di osservabilità disponibile (es. monitor rete browser/proxy o log applicativi) per verificare eventuali redirect o chiamate verso domini esterni non consentiti"
+        ],
+        "test_data": [
+          "Utente Marketing autenticato: mkt_user_01",
+          "Nome combinazione (nuova): Combo_NoExternal_01",
+          "Whitelist domini consentiti: motore-test.example.it (e sottodomini strettamente necessari all'autenticazione, se presenti)"
+        ],
+        "steps": [
+          "Avviare il monitoraggio delle richieste di rete durante l'uso della dashboard",
+          "Accedere alla sezione combinazioni/offerte",
+          "Creare una nuova combinazione con nome 'Combo_NoExternal_01'",
+          "Salvare la combinazione",
+          "Modificare la combinazione appena creata",
+          "Salvare le modifiche"
+        ],
+        "expected_results": [
+          "Durante le operazioni di configurazione non avvengono reindirizzamenti verso un sistema esterno di configurazione",
+          "Le richieste necessarie alle operazioni di configurazione sono servite dall'applicazione Motore (stesso dominio/contesto applicativo, salvo eventuale autenticazione già prevista)",
+          "Le operazioni di creazione e modifica vanno a buon fine senza richiedere l'uso di un'interfaccia esterna"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito vieta l'uso di sistemi esterni per la configurazione; il criterio tecnico di 'esterno' è interpretato come redirect/UI verso applicativi terzi o chiamate a domini non appartenenti al Motore per funzioni di configurazione."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC07",
+        "title": "Dashboard non raggiungibile: visualizzazione messaggio di indisponibilità e blocco operazioni",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile simulare l'indisponibilità del servizio dashboard/Motore (es. spegnimento servizio, rete bloccata, maintenance mode)",
+          "Utente Marketing disponibile (autenticazione non necessaria ai fini della verifica dell'indisponibilità)"
+        ],
+        "test_data": [
+          "URL dashboard (integrata nel Motore): https://motore-test.example.it/dashboard-offerte"
+        ],
+        "steps": [
+          "Rendere non disponibile il servizio che espone la dashboard (o il Motore)",
+          "Aprire l'URL della dashboard"
+        ],
+        "expected_results": [
+          "La dashboard non viene caricata",
+          "Viene mostrato un messaggio di indisponibilità/servizio non disponibile (pagina di errore gestita o equivalente)",
+          "Non è possibile effettuare operazioni di configurazione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story specifica indisponibilità della dashboard integrata; il contenuto esatto del messaggio non è definito, ma deve essere chiaramente riconducibile a indisponibilità del servizio."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-010.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-010.US02.TC01",
+        "title": "Verifica che la dashboard sia deployata insieme al Motore (stessa applicazione/artefatto di rilascio)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile una pipeline o procedura di deploy in ambiente QA/UAT con accesso ai dettagli di rilascio (artefatti, manifest, package, release notes)",
+          "È disponibile una build del Motore candidata al rilascio"
+        ],
+        "test_data": [
+          "Release/Build ID Motore: 2026.02.23-rc1",
+          "Endpoint Motore: https://motore-test.example.it",
+          "Endpoint dashboard atteso (path): /dashboard-offerte"
+        ],
+        "steps": [
+          "Eseguire il deploy del Motore con la build '2026.02.23-rc1' secondo procedura standard",
+          "Verificare nei dettagli di rilascio che il componente dashboard sia incluso nel medesimo rilascio (es. stesso artefatto o stesso deployment unit)",
+          "Accedere all'URL https://motore-test.example.it/dashboard-offerte"
+        ],
+        "expected_results": [
+          "La dashboard risulta disponibile dopo il deploy del Motore senza necessità di deploy separati",
+          "La dashboard è raggiungibile come parte dell'applicazione Motore (stesso host/base URL del Motore)",
+          "Non risultano componenti applicativi separati obbligatori per esporre la dashboard (oltre a quanto previsto dall'infrastruttura standard)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce criteri tecnici univoci di 'deploy insieme': il test interpreta la conformità come disponibilità della dashboard sullo stesso endpoint base del Motore e inclusione nel medesimo deployment unit/artefatto secondo evidenze di pipeline."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC02",
+        "title": "Deploy non conforme: assenza del componente dashboard deve essere rilevata (fallimento build/deploy o non conformità)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile eseguire un deploy controllato/non conforme (es. feature flag, packaging alternativo, o ambiente di test dedicato) per simulare la mancanza della dashboard",
+          "Sono definiti controlli di qualità del rilascio (pipeline gate, smoke test post-deploy, o checklist di conformità)"
+        ],
+        "test_data": [
+          "Build Motore non conforme (simulata): 2026.02.23-rc1-no-dashboard",
+          "Endpoint dashboard atteso (path): /dashboard-offerte"
+        ],
+        "steps": [
+          "Eseguire il deploy del Motore con la build '2026.02.23-rc1-no-dashboard'",
+          "Eseguire lo smoke test post-deploy che include la verifica dell'endpoint /dashboard-offerte",
+          "Accedere all'URL della dashboard atteso"
+        ],
+        "expected_results": [
+          "Il processo di build/deploy fallisce oppure viene segnalata una non conformità rispetto al requisito di dashboard integrata",
+          "L'endpoint /dashboard-offerte non risulta disponibile e tale condizione viene rilevata dai controlli previsti (log/alert/esito pipeline)",
+          "Il rilascio non viene considerato conforme finché la dashboard non è inclusa"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story ammette due esiti accettabili (fallimento deploy o rilevazione non conformità). L'implementazione concreta del gate dipende dalla pipeline/strumentazione disponibile."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC03",
+        "title": "Operatività di configurazione erogata dal Motore senza uso di sistemi esterni (assenza redirect esterni)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard deployata e raggiungibile come parte del Motore",
+          "Utente autorizzato disponibile (ruolo Marketing o equivalente) con credenziali valide",
+          "Strumento di osservabilità disponibile (monitor rete/log) per identificare redirect o chiamate a sistemi esterni per la configurazione"
+        ],
+        "test_data": [
+          "URL dashboard: https://motore-test.example.it/dashboard-offerte",
+          "Utente autorizzato: mkt_user_01",
+          "Password valida: P@ssw0rd!23",
+          "Nome combinazione: Combo_Integrated_01"
+        ],
+        "steps": [
+          "Autenticarsi alla dashboard con l'utente autorizzato",
+          "Avviare il monitoraggio delle richieste di rete durante l'operatività",
+          "Creare una nuova combinazione 'Combo_Integrated_01'",
+          "Salvare la combinazione",
+          "Modificare la combinazione appena creata",
+          "Salvare le modifiche"
+        ],
+        "expected_results": [
+          "Le funzionalità di gestione/configurazione sono utilizzabili dalla dashboard integrata",
+          "Non si verificano reindirizzamenti verso un'applicazione esterna per completare le operazioni di configurazione",
+          "Le operazioni di configurazione vengono completate con successo restando nel contesto del Motore"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Copre l'aspetto 'erogate dal Motore' verificando operazioni completate senza passare a UI/servizi esterni per la configurazione; eventuali componenti di autenticazione non sono considerati 'sistemi esterni di configurazione'."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC04",
+        "title": "Flusso non conforme: tentativo di reindirizzamento verso sistema esterno per configurazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard deployata e raggiungibile",
+          "È possibile configurare un ambiente o scenario di test che provochi un redirect esterno (es. configurazione errata/legacy link) oppure intercettare e rilevare un redirect se presente",
+          "Utente autorizzato disponibile"
+        ],
+        "test_data": [
+          "Utente autorizzato: mkt_user_01",
+          "URL esterno non conforme (esempio): https://config-esterno.example.it"
+        ],
+        "steps": [
+          "Autenticarsi alla dashboard con l'utente autorizzato",
+          "Avviare un'operazione di configurazione (es. apertura schermata di modifica combinazione)",
+          "Osservare se l'applicazione tenta un reindirizzamento verso un dominio esterno per completare l'operazione"
+        ],
+        "expected_results": [
+          "Non avviene alcun reindirizzamento verso un sistema esterno per eseguire la configurazione",
+          "Se un reindirizzamento esterno viene tentato, il test fallisce per non conformità al requisito (evento registrato da strumenti di test/log)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Test di conformità: la presenza di redirect esterni per funzioni di configurazione è esplicitamente considerata non conforme dalla story."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC05",
+        "title": "Indisponibilità del Motore: la dashboard risulta non disponibile perché parte della stessa applicazione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard integrata e funzionante in condizioni normali",
+          "È possibile mettere il Motore in manutenzione o renderlo non disponibile (stop servizio, maintenance mode, blocco ingress)"
+        ],
+        "test_data": [
+          "Endpoint Motore: https://motore-test.example.it",
+          "Endpoint dashboard: https://motore-test.example.it/dashboard-offerte"
+        ],
+        "steps": [
+          "Rendere non disponibile il Motore (es. attivare maintenance mode o fermare il servizio)",
+          "Accedere all'endpoint del Motore",
+          "Accedere all'endpoint della dashboard"
+        ],
+        "expected_results": [
+          "L'endpoint del Motore non è disponibile o mostra pagina di manutenzione",
+          "Anche l'endpoint della dashboard non è disponibile o mostra pagina di manutenzione coerente",
+          "Non è possibile utilizzare funzionalità di configurazione mentre il Motore è indisponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story esplicita la correlazione di disponibilità: essendo parte della stessa applicazione, la dashboard segue lo stato del Motore."
+      }
+    ]
+  }
+]

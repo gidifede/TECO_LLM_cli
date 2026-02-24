@@ -1,0 +1,151 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-023",
+  "direct": {
+    "tc_count": 10,
+    "coherence_score": 64,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-023.TC01",
+        "detail": "Assume canale 'api' e dettagli di correlazione (requestId/correlationId) e infrastruttura di logging (indice/DB/stream) non specificati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC01",
+        "detail": "Introduce una specifica strategia di fallback con valore 'DEFAULT_CLUSTER=CL-DEFAULT' non derivabile dal requisito (che parla solo di fallback configurabile)."
+      },
+      {
+        "test_id": "REQ-F-023.TC02",
+        "detail": "Introduce strategia e valore numerico 'PROPENSITY_DEFAULT=0.00' non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC03",
+        "detail": "Introduce regole di validazione/range della propensity (0..1) e strategia 'CLAMP_0_1' non definite nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC04",
+        "detail": "Introduce dettagli tecnici di integrazione (HTTP 204/404, payload vuoto, timeout 2s) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC05",
+        "detail": "Definisce esempi specifici di 'contraddittoria' (offerte mutualmente esclusive, campi obbligatori mancanti) e strategia 'SCARTA_ESTERNO_USA_INTERNO' non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC06",
+        "detail": "Introduce campi di input 'canale=web' e 'lingua=it-IT' e una strategia 'RITORNA_NBO_VUOTA' non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.TC08",
+        "detail": "Assume capacità di aggiornare configurazione senza modifiche al codice (feature flag/hot reload) che il requisito non esplicita."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1",
+        "detail": "Il requisito richiede rilevamento/categorizzazione automatica anche per 'raccomandazione esterna contraddittoria'; coperta, ma manca una verifica esplicita che la categorizzazione sia 'automatica' (non influenzata da input di test/flag) e consistente a parità di condizioni."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-023.TC02",
+          "REQ-F-023.TC09"
+        ],
+        "detail": "Entrambi inducono 'propensity assente' e verificano principalmente la presenza dell'evento di audit con tipo/input/timestamp; TC09 è un sottoinsieme focalizzato sul logging."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 19,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-023.US01.TC01",
+        "detail": "Introduce concetti tecnici non richiesti (job di calcolo, CorrelationId obbligatorio, indicatori 'fallbackApplied/strategyId')."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC02",
+        "detail": "Modella l'assenza di propensity tramite 'PropensityModelId nullo' come regola specifica non definita nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC05",
+        "detail": "Esempi di contraddittorietà (SKU non vendibile, ranking duplicato) non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC07",
+        "detail": "Scenario 'fallback configurato ma non applicabile/incoerente' (regola con parametro mancante, ruleId inesistente) non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC09",
+        "detail": "Scenario 'sistema log/audit non disponibile' e requisiti di resilienza (no retry infiniti, soglia tempo) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC10",
+        "detail": "Scenario 'più casi limite contemporanei' e richiesta di determinismo/priorità non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC01",
+        "detail": "Introduce una 'Dashboard' e un ruolo utente 'Marketing' per configurare fallback: canale/attore/UI non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC02",
+        "detail": "E2E guidato da dashboard e meccanismi di propagazione configurazione non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC03",
+        "detail": "Validazioni UI sul salvataggio di strategie non valide (messaggi/impedimento) non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC01",
+        "detail": "Introduce ruolo 'Compliance' e consultazione eventi via dashboard: non presente nel requisito (che richiede solo registrazione eventi, non fruizione UI)."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC02",
+        "detail": "Consultazione e distinzione categorie tramite dashboard: non richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC03",
+        "detail": "Verifica presenza evento 'anche senza fallback' tramite dashboard: canale UI non richiesto."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC04",
+        "detail": "Test autorizzazioni/403 e controllo accessi ai log in dashboard: completamente fuori dal requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-023.US01.TC01",
+          "REQ-F-023.US01.TC06",
+          "REQ-F-023.US02.TC04"
+        ],
+        "detail": "Ripetono lo scenario 'cluster non identificato senza fallback' con variazioni minime (introducendo dashboard), verificando soprattutto assenza di crash e presenza audit."
+      },
+      {
+        "test_ids": [
+          "REQ-F-023.US01.TC04",
+          "REQ-F-023.US02.TC02"
+        ],
+        "detail": "Entrambi testano 'raccomandazione esterna mancante con fallback' e audit; US02.TC02 aggiunge solo il canale dashboard."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-4), ma il set indirect_persona introduce molte informazioni non tracciabili al requisito (dashboard, ruoli Marketing/Compliance, autorizzazioni, resilienza del sistema di audit, casi multipli e fallback non applicabile), accumulando numerose 'added_info' e più ridondanze, con conseguente punteggio molto più basso (19). Il set direct, pur assumendo dettagli implementativi (API, esempi di strategie, range propensity, dettagli HTTP/timeout), resta più vicino al perimetro del requisito e mantiene ridondanze limitate, ottenendo un punteggio superiore (64)."
+  }
+}

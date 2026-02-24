@@ -1,0 +1,456 @@
+[
+  {
+    "story_id": "REQ-V-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-001.US01.TC01",
+        "title": "Impostazione e persistenza dello stato 'vietata' su una combinazione in matrice",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato in dashboard con permessi di modifica della matrice di configurazione",
+          "Esiste in matrice una combinazione selezionabile (es. Prodotto=P1, Canale=WEB, Segmento=STANDARD) attualmente non marcata come 'vietata'"
+        ],
+        "test_data": [
+          "Combinazione target: Prodotto=P1; Canale=WEB; Segmento=STANDARD",
+          "Valore stato da impostare: 'vietata'"
+        ],
+        "steps": [
+          "Accedere alla dashboard",
+          "Aprire la sezione 'Matrice di configurazione'",
+          "Ricercare o filtrare la combinazione target (Prodotto=P1, Canale=WEB, Segmento=STANDARD)",
+          "Selezionare la combinazione target",
+          "Impostare lo stato della combinazione a 'vietata'",
+          "Salvare le modifiche",
+          "Ricaricare la pagina della matrice",
+          "Ricercare nuovamente la combinazione target"
+        ],
+        "expected_results": [
+          "La UI consente di selezionare lo stato 'vietata' in modo chiaro (valore visibile sulla riga/dettaglio della combinazione)",
+          "Il salvataggio va a buon fine senza errori",
+          "Dopo il reload, la combinazione target risulta ancora in stato 'vietata' (persistenza confermata)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC02",
+        "title": "Creazione eccezione manuale per combinazione 'vietata' con ruolo autorizzato (RBAC)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato in dashboard con ruolo autorizzato alla creazione/modifica di eccezioni manuali (secondo RBAC)",
+          "La combinazione target è marcata come 'vietata' in matrice",
+          "Le funzionalità di eccezione manuale sono abilitate e raggiungibili dalla dashboard",
+          "Servizio RBAC disponibile e rispondente"
+        ],
+        "test_data": [
+          "Combinazione target: Prodotto=P1; Canale=WEB; Segmento=STANDARD (stato='vietata')",
+          "Tipo operazione: Creazione eccezione manuale",
+          "Motivazione eccezione: 'Deroga approvata per campagna X - ticket REG-12345'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con utente avente ruolo autorizzato",
+          "Aprire la sezione 'Eccezioni manuali' (o la funzione equivalente dalla matrice)",
+          "Avviare la creazione di una nuova eccezione manuale",
+          "Selezionare la combinazione target marcata come 'vietata'",
+          "Inserire la motivazione eccezione",
+          "Confermare e salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema consente la creazione dell'eccezione manuale per la combinazione 'vietata'",
+          "L'eccezione risulta presente nell'elenco/dettaglio eccezioni con riferimento alla combinazione target",
+          "Non viene mostrato alcun messaggio di autorizzazione insufficiente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica i campi obbligatori dell'eccezione (es. durata/validità); il test assume che sia sufficiente una motivazione e la selezione della combinazione."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC03",
+        "title": "Blocco creazione/modifica eccezione manuale per combinazione 'vietata' con ruolo non autorizzato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato in dashboard con ruolo NON autorizzato alla creazione/modifica di eccezioni manuali (secondo RBAC)",
+          "La combinazione target è marcata come 'vietata' in matrice",
+          "Le funzionalità di eccezione manuale sono abilitate e raggiungibili dalla dashboard",
+          "Servizio RBAC disponibile e rispondente"
+        ],
+        "test_data": [
+          "Combinazione target: Prodotto=P1; Canale=WEB; Segmento=STANDARD (stato='vietata')",
+          "Tipo operazione: Creazione eccezione manuale",
+          "Motivazione eccezione: 'Tentativo non autorizzato - test QA'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con utente avente ruolo non autorizzato",
+          "Aprire la sezione 'Eccezioni manuali' (o la funzione equivalente dalla matrice)",
+          "Avviare la creazione di una nuova eccezione manuale",
+          "Selezionare la combinazione target marcata come 'vietata'",
+          "Inserire la motivazione eccezione",
+          "Confermare e salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio dell'eccezione manuale",
+          "Viene mostrato un messaggio di autorizzazione insufficiente (o equivalente) chiaramente visibile",
+          "Nessuna eccezione manuale viene creata per la combinazione target"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo esatto del messaggio non è definito; verificare almeno la presenza di un messaggio di diniego e l'assenza di persistenza dell'eccezione."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC04",
+        "title": "Fail-safe: servizio RBAC indisponibile durante creazione eccezione manuale (operazione negata)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato in dashboard (qualsiasi ruolo)",
+          "La combinazione target è marcata come 'vietata' in matrice",
+          "Le funzionalità di eccezione manuale sono abilitate e raggiungibili dalla dashboard",
+          "Servizio RBAC indisponibile (timeout/errore 5xx) o non raggiungibile"
+        ],
+        "test_data": [
+          "Combinazione target: Prodotto=P1; Canale=WEB; Segmento=STANDARD (stato='vietata')",
+          "Simulazione guasto RBAC: timeout 10s oppure risposta 503"
+        ],
+        "steps": [
+          "Accedere alla dashboard",
+          "Aprire la sezione 'Eccezioni manuali' (o la funzione equivalente dalla matrice)",
+          "Avviare la creazione di una nuova eccezione manuale",
+          "Selezionare la combinazione target marcata come 'vietata'",
+          "Tentare di salvare l'eccezione manuale durante l'indisponibilità del servizio RBAC"
+        ],
+        "expected_results": [
+          "Il sistema nega la creazione/modifica dell'eccezione manuale (fail-safe)",
+          "Viene mostrato un errore che indica impossibilità di verificare l'autorizzazione o operazione non consentita",
+          "Nessuna eccezione manuale viene creata/persistita"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento esplicitamente basato su assunzione della user story: in assenza RBAC l'operazione deve essere negata per default."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC05",
+        "title": "Edge: tentativo di impostare 'vietata' su combinazione non esistente/non selezionabile in matrice",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente autenticato in dashboard con permessi di modifica della matrice di configurazione",
+          "La matrice non contiene la combinazione richiesta oppure la combinazione non è selezionabile (es. disabilitata/assente dai filtri)"
+        ],
+        "test_data": [
+          "Combinazione inesistente: Prodotto=PX; Canale=WEB; Segmento=STANDARD",
+          "Azione: impostare stato='vietata'"
+        ],
+        "steps": [
+          "Accedere alla dashboard",
+          "Aprire la sezione 'Matrice di configurazione'",
+          "Impostare filtri/ricerca per la combinazione inesistente (Prodotto=PX, Canale=WEB, Segmento=STANDARD)",
+          "Tentare di selezionare la combinazione e impostare lo stato a 'vietata'"
+        ],
+        "expected_results": [
+          "La combinazione inesistente non viene mostrata tra i risultati oppure risulta non selezionabile",
+          "Il sistema non consente di applicare lo stato 'vietata' a una combinazione non presente/selezionabile",
+          "Viene mostrato un messaggio di errore/avviso coerente (es. 'Combinazione non trovata' o 'Selezione non valida') e nessuna modifica viene salvata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica il testo del messaggio né la modalità di selezione; il test verifica il blocco dell'operazione e l'assenza di persistenza."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC06",
+        "title": "Edge: concorrenza su modifica stato combinazione (due utenti in parallelo)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esistono due utenti autenticati in dashboard con permessi di modifica della matrice",
+          "La combinazione target esiste ed è selezionabile",
+          "La combinazione target ha stato iniziale noto (es. 'non vietata')"
+        ],
+        "test_data": [
+          "Utente A e Utente B",
+          "Combinazione target: Prodotto=P2; Canale=APP; Segmento=STANDARD",
+          "Operazioni concorrenti: A imposta 'vietata'; B imposta 'non vietata' (o viceversa)"
+        ],
+        "steps": [
+          "Utente A apre la matrice e visualizza la combinazione target",
+          "Utente B apre la matrice e visualizza la stessa combinazione target",
+          "Utente A imposta lo stato a 'vietata' e salva",
+          "Utente B, senza ricaricare, imposta lo stato a 'non vietata' e salva",
+          "Ricaricare la matrice per entrambi gli utenti e ricercare la combinazione target"
+        ],
+        "expected_results": [
+          "Il sistema gestisce il conflitto in modo deterministico: o impedisce il secondo salvataggio con errore di concorrenza, oppure applica una regola chiara di ultimo salvataggio",
+          "Lo stato finale della combinazione target dopo reload è coerente con l'esito del conflitto (e non risulta in stato indeterminato)",
+          "Non si verifica perdita silenziosa di aggiornamenti (se previsto il blocco, deve esserci un messaggio di conflitto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non definisce la strategia di concurrency control (optimistic lock/last-write-wins). Il test valida che esista un comportamento consistente e verificabile."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC07",
+        "title": "Creazione eccezione manuale su combinazione non marcata 'vietata' (comportamento da chiarire)",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Utente autenticato in dashboard con ruolo autorizzato alla creazione/modifica di eccezioni manuali (secondo RBAC)",
+          "Esiste una combinazione selezionabile NON marcata come 'vietata'",
+          "Le funzionalità di eccezione manuale sono abilitate e raggiungibili dalla dashboard"
+        ],
+        "test_data": [
+          "Combinazione non vietata: Prodotto=P3; Canale=WEB; Segmento=PREMIUM",
+          "Motivazione eccezione: 'Test eccezione su combinazione non vietata'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con utente avente ruolo autorizzato",
+          "Aprire la sezione 'Eccezioni manuali'",
+          "Avviare la creazione di una nuova eccezione manuale",
+          "Selezionare la combinazione non marcata come 'vietata'",
+          "Tentare di salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema applica una regola coerente e comunicata all'utente: o impedisce la creazione dell'eccezione perché non necessaria, oppure consente la creazione ma la classifica come eccezione non applicabile al vincolo 'vietata'",
+          "In ogni caso, l'esito (blocco o creazione) è esplicitato con messaggio/feedback e non genera stati incoerenti"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case indicato come 'comportamento da chiarire' nella user story; il test serve a formalizzare l'esito atteso in base alla decisione di prodotto."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-001.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-001.US02.TC01",
+        "title": "Esclusione dalle proposte di combinazioni marcate come 'vietata' (nessuna eccezione)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La matrice di configurazione contiene almeno una combinazione marcata come 'vietata'",
+          "Non esistono eccezioni manuali valide per la combinazione marcata 'vietata'",
+          "Il Motore di Offerte ha accesso alla configurazione della matrice (o servizio equivalente) in lettura",
+          "È disponibile un canale supportato per la generazione proposte (es. WEB)"
+        ],
+        "test_data": [
+          "Cliente: ID=CUST-10001 (profilo valido per generazione offerte)",
+          "Canale richiesta: WEB",
+          "Combinazione vietata: Prodotto=P1; Canale=WEB; Segmento=STANDARD (stato='vietata')"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-10001 sul canale WEB",
+          "Recuperare l'elenco delle proposte generate (output del motore)"
+        ],
+        "expected_results": [
+          "Nell'elenco proposte non è presente alcuna proposta che utilizzi la combinazione marcata come 'vietata'",
+          "Se la combinazione 'vietata' sarebbe altrimenti eleggibile, risulta comunque esclusa"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La user story non elenca i canali puntuali; il test usa WEB come esempio di 'canale supportato' (assunzione)."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC02",
+        "title": "Inclusione di combinazione 'vietata' solo con eccezione manuale valida creata da ruolo autorizzato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La matrice di configurazione contiene una combinazione marcata come 'vietata'",
+          "Esiste un'eccezione manuale valida per la combinazione 'vietata' creata da ruolo autorizzato (con metadati verificabili RBAC)",
+          "Il Motore di Offerte ha accesso alle eccezioni manuali e ai metadati necessari per verificarne la creazione da ruoli autorizzati",
+          "È disponibile un canale supportato per la generazione proposte (es. APP)"
+        ],
+        "test_data": [
+          "Cliente: ID=CUST-20002",
+          "Canale richiesta: APP",
+          "Combinazione vietata: Prodotto=P2; Canale=APP; Segmento=STANDARD (stato='vietata')",
+          "Eccezione manuale: ID=EXC-90001; combinazione=P2/APP/STANDARD; creatore_ruolo=RUOLO_AUTORIZZATO; stato=VALIDA"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-20002 sul canale APP",
+          "Recuperare l'elenco delle proposte generate (output del motore)",
+          "Verificare nei dettagli proposta (o metadati) l'associazione all'eccezione manuale EXC-90001, se esposta"
+        ],
+        "expected_results": [
+          "L'elenco proposte può includere una proposta che utilizza la combinazione marcata come 'vietata' solo perché esiste l'eccezione manuale valida e autorizzata",
+          "In assenza dell'eccezione autorizzata, la stessa combinazione non sarebbe proposta",
+          "Se il motore espone metadati, la proposta risulta tracciabile all'eccezione EXC-90001"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La tracciabilità dell'eccezione nell'output del motore non è esplicitata; la verifica sui metadati è opzionale se disponibile."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC03",
+        "title": "Eccezione manuale presente ma non autorizzata: la combinazione 'vietata' resta esclusa",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "La matrice di configurazione contiene una combinazione marcata come 'vietata'",
+          "Esiste un record di eccezione manuale per la combinazione 'vietata' creato da ruolo NON autorizzato oppure marcato come non conforme RBAC",
+          "Il Motore di Offerte può leggere l'eccezione e valutarne l'autorizzazione",
+          "È disponibile un canale supportato per la generazione proposte (es. WEB)"
+        ],
+        "test_data": [
+          "Cliente: ID=CUST-30003",
+          "Canale richiesta: WEB",
+          "Combinazione vietata: Prodotto=P4; Canale=WEB; Segmento=STANDARD (stato='vietata')",
+          "Eccezione manuale: ID=EXC-90002; combinazione=P4/WEB/STANDARD; creatore_ruolo=RUOLO_NON_AUTORIZZATO; stato=VALIDA"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-30003 sul canale WEB",
+          "Recuperare l'elenco delle proposte generate (output del motore)"
+        ],
+        "expected_results": [
+          "Nell'elenco proposte non è presente alcuna proposta che utilizzi la combinazione marcata come 'vietata'",
+          "L'eccezione manuale non autorizzata viene ignorata ai fini della deroga"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC04",
+        "title": "Fail-safe: indisponibilità matrice/configurazione durante generazione proposte (esclusione sicura)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte dipende da un servizio o repository per leggere la matrice/configurazione",
+          "Il servizio matrice/configurazione è indisponibile (timeout/errore 5xx) al momento della generazione",
+          "È disponibile un canale supportato per la generazione proposte (es. WEB)"
+        ],
+        "test_data": [
+          "Cliente: ID=CUST-40004",
+          "Canale richiesta: WEB",
+          "Simulazione guasto matrice/configurazione: timeout 10s oppure risposta 503"
+        ],
+        "steps": [
+          "Indurre l'indisponibilità del servizio matrice/configurazione per il Motore di Offerte",
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-40004 sul canale WEB",
+          "Recuperare l'elenco delle proposte generate (output del motore) e/o lo stato della risposta"
+        ],
+        "expected_results": [
+          "Il motore fallisce in modo sicuro escludendo combinazioni potenzialmente vietate: non vengono proposte combinazioni che richiederebbero la verifica del flag 'vietata'",
+          "Se il sistema prevede un errore applicativo invece di una lista vuota, l'errore è restituito in modo controllato e non produce proposte non conformi"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Comportamento basato su assunzione della user story: in caso di mancata disponibilità della configurazione, il motore deve essere conservativo (fail-safe)."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC05",
+        "title": "Edge: eccezione manuale presente ma non verificabile (metadati mancanti) viene ignorata",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "La matrice di configurazione contiene una combinazione marcata come 'vietata'",
+          "Esiste un'eccezione manuale per la combinazione 'vietata' ma con metadati incompleti per la verifica RBAC (es. ruolo creatore nullo/mancante)",
+          "Il Motore di Offerte legge l'eccezione ma non può verificarne l'autorizzazione",
+          "È disponibile un canale supportato per la generazione proposte (es. APP)"
+        ],
+        "test_data": [
+          "Cliente: ID=CUST-50005",
+          "Canale richiesta: APP",
+          "Combinazione vietata: Prodotto=P5; Canale=APP; Segmento=STANDARD (stato='vietata')",
+          "Eccezione manuale: ID=EXC-90003; combinazione=P5/APP/STANDARD; creatore_ruolo=NULL; stato=VALIDA"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-50005 sul canale APP",
+          "Recuperare l'elenco delle proposte generate (output del motore)"
+        ],
+        "expected_results": [
+          "Nell'elenco proposte non è presente alcuna proposta che utilizzi la combinazione marcata come 'vietata'",
+          "L'eccezione manuale non verificabile viene ignorata (nessuna deroga applicata)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Comportamento basato su assunzione della user story: se l'autorizzazione non è verificabile, l'eccezione deve essere ignorata."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC06",
+        "title": "E2E: configurazione 'vietata' in matrice e verifica esclusione/inclusione tramite eccezione autorizzata",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Disponibili dashboard (matrice + eccezioni) e Motore di Offerte in ambiente integrato",
+          "Utente Marketing con permessi di modifica matrice",
+          "Utente con ruolo autorizzato RBAC per creare eccezioni manuali",
+          "Cliente test disponibile per generazione proposte",
+          "Canale supportato disponibile (es. WEB)"
+        ],
+        "test_data": [
+          "Combinazione target: Prodotto=P6; Canale=WEB; Segmento=STANDARD",
+          "Cliente: ID=CUST-60006",
+          "Motivazione eccezione: 'Deroga E2E - ticket REG-77777'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing",
+          "Aprire la matrice di configurazione",
+          "Impostare la combinazione target in stato 'vietata' e salvare",
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per Cliente CUST-60006 sul canale WEB",
+          "Verificare che la combinazione target non sia presente tra le proposte",
+          "Accedere alla dashboard come utente con ruolo autorizzato RBAC",
+          "Creare un'eccezione manuale valida per la combinazione target e salvarla",
+          "Inviare nuovamente al Motore di Offerte la richiesta di generazione proposte per Cliente CUST-60006 sul canale WEB",
+          "Verificare se la combinazione target è ora inclusa tra le proposte"
+        ],
+        "expected_results": [
+          "Dopo aver marcato la combinazione come 'vietata', il motore non propone la combinazione target",
+          "Dopo la creazione dell'eccezione manuale valida e autorizzata, il motore può proporre la combinazione target",
+          "Non vengono mai proposte combinazioni 'vietata' in assenza di eccezione valida e autorizzata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il test E2E assume che il canale WEB sia supportato e che la creazione dell'eccezione abbia effetto immediato o entro una finestra di sincronizzazione; se esiste caching/replica, aggiungere attesa/refresh secondo specifiche."
+      }
+    ]
+  }
+]

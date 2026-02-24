@@ -1,0 +1,550 @@
+[
+  {
+    "story_id": "REQ-F-005.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-005.US01.TC01",
+        "title": "Accesso al flusso digitale self-service distinto dal canale fisico (Web)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e raggiungibile",
+          "Esiste almeno un'offerta vendibile e abilitata per Web"
+        ],
+        "test_data": [
+          "Offerta O-DIGI-001: vendibile su Web, App; abilitata su Web"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Navigare alla sezione di consultazione offerte del canale digitale",
+          "Selezionare l'offerta O-DIGI-001",
+          "Avviare il processo di acquisto dall'interfaccia Web"
+        ],
+        "expected_results": [
+          "Il canale Web presenta un percorso di consultazione e acquisto identificabile come self-service digitale e distinto dal flusso del canale fisico (operatore)",
+          "L'avvio dell'acquisto utilizza interfacce/modalità operative del canale digitale (non schermate o modalità operative dell'operatore)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La user story non dettaglia i touchpoint del funnel; il test verifica la distinzione del flusso a livello di percorso/operatività e uso di modalità digitali."
+      },
+      {
+        "test_id": "REQ-F-005.US01.TC02",
+        "title": "Accesso al flusso digitale self-service distinto dal canale fisico (App)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "App disponibile e funzionante",
+          "Esiste almeno un'offerta vendibile e abilitata per App"
+        ],
+        "test_data": [
+          "Offerta O-DIGI-002: vendibile su App; abilitata su App"
+        ],
+        "steps": [
+          "Aprire l'App",
+          "Navigare alla sezione di consultazione offerte del canale digitale",
+          "Selezionare l'offerta O-DIGI-002",
+          "Avviare il processo di acquisto dall'App"
+        ],
+        "expected_results": [
+          "L'App presenta un percorso di consultazione e acquisto identificabile come self-service digitale e distinto dal flusso del canale fisico (operatore)",
+          "L'avvio dell'acquisto utilizza interfacce/modalità operative del canale digitale (non schermate o modalità operative dell'operatore)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story non specifica dettagli UI/UX; la distinzione viene verificata come separazione di percorso e modalità operative del canale digitale."
+      },
+      {
+        "test_id": "REQ-F-005.US01.TC03",
+        "title": "Completamento end-to-end acquisto self-service su canale digitale senza intervento operatore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale digitale (Web o App) disponibile",
+          "Esiste un'offerta vendibile e abilitata per il canale digitale selezionato",
+          "Sono disponibili i servizi necessari al completamento dell'acquisto (es. calcolo, conferma, emissione/attivazione) secondo l'implementazione"
+        ],
+        "test_data": [
+          "Canale di esecuzione: Web",
+          "Offerta O-DIGI-003: vendibile su Web; abilitata su Web",
+          "Dati cliente: profilo cliente digitale valido (se richiesto dal canale) con dati anagrafici completi"
+        ],
+        "steps": [
+          "Aprire il canale digitale selezionato (Web)",
+          "Accedere alla sezione consultazione offerte",
+          "Selezionare l'offerta O-DIGI-003",
+          "Avviare il processo di acquisto",
+          "Inserire i dati richiesti dal funnel digitale (se presenti)",
+          "Confermare l'acquisto",
+          "Attendere l'esito del processo"
+        ],
+        "expected_results": [
+          "Il processo di acquisto viene completato end-to-end tramite le sole interfacce del canale digitale senza passaggi che richiedano intervento dell'operatore",
+          "Il sistema mostra un esito finale di acquisto completato (es. conferma/numero pratica/ordine) coerente con il canale digitale"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il requisito non dettaglia i passaggi del funnel; i passi 'inserire dati richiesti' sono condizionati a quanto previsto dall'implementazione del canale digitale."
+      },
+      {
+        "test_id": "REQ-F-005.US01.TC04",
+        "title": "Offerta non disponibile sul canale digitale non viene mostrata né acquistabile (vincoli canale)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale digitale (Web o App) disponibile",
+          "Esiste un'offerta NON abilitata per il canale digitale selezionato (per configurazione canale o vincoli di vendibilità)"
+        ],
+        "test_data": [
+          "Canale di esecuzione: App",
+          "Offerta O-NODIGI-001: non abilitata per App"
+        ],
+        "steps": [
+          "Aprire l'App",
+          "Navigare alla sezione di consultazione offerte",
+          "Ricercare l'offerta O-NODIGI-001 tramite elenco o ricerca (se disponibile)",
+          "Tentare di aprire il dettaglio offerta (se visibile)",
+          "Tentare di avviare l'acquisto (se possibile)"
+        ],
+        "expected_results": [
+          "L'offerta O-NODIGI-001 non è presente nell'elenco offerte del canale digitale oppure risulta chiaramente non acquistabile nel canale",
+          "Non è possibile avviare l'acquisto dell'offerta O-NODIGI-001 dal canale digitale"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story indica che l'offerta non deve essere presentata/resa acquistabile sul digitale; la modalità specifica (non visibile vs visibile ma disabilitata) dipende dall'implementazione."
+      },
+      {
+        "test_id": "REQ-F-005.US01.TC05",
+        "title": "Indisponibilità interfacce/endpoint digitali: gestione errore coerente e impossibilità di completare self-service",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale digitale (Web o App) disponibile",
+          "È possibile simulare indisponibilità degli endpoint digitali (timeout/HTTP 5xx) o disabilitare il servizio a valle"
+        ],
+        "test_data": [
+          "Simulazione errore: timeout 30s o risposta HTTP 503 sugli endpoint digitali di consultazione/acquisto"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web)",
+          "Accedere alla sezione consultazione offerte",
+          "Avviare un'azione che richieda chiamata agli endpoint digitali (es. caricamento lista offerte o avvio acquisto)",
+          "Indurre l'indisponibilità degli endpoint digitali",
+          "Ripetere l'azione di caricamento o proseguimento del flusso"
+        ],
+        "expected_results": [
+          "Il canale digitale mostra un messaggio/gestione di indisponibilità coerente con il canale (es. errore di rete/servizio non disponibile) senza blocchi silenti",
+          "Il cliente non riesce a completare il processo self-service finché l'indisponibilità persiste"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Dipendenza: disponibilità di strumenti per fault injection o ambienti di test con servizi degradabili."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-005.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-005.US02.TC01",
+        "title": "Accesso al flusso fisico operatore distinto dal digitale per consultare e proporre offerte",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla consultazione/proposta offerte",
+          "Esiste almeno un cliente identificabile nel sistema (es. tramite codice cliente)",
+          "Esiste almeno un'offerta vendibile e abilitata per canale UP"
+        ],
+        "test_data": [
+          "Operatore: OP-UP-001 (ruolo: operatore sportello/sala)",
+          "Cliente: CL-100200300",
+          "Offerta O-UP-001: vendibile su UP; abilitata su UP"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP) come OP-UP-001",
+          "Aprire la funzione di consultazione/proposta offerte per il cliente CL-100200300",
+          "Richiedere il caricamento delle proposte disponibili",
+          "Selezionare l'offerta O-UP-001",
+          "Avviare la proposta al cliente tramite l'interfaccia operatore"
+        ],
+        "expected_results": [
+          "Il front-end commerciale utilizza un flusso e un'interfaccia operatore distinti da quelli digitali per consultare e proporre offerte",
+          "L'offerta O-UP-001 risulta proponibile tramite l'interfaccia operatore"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "La user story non dettaglia UI/UX; la distinzione viene verificata come separazione di modalità operative e interfacce rispetto al digitale."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC02",
+        "title": "Ricezione proposte dal motore e proposta al cliente tramite interfaccia operatore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato nel front-end commerciale",
+          "Motore proposte disponibile e integrato con il canale UP",
+          "Per il cliente target il motore ha almeno una proposta disponibile"
+        ],
+        "test_data": [
+          "Cliente: CL-200300400",
+          "Proposta attesa dal motore: O-UP-002 (vendibile su UP; abilitata su UP)"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP)",
+          "Aprire la scheda del cliente CL-200300400",
+          "Eseguire l'azione di recupero proposte dal motore",
+          "Verificare la lista proposte ricevute",
+          "Selezionare la proposta O-UP-002",
+          "Eseguire l'azione di proposta al cliente dall'interfaccia operatore"
+        ],
+        "expected_results": [
+          "Il sistema recupera e visualizza le proposte rese disponibili dal motore per il cliente",
+          "La proposta O-UP-002 può essere selezionata e proposta tramite l'interfaccia operatore"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "Dipendenza: disponibilità del motore proposte e dati di test per garantire proposte deterministiche."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC03",
+        "title": "E2E canale fisico: operatore riceve e propone offerte tramite interfaccia operatore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato",
+          "Motore proposte disponibile",
+          "Cliente esistente e abilitato alla ricezione proposte"
+        ],
+        "test_data": [
+          "Operatore: OP-UP-002",
+          "Cliente: CL-300400500",
+          "Proposta attesa dal motore: O-UP-003 (vendibile su UP; abilitata su UP)"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP) come OP-UP-002",
+          "Identificare/selezionare il cliente CL-300400500",
+          "Richiedere le proposte al motore",
+          "Selezionare la proposta O-UP-003",
+          "Confermare l'azione di proposta al cliente secondo il flusso operatore"
+        ],
+        "expected_results": [
+          "L'operatore riceve le proposte tramite l'interfaccia operatore",
+          "L'operatore propone l'offerta O-UP-003 al cliente tramite l'interfaccia operatore completando il flusso previsto dal canale fisico"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "Il requisito originale richiede evidenza E2E sul canale fisico; questo test copre la parte 'riceve e propone' tramite interfaccia operatore."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC04",
+        "title": "Separazione endpoint/modalità operative: operatore usa solo quelli del canale fisico (non self-service digitale)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato",
+          "Sono disponibili strumenti di logging/tracing o API gateway logs per identificare gli endpoint invocati dal canale UP",
+          "Sono noti gli endpoint/modalità operative distinti per canale (digitale vs fisico) in ambiente di test"
+        ],
+        "test_data": [
+          "Operatore: OP-UP-003",
+          "Cliente: CL-400500600"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP) come OP-UP-003",
+          "Eseguire il recupero proposte per il cliente CL-400500600",
+          "Raccogliere le evidenze di tracing/log delle chiamate effettuate dal canale UP",
+          "Verificare gli endpoint/modalità operative invocate durante l'operazione"
+        ],
+        "expected_results": [
+          "Le chiamate effettuate dal canale UP utilizzano esclusivamente endpoint/modalità operative previsti per il canale fisico",
+          "Non risultano invocazioni di endpoint/modalità operative riservate al self-service digitale per l'operazione eseguita"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "La user story parla di endpoint/modalità operative per canale; la verifica richiede osservabilità tecnica (API gateway, APM, log applicativi)."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC05",
+        "title": "Indisponibilità interfacce/endpoint canale fisico: gestione errore coerente per operatività di sportello",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato",
+          "È possibile simulare indisponibilità degli endpoint del canale fisico (timeout/HTTP 5xx) o disabilitare il servizio a valle"
+        ],
+        "test_data": [
+          "Simulazione errore: risposta HTTP 503 o timeout 30s sugli endpoint canale UP per recupero proposte"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP)",
+          "Aprire la funzione di recupero proposte per un cliente",
+          "Indurre l'indisponibilità degli endpoint canale UP",
+          "Eseguire il recupero proposte"
+        ],
+        "expected_results": [
+          "Il sistema mostra una gestione di errore coerente con l'operatività di sportello (messaggio esplicito e azione non completata)",
+          "L'operatore non può recuperare/proporre offerte finché l'indisponibilità persiste"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "Dipendenza: strumenti/ambiente per simulare fault sugli endpoint del canale fisico."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC06",
+        "title": "Offerta non disponibile per canale UP non viene resa proponibile tramite interfaccia operatore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (UP) disponibile",
+          "Operatore autenticato",
+          "Esiste un'offerta non abilitata per UP (per configurazione canale o vincoli di vendibilità)"
+        ],
+        "test_data": [
+          "Offerta O-NOUP-001: non abilitata per UP",
+          "Cliente: CL-500600700"
+        ],
+        "steps": [
+          "Accedere al Front-end commerciale (UP)",
+          "Aprire la funzione di consultazione/proposta offerte per il cliente CL-500600700",
+          "Ricercare l'offerta O-NOUP-001 tramite elenco o ricerca (se disponibile)",
+          "Tentare di selezionare e proporre l'offerta O-NOUP-001"
+        ],
+        "expected_results": [
+          "L'offerta O-NOUP-001 non è presente tra le offerte/proposte del canale UP oppure risulta chiaramente non selezionabile/proponibile",
+          "Non è possibile completare l'azione di proposta per l'offerta O-NOUP-001 tramite interfaccia operatore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Front-end commerciale (UP)"
+        ],
+        "notes": "La modalità (non visibile vs disabilitata) dipende dall'implementazione; l'esito verificabile è la non proponibilità sul canale UP."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-005.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-005.US03.TC01",
+        "title": "Configurazione disponibilità offerta per canali (UP/Web/App) tramite Dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente Team Marketing autenticato e autorizzato alla configurazione offerte",
+          "Esiste un'offerta configurabile oppure è possibile crearne una nuova"
+        ],
+        "test_data": [
+          "Utente Marketing: MKT-001",
+          "Offerta O-CONF-001 (nuova o esistente)"
+        ],
+        "steps": [
+          "Accedere alla Dashboard come MKT-001",
+          "Aprire la funzione di creazione o modifica dell'offerta O-CONF-001",
+          "Impostare la disponibilità selezionando i canali: UP e Web",
+          "Salvare la configurazione dell'offerta"
+        ],
+        "expected_results": [
+          "La Dashboard consente di indicare la disponibilità dell'offerta per i canali UP, Web, App o combinazioni",
+          "La configurazione selezionata (UP e Web) viene salvata con successo per l'offerta O-CONF-001"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Dashboard"
+        ],
+        "notes": "Il requisito originale non descrive la Dashboard, ma la configurazione per canale è necessaria per abilitare comportamenti distinti per touchpoint (AC-2)."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC02",
+        "title": "Default disponibilità canali: nessuna selezione esplicita imposta UP+Web+App",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente Team Marketing autenticato e autorizzato alla configurazione offerte",
+          "È possibile creare una nuova offerta con campi minimi validi"
+        ],
+        "test_data": [
+          "Utente Marketing: MKT-002",
+          "Offerta O-CONF-DEF-001"
+        ],
+        "steps": [
+          "Accedere alla Dashboard come MKT-002",
+          "Creare l'offerta O-CONF-DEF-001 compilando i campi obbligatori",
+          "Non selezionare alcun canale di disponibilità (lasciare la selezione vuota/non impostata)",
+          "Salvare l'offerta",
+          "Riaprire il dettaglio dell'offerta O-CONF-DEF-001"
+        ],
+        "expected_results": [
+          "Il salvataggio dell'offerta avviene con successo",
+          "La disponibilità canali dell'offerta risulta impostata di default su UP, Web e App"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Dashboard"
+        ],
+        "notes": "Il default canali è una regola di business della user story; viene tracciata ad AC-2 perché impatta l'esposizione per touchpoint tramite modalità operative distinte."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC03",
+        "title": "Blocco abilitazione touchpoint non vendibile secondo REQ-F-002/REQ-F-027",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente Team Marketing autenticato e autorizzato",
+          "È disponibile l'integrazione/servizio che fornisce la vendibilità per touchpoint (dipendenza REQ-F-002/REQ-F-027)",
+          "Esiste un'offerta marcata come non vendibile su uno specifico touchpoint (es. App)"
+        ],
+        "test_data": [
+          "Utente Marketing: MKT-003",
+          "Offerta O-NV-APP-001: non vendibile su App secondo REQ-F-002/REQ-F-027"
+        ],
+        "steps": [
+          "Accedere alla Dashboard come MKT-003",
+          "Aprire la modifica dell'offerta O-NV-APP-001",
+          "Tentare di abilitare il touchpoint App per l'offerta",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'abilitazione del touchpoint App rendendolo non selezionabile oppure blocca il salvataggio con un errore di validazione esplicito",
+          "La configurazione non viene salvata con App abilitata per l'offerta O-NV-APP-001"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Dashboard"
+        ],
+        "notes": "Assunzione della user story: il blocco può avvenire in selezione o in salvataggio; il test accetta una delle due implementazioni purché verificabile."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC04",
+        "title": "Esposizione coerente per touchpoint: solo offerte abilitate sono visibili/acquistabili/proponibili sui rispettivi canali",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente Team Marketing autenticato e autorizzato",
+          "Canali Web, App e Front-end commerciale (UP) disponibili",
+          "È possibile propagare la configurazione canali dall'area Marketing ai canali (sincronizzazione completata)"
+        ],
+        "test_data": [
+          "Offerta O-CH-001: configurata solo su Web (UP=disabilitato, App=disabilitato, Web=abilitato)",
+          "Cliente digitale: CL-DIGI-001 (se richiesto)",
+          "Cliente UP: CL-UP-001"
+        ],
+        "steps": [
+          "Accedere alla Dashboard e impostare per O-CH-001 la disponibilità solo su Web",
+          "Salvare la configurazione e attendere la propagazione ai canali",
+          "Aprire il canale Web e cercare l'offerta O-CH-001",
+          "Aprire l'App e cercare l'offerta O-CH-001",
+          "Accedere al Front-end commerciale (UP) e cercare/provare a proporre l'offerta O-CH-001"
+        ],
+        "expected_results": [
+          "Sul canale Web l'offerta O-CH-001 è esposta e risulta acquistabile secondo il flusso digitale",
+          "Sul canale App l'offerta O-CH-001 non è esposta oppure non è acquistabile",
+          "Sul canale UP l'offerta O-CH-001 non è esposta tra le proposte/offerte oppure non è proponibile tramite interfaccia operatore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Dashboard"
+        ],
+        "notes": "Test E2E multi-sistema (Dashboard + canali). La user story richiede che ciascun touchpoint esponga solo offerte abilitate; la verifica avviene sui tre canali."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC05",
+        "title": "Indisponibilità REQ-F-002/REQ-F-027: impossibile validare vendibilità e salvataggio configurazione bloccato/gestito",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente Team Marketing autenticato e autorizzato",
+          "È possibile simulare indisponibilità/errore del servizio di vendibilità per touchpoint (REQ-F-002/REQ-F-027)"
+        ],
+        "test_data": [
+          "Utente Marketing: MKT-004",
+          "Offerta O-CONF-ERR-001",
+          "Simulazione errore: timeout 30s o HTTP 503 dal servizio vendibilità touchpoint"
+        ],
+        "steps": [
+          "Accedere alla Dashboard come MKT-004",
+          "Aprire la modifica dell'offerta O-CONF-ERR-001",
+          "Indurre l'indisponibilità del servizio REQ-F-002/REQ-F-027",
+          "Tentare di modificare la disponibilità canali (es. abilitare App) e salvare"
+        ],
+        "expected_results": [
+          "Il sistema segnala l'impossibilità di validare la vendibilità per touchpoint con un errore esplicito",
+          "Il salvataggio della configurazione viene impedito finché non è disponibile un esito di validazione verificabile"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Dashboard"
+        ],
+        "notes": "La user story prevede gestione errore/blocco in caso di indisponibilità REQ-F-002/REQ-F-027; la modalità precisa può variare, ma l'esito verificabile è il blocco del salvataggio o equivalente."
+      }
+    ]
+  }
+]

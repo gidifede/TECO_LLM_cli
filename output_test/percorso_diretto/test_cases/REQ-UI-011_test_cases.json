@@ -1,0 +1,236 @@
+[
+  {
+    "test_id": "REQ-UI-011.TC01",
+    "title": "Presenza dei controlli filtro per cluster, periodo e canale nella dashboard",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "La dashboard è disponibile nel canale web",
+      "Esistono dati di vendita e marketing associati ad almeno 2 cluster, 2 canali e più date"
+    ],
+    "test_data": [
+      "Cluster disponibili: \"Retail\", \"Enterprise\"",
+      "Canali disponibili: \"Online\", \"Negozio\"",
+      "Periodo selezionabile: intervallo date con selettore (es. dal 2025-01-01 al 2025-01-31)"
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Verificare la presenza del controllo filtro \"Cluster\"",
+      "Verificare la presenza del controllo filtro \"Periodo\"",
+      "Verificare la presenza del controllo filtro \"Canale\""
+    ],
+    "expected_results": [
+      "È visibile un controllo di filtro per il cluster (es. dropdown/multiselezione) con valori selezionabili",
+      "È visibile un controllo di filtro per il periodo (es. selettore intervallo date o equivalente) che consente di impostare un intervallo",
+      "È visibile un controllo di filtro per il canale (es. dropdown/multiselezione) con valori selezionabili"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori (utente autenticato) e canale (web) inferiti dal contesto: il requisito non specifica canali o ruoli. Il requisito non definisce il tipo esatto di controllo (dropdown, checkbox, ecc.): il test verifica la presenza funzionale dei filtri."
+  },
+  {
+    "test_id": "REQ-UI-011.TC02",
+    "title": "Aggiornamento interattivo delle visualizzazioni applicando un singolo filtro (cluster)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "La dashboard mostra almeno una visualizzazione (grafico/KPI) basata sui dati",
+      "Esistono dati per i cluster \"Retail\" e \"Enterprise\" nel periodo corrente"
+    ],
+    "test_data": [
+      "Cluster selezionato: \"Retail\""
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Annotare i valori mostrati da una visualizzazione (es. KPI principale o totale vendite) prima dell'applicazione dei filtri",
+      "Selezionare il filtro \"Cluster\" e impostarlo su \"Retail\"",
+      "Osservare la visualizzazione selezionata dopo l'applicazione del filtro"
+    ],
+    "expected_results": [
+      "Dopo la selezione del cluster, la dashboard aggiorna la/le visualizzazioni senza richiedere un cambio pagina o un refresh manuale",
+      "I valori visualizzati risultano diversi o ricalcolati coerentemente con il sottoinsieme dati del cluster \"Retail\""
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica metriche/visualizzazioni precise: il test si applica ad almeno una visualizzazione presente in dashboard e verifica l'aggiornamento interattivo e la coerenza rispetto al filtro selezionato."
+  },
+  {
+    "test_id": "REQ-UI-011.TC03",
+    "title": "Combinazione di filtri (cluster + periodo + canale) e coerenza dei risultati mostrati",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "Sono disponibili dati per combinazioni note di cluster/canale/periodo",
+      "È disponibile una fonte di verità per confronto (es. export dati, query BI, o report di back-office) per la stessa metrica mostrata in dashboard"
+    ],
+    "test_data": [
+      "Cluster: \"Enterprise\"",
+      "Canale: \"Online\"",
+      "Periodo: dal 2025-01-01 al 2025-01-31",
+      "Metrica di confronto (esempio): \"Totale vendite\""
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Impostare il filtro \"Cluster\" su \"Enterprise\"",
+      "Impostare il filtro \"Canale\" su \"Online\"",
+      "Impostare il filtro \"Periodo\" dal 2025-01-01 al 2025-01-31",
+      "Rilevare il valore della metrica visualizzata (es. totale vendite) dopo l'applicazione dei filtri",
+      "Recuperare lo stesso valore dalla fonte di verità per la combinazione di filtri impostata",
+      "Confrontare i valori"
+    ],
+    "expected_results": [
+      "La dashboard aggiorna le visualizzazioni in modo interattivo dopo ogni modifica ai filtri",
+      "Il valore mostrato in dashboard per la metrica selezionata coincide con la fonte di verità per la combinazione (cluster=\"Enterprise\", canale=\"Online\", periodo=2025-01-01..2025-01-31)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: necessaria una fonte di verità (report/DB/BI) per validare oggettivamente la correttezza del dato filtrato (AC-3). Il requisito non specifica quale metrica usare: selezionare una metrica presente in dashboard e disponibile anche nella fonte di verità."
+  },
+  {
+    "test_id": "REQ-UI-011.TC04",
+    "title": "Filtro periodo con intervallo non valido (data inizio successiva a data fine)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "Il filtro \"Periodo\" consente l'inserimento/selezione di una data inizio e una data fine"
+    ],
+    "test_data": [
+      "Data inizio: 2025-02-01",
+      "Data fine: 2025-01-01"
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Aprire il controllo filtro \"Periodo\"",
+      "Impostare la data inizio su 2025-02-01",
+      "Impostare la data fine su 2025-01-01",
+      "Tentare di applicare il filtro periodo"
+    ],
+    "expected_results": [
+      "Il sistema impedisce l'applicazione dell'intervallo non valido oppure mostra un messaggio di validazione chiaro (es. \"La data di inizio deve essere precedente o uguale alla data di fine\")",
+      "Le visualizzazioni non vengono aggiornate con un periodo non valido (rimangono nello stato precedente valido)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce regole di validazione del periodo: si assume la regola standard inizio<=fine per rendere verificabile un caso negativo sui filtri."
+  },
+  {
+    "test_id": "REQ-UI-011.TC05",
+    "title": "Edge case: filtri combinati producono zero risultati e la dashboard gestisce correttamente lo stato vuoto",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "Esiste almeno una combinazione di cluster/canale/periodo che non produce risultati (nessun dato)"
+    ],
+    "test_data": [
+      "Cluster: \"Retail\"",
+      "Canale: \"Negozio\"",
+      "Periodo: dal 2020-01-01 al 2020-01-31 (periodo senza dati, se disponibile)"
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Impostare il filtro \"Cluster\" su \"Retail\"",
+      "Impostare il filtro \"Canale\" su \"Negozio\"",
+      "Impostare il filtro \"Periodo\" dal 2020-01-01 al 2020-01-31",
+      "Osservare le visualizzazioni dopo l'applicazione dei filtri"
+    ],
+    "expected_results": [
+      "La dashboard aggiorna le visualizzazioni in modo interattivo anche in assenza di dati",
+      "Le visualizzazioni mostrano uno stato vuoto coerente (es. \"Nessun dato disponibile\" o grafico vuoto) senza errori applicativi",
+      "Non vengono mostrati valori non coerenti (es. residui del precedente set di filtri) per la combinazione che non produce dati"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Lo stato vuoto non è esplicitato nel requisito, ma è un edge case derivabile dall'uso di filtri combinati e dalla necessità di riflettere correttamente i filtri selezionati."
+  },
+  {
+    "test_id": "REQ-UI-011.TC06",
+    "title": "Gestione errore: servizio dati non disponibile durante l'applicazione dei filtri",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con accesso alla dashboard",
+      "La dashboard recupera i dati tramite un servizio/API",
+      "È possibile simulare indisponibilità del servizio (es. mock, ambiente di test, fault injection) con risposta HTTP 500 o timeout"
+    ],
+    "test_data": [
+      "Simulazione errore: timeout API (es. > 30s) oppure HTTP 500 in risposta alla richiesta dati con filtri"
+    ],
+    "steps": [
+      "Aprire la dashboard interattiva",
+      "Attivare la simulazione di indisponibilità del servizio dati",
+      "Applicare un filtro qualsiasi (es. Cluster=\"Retail\")",
+      "Osservare il comportamento della dashboard"
+    ],
+    "expected_results": [
+      "La dashboard non va in crash e rimane utilizzabile",
+      "Viene mostrata un'indicazione di errore/avviso per il mancato aggiornamento dei dati (messaggio o banner) verificabile a UI",
+      "Le visualizzazioni non mostrano dati incoerenti: restano nello stato precedente valido oppure mostrano chiaramente lo stato di errore"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non descrive esplicitamente la gestione errori, ma lo scenario è richiesto dalle regole di generazione (servizi esterni non disponibili). Il tipo di errore e la soglia di timeout devono essere allineati alle specifiche tecniche dell'API/FE."
+  },
+  {
+    "test_id": "REQ-UI-011.TC07",
+    "title": "Autorizzazione: utente non autenticato/non autorizzato non può accedere alla dashboard",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un meccanismo di autenticazione per accedere all'applicazione",
+      "La dashboard è protetta e richiede autenticazione (assunzione coerente con contesto enterprise)"
+    ],
+    "test_data": [
+      "Sessione utente: non autenticata (cookie/token assenti o scaduti)"
+    ],
+    "steps": [
+      "Aprire una nuova sessione del browser senza autenticazione",
+      "Tentare di accedere direttamente all'URL della dashboard"
+    ],
+    "expected_results": [
+      "L'accesso alla dashboard viene negato",
+      "L'utente viene reindirizzato alla pagina di login oppure viene mostrato un messaggio di accesso non autorizzato (es. HTTP 401/403 visibile tramite comportamento UI)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non menziona esplicitamente permessi/ruoli: l'autorizzazione è stata dedotta come controllo minimo di accesso. Se la dashboard è pubblica, questo test va rimosso o adattato ai ruoli effettivi."
+  }
+]

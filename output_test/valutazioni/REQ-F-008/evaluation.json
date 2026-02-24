@@ -1,0 +1,167 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-008",
+  "direct": {
+    "tc_count": 10,
+    "coherence_score": 56,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-008.TC01",
+        "detail": "Assume struttura/campi specifici del log (ordinamento/rank, motivazioni non nulle, touchpoint, timestamp, esito dettagliato 'finalizzazione lato cliente self') oltre a quanto esplicitato negli AC (che richiedono solo creazione record di log)."
+      },
+      {
+        "test_id": "REQ-F-008.TC03",
+        "detail": "Assume l'esistenza di una 'interfaccia web di backoffice' e filtri per tipologia evento 'se disponibile' per consultazione; il requisito non specifica canale/strumento di configurazione né filtri."
+      },
+      {
+        "test_id": "REQ-F-008.TC06",
+        "detail": "Introduce filtri specifici della dashboard (customer_id e intervallo date) e la visualizzazione di 'tipologia evento (motore/configurazione)'; il requisito dice solo che i log sono consultabili tramite dashboard."
+      },
+      {
+        "test_id": "REQ-F-008.TC07",
+        "detail": "Introduce requisiti di resilienza/gestione errori (fault injection, nessun crash, nessun log corrotto, messaggi non sensibili) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-008.TC09",
+        "detail": "Introduce regole di autorizzazione e ruoli specifici ('Sales', 'CustomerCare') e comportamento atteso (403/pagina) non esplicitati dal requisito (che menziona solo consultabilità per marketing e compliance)."
+      },
+      {
+        "test_id": "REQ-F-008.TC10",
+        "detail": "Introduce scenario 'zero offerte eleggibili' e aspettativa di logging esplicito di lista vuota/conteggio=0; non esplicitato negli AC."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'tutte le modifiche di configurazione ... parametri'",
+        "detail": "Nessun test copre esplicitamente la tracciatura di modifiche ai 'parametri' (oltre a bundle/pricing/campagne)."
+      },
+      {
+        "source": "Description: 'touchpoint dove avviene la proposta (UP, Web, app)'",
+        "detail": "Il set copre Web/UP/App, ma non verifica in modo sistematico che il tracciamento avvenga 'per ogni evento rilevante' su tutti i touchpoint; mancano casi dedicati per proposta su App con esito (non solo errore logging)."
+      },
+      {
+        "source": "Description: 'storicizzato ... per consentire analisi efficacia offerte/messaggi promozionali/USP'",
+        "detail": "Nessun test verifica la persistenza/storicizzazione nel tempo e la disponibilità per analisi (es. consultazione di log storici oltre la sessione/evento)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-008.TC03",
+          "REQ-F-008.TC04",
+          "REQ-F-008.TC05"
+        ],
+        "detail": "Tre TC molto simili che validano la stessa regola (creazione record log per operazioni di configurazione) variando solo l'oggetto (bundle/pricing/campagna)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 15,
+    "coherence_score": 31,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-008.US01.TC01",
+        "detail": "Introduce motivazioni/USP specifiche ('Promo USP X', 'Eligible segment A') e stato esito 'pending/non disponibile'; il requisito cita messaggi promozionali/USP ma non definisce stati 'pending'."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC03",
+        "detail": "Tratta 'ordinamento' come evento/record dedicato; l'ordinamento è menzionato in description ma non come criterio di accettazione separato né come tipo evento distinto."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC05",
+        "detail": "Assume un controllo accessi specifico per utenti non-Marketing; il requisito non specifica meccanismi/ruoli, solo che la dashboard è prevista per marketing e compliance."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC06",
+        "detail": "Introduce regola di normalizzazione touchpoint a 'unknown'/'non disponibile' per valori non riconosciuti; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC07",
+        "detail": "Introduce aggiornamento dell'esito nel tempo (pending->finale) e vincolo 'no duplicati' e necessità di correlazione (proposalId/eventId); non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC08",
+        "detail": "Introduce gestione errore lato dashboard (messaggio, retry, no dati parziali) in caso di servizio log indisponibile; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC09",
+        "detail": "Assume che si logghino solo operazioni di configurazione completate con successo (assenza log su fallimento); il requisito dice 'per ogni operazione ... viene creato un record di log' senza distinguere esito."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC04",
+        "detail": "Introduce concetto di utente Compliance 'limited' con permessi parziali; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC05",
+        "detail": "Introduce standard di rappresentazione dati mancanti ('N/D', 'pending', 'unknown'); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC06",
+        "detail": "Introduce gestione errore lato dashboard Compliance in caso di servizio log indisponibile; non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'creazione, modifica, cancellazione di bundle, regole di pricing, campagne e parametri'",
+        "detail": "Copre solo creazione bundle (US01.TC04) e modifica pricing (US02.TC03); manca copertura esplicita di cancellazione (bundle/pricing/campagna) e dei 'parametri'."
+      },
+      {
+        "source": "Acceptance Criteria AC-2: 'Per ogni operazione di configurazione (creazione/modifica/cancellazione) viene creato un record di log.'",
+        "detail": "Manca almeno un test di cancellazione e un test di modifica/creazione per gli altri oggetti citati (campagne, parametri) per dimostrare 'creazione/modifica/cancellazione' come insieme."
+      },
+      {
+        "source": "Description: 'touchpoint dove avviene la proposta (UP, Web, app)'",
+        "detail": "I TC usano Web/App/UP nei dati, ma spesso il canale indicato in 'channels' è solo 'dashboard' e non verifica esplicitamente che il record contenga il touchpoint per tutti i casi (solo alcuni expected lo citano)."
+      },
+      {
+        "source": "Description: 'esito (abbandono ovvero finalizzazione offerta lato operatore o lato cliente in modalità self)'",
+        "detail": "Non c'è un test esplicito di esito 'abbandono' né 'finalizzazione lato operatore'; solo un caso 'pending->finalizzazione self' (assunto) e in altri casi l'esito non è verificato."
+      },
+      {
+        "source": "Description: 'storicizzato ... per consentire analisi efficacia'",
+        "detail": "Nessun test verifica la storicizzazione/persistenza nel tempo per analisi (es. consultazione di log storici)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-008.US01.TC08",
+          "REQ-F-008.US02.TC06"
+        ],
+        "detail": "Stesso scenario (servizio consultazione log non disponibile) duplicato per Marketing e Compliance con passi/attesi quasi identici."
+      },
+      {
+        "test_ids": [
+          "REQ-F-008.US01.TC01",
+          "REQ-F-008.US02.TC01"
+        ],
+        "detail": "Stesso scenario base (consultazione record log di proposta) replicato per due dashboard con differenze minime."
+      },
+      {
+        "test_ids": [
+          "REQ-F-008.US01.TC02",
+          "REQ-F-008.US02.TC02"
+        ],
+        "detail": "Stesso scenario base (consultazione record log di esclusione) replicato per due dashboard con differenze minime."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono formalmente tutti gli AC (3/3). Tuttavia, il set direct introduce meno informazioni non tracciabili (6 added_info vs 10) e presenta meno lacune rispetto alla description (3 missing_info vs 5, inclusa una carenza rilevante su AC-2 nel set indirect per assenza di cancellazione). Inoltre il set indirect ha piu ridondanze (3 vs 1). Per questi motivi il punteggio di coerenza risulta maggiore per direct (56 vs 31) e viene scelto come vincitore."
+  }
+}

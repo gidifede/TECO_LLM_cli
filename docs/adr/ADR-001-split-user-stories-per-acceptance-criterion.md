@@ -110,3 +110,21 @@ Se il requisito non coinvolge nessuna delle personas fornite nel contesto (es. r
 - Le user stories persona-based vengono salvate in `percorso_indiretto/persona_based/user_stories/`, quelle AC-based in `percorso_indiretto/ac_based/user_stories/`
 - I requisiti di categoria PERSONAS vengono automaticamente esclusi dal loop di trasformazione quando si usa la strategia persona-based (servono solo come contesto)
 - Primo test AC-based su REQ-F-001 (3 acceptance criteria): il modello ha generato correttamente 3 user stories distinte, successivamente trasformate in 14 test cases
+
+## Aggiornamento — Rimozione strategia AC-based (2026-02-23)
+
+A seguito delle valutazioni di coerenza condotte su 5 requisiti (REQ-F-001, REQ-F-004, REQ-F-007, REQ-F-008, REQ-F-009), la strategia AC-based è stata rimossa dalla pipeline.
+
+**Risultati:**
+- Percorso diretto: score medio ~73/100
+- Percorso indiretto persona-based: score medio ~52/100
+- Percorso indiretto AC-based: score medio ~4/100 (0 in 3 casi su 4)
+
+**Motivazione:** Il percorso AC-based presenta un difetto strutturale: la catena Requisito → User Stories (1 US per AC, ciascuna con AC riscritti) → Test Cases produce `traced_criteria` che non corrispondono agli AC del requisito originale. Il valutatore rileva un disallineamento sistematico. Inoltre, la decomposizione 1 US per AC amplifica il drift informativo (15-23 TC con molte informazioni inventate vs 5-11 del percorso diretto).
+
+**Conseguenze operative:**
+- Il prompt `user_stories/ac_based.md` resta su disco ma non è più referenziato dal codice
+- La pipeline supporta solo la strategia persona-based (applicata automaticamente, senza menu di scelta)
+- Le directory di output `percorso_indiretto/ac_based/` non sono più create dalla pipeline
+- Il menu di scelta strategia (`_ask_us_strategy`) è stato eliminato
+- La valutazione di coerenza confronta solo 2 set: `direct` e `indirect_persona`

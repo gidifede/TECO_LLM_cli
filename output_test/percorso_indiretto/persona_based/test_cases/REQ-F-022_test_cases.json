@@ -1,0 +1,473 @@
+[
+  {
+    "story_id": "REQ-F-022.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-022.US01.TC01",
+        "title": "Configurazione eccezione cliente/prodotto: il prodotto già posseduto diventa eleggibile per NBO",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato ad accedere alla dashboard di configurazione NBO",
+          "Cliente C-1001 esistente",
+          "Prodotto P-ACC-01 esistente e presente nel catalogo",
+          "Per il cliente C-1001 risulta posseduto il prodotto P-ACC-01 (dato possesso disponibile al Motore NBO)",
+          "Nessuna eccezione pre-esistente per la coppia (C-1001, P-ACC-01)",
+          "Ambiente collegato al Motore NBO o a un servizio di configurazione consumato dal Motore NBO"
+        ],
+        "test_data": [
+          "Cliente: C-1001",
+          "Prodotto: P-ACC-01",
+          "Eccezione: abilita proposta anche se posseduto = true",
+          "Canale configurazione: dashboard"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la sezione di configurazione eccezioni NBO",
+          "Creare una nuova eccezione per il cliente C-1001 e il prodotto P-ACC-01 abilitando la proposta anche se posseduto",
+          "Salvare la configurazione",
+          "Richiedere il calcolo NBO per il cliente C-1001 (tramite endpoint/servizio del Motore NBO disponibile in ambiente)",
+          "Verificare l'elenco raccomandazioni restituito"
+        ],
+        "expected_results": [
+          "La dashboard conferma il salvataggio dell'eccezione per la coppia (C-1001, P-ACC-01)",
+          "Il Motore NBO considera l'eccezione configurata per (C-1001, P-ACC-01) durante il calcolo",
+          "Nell'output NBO per C-1001 il prodotto P-ACC-01 risulta eleggibile e può comparire tra le raccomandazioni anche se marcato come posseduto"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test di integrazione dashboard→configurazione→Motore NBO. Non essendo specificata la UI, i passi assumono l'esistenza di una sezione 'eccezioni NBO' e di un salvataggio persistente leggibile dal Motore."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC02",
+        "title": "Assenza eccezione: il prodotto già posseduto viene escluso dalle proposte NBO",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato ad accedere alla dashboard di configurazione NBO",
+          "Cliente C-1002 esistente",
+          "Prodotto P-ACC-02 esistente e presente nel catalogo",
+          "Per il cliente C-1002 risulta posseduto il prodotto P-ACC-02 (dato possesso disponibile al Motore NBO)",
+          "Nessuna eccezione configurata per la coppia (C-1002, P-ACC-02)",
+          "Ambiente collegato al Motore NBO o a un servizio di configurazione consumato dal Motore NBO"
+        ],
+        "test_data": [
+          "Cliente: C-1002",
+          "Prodotto posseduto: P-ACC-02"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la sezione di configurazione eccezioni NBO",
+          "Verificare che non esista alcuna eccezione per la coppia (C-1002, P-ACC-02)",
+          "Richiedere il calcolo NBO per il cliente C-1002 (tramite endpoint/servizio del Motore NBO disponibile in ambiente)",
+          "Verificare l'elenco raccomandazioni restituito"
+        ],
+        "expected_results": [
+          "In dashboard non risulta configurata alcuna eccezione per (C-1002, P-ACC-02)",
+          "Nell'output NBO per C-1002 il prodotto P-ACC-02 non compare tra le raccomandazioni"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il test verifica l'effetto dell'assenza di eccezione sulla generazione NBO (regola di esclusione possesso)."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC03",
+        "title": "Eccezione su prodotto non più a catalogo: configurazione trattata come non applicabile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato ad accedere alla dashboard di configurazione NBO",
+          "Cliente C-1003 esistente",
+          "Prodotto P-OLD-99 non presente nel catalogo (o marcato come non valido/non vendibile)",
+          "Ambiente collegato al Motore NBO o a un servizio di configurazione consumato dal Motore NBO"
+        ],
+        "test_data": [
+          "Cliente: C-1003",
+          "Prodotto non valido: P-OLD-99"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la sezione di configurazione eccezioni NBO",
+          "Tentare di creare un'eccezione per la coppia (C-1003, P-OLD-99)",
+          "Salvare la configurazione (se consentito dalla UI)",
+          "Richiedere il calcolo NBO per il cliente C-1003",
+          "Verificare l'elenco raccomandazioni restituito"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio dell'eccezione per un prodotto non a catalogo oppure consente il salvataggio ma marca l'eccezione come non applicabile",
+          "In ogni caso, l'output NBO non contiene riferimenti non risolvibili: il prodotto P-OLD-99 non compare tra le raccomandazioni"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case è esplicitato nella user story. Non è definito se la UI debba bloccare o consentire con stato 'non applicabile'; il test accetta entrambe le implementazioni purché non generi proposte non risolvibili."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC04",
+        "title": "Gestione eccezioni duplicate/confliggenti: comportamento deterministico",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato ad accedere alla dashboard di configurazione NBO",
+          "Cliente C-1004 esistente",
+          "Prodotto P-ACC-04 esistente e presente nel catalogo",
+          "Per il cliente C-1004 risulta posseduto il prodotto P-ACC-04 (dato possesso disponibile al Motore NBO)",
+          "Ambiente collegato al Motore NBO o a un servizio di configurazione consumato dal Motore NBO"
+        ],
+        "test_data": [
+          "Cliente: C-1004",
+          "Prodotto: P-ACC-04",
+          "Eccezione A: abilita proposta anche se posseduto = true",
+          "Eccezione B (conflitto): abilita proposta anche se posseduto = false (o eccezione rimossa/negata)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la sezione di configurazione eccezioni NBO",
+          "Creare l'eccezione A per (C-1004, P-ACC-04) e salvarla",
+          "Tentare di creare una seconda eccezione per la stessa coppia (C-1004, P-ACC-04) con valore confliggente (eccezione B) e salvarla",
+          "Richiedere il calcolo NBO per il cliente C-1004",
+          "Ripetere la richiesta NBO una seconda volta con gli stessi input",
+          "Verificare l'elenco raccomandazioni restituito"
+        ],
+        "expected_results": [
+          "Il sistema impedisce la creazione di duplicati per la stessa coppia cliente/prodotto oppure consente il salvataggio applicando una regola di prevalenza deterministica (es. ultima modifica vince)",
+          "Le due esecuzioni NBO con gli stessi input producono lo stesso comportamento rispetto alla presenza/assenza del prodotto P-ACC-04 nelle raccomandazioni (assenza di non-determinismo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story indica che la regola di prevalenza è 'da chiarire'. Il test verifica almeno la deterministica e la replicabilità del risultato; la specifica della prevalenza va definita per un expected result più stringente."
+      },
+      {
+        "test_id": "REQ-F-022.US01.TC05",
+        "title": "Autorizzazione: utente non Team Marketing non può configurare eccezioni NBO",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U-SALES con ruolo diverso da Team Marketing (es. Sales) e senza permessi di configurazione NBO",
+          "Dashboard di configurazione NBO disponibile"
+        ],
+        "test_data": [
+          "Utente: U-SALES",
+          "Cliente: C-1001",
+          "Prodotto: P-ACC-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U-SALES",
+          "Tentare di accedere alla sezione di configurazione eccezioni NBO",
+          "Tentare di creare o modificare un'eccezione cliente/prodotto"
+        ],
+        "expected_results": [
+          "L'accesso alla sezione di configurazione eccezioni NBO è negato oppure le azioni di creazione/modifica risultano disabilitate",
+          "Il sistema mostra un errore di autorizzazione e non salva alcuna modifica"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "I permessi non sono esplicitati nel requisito; si assume che solo il Team Marketing possa configurare eccezioni come da business rules."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-022.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-022.US02.TC01",
+        "title": "Calcolo NBO: utilizzo esplicito di cluster e propensity e output come lista ordinata",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Ambiente di test con dati noti e stabili (cluster, propensity, catalogo) per il cliente C-2001",
+          "Per C-2001 è disponibile il cluster CL-01",
+          "Per C-2001 sono disponibili valori di propensity per almeno 3 prodotti eleggibili",
+          "Nessun prodotto del set di test risulta posseduto dal cliente (per isolare la verifica input/output)"
+        ],
+        "test_data": [
+          "Cliente: C-2001",
+          "Cluster: CL-01",
+          "Propensity note: P-A=0,82; P-B=0,61; P-C=0,25",
+          "Prodotti eleggibili in catalogo: P-A, P-B, P-C"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2001 con gli input previsti dal contratto (includendo o rendendo disponibili cluster e propensity)",
+          "Acquisire la risposta completa del Motore NBO (payload e metadati disponibili)",
+          "Verificare l'ordine dei prodotti restituiti"
+        ],
+        "expected_results": [
+          "La risposta del Motore NBO contiene una lista ordinata di raccomandazioni (array ordinato)",
+          "L'ordine delle raccomandazioni è coerente con i valori di propensity forniti per il cluster CL-01 (P-A prima di P-B prima di P-C, salvo regole di priorità configurate)",
+          "Il Motore NBO utilizza come input esplicito cluster e propensity (evidenza tramite campi di input nel contratto, log di audit o metadati di calcolo disponibili in test)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica il formato del contratto per dimostrare l'uso 'esplicito' di cluster/propensity; il test richiede evidenza tramite payload, audit o log. Se non disponibile, va introdotto un meccanismo di tracciamento in test."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC02",
+        "title": "Ordinamento per propensity su campione clienti (cluster di riferimento)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Ambiente di test con dati noti e stabili per un campione clienti: C-2002, C-2003, C-2004",
+          "Per ciascun cliente è disponibile il cluster (es. CL-01 o CL-02) e un set di propensity per prodotti in catalogo",
+          "Criteri di priorità marketing in stato noto e stabile durante il test (nessuna modifica concorrente)"
+        ],
+        "test_data": [
+          "Campione clienti: C-2002 (CL-01), C-2003 (CL-01), C-2004 (CL-02)",
+          "Per ciascun cliente: almeno 5 prodotti con propensity note e non posseduti",
+          "Snapshot versione modello propensity: v2026.01 (esempio) o identificativo equivalente in ambiente"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per ciascun cliente del campione (C-2002, C-2003, C-2004)",
+          "Per ciascuna risposta, estrarre la lista prodotti e i relativi punteggi/propensity (se esposti) o ricostruire l'ordine atteso dai dati noti",
+          "Confrontare l'ordine restituito con l'ordine atteso per il cluster di riferimento di ciascun cliente"
+        ],
+        "expected_results": [
+          "Per ogni cliente del campione, i prodotti risultano ordinati secondo la propensione calcolata per il cluster di riferimento (salvo applicazione dei criteri di priorità configurati)",
+          "Non si osservano inversioni non giustificate rispetto ai valori di propensity noti nell'ambiente di test"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Se i criteri di priorità marketing possono alterare l'ordine, occorre fissare una configurazione nota (o disabilitarla) per rendere il confronto deterministico."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC03",
+        "title": "Esclusione prodotti posseduti in assenza di eccezioni",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2005 esistente con cluster e propensity disponibili",
+          "Per C-2005 risulta posseduto il prodotto P-OWN-01",
+          "P-OWN-01 è presente nel catalogo ed è altrimenti eleggibile",
+          "Nessuna eccezione configurata per la coppia (C-2005, P-OWN-01)"
+        ],
+        "test_data": [
+          "Cliente: C-2005",
+          "Prodotto posseduto: P-OWN-01",
+          "Altri prodotti non posseduti con propensity: P-X=0,70; P-Y=0,55"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2005",
+          "Verificare la lista raccomandazioni restituita"
+        ],
+        "expected_results": [
+          "Il prodotto P-OWN-01 non compare nella lista raccomandazioni per C-2005",
+          "La lista contiene solo prodotti non posseduti (a parità di altre regole applicabili)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC04",
+        "title": "Inclusione prodotto posseduto quando esiste eccezione cliente/prodotto",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2006 esistente con cluster e propensity disponibili",
+          "Per C-2006 risulta posseduto il prodotto P-OWN-02",
+          "P-OWN-02 è presente nel catalogo ed è altrimenti eleggibile",
+          "Esiste un'eccezione configurata per la coppia (C-2006, P-OWN-02) che consente la proposta anche se posseduto"
+        ],
+        "test_data": [
+          "Cliente: C-2006",
+          "Prodotto posseduto con eccezione: P-OWN-02",
+          "Propensity: P-OWN-02=0,65; P-Z=0,60"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2006",
+          "Verificare la lista raccomandazioni restituita"
+        ],
+        "expected_results": [
+          "Il Motore NBO applica l'eccezione per (C-2006, P-OWN-02)",
+          "Il prodotto P-OWN-02 può comparire nella lista raccomandazioni anche se risulta posseduto dal cliente"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: disponibilità e corretto collegamento della configurazione eccezioni al Motore NBO."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC05",
+        "title": "Replicabilità: stessi input producono stesso output in ambiente di test con dati noti",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Ambiente di test con dati noti e congelati per cliente C-2007 (cluster, propensity, posseduti, catalogo)",
+          "Versione modello propensity e dataset dichiarati/stabili durante tutta l'esecuzione del test",
+          "Nessuna modifica concorrente ai criteri di priorità marketing e alle eccezioni durante il test"
+        ],
+        "test_data": [
+          "Cliente: C-2007",
+          "Identificativo snapshot dati: SNAP-TEST-2026-02-01 (o equivalente)",
+          "Versione modello propensity: v2026.01 (o equivalente)"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2007 e salvare l'output completo (lista e ordine)",
+          "Invocare nuovamente il Motore NBO per il cliente C-2007 con gli stessi input e nello stesso contesto di dati",
+          "Confrontare i due output"
+        ],
+        "expected_results": [
+          "Le due esecuzioni producono lo stesso elenco di prodotti raccomandati e nello stesso ordine",
+          "Non sono presenti variazioni non giustificate nei metadati di calcolo (es. versione modello/dati) rispetto allo snapshot dichiarato"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il requisito richiede replicabilità con 'dati noti'; il test presuppone la possibilità di fissare snapshot/versioni. Se il sistema non espone versione modello/dati, il confronto si limita a lista+ordine."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC06",
+        "title": "Cluster mancante per il cliente: gestione errore o fallback controllato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2008 esistente senza informazione di cluster disponibile",
+          "Propensity non disponibile perché dipendente dal cluster oppure disponibile ma non associabile a un cluster di riferimento (come da modello dati)"
+        ],
+        "test_data": [
+          "Cliente: C-2008 (cluster assente)"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2008",
+          "Acquisire risposta ed eventuali codici/messeggi di errore"
+        ],
+        "expected_results": [
+          "Il sistema non produce un ordinamento 'per cluster di riferimento' in assenza del cluster",
+          "Il sistema restituisce un errore funzionale/tecnico chiaramente identificabile oppure applica un fallback dichiarato (se implementato) senza produrre risultati incoerenti"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Comportamento atteso 'da definire' nella user story; il test verifica almeno che non venga dichiarato/assunto un ordinamento per cluster inesistente. Va chiarito se l'esito corretto sia 'nessuna proposta' o 'fallback'."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC07",
+        "title": "Propensity mancanti/incomplete: gestione errore o ordinamento parziale controllato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2009 esistente con cluster CL-03 disponibile",
+          "Per C-2009 sono disponibili propensity solo per un sottoinsieme dei prodotti eleggibili (es. P-1 e P-2), mentre altri prodotti (es. P-3) non hanno propensity"
+        ],
+        "test_data": [
+          "Cliente: C-2009",
+          "Cluster: CL-03",
+          "Propensity note: P-1=0,77; P-2=0,44; P-3=ASSENTE"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2009",
+          "Verificare la lista raccomandazioni e l'ordine restituito"
+        ],
+        "expected_results": [
+          "Il sistema non ordina prodotti con propensity assente come se avessero un valore valido non dichiarato",
+          "Il sistema restituisce un errore chiaramente identificabile oppure produce un output controllato (es. esclusione dei prodotti senza propensity o posizionamento in coda secondo regola definita) in modo deterministico"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Comportamento atteso 'da definire' nella user story; il test richiede determinismo e assenza di assunzioni implicite sui valori mancanti."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC08",
+        "title": "Dati possesso prodotti non disponibili o incoerenti: gestione controllata per evitare proposte errate",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2010 esistente con cluster e propensity disponibili",
+          "Servizio/dataset di possesso prodotti per C-2010 non disponibile (timeout) oppure restituisce dati incoerenti"
+        ],
+        "test_data": [
+          "Cliente: C-2010",
+          "Simulazione indisponibilità possesso: timeout 30s o errore 5xx dal servizio possesso (se applicabile)"
+        ],
+        "steps": [
+          "Configurare la simulazione di indisponibilità/incoerenza del dato possesso per C-2010",
+          "Invocare il Motore NBO per il cliente C-2010",
+          "Acquisire risposta ed eventuali errori o warning"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'indisponibilità/incoerenza del dato possesso in modo controllato (errore o fallback definito) senza dichiarare il rispetto della regola di esclusione se non verificabile",
+          "Se viene restituito un output NBO, esso è accompagnato da un'indicazione tecnica/funzionale che segnala la non verificabilità/limitazione (se prevista dall'implementazione)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La user story indica che la gestione è 'da definire'. Il test è orientato a evitare falsi positivi sulla conformità ad AC-2 quando il dato possesso non è disponibile."
+      },
+      {
+        "test_id": "REQ-F-022.US02.TC09",
+        "title": "Parità di propensity tra prodotti: tie-break deterministico per garantire replicabilità",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Servizio/endpoint Motore NBO disponibile",
+          "Cliente C-2011 esistente con cluster CL-04 disponibile",
+          "Due prodotti eleggibili P-T1 e P-T2 hanno la stessa propensity per C-2011",
+          "Nessun possesso/nessuna eccezione che influenzi P-T1 e P-T2"
+        ],
+        "test_data": [
+          "Cliente: C-2011",
+          "Cluster: CL-04",
+          "Propensity: P-T1=0,50; P-T2=0,50"
+        ],
+        "steps": [
+          "Invocare il Motore NBO per il cliente C-2011 e salvare l'ordine risultante tra P-T1 e P-T2",
+          "Invocare nuovamente il Motore NBO per il cliente C-2011 con gli stessi input",
+          "Confrontare l'ordine relativo tra P-T1 e P-T2 nelle due risposte"
+        ],
+        "expected_results": [
+          "L'ordine relativo tra P-T1 e P-T2 è deterministico e identico tra le due esecuzioni con stessi input",
+          "Non si osservano fluttuazioni nell'ordinamento dovute a parità di propensity"
+        ],
+        "traced_criteria": [
+          "AC-4",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il criterio di tie-break non è specificato; il test verifica almeno la replicabilità. Per rendere il test più stringente va definita la regola (es. priorità marketing, codice prodotto ascendente, ecc.)."
+      }
+    ]
+  }
+]

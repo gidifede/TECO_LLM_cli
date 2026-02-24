@@ -1,0 +1,306 @@
+[
+  {
+    "test_id": "REQ-V-005.TC01",
+    "title": "Verifica supporto canali: creazione decisione su OSP/OFE, App e Web con stesso input",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con motore decisionale deployato e raggiungibile",
+      "Canali abilitati: OSP/OFE, App, Web",
+      "Esiste almeno una configurazione/matrice di combinazioni attiva che includa i prodotti everyday",
+      "Disponibili credenziali/utenze o certificati tecnici per invocare il motore dai tre canali (o dai rispettivi gateway)"
+    ],
+    "test_data": [
+      "Richiesta decisione standard con canale=OSP/OFE e prodotto=fibra",
+      "Richiesta decisione standard con canale=App e prodotto=fibra",
+      "Richiesta decisione standard con canale=Web e prodotto=fibra",
+      "Identificativo cliente: CF 'RSSMRA80A01H501U'",
+      "CorrelationId: 'corr-reqv005-tc01-001'"
+    ],
+    "steps": [
+      "Inviare una richiesta di decisione al motore dal canale OSP/OFE per il prodotto 'fibra' usando lo stesso set di dati cliente e lo stesso CorrelationId (o un CorrelationId distinto ma tracciabile).",
+      "Verificare l'esito della risposta del motore per la richiesta OSP/OFE.",
+      "Inviare una richiesta di decisione al motore dal canale App per il prodotto 'fibra' con gli stessi dati cliente.",
+      "Verificare l'esito della risposta del motore per la richiesta App.",
+      "Inviare una richiesta di decisione al motore dal canale Web per il prodotto 'fibra' con gli stessi dati cliente.",
+      "Verificare l'esito della risposta del motore per la richiesta Web.",
+      "Confrontare la struttura della risposta (campi obbligatori, codici esito, identificativi decisione) tra i tre canali."
+    ],
+    "expected_results": [
+      "La richiesta da OSP/OFE riceve risposta HTTP/trasporto di successo (es. 200 o equivalente) e contiene un identificativo decisione valorizzato.",
+      "La richiesta da App riceve risposta di successo e contiene un identificativo decisione valorizzato.",
+      "La richiesta da Web riceve risposta di successo e contiene un identificativo decisione valorizzato.",
+      "La risposta per i tre canali è coerente in termini di schema (stessi campi obbligatori presenti) e non presenta differenze non giustificate dal solo canale (es. campi mancanti o null non ammessi)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "osp/ofe",
+      "app",
+      "web"
+    ],
+    "notes": "Gli attori e le modalità di invocazione per canale (UI vs API/gateway) non sono specificati nel requisito: il test assume che il canale sia rappresentato da un parametro/contesto di richiesta o da endpoint distinti e che la 'coerenza' sia verificabile almeno a livello di schema e presenza campi obbligatori."
+  },
+  {
+    "test_id": "REQ-V-005.TC02",
+    "title": "Verifica matrice combinazioni: ogni prodotto everyday è presente come tipologia supportata",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con accesso in lettura alla matrice di combinazioni (UI amministrativa o API di configurazione)",
+      "Matrice di combinazioni attiva e versionata (se applicabile)"
+    ],
+    "test_data": [
+      "Elenco prodotti attesi: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+    ],
+    "steps": [
+      "Aprire la vista/endpoint della matrice di combinazioni attiva.",
+      "Ricercare la tipologia 'fibra' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'SIM' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'energia' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'carte prepagate' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'conto corrente' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'libretto postale' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'assicurazioni danni non auto' tra le tipologie prodotto supportate.",
+      "Ricercare la tipologia 'assicurazione auto' tra le tipologie prodotto supportate."
+    ],
+    "expected_results": [
+      "La tipologia prodotto 'fibra' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'SIM' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'energia' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'carte prepagate' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'conto corrente' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'libretto postale' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'assicurazioni danni non auto' risulta presente e selezionabile/attiva nella matrice di combinazioni.",
+      "La tipologia prodotto 'assicurazione auto' risulta presente e selezionabile/attiva nella matrice di combinazioni."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "osp/ofe",
+      "app",
+      "web"
+    ],
+    "notes": "Il requisito non specifica dove risieda la 'matrice di combinazioni' (UI o API) né i codici interni delle tipologie: il test verifica la presenza delle tipologie con le etichette/chiavi disponibili nell'ambiente."
+  },
+  {
+    "test_id": "REQ-V-005.TC03",
+    "title": "Verifica decisione per ciascun prodotto everyday: il motore accetta la tipologia e produce esito",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore decisionale disponibile",
+      "Matrice di combinazioni attiva include i prodotti everyday",
+      "Disponibile un endpoint/API per richiesta decisione con parametro tipologia prodotto",
+      "Logging di decisione abilitato e consultabile (es. log aggregator, tabella audit, servizio log)"
+    ],
+    "test_data": [
+      "Cliente: CF 'BNCLGU75C10F205X'",
+      "Canale: Web",
+      "Prodotti da testare: fibra; SIM; energia; carte prepagate; conto corrente; libretto postale; assicurazioni danni non auto; assicurazione auto",
+      "CorrelationId base: 'corr-reqv005-tc03-' (con suffisso progressivo per ogni prodotto)"
+    ],
+    "steps": [
+      "Per il prodotto 'fibra', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'SIM', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'energia', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'carte prepagate', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'conto corrente', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'libretto postale', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'assicurazioni danni non auto', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito.",
+      "Per il prodotto 'assicurazione auto', inviare una richiesta decisione con canale=Web e salvare l'identificativo decisione restituito."
+    ],
+    "expected_results": [
+      "Per ciascuna richiesta, il motore non rifiuta la tipologia prodotto per 'tipologia non supportata' e restituisce una risposta di successo (es. 200 o equivalente).",
+      "Per ciascuna richiesta, è presente un identificativo decisione valorizzato e un esito decisionale (es. approvata/rigettata/da integrare o equivalente) secondo lo schema previsto.",
+      "Non si verificano errori di mapping/configurazione relativi al prodotto (es. 'unknown product type', 'missing matrix mapping') per nessuno dei prodotti elencati."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i codici esatti degli esiti né lo schema di risposta: il test valida l'accettazione della tipologia e la produzione di un esito strutturalmente valido. Canale scelto Web per ridurre ridondanza; la copertura multi-canale è validata in TC01."
+  },
+  {
+    "test_id": "REQ-V-005.TC04",
+    "title": "Tracciamento: correlazione offerta-decisione e log di provisioning per prodotto everyday",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore decisionale disponibile",
+      "Sistema di tracciamento/audit consultabile (es. DB audit, log aggregator, APM) con ricerca per CorrelationId e/o decisionId",
+      "Componente di provisioning disponibile oppure simulatore/stub di provisioning abilitato in ambiente",
+      "Le offerte generate dal motore (o dal sistema a valle) includono un identificativo offerta consultabile"
+    ],
+    "test_data": [
+      "Canale: App",
+      "Prodotto: 'SIM'",
+      "Cliente: CF 'VRDLGI90D22H224K'",
+      "CorrelationId: 'corr-reqv005-tc04-001'"
+    ],
+    "steps": [
+      "Inviare una richiesta decisione per prodotto 'SIM' con canale=App e CorrelationId indicato.",
+      "Recuperare dalla risposta l'identificativo decisione e l'identificativo offerta (se presente) oppure recuperare l'offerta tramite le API/ricerche disponibili usando decisionId/CorrelationId.",
+      "Verificare nei log di decisione la presenza di un record/evento relativo alla decisione appena eseguita, ricercando per decisionId e/o CorrelationId.",
+      "Avviare il provisioning dell'offerta (o attendere l'evento di provisioning se asincrono) utilizzando l'identificativo offerta.",
+      "Verificare nei log di provisioning la presenza di un record/evento relativo al provisioning dell'offerta, ricercando per offerId e/o decisionId e/o CorrelationId.",
+      "Verificare che i riferimenti incrociati tra offerta, decisione e provisioning siano presenti e coerenti."
+    ],
+    "expected_results": [
+      "La decisione genera (direttamente o indirettamente) un'offerta associata al prodotto 'SIM' identificabile tramite un offerId (o identificativo equivalente).",
+      "Nei log di decisione è presente un evento/record con decisionId corrispondente e con riferimento a offerId e/o CorrelationId.",
+      "Il provisioning produce un evento/record nei log di provisioning con riferimento all'offerId e con collegamento tracciabile alla decisione (decisionId e/o CorrelationId).",
+      "La correlazione tra offerId, decisionId e CorrelationId è consistente tra log di decisione e log di provisioning (stessi valori, nessuna ambiguità o mismatch)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito dichiara 'tracciate e correlate' senza specificare campi obbligatori e formati log: il test assume l'esistenza di identificativi (decisionId, offerId, CorrelationId) ricercabili nei sistemi di audit/log."
+  },
+  {
+    "test_id": "REQ-V-005.TC05",
+    "title": "Negativo: richiesta con canale non supportato viene rifiutata",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore decisionale disponibile",
+      "Validazione del campo canale attiva (a livello motore o gateway)"
+    ],
+    "test_data": [
+      "Canale: 'ATM' (non previsto dal requisito)",
+      "Prodotto: 'fibra'",
+      "Cliente: CF 'RSSMRA80A01H501U'",
+      "CorrelationId: 'corr-reqv005-tc05-001'"
+    ],
+    "steps": [
+      "Inviare una richiesta decisione con canale='ATM' e prodotto='fibra'.",
+      "Acquisire la risposta del motore/gateway."
+    ],
+    "expected_results": [
+      "La richiesta non viene processata come valida.",
+      "Il sistema restituisce un errore di validazione coerente (es. HTTP 400/422 o equivalente) indicando che il canale non è supportato o non valido.",
+      "Non viene creato alcun identificativo decisione e non risultano eventi di decisione/provisioning associati al CorrelationId della richiesta."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il comportamento di errore per canale non supportato non è esplicitato: il test lo introduce come scenario negativo necessario per rendere verificabile il vincolo di 'supporto canali' e per prevenire accettazioni silenti di canali non previsti."
+  },
+  {
+    "test_id": "REQ-V-005.TC06",
+    "title": "Negativo: richiesta con prodotto non in lista everyday viene rifiutata come tipologia non supportata",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore decisionale disponibile",
+      "Matrice di combinazioni attiva",
+      "Validazione tipologia prodotto attiva"
+    ],
+    "test_data": [
+      "Canale: Web",
+      "Prodotto: 'mutuo' (non presente nell'elenco everyday del requisito)",
+      "Cliente: CF 'BNCLGU75C10F205X'",
+      "CorrelationId: 'corr-reqv005-tc06-001'"
+    ],
+    "steps": [
+      "Inviare una richiesta decisione con canale=Web e prodotto='mutuo'.",
+      "Acquisire la risposta del motore."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta la richiesta o restituisce un esito che indica chiaramente che la tipologia prodotto non è supportata dalla matrice di combinazioni.",
+      "La risposta contiene un codice errore/messaggio diagnostico (es. 'PRODUCT_NOT_SUPPORTED' o equivalente).",
+      "Non viene generata un'offerta associata alla richiesta."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il set complessivo dei prodotti supportati oltre alla lista everyday: il test assume che un prodotto esterno alla lista debba essere non supportato (almeno in questo contesto) per rendere verificabile AC-2."
+  },
+  {
+    "test_id": "REQ-V-005.TC07",
+    "title": "Authorization: accesso ai log di decisione/provisioning consentito solo a ruoli autorizzati",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono almeno due profili: uno autorizzato alla consultazione audit/log e uno non autorizzato",
+      "Interfaccia/API di consultazione log disponibile (es. Kibana con RBAC, endpoint audit con auth)",
+      "È stata eseguita almeno una decisione con provisioning (può essere quella di TC04) e si conoscono decisionId/offerId/CorrelationId"
+    ],
+    "test_data": [
+      "Utenza autorizzata: 'audit_reader'",
+      "Utenza non autorizzata: 'sales_user_basic'",
+      "CorrelationId: 'corr-reqv005-tc04-001' (o altro CorrelationId noto)"
+    ],
+    "steps": [
+      "Autenticarsi come utenza non autorizzata 'sales_user_basic'.",
+      "Tentare di consultare i log di decisione filtrando per CorrelationId noto.",
+      "Tentare di consultare i log di provisioning filtrando per CorrelationId noto.",
+      "Autenticarsi come utenza autorizzata 'audit_reader'.",
+      "Consultare i log di decisione filtrando per lo stesso CorrelationId.",
+      "Consultare i log di provisioning filtrando per lo stesso CorrelationId."
+    ],
+    "expected_results": [
+      "Con utenza non autorizzata, l'accesso ai log di decisione è negato (es. HTTP 401/403 o messaggio equivalente) e non vengono mostrati dati.",
+      "Con utenza non autorizzata, l'accesso ai log di provisioning è negato (es. HTTP 401/403 o messaggio equivalente) e non vengono mostrati dati.",
+      "Con utenza autorizzata, i log di decisione sono consultabili e includono record/eventi per il CorrelationId indicato.",
+      "Con utenza autorizzata, i log di provisioning sono consultabili e includono record/eventi per il CorrelationId indicato."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non menziona esplicitamente autorizzazioni; questo test introduce un controllo minimo di sicurezza tipico per sistemi di tracciamento. Se i log non sono esposti via UI/API con RBAC in ambito progetto, il test va adattato o marcato non applicabile."
+  },
+  {
+    "test_id": "REQ-V-005.TC08",
+    "title": "Edge case/Resilienza: indisponibilità del servizio di provisioning mantiene tracciamento decisione e segnala errore",
+    "type": "Edge Case",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore decisionale disponibile",
+      "Possibilità di simulare indisponibilità del provisioning (timeout/500) tramite stub, feature flag o blocco rete",
+      "Sistema di log di decisione e provisioning consultabile"
+    ],
+    "test_data": [
+      "Canale: OSP/OFE",
+      "Prodotto: 'energia'",
+      "Cliente: CF 'FRNNDR85E15L219P'",
+      "CorrelationId: 'corr-reqv005-tc08-001'",
+      "Simulazione provisioning: timeout 30s o risposta HTTP 500"
+    ],
+    "steps": [
+      "Abilitare la simulazione di errore/timeout del servizio di provisioning.",
+      "Inviare una richiesta decisione per prodotto 'energia' con canale=OSP/OFE e CorrelationId indicato.",
+      "Avviare il provisioning dell'offerta generata (o attendere l'avvio automatico, se previsto).",
+      "Consultare i log di decisione per il CorrelationId indicato.",
+      "Consultare i log di provisioning (o log errori provisioning) per il CorrelationId/offerId."
+    ],
+    "expected_results": [
+      "La decisione risulta tracciata nei log di decisione con decisionId e riferimento al prodotto 'energia' anche in presenza di errore di provisioning.",
+      "Il provisioning fallisce con errore/timeout osservabile e viene registrato un evento/record di errore nei log di provisioning (o in un canale log dedicato) con riferimento a offerId e/o decisionId e/o CorrelationId.",
+      "La correlazione tra decisione e tentativo di provisioning (anche fallito) è mantenuta e ricostruibile tramite gli identificativi."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "osp/ofe"
+    ],
+    "notes": "Il requisito non descrive gestione errori provisioning; il test verifica un comportamento minimo atteso per rendere effettiva la 'correlazione' richiesta da AC-3 anche in caso di fault. La modalità di simulazione del fault è una dipendenza esterna dell'ambiente."
+  }
+]

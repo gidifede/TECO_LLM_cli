@@ -1,0 +1,262 @@
+[
+  {
+    "test_id": "REQ-F-031.TC01",
+    "title": "Export manuale con filtri: intervallo temporale + selezione di più tipi evento (happy path)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una funzionalità di export manuale dei log eventi di offerta accessibile da interfaccia o API.",
+      "Nel sistema sono presenti log eventi di offerta con timestamp e tipo evento valorizzati.",
+      "L'utente ha permessi per eseguire l'export dei log (se applicabile)."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-01 00:00, fine 2026-02-01 23:59 (timezone di sistema)",
+      "Tipi evento selezionati: 'proposta generata', 'modifica di configurazione'",
+      "Dataset preesistente: almeno 5 eventi nel periodo, di cui almeno 1 per ciascun tipo selezionato e almeno 1 di tipo diverso (es. 'accesso utente') nello stesso periodo"
+    ],
+    "steps": [
+      "Avviare la procedura di export manuale dei log eventi di offerta.",
+      "Impostare la data/ora di inizio su '2026-02-01 00:00'.",
+      "Impostare la data/ora di fine su '2026-02-01 23:59'.",
+      "Selezionare i tipi evento 'proposta generata' e 'modifica di configurazione'.",
+      "Avviare l'export e scaricare/ottenere il file esportato."
+    ],
+    "expected_results": [
+      "L'interfaccia/API consente di valorizzare data/ora di inizio e data/ora di fine per l'export.",
+      "L'interfaccia/API consente di selezionare più tipi evento per l'export.",
+      "Il file esportato contiene solo record con timestamp compreso tra '2026-02-01 00:00' e '2026-02-01 23:59' (inclusi).",
+      "Il file esportato contiene solo record con tipo evento uguale a 'proposta generata' oppure 'modifica di configurazione'.",
+      "Nel file non sono presenti eventi di tipo non selezionato (es. 'accesso utente') anche se presenti nel periodo."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "Il requisito non specifica canali; sono stati inferiti UI (web) e API perché citati come 'interfaccia/API'."
+  },
+  {
+    "test_id": "REQ-F-031.TC02",
+    "title": "Export via API con filtri: verifica applicazione rigorosa dei filtri nel contenuto esportato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Endpoint/API di export disponibile e raggiungibile.",
+      "Esistono log eventi di offerta con tipi evento e timestamp noti e verificabili.",
+      "Disponibile un meccanismo per recuperare il file esportato (download diretto o link/ID job)."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-10 10:00, fine 2026-02-10 12:00",
+      "Tipo evento selezionato: 'accesso utente'",
+      "Dataset preesistente: almeno 1 evento 'accesso utente' nel periodo; almeno 1 evento 'accesso utente' fuori periodo; almeno 1 evento di altro tipo nel periodo"
+    ],
+    "steps": [
+      "Inviare una richiesta API di export specificando l'intervallo temporale '2026-02-10 10:00' - '2026-02-10 12:00'.",
+      "Nella stessa richiesta, specificare il filtro tipo evento includendo solo 'accesso utente'.",
+      "Attendere il completamento dell'export (sincrono o asincrono).",
+      "Scaricare/recuperare il file esportato tramite API.",
+      "Analizzare i record del file esportato (timestamp e tipo evento)."
+    ],
+    "expected_results": [
+      "La richiesta API accetta e processa i parametri di intervallo temporale e tipo evento.",
+      "Il file esportato contiene almeno l'evento 'accesso utente' presente nel periodo.",
+      "Il file esportato non contiene eventi 'accesso utente' con timestamp fuori dall'intervallo richiesto.",
+      "Il file esportato non contiene eventi di tipo diverso da 'accesso utente' anche se presenti nel periodo."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Dipendenza esterna: formato del file esportato (CSV/JSON) non specificato; il controllo va eseguito sui campi equivalenti a timestamp e tipo evento."
+  },
+  {
+    "test_id": "REQ-F-031.TC03",
+    "title": "Validazione negativa: intervallo temporale non valido (fine precedente all'inizio) impedisce l'export",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Funzionalità di export manuale o API disponibile.",
+      "Sono configurati messaggi di errore/validazioni input lato UI o API."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-15 12:00, fine 2026-02-15 10:00",
+      "Tipo evento selezionato: 'proposta generata'"
+    ],
+    "steps": [
+      "Avviare l'export (UI o API).",
+      "Impostare data/ora di inizio su '2026-02-15 12:00'.",
+      "Impostare data/ora di fine su '2026-02-15 10:00'.",
+      "Selezionare il tipo evento 'proposta generata'.",
+      "Tentare di avviare l'export."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta l'operazione di export con un errore di validazione che indica che la data/ora di fine deve essere uguale o successiva alla data/ora di inizio.",
+      "Non viene generato alcun file esportato (o non viene avviato alcun job di export)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "Il requisito non definisce il comportamento in caso di input non valido; si assume che l'export venga bloccato con errore di validazione per rendere il criterio AC-1 verificabile in modo robusto."
+  },
+  {
+    "test_id": "REQ-F-031.TC04",
+    "title": "Validazione negativa: nessun tipo evento selezionato (campo obbligatorio o default) gestito correttamente",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Funzionalità di export disponibile.",
+      "Sono presenti log eventi nel periodo scelto."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-05 00:00, fine 2026-02-05 23:59",
+      "Tipi evento: nessuno selezionato"
+    ],
+    "steps": [
+      "Avviare l'export (UI o API).",
+      "Impostare l'intervallo temporale '2026-02-05 00:00' - '2026-02-05 23:59'.",
+      "Lasciare vuota la selezione dei tipi evento (nessun valore).",
+      "Tentare di avviare l'export."
+    ],
+    "expected_results": [
+      "Il sistema gestisce la richiesta in modo deterministico: o blocca l'export con errore di validazione 'Selezionare almeno un tipo di evento' oppure applica un comportamento di default documentato/configurato (es. tutti i tipi).",
+      "Se l'export viene eseguito, il contenuto del file rispetta il comportamento adottato (nessun evento se filtro vuoto = nessuno; oppure tutti i tipi se default = tutti)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "Ambiguità non bloccante: il requisito non specifica se la selezione dei tipi evento sia obbligatoria o se esista un default. Il test è scritto per evidenziare e verificare il comportamento effettivamente implementato."
+  },
+  {
+    "test_id": "REQ-F-031.TC05",
+    "title": "Edge case: intervallo temporale con inizio = fine (filtro puntuale) include solo eventi a quel timestamp",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Funzionalità di export disponibile.",
+      "Esiste almeno un evento con timestamp esatto '2026-02-20 09:30' e tipo 'modifica di configurazione'.",
+      "Esiste almeno un evento dello stesso tipo con timestamp diverso (es. '2026-02-20 09:31')."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-20 09:30, fine 2026-02-20 09:30",
+      "Tipo evento selezionato: 'modifica di configurazione'"
+    ],
+    "steps": [
+      "Avviare l'export (UI o API).",
+      "Impostare data/ora di inizio su '2026-02-20 09:30'.",
+      "Impostare data/ora di fine su '2026-02-20 09:30'.",
+      "Selezionare il tipo evento 'modifica di configurazione'.",
+      "Eseguire l'export e recuperare il file."
+    ],
+    "expected_results": [
+      "Il sistema accetta un intervallo temporale in cui inizio e fine coincidono.",
+      "Il file esportato include solo eventi con timestamp esattamente '2026-02-20 09:30' (secondo la precisione supportata dal sistema) e tipo 'modifica di configurazione'.",
+      "Il file non include eventi dello stesso tipo a timestamp diversi (es. '2026-02-20 09:31')."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "La precisione del timestamp (minuti/secondi/millisecondi) non è specificata; l'asserzione va adattata alla precisione effettivamente esposta nel file/API."
+  },
+  {
+    "test_id": "REQ-F-031.TC06",
+    "title": "Export programmato: applicazione dei filtri su job schedulato e contenuto coerente con i filtri",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile la funzionalità di export programmato (schedulazione) oppure un meccanismo equivalente di job pianificato.",
+      "È possibile definire filtri (intervallo temporale e tipi evento) in fase di creazione/modifica dell'export programmato.",
+      "Nel sistema sono presenti log eventi di offerta per il periodo target, con tipi selezionati e non selezionati."
+    ],
+    "test_data": [
+      "Schedulazione: esecuzione singola pianificata tra 2-5 minuti dall'impostazione (ambiente di test)",
+      "Intervallo temporale del job: inizio 2026-02-18 00:00, fine 2026-02-18 23:59",
+      "Tipi evento selezionati nel job: 'proposta generata'",
+      "Dataset preesistente: almeno 1 evento 'proposta generata' nel periodo; almeno 1 evento di altro tipo nel periodo"
+    ],
+    "steps": [
+      "Creare un nuovo export programmato dei log eventi di offerta.",
+      "Impostare l'intervallo temporale del job su '2026-02-18 00:00' - '2026-02-18 23:59'.",
+      "Selezionare il tipo evento 'proposta generata'.",
+      "Salvare la schedulazione e attendere l'esecuzione del job.",
+      "Recuperare il file generato dal job (da area download, repository o endpoint previsto).",
+      "Analizzare i record esportati (timestamp e tipo evento)."
+    ],
+    "expected_results": [
+      "In fase di configurazione dell'export programmato è possibile impostare l'intervallo temporale.",
+      "In fase di configurazione dell'export programmato è possibile selezionare uno o più tipi evento.",
+      "Il file prodotto dal job contiene esclusivamente eventi con timestamp nel range configurato.",
+      "Il file prodotto dal job contiene esclusivamente eventi del tipo 'proposta generata' e non include eventi di altri tipi presenti nello stesso periodo."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "AC-4 include la clausola 'se previsto': il test è applicabile solo se l'export programmato è effettivamente disponibile nell'applicazione/ambiente."
+  },
+  {
+    "test_id": "REQ-F-031.TC07",
+    "title": "Negativo/affidabilità: servizio di generazione export non disponibile durante export (manuale o programmato) e gestione errore",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Funzionalità di export disponibile (manuale o programmato).",
+      "È possibile simulare indisponibilità del componente/servizio di export o del repository di generazione file (es. stop servizio, fault injection, mock che risponde 5xx/timeout)."
+    ],
+    "test_data": [
+      "Intervallo temporale: inizio 2026-02-12 00:00, fine 2026-02-12 23:59",
+      "Tipo evento selezionato: 'accesso utente'",
+      "Fault: timeout o risposta 503 dal servizio di export per almeno 30 secondi"
+    ],
+    "steps": [
+      "Configurare la simulazione di indisponibilità del servizio/componente di export (timeout o 503).",
+      "Avviare un export con i filtri indicati (manuale via UI/API oppure esecuzione di un job programmato).",
+      "Attendere l'esito dell'operazione/job.",
+      "Verificare lo stato dell'export e l'eventuale messaggistica/errore restituito.",
+      "Ripristinare la disponibilità del servizio/componente di export."
+    ],
+    "expected_results": [
+      "L'operazione di export fallisce in modo controllato (errore esplicito in UI o codice/risposta errore via API, oppure stato job = 'fallito').",
+      "Non viene reso disponibile un file parziale/corrotto come risultato dell'export fallito.",
+      "I filtri richiesti risultano comunque parte della richiesta/configurazione (tracciabili nella richiesta o nei dettagli del job) anche se l'export non si completa."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-4"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "Il requisito non definisce la gestione errori; questo test copre lo scenario negativo obbligatorio di indisponibilità servizi esterni/componente export. L'asserzione sul file parziale può richiedere criteri di integrità specifici del sistema."
+  }
+]

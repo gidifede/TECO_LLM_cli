@@ -1,0 +1,97 @@
+[
+  {
+    "story_id": "REQ-F-033.US01",
+    "title": "Analizzare performance e KPI delle offerte tramite reporting aziendale",
+    "persona": "Team Marketing",
+    "goal": "accedere allo strumento di analisi dati e reportistica nel reporting aziendale per visualizzare e analizzare le performance delle offerte con filtri e insight",
+    "benefit": "monitorare l’efficacia commerciale delle offerte e ottimizzare campagne, bundle e configurazioni",
+    "user_story": "Come Team Marketing\nVoglio accedere allo strumento di analisi dati e reportistica nel reporting aziendale per visualizzare e analizzare le performance delle offerte\nIn modo che possa ottenere insight utili a ottimizzare le iniziative commerciali",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo allo strumento di reporting aziendale con un profilo Team Marketing autorizzato ALLORA posso visualizzare il tipo e il numero di offerte integrate disponibili, distinguendo tra offerte attive e offerte storicizzate",
+      "QUANDO seleziono una singola offerta (o una aggregazione di offerte) ALLORA posso visualizzare insight relativi agli andamenti di vendita per periodo temporale",
+      "QUANDO consulto i KPI ALLORA posso visualizzare i KPI di conversione per fase del funnel",
+      "QUANDO consulto l’andamento delle proposte ALLORA posso visualizzare l’andamento delle proposte accettate e rifiutate",
+      "QUANDO applico filtri ALLORA posso filtrare i dati per canale/touchpoint, cluster di clientela, singole offerte e aggregazioni di offerte",
+      "QUANDO il mio ruolo non è autorizzato a una determinata funzionalità o livello di dettaglio ALLORA lo strumento impedisce l’accesso coerentemente con le regole di autorizzazione definite per i ruoli utente"
+    ],
+    "business_rules": [
+      "Lo strumento di analisi dati e reportistica deve essere implementato all’interno del sistema di reporting aziendale (non nel Motore di Offerte).",
+      "L’accesso a funzionalità e dati di analisi/reporting è soggetto a regole di autorizzazione per ruolo utente.",
+      "I dataset devono includere offerte attive e storicizzate e consentire analisi per periodo temporale, funnel e stato proposta (accettata/rifiutata)."
+    ],
+    "edge_cases": [
+      "Filtri combinati (es. canale + cluster + aggregazione offerte) che restituiscono dataset vuoto: lo strumento mostra correttamente assenza dati senza errori",
+      "Periodo temporale selezionato non coperto da storicizzazione disponibile: lo strumento segnala che non ci sono dati per l’intervallo richiesto",
+      "Utente Team Marketing con permessi limitati (es. solo aggregati): i dettagli non sono visibili e non sono aggirabili via UI/export"
+    ],
+    "assumptions": [
+      "Il canale 'dashboard' rappresenta l’accesso allo strumento nel reporting aziendale, coerentemente con il canale indicato per il Team Marketing nel contesto personas.",
+      "La definizione puntuale dei KPI (formule, fasi del funnel, granularità) è demandata alla progettazione e non è specificata nel requisito."
+    ],
+    "notes": "L’unico acceptance criterion del requisito è parzialmente non verificabile perché rimanda a 'regole di frequenza e storicizzazione' da definire in progettazione: è stato interpretato come disponibilità dei dati nel reporting aziendale e come vincolo di alimentazione dal Motore. Dipendenza esterna: definizione delle regole di alimentazione (frequenza, storicizzazione) e delle regole di autorizzazione per ruolo nel reporting aziendale."
+  },
+  {
+    "story_id": "REQ-F-033.US02",
+    "title": "Verificare conformità e audit dei dati di performance offerte nel reporting aziendale",
+    "persona": "Team Compliance",
+    "goal": "accedere allo strumento di reporting aziendale per consultare dati e log/report necessari a verifiche di controllo e conformità sulle performance e sulle proposte",
+    "benefit": "effettuare audit e controlli regolatori basati su dati tracciati e accessi governati da autorizzazioni",
+    "user_story": "Come Team Compliance\nVoglio accedere allo strumento di reporting aziendale per consultare dati e report sulle performance delle offerte\nIn modo che possa svolgere attività di audit e verifica di conformità",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo allo strumento di reporting aziendale con un profilo Team Compliance autorizzato ALLORA posso consultare i dati relativi alle offerte integrate disponibili (attive e storicizzate) necessari alle verifiche",
+      "QUANDO analizzo una offerta (o una aggregazione di offerte) ALLORA posso consultare gli insight relativi ad andamenti di vendita per periodo temporale, KPI di conversione per fase del funnel e andamento delle proposte accettate/rifiutate, nei limiti delle autorizzazioni",
+      "QUANDO applico filtri ALLORA posso filtrare i dati per canale/touchpoint, cluster di clientela, singole offerte e aggregazioni di offerte, nei limiti delle autorizzazioni",
+      "QUANDO il mio ruolo non è autorizzato a una determinata funzionalità o livello di dettaglio ALLORA lo strumento impedisce l’accesso coerentemente con le regole di autorizzazione definite per i ruoli utente"
+    ],
+    "business_rules": [
+      "Lo strumento di analisi/reporting è nel reporting aziendale.",
+      "Le funzionalità e la visibilità dei dati sono soggette a regole di autorizzazione per ruolo utente.",
+      "La consultazione deve includere anche dati storicizzati, per supportare audit su periodi passati."
+    ],
+    "edge_cases": [
+      "Accesso da parte di utente Compliance non autorizzato: negazione accesso e tracciamento secondo policy del reporting aziendale (se prevista)",
+      "Dati incompleti per una finestra temporale (es. alimentazione non avvenuta): lo strumento segnala indisponibilità/assenza dati senza presentare valori fuorvianti"
+    ],
+    "assumptions": [
+      "Il Team Compliance utilizza una dashboard nel reporting aziendale per consultazione (coerente con la persona).",
+      "Eventuali funzionalità di export non sono richieste esplicitamente da questo requisito e quindi non sono incluse come comportamento obbligatorio."
+    ],
+    "notes": "AC condivisi con REQ-F-033.US01 (Team Marketing) su: visualizzazione offerte attive/storicizzate, insight (vendite/KPI funnel/accettate-rifiutate), filtri e enforcement autorizzazioni. Dipendenze esterne: definizione regole di alimentazione (frequenza/storicizzazione) e matrice autorizzativa nel reporting aziendale."
+  },
+  {
+    "story_id": "REQ-F-033.US03",
+    "title": "Esportare dati dal Motore di Offerte verso il reporting aziendale per analisi performance",
+    "persona": "Motore di Offerte",
+    "goal": "alimentare lo strumento di analisi dati e reportistica nel reporting aziendale esportando i dati necessari secondo regole definite",
+    "benefit": "rendere disponibili dati affidabili e storicizzati per analisi, insight e controlli sui risultati delle offerte",
+    "user_story": "Come Motore di Offerte\nVoglio esportare verso lo strumento di analisi dati e reportistica nel reporting aziendale i dati necessari\nIn modo che le performance delle offerte possano essere monitorate e analizzate secondo le regole aziendali",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte esegue l’alimentazione dati verso il reporting aziendale ALLORA rende disponibili i dati necessari alla visualizzazione del tipo e del numero di offerte integrate disponibili (attive e storicizzate)",
+      "QUANDO il Motore di Offerte alimenta i dati ALLORA rende disponibili i dati necessari a calcolare/visualizzare andamenti di vendita per periodo temporale, KPI di conversione per fase del funnel e andamento delle proposte accettate e rifiutate",
+      "QUANDO avviene l’alimentazione ALLORA essa avviene secondo le regole di frequenza e storicizzazione che saranno definite in sede di progettazione"
+    ],
+    "business_rules": [
+      "Il Motore di Offerte è responsabile dell’export dei dati verso il sistema di reporting aziendale.",
+      "Frequenza di alimentazione e regole di storicizzazione sono definite successivamente in progettazione e devono essere rispettate dal Motore."
+    ],
+    "edge_cases": [
+      "Reporting aziendale non raggiungibile o errore in export: l’export fallisce e deve essere gestito secondo meccanismi definiti in progettazione (es. retry, logging)",
+      "Cambio delle regole di storicizzazione/frequenza: l’export deve adeguarsi alle nuove regole senza compromettere la consistenza dei dati storici"
+    ],
+    "assumptions": [
+      "I dettagli tecnici di integrazione (formato, protocolli, API/batch) non sono specificati nel requisito e saranno definiti in progettazione.",
+      "Il requisito non specifica livelli di granularità (per cliente vs aggregato): si assume che l’export supporti almeno le aggregazioni necessarie ai filtri richiesti (canale/touchpoint, cluster, offerta/aggregazione)."
+    ],
+    "notes": "Questa US copre l’unico acceptance criterion del requisito, che è dichiarativo e rimanda a regole non ancora definite: è necessaria una definizione progettuale di frequenza, storicizzazione, dataset minimi e mapping con canale/touchpoint e cluster."
+  }
+]

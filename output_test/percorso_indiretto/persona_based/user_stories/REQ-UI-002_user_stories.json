@@ -1,0 +1,35 @@
+[
+  {
+    "story_id": "REQ-UI-002.US01",
+    "title": "Vista a card delle offerte per l’operatore",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare le offerte in una schermata con layout a card, con possibilità di espandere dettagli e selezionare una specifica offerta",
+    "benefit": "consultare e presentare rapidamente le singole proposte al cliente riducendo i tempi di selezione",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare le offerte in formato card, ciascuna separata e con controlli per espandere informazioni o selezionare l’offerta\nIn modo che possa identificare e selezionare rapidamente le proposte da presentare al cliente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla schermata delle offerte come operatore ALLORA le offerte sono visualizzate con layout a card come impostazione predefinita.",
+      "QUANDO la schermata delle offerte è visualizzata ALLORA ogni offerta è rappresentata da una card separata e chiaramente distinguibile dalle altre.",
+      "QUANDO visualizzo una card offerta ALLORA la card contiene un controllo per espandere/contrarre le informazioni di dettaglio dell’offerta.",
+      "QUANDO visualizzo una card offerta ALLORA la card contiene un controllo per selezionare l’offerta.",
+      "QUANDO eseguo un test utente sulla vista a card con operatori rappresentativi ALLORA gli operatori riescono a identificare e selezionare rapidamente un’offerta rispetto all’obiettivo del test definito."
+    ],
+    "business_rules": [
+      "Il layout a card è il layout predefinito della schermata operatore per la lista offerte."
+    ],
+    "edge_cases": [
+      "QUANDO non sono presenti offerte da mostrare ALLORA la schermata non presenta card vuote e mostra uno stato informativo di assenza offerte (testabile lato UI).",
+      "QUANDO è presente una sola offerta ALLORA viene mostrata una singola card con gli stessi controlli di espansione e selezione.",
+      "QUANDO il contenuto testuale dell’offerta supera lo spazio disponibile nella card ALLORA la UI gestisce l’overflow (es. troncamento/scroll) senza impedire espansione e selezione.",
+      "QUANDO l’operatore tenta di selezionare un’offerta ma si verifica un errore tecnico della UI ALLORA viene mostrato un messaggio di errore e la selezione non risulta confermata."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il comportamento esatto dei controlli (tipo di controllo, stati, feedback di selezione); si assume che l’azione di selezione produca un’evidenza visiva di selezione sulla card.",
+      "Il criterio 'selezionare rapidamente' non definisce una metrica; si assume che il test utente venga formalizzato con una soglia (es. tempo massimo o tasso di successo) in fase di definizione dei test."
+    ],
+    "notes": "Requisito focalizzato su UI operatore; gli acceptance criteria includono un punto di usability ('rapidamente') non completamente verificabile senza una metrica: è stato mantenuto e reso testabile subordinandolo alla definizione dell’obiettivo/soglia del test utente."
+  }
+]

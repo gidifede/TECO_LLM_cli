@@ -1,0 +1,570 @@
+[
+  {
+    "story_id": "REQ-UI-009.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-009.US01.TC01",
+        "title": "Visualizzazione elenco offerte personali in Sezione Loyalty (App e Web) includendo proposta non accettata da pop-up",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente 'Cliente digitale' con account attivo",
+          "L'utente è autenticato su App e su Web",
+          "Per l'utente esiste almeno 1 offerta personale attiva",
+          "Per l'utente esiste una proposta generata da pop-up in stato 'non accettata' e non scaduta"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta pop-up non accettata: OFF-POP-1001 (scadenza: oggi + 3 giorni)",
+          "Offerta personale aggiuntiva: OFF-PERS-2001 (scadenza: oggi + 10 giorni)"
+        ],
+        "steps": [
+          "Da App, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Verifica la presenza nell'elenco dell'offerta 'OFF-POP-1001'",
+          "Verifica la presenza nell'elenco dell'offerta 'OFF-PERS-2001'",
+          "Da Web, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Verifica la presenza nell'elenco dell'offerta 'OFF-POP-1001'",
+          "Verifica la presenza nell'elenco dell'offerta 'OFF-PERS-2001'"
+        ],
+        "expected_results": [
+          "In App, la Sezione Loyalty mostra un elenco di offerte personali per l'utente autenticato",
+          "In App, l'elenco include la proposta generata da pop-up 'OFF-POP-1001' anche se non accettata",
+          "In Web, la Sezione Loyalty mostra un elenco di offerte personali per l'utente autenticato",
+          "In Web, l'elenco include la proposta generata da pop-up 'OFF-POP-1001' anche se non accettata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC02",
+        "title": "Riapertura proposta dall'elenco e visualizzazione dettagli coerenti (nome, immagine, prezzo scontato) con pop-up",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato",
+          "La Sezione Loyalty di Gruppo mostra nell'elenco la proposta 'OFF-POP-1001' (non accettata, non scaduta)",
+          "Sono noti i valori mostrati nel pop-up per la proposta 'OFF-POP-1001' (nome, immagine, prezzo scontato) per confronto"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta: OFF-POP-1001",
+          "Valori attesi da pop-up per OFF-POP-1001: Nome='Sconto 20% Scarpe Running', Immagine='shoe_running_20.png', Prezzo scontato='79,99 EUR'"
+        ],
+        "steps": [
+          "Da App, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Da App, l'utente seleziona la proposta 'OFF-POP-1001' dall'elenco",
+          "Da App, l'utente visualizza la pagina/scheda dettaglio della proposta",
+          "Da Web, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Da Web, l'utente seleziona la proposta 'OFF-POP-1001' dall'elenco",
+          "Da Web, l'utente visualizza la pagina/scheda dettaglio della proposta"
+        ],
+        "expected_results": [
+          "In App, si apre la vista di dettaglio della proposta selezionata",
+          "In App, nel dettaglio sono visibili almeno: nome offerta, immagine e prezzo scontato",
+          "In App, nome, immagine e prezzo scontato corrispondono ai valori mostrati nel pop-up per la stessa proposta",
+          "In Web, si apre la vista di dettaglio della proposta selezionata",
+          "In Web, nel dettaglio sono visibili almeno: nome offerta, immagine e prezzo scontato",
+          "In Web, nome, immagine e prezzo scontato corrispondono ai valori mostrati nel pop-up per la stessa proposta"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Si assume che i valori mostrati nel pop-up siano recuperabili come baseline (es. log/fixture/servizio di test) per il confronto oggettivo."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC03",
+        "title": "Procedere all’acquisto da proposta riaperta entro validità (aggiunta al carrello) - App",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato in App",
+          "La proposta 'OFF-POP-1001' è presente in Sezione Loyalty ed è entro la scadenza",
+          "Il prodotto associato all'offerta è acquistabile e disponibile",
+          "Il carrello dell'utente è vuoto o in stato noto"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta: OFF-POP-1001 (scadenza: oggi + 3 giorni)",
+          "Prodotto associato: SKU-RUN-001",
+          "Prezzo scontato atteso in carrello: 79,99 EUR"
+        ],
+        "steps": [
+          "In App, l'utente accede alla Sezione Loyalty di Gruppo",
+          "In App, l'utente apre il dettaglio della proposta 'OFF-POP-1001'",
+          "In App, l'utente seleziona l'azione per procedere all'acquisto (es. 'Aggiungi al carrello')",
+          "In App, l'utente apre il carrello"
+        ],
+        "expected_results": [
+          "In App, nel dettaglio proposta è disponibile un'azione per procedere all'acquisto entro validità (es. pulsante 'Aggiungi al carrello' abilitato)",
+          "L'azione di aggiunta al carrello va a buon fine",
+          "Nel carrello è presente il prodotto associato alla proposta",
+          "Nel carrello il prezzo applicato per il prodotto corrisponde al prezzo scontato della proposta (79,99 EUR)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story indica 'procedere all’acquisto' includendo almeno l'aggiunta al carrello; il completamento checkout non è richiesto."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC04",
+        "title": "Procedere all’acquisto da proposta riaperta entro validità (aggiunta al carrello) - Web",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato in Web",
+          "La proposta 'OFF-POP-1001' è presente in Sezione Loyalty ed è entro la scadenza",
+          "Il prodotto associato all'offerta è acquistabile e disponibile",
+          "Il carrello dell'utente è vuoto o in stato noto"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta: OFF-POP-1001 (scadenza: oggi + 3 giorni)",
+          "Prodotto associato: SKU-RUN-001",
+          "Prezzo scontato atteso in carrello: 79,99 EUR"
+        ],
+        "steps": [
+          "In Web, l'utente accede alla Sezione Loyalty di Gruppo",
+          "In Web, l'utente apre il dettaglio della proposta 'OFF-POP-1001'",
+          "In Web, l'utente seleziona l'azione per procedere all'acquisto (es. 'Aggiungi al carrello')",
+          "In Web, l'utente apre il carrello"
+        ],
+        "expected_results": [
+          "In Web, nel dettaglio proposta è disponibile un'azione per procedere all'acquisto entro validità (es. pulsante 'Aggiungi al carrello' abilitato)",
+          "L'azione di aggiunta al carrello va a buon fine",
+          "Nel carrello è presente il prodotto associato alla proposta",
+          "Nel carrello il prezzo applicato per il prodotto corrisponde al prezzo scontato della proposta (79,99 EUR)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC05",
+        "title": "Tentativo di acquisto oltre scadenza: azione non consentita e proposta non utilizzabile (App e Web)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato",
+          "La proposta 'OFF-EXP-3001' è presente in Sezione Loyalty ed è scaduta",
+          "Il prodotto associato è acquistabile (indipendentemente dall'offerta) per isolare il controllo di scadenza"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta scaduta: OFF-EXP-3001 (scadenza: ieri)",
+          "Prodotto associato: SKU-RUN-002"
+        ],
+        "steps": [
+          "Da App, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Da App, l'utente apre il dettaglio della proposta 'OFF-EXP-3001'",
+          "Da App, l'utente tenta di procedere all'acquisto (es. seleziona 'Aggiungi al carrello')",
+          "Da Web, l'utente accede alla Sezione Loyalty di Gruppo",
+          "Da Web, l'utente apre il dettaglio della proposta 'OFF-EXP-3001'",
+          "Da Web, l'utente tenta di procedere all'acquisto (es. seleziona 'Aggiungi al carrello')"
+        ],
+        "expected_results": [
+          "In App, l'azione di acquisto non viene completata (nessuna aggiunta al carrello associata alla proposta scaduta)",
+          "In App, la proposta risulta non più utilizzabile (es. azione disabilitata oppure messaggio di non validità visualizzato)",
+          "In Web, l'azione di acquisto non viene completata (nessuna aggiunta al carrello associata alla proposta scaduta)",
+          "In Web, la proposta risulta non più utilizzabile (es. azione disabilitata oppure messaggio di non validità visualizzato)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica se l'offerta scaduta debba essere nascosta o mostrata; il test verifica solo il blocco dell'acquisto oltre scadenza e l'evidenza di non validità."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC06",
+        "title": "Scadenza imminente: proposta valida in apertura ma scaduta al momento dell'acquisto",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato",
+          "La proposta 'OFF-EDGE-4001' è presente in Sezione Loyalty",
+          "La scadenza della proposta 'OFF-EDGE-4001' è imminente (es. entro 1 minuto)",
+          "È possibile controllare l'orologio di test o simulare il passare del tempo (time shift) in ambiente QA"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta: OFF-EDGE-4001 (scadenza: T0 + 60 secondi)",
+          "Prodotto associato: SKU-RUN-003"
+        ],
+        "steps": [
+          "L'utente accede alla Sezione Loyalty di Gruppo",
+          "L'utente apre il dettaglio della proposta 'OFF-EDGE-4001'",
+          "L'utente attende fino al superamento della scadenza della proposta",
+          "L'utente tenta di procedere all'acquisto (es. seleziona 'Aggiungi al carrello')"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il completamento dell'azione di acquisto dopo il superamento della scadenza",
+          "La proposta viene indicata come non più valida/non utilizzabile al momento del tentativo di acquisto"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Eseguibile su App o Web; per ridurre ridondanza è previsto come test multi-canale con comportamento uniforme. Richiede capacità di simulazione temporale o dati con scadenza ravvicinata."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC07",
+        "title": "Errore tecnico nel caricamento elenco offerte: impossibile riaprire proposta (gestione errore/assenza dati)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato",
+          "È possibile simulare un errore di rete/timeout o risposta 5xx del servizio che fornisce l'elenco offerte alla Sezione Loyalty"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Simulazione errore servizio elenco offerte: HTTP 500 oppure timeout > 10s"
+        ],
+        "steps": [
+          "L'utente accede alla Sezione Loyalty di Gruppo",
+          "Si forza un errore del servizio di backend durante il caricamento dell'elenco offerte",
+          "L'utente tenta di selezionare una proposta dall'elenco (se presente) oppure di ricaricare la pagina/sezione"
+        ],
+        "expected_results": [
+          "La Sezione Loyalty non mostra un elenco offerte 'vuoto' come se non esistessero offerte quando il backend è in errore (deve risultare uno stato di errore o caricamento fallito)",
+          "L'utente non può riaprire una proposta se l'elenco non è stato caricato correttamente",
+          "L'errore di caricamento è rilevabile (es. messaggio di errore o indicazione di fallimento del caricamento)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non definisce i testi UI; la verifica si basa sulla presenza di uno stato di errore distinguibile da 'nessuna offerta disponibile'."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC08",
+        "title": "Dati incompleti nel dettaglio proposta: assenza di nome/immagine/prezzo scontato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente 'Cliente digitale' è autenticato",
+          "Esiste una proposta 'OFF-BAD-5001' presente in Sezione Loyalty ma con dati incompleti restituiti dal backend (manca almeno uno tra nome, immagine, prezzo scontato)"
+        ],
+        "test_data": [
+          "Utente: CD_00901",
+          "Proposta: OFF-BAD-5001",
+          "Payload backend incompleto: Nome=NULL, Immagine='shoe_x.png', Prezzo scontato='49,99 EUR'"
+        ],
+        "steps": [
+          "L'utente accede alla Sezione Loyalty di Gruppo",
+          "L'utente apre il dettaglio della proposta 'OFF-BAD-5001'"
+        ],
+        "expected_results": [
+          "Nel dettaglio proposta non vengono mostrati dati incoerenti o fuorvianti al posto dei campi obbligatori (nome/immagine/prezzo scontato)",
+          "Il sistema segnala l'impossibilità di visualizzare correttamente la proposta oppure non consente la fruizione della proposta finché i dati obbligatori non sono disponibili"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito impone la presenza dei campi; non specifica la modalità di gestione in caso di dati mancanti. Il test valida che non venga presentato un dettaglio 'parzialmente' utilizzabile senza indicazione di errore."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC09",
+        "title": "Accesso non autorizzato alla Sezione Loyalty: utente non autenticato non può vedere offerte personali",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente non è autenticato su App e/o Web",
+          "La Sezione Loyalty di Gruppo è raggiungibile da navigazione o deep link"
+        ],
+        "test_data": [
+          "Sessione anonima (nessun token/nessuna cookie di sessione)"
+        ],
+        "steps": [
+          "Da App, l'utente tenta di accedere alla Sezione Loyalty di Gruppo senza autenticazione",
+          "Da Web, l'utente tenta di accedere alla Sezione Loyalty di Gruppo senza autenticazione"
+        ],
+        "expected_results": [
+          "In App, l'utente non visualizza offerte personali senza autenticazione (accesso bloccato o richiesta login)",
+          "In Web, l'utente non visualizza offerte personali senza autenticazione (accesso bloccato o richiesta login)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Assunzione derivata dalle user stories: per visualizzare offerte personali l'utente deve essere autenticato."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-009.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-009.US02.TC01",
+        "title": "Caricamento elenco offerte: inclusione proposta non accettata e coerenza tra App e Web",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato su App e su Web",
+          "Per l'utente esiste una proposta generata da pop-up in stato 'non accettata' e non scaduta",
+          "Per l'utente esiste almeno un'altra offerta personale"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta pop-up non accettata: OFF-POP-1101 (scadenza: oggi + 5 giorni)",
+          "Offerta personale: OFF-PERS-2101"
+        ],
+        "steps": [
+          "In App, l'utente accede alla Sezione Loyalty di Gruppo e attende il caricamento dell'elenco",
+          "In App, l'utente verifica che l'elenco contenga 'OFF-POP-1101'",
+          "In Web, l'utente accede alla Sezione Loyalty di Gruppo e attende il caricamento dell'elenco",
+          "In Web, l'utente verifica che l'elenco contenga 'OFF-POP-1101'"
+        ],
+        "expected_results": [
+          "In App, l'elenco offerte personali include la proposta non accettata generata dal pop-up",
+          "In Web, l'elenco offerte personali include la proposta non accettata generata dal pop-up"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC02",
+        "title": "Apertura dettaglio proposta: verifica coerenza di nome, immagine e prezzo scontato (App vs Web vs pop-up)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "La proposta 'OFF-POP-1101' è presente in elenco",
+          "Sono noti i valori mostrati nel pop-up per la proposta 'OFF-POP-1101' (nome, immagine, prezzo scontato)"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta: OFF-POP-1101",
+          "Valori attesi da pop-up: Nome='-15% Accessori Fitness', Immagine='fitness_acc_15.png', Prezzo scontato='29,90 EUR'"
+        ],
+        "steps": [
+          "In App, l'utente apre il dettaglio della proposta 'OFF-POP-1101'",
+          "In App, l'utente rileva nome, immagine e prezzo scontato mostrati",
+          "In Web, l'utente apre il dettaglio della proposta 'OFF-POP-1101'",
+          "In Web, l'utente rileva nome, immagine e prezzo scontato mostrati"
+        ],
+        "expected_results": [
+          "In App, il dettaglio mostra nome, immagine e prezzo scontato",
+          "In App, nome, immagine e prezzo scontato coincidono con quelli del pop-up",
+          "In Web, il dettaglio mostra nome, immagine e prezzo scontato",
+          "In Web, nome, immagine e prezzo scontato coincidono con quelli del pop-up",
+          "Tra App e Web, nome, immagine e prezzo scontato risultano coerenti (stessi valori semantici)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La story cita differenze di rendering: la verifica è sui valori (presenza e coerenza), non su aspetti grafici non specificati (layout/font)."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC03",
+        "title": "Read-only Loyalty: la riapertura della proposta non modifica lo stato della proposta",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "Esiste una proposta 'OFF-POP-1201' in stato 'non accettata' (sorgente pop-up) e presente in Sezione Loyalty",
+          "È possibile verificare lo stato della proposta tramite API/DB o endpoint di backoffice in ambiente QA"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta: OFF-POP-1201",
+          "Stato iniziale atteso prima dell'apertura in Loyalty: 'non accettata'"
+        ],
+        "steps": [
+          "Verificare tramite API/DB lo stato corrente della proposta 'OFF-POP-1201'",
+          "L'utente accede alla Sezione Loyalty di Gruppo",
+          "L'utente apre il dettaglio della proposta 'OFF-POP-1201'",
+          "Verificare nuovamente tramite API/DB lo stato della proposta 'OFF-POP-1201'"
+        ],
+        "expected_results": [
+          "Prima dell'apertura in Loyalty, la proposta risulta in stato 'non accettata'",
+          "Dopo l'apertura in Loyalty, la proposta risulta ancora in stato 'non accettata' (nessuna transizione di stato indotta dalla sola consultazione in Loyalty)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il vincolo read-only è presente nella user story ma non negli AC originali; viene verificato come requisito di integrazione. Tracciatura su AC-1 perché riguarda la gestione/visibilità della proposta in Loyalty."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC04",
+        "title": "Entro scadenza: UI rende disponibile azione di acquisto e consente aggiunta al carrello",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "La proposta 'OFF-POP-1101' è entro la scadenza ed è presente in Sezione Loyalty",
+          "Il prodotto associato è disponibile per l'acquisto",
+          "Il carrello è in stato noto"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta: OFF-POP-1101 (scadenza: oggi + 5 giorni)",
+          "Prodotto associato: SKU-FIT-010",
+          "Prezzo scontato atteso: 29,90 EUR"
+        ],
+        "steps": [
+          "L'utente apre il dettaglio della proposta 'OFF-POP-1101' in Sezione Loyalty",
+          "L'utente verifica la presenza dell'azione per procedere all'acquisto",
+          "L'utente seleziona l'azione per procedere all'acquisto (es. 'Aggiungi al carrello')",
+          "L'utente apre il carrello"
+        ],
+        "expected_results": [
+          "Nel dettaglio proposta entro validità è disponibile un'azione per procedere all'acquisto",
+          "L'aggiunta al carrello viene completata con successo",
+          "Nel carrello è presente il prodotto associato con applicazione del prezzo scontato della proposta (29,90 EUR)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Comportamento atteso uniforme su App e Web; eseguire su entrambi i canali in suite di regressione."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC05",
+        "title": "Oltre scadenza: UI non consente l'azione di acquisto e informa che la proposta non è più valida",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "La proposta 'OFF-EXP-3101' è scaduta ed è visibile in Sezione Loyalty (se mostrata)"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta scaduta: OFF-EXP-3101 (scadenza: ieri)",
+          "Prodotto associato: SKU-FIT-011"
+        ],
+        "steps": [
+          "L'utente apre il dettaglio della proposta 'OFF-EXP-3101' in Sezione Loyalty",
+          "L'utente tenta di avviare l'acquisto (es. clic su 'Aggiungi al carrello' se presente)"
+        ],
+        "expected_results": [
+          "La UI non consente l'azione di acquisto per la proposta scaduta (azione assente o disabilitata oppure blocco con errore)",
+          "La UI comunica che la proposta non è più valida/non utilizzabile",
+          "Il carrello non viene aggiornato con elementi derivanti dalla proposta scaduta"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il testo del messaggio non è definito; si verifica la presenza di una comunicazione di non validità e il blocco effettivo dell'acquisto."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC06",
+        "title": "Incoerenza dati: prezzo scontato in Loyalty differente dal pop-up",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "Esiste una proposta 'OFF-DIFF-6001' presente in Sezione Loyalty",
+          "È possibile predisporre un disallineamento controllato tra il prezzo scontato mostrato nel pop-up e quello restituito al dettaglio Loyalty (mock/fixture)"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta: OFF-DIFF-6001",
+          "Prezzo scontato pop-up (baseline): 49,99 EUR",
+          "Prezzo scontato restituito a Loyalty (anomalo): 59,99 EUR"
+        ],
+        "steps": [
+          "L'utente apre il dettaglio della proposta 'OFF-DIFF-6001' in Sezione Loyalty",
+          "Il tester confronta il prezzo scontato mostrato in Loyalty con la baseline del pop-up"
+        ],
+        "expected_results": [
+          "Il prezzo scontato mostrato in Loyalty risulta coerente con la baseline del pop-up per la stessa proposta"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Test negativo orientato a rilevare regressioni di coerenza dati; per esecuzione automatizzata è richiesta una baseline affidabile del pop-up."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC07",
+        "title": "Errore recupero dettaglio proposta: apertura dall'elenco fallisce",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente è autenticato",
+          "La proposta 'OFF-DET-FAIL-7001' è presente nell'elenco offerte personali",
+          "È possibile simulare errore/timeout del servizio di recupero dettaglio proposta"
+        ],
+        "test_data": [
+          "Utente: CD_00902",
+          "Proposta: OFF-DET-FAIL-7001",
+          "Simulazione errore servizio dettaglio: HTTP 502 oppure timeout > 10s"
+        ],
+        "steps": [
+          "L'utente accede alla Sezione Loyalty di Gruppo e visualizza l'elenco",
+          "L'utente seleziona la proposta 'OFF-DET-FAIL-7001'",
+          "Si forza un errore del backend durante il recupero del dettaglio"
+        ],
+        "expected_results": [
+          "Il dettaglio proposta non viene mostrato con dati parziali o non coerenti",
+          "La UI mostra uno stato di errore distinguibile e l'utente non può procedere all'acquisto senza dettaglio disponibile"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non definisce retry o testi; la verifica è su: fallimento gestito + impossibilità di procedere all'acquisto senza dettaglio valido."
+      }
+    ]
+  }
+]

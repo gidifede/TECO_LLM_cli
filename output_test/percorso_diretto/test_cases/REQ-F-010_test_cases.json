@@ -1,0 +1,411 @@
+[
+  {
+    "test_id": "REQ-F-010.TC01",
+    "title": "Creazione di un nuovo bundle (coppia prodotto A,B) con metadati completi e salvataggio",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Nel catalogo prodotti esistono i prodotti 'PROD-A-1001' e 'PROD-B-2001'",
+      "Nel configuratore sono disponibili cluster target predefiniti: 'CLUSTER-001 (Nuovi clienti)' e 'CLUSTER-002 (Clienti con prodotto X)'"
+    ],
+    "test_data": [
+      "Prodotto A: PROD-A-1001",
+      "Prodotto B: PROD-B-2001",
+      "Nome commerciale: \"Bundle Primavera A+B\"",
+      "Durata: \"12 mesi\"",
+      "Target: \"CLUSTER-001 (Nuovi clienti)\"",
+      "Periodo di acquistabilità: data inizio 2026-03-01, data fine 2026-03-31",
+      "Stato di attivazione: \"Attivo\"",
+      "Testo promo/USP: \"Sconto 20% se acquisti A con B\""
+    ],
+    "steps": [
+      "Accedere al configuratore matrice combinazioni prodotti come utente Marketing",
+      "Navigare alla sezione di gestione bundle/combinazioni",
+      "Selezionare l'azione \"Crea nuovo bundle\"",
+      "Selezionare il prodotto A \"PROD-A-1001\"",
+      "Selezionare il prodotto B \"PROD-B-2001\"",
+      "Inserire il nome commerciale \"Bundle Primavera A+B\"",
+      "Impostare la durata a \"12 mesi\"",
+      "Selezionare il target \"CLUSTER-001 (Nuovi clienti)\"",
+      "Impostare la data inizio acquistabilità a \"2026-03-01\"",
+      "Impostare la data fine acquistabilità a \"2026-03-31\"",
+      "Impostare lo stato di attivazione a \"Attivo\"",
+      "Inserire il testo promo/USP \"Sconto 20% se acquisti A con B\"",
+      "Salvare il bundle"
+    ],
+    "expected_results": [
+      "Il sistema crea il bundle per la coppia (PROD-A-1001, PROD-B-2001) senza errori",
+      "Il bundle creato è visibile nella lista/matrice con i metadati inseriti (nome, durata, target, date acquistabilità, stato, testo promo/USP)",
+      "Lo stato del bundle risulta \"Attivo\"",
+      "È disponibile un identificativo univoco del bundle (es. ID bundle) visualizzato o recuperabile dalla lista/dettaglio"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (Marketing) e il canale (configuratore web) sono stati inferiti dal requisito. Le condizioni di pricing sono citate in descrizione ma demandate a REQ-F-002: non vengono validate qui. Campi ulteriori demandati a REQ-F-004/REQ-F-005 non sono testati in questo requisito."
+  },
+  {
+    "test_id": "REQ-F-010.TC02",
+    "title": "Modifica di un bundle esistente e verifica aggiornamento metadati",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Esiste un bundle per la coppia (PROD-A-1001, PROD-B-2001) con nome commerciale \"Bundle Primavera A+B\" e stato \"Attivo\"",
+      "Nel configuratore sono disponibili cluster target predefiniti: 'CLUSTER-001' e 'CLUSTER-002'"
+    ],
+    "test_data": [
+      "Bundle esistente: (PROD-A-1001, PROD-B-2001)",
+      "Nuovo nome commerciale: \"Bundle Primavera A+B - Extended\"",
+      "Nuovo target: \"CLUSTER-002 (Clienti con prodotto X)\"",
+      "Nuovo periodo di acquistabilità: data inizio 2026-03-05, data fine 2026-04-15",
+      "Nuovo stato di attivazione: \"Disattivo\"",
+      "Nuovo testo promo/USP: \"Sconto 15% esteso\""
+    ],
+    "steps": [
+      "Accedere al configuratore matrice combinazioni prodotti come utente Marketing",
+      "Navigare alla sezione di gestione bundle/combinazioni",
+      "Cercare e aprire il dettaglio del bundle (PROD-A-1001, PROD-B-2001)",
+      "Modificare il nome commerciale in \"Bundle Primavera A+B - Extended\"",
+      "Modificare il target selezionando \"CLUSTER-002 (Clienti con prodotto X)\"",
+      "Impostare la data inizio acquistabilità a \"2026-03-05\"",
+      "Impostare la data fine acquistabilità a \"2026-04-15\"",
+      "Impostare lo stato di attivazione a \"Disattivo\"",
+      "Modificare il testo promo/USP in \"Sconto 15% esteso\"",
+      "Salvare le modifiche"
+    ],
+    "expected_results": [
+      "Il sistema salva le modifiche senza errori",
+      "Il bundle risulta aggiornato con nome commerciale, target, date di acquistabilità, stato e testo promo/USP modificati",
+      "Lo stato del bundle risulta \"Disattivo\" nella lista/matrice e nel dettaglio"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori e il canale sono stati inferiti. La struttura della matrice (visualizzazione) non è specificata: il test verifica la persistenza/visualizzazione in lista o dettaglio."
+  },
+  {
+    "test_id": "REQ-F-010.TC03",
+    "title": "Cancellazione di un bundle esistente dalla matrice",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Esiste un bundle per la coppia (PROD-A-1002, PROD-B-2002) in stato qualsiasi"
+    ],
+    "test_data": [
+      "Bundle da cancellare: (PROD-A-1002, PROD-B-2002)"
+    ],
+    "steps": [
+      "Accedere al configuratore matrice combinazioni prodotti come utente Marketing",
+      "Navigare alla sezione di gestione bundle/combinazioni",
+      "Individuare il bundle (PROD-A-1002, PROD-B-2002)",
+      "Selezionare l'azione \"Cancella\" sul bundle",
+      "Confermare la cancellazione nella finestra di conferma"
+    ],
+    "expected_results": [
+      "Il sistema elimina il bundle senza errori",
+      "Il bundle (PROD-A-1002, PROD-B-2002) non è più presente nella lista/matrice né recuperabile tramite ricerca",
+      "Un eventuale tentativo di aprire il dettaglio del bundle cancellato restituisce esito \"non trovato\" o equivalente"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Non è specificato se la cancellazione sia logica o fisica; il test verifica l'assenza dal configuratore e la non recuperabilità. Attori/canale inferiti."
+  },
+  {
+    "test_id": "REQ-F-010.TC04",
+    "title": "Generazione log obbligatorio before/after alla creazione di un bundle",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "È disponibile un meccanismo consultabile di log di configurazione (UI di audit o endpoint/DB di audit) accessibile per verifica QA",
+      "Nel catalogo prodotti esistono i prodotti 'PROD-A-1010' e 'PROD-B-2010'",
+      "Nel configuratore è disponibile il cluster target 'CLUSTER-001'"
+    ],
+    "test_data": [
+      "Prodotto A: PROD-A-1010",
+      "Prodotto B: PROD-B-2010",
+      "Nome commerciale: \"Bundle Audit Create\"",
+      "Durata: \"6 mesi\"",
+      "Target: \"CLUSTER-001\"",
+      "Periodo di acquistabilità: 2026-05-01 / 2026-05-31",
+      "Stato: \"Attivo\"",
+      "Testo promo/USP: \"Promo audit\""
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Creare e salvare un nuovo bundle (PROD-A-1010, PROD-B-2010) con i metadati indicati",
+      "Accedere alla sezione/strumento di consultazione dei log di configurazione",
+      "Filtrare i log per entità \"bundle\" e per coppia prodotti (PROD-A-1010, PROD-B-2010) o per ID bundle",
+      "Aprire il dettaglio del record di log relativo all'operazione di creazione"
+    ],
+    "expected_results": [
+      "È presente un record di log associato alla creazione del bundle appena salvato",
+      "Nel log sono presenti i campi obbligatori di audit per confronto before/after",
+      "Il valore \"before\" risulta vuoto/null (o equivalente) per una creazione",
+      "Il valore \"after\" contiene i metadati salvati (nome commerciale, durata, target, date acquistabilità, stato, testo promo/USP)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: il requisito non specifica dove/come consultare i log (UI/endpoint/DB). Il test assume che sia possibile recuperarli per verifica QA. Attori/canale inferiti."
+  },
+  {
+    "test_id": "REQ-F-010.TC05",
+    "title": "Generazione log obbligatorio before/after alla modifica di un bundle",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "È disponibile un meccanismo consultabile di log di configurazione (UI di audit o endpoint/DB di audit) accessibile per verifica QA",
+      "Esiste un bundle (PROD-A-1020, PROD-B-2020) con nome commerciale \"Bundle Audit Update\" e stato \"Attivo\""
+    ],
+    "test_data": [
+      "Bundle: (PROD-A-1020, PROD-B-2020)",
+      "Valore BEFORE atteso (esempi): stato \"Attivo\", testo promo \"Promo v1\"",
+      "Modifica: stato \"Disattivo\"",
+      "Modifica: testo promo/USP \"Promo v2\""
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Aprire il dettaglio del bundle (PROD-A-1020, PROD-B-2020)",
+      "Modificare lo stato di attivazione in \"Disattivo\"",
+      "Modificare il testo promo/USP in \"Promo v2\"",
+      "Salvare le modifiche",
+      "Accedere alla sezione/strumento di consultazione dei log di configurazione",
+      "Filtrare i log per il bundle (PROD-A-1020, PROD-B-2020) o per ID bundle",
+      "Aprire il dettaglio del record di log relativo all'operazione di modifica più recente"
+    ],
+    "expected_results": [
+      "È presente un record di log associato alla modifica del bundle",
+      "Nel log, la sezione \"before\" riporta lo stato precedente \"Attivo\" e il testo promo precedente \"Promo v1\" (o i valori effettivamente presenti prima della modifica)",
+      "Nel log, la sezione \"after\" riporta lo stato aggiornato \"Disattivo\" e il testo promo aggiornato \"Promo v2\"",
+      "Il log consente di distinguere chiaramente i valori pre e post modifica (before/after) per i campi variati"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: modalità di accesso ai log non specificata. Il valore BEFORE deve essere rilevato prima della modifica (o preconfigurato nel dato di test) per un confronto deterministico."
+  },
+  {
+    "test_id": "REQ-F-010.TC06",
+    "title": "Generazione log obbligatorio before/after alla cancellazione di un bundle",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "È disponibile un meccanismo consultabile di log di configurazione (UI di audit o endpoint/DB di audit) accessibile per verifica QA",
+      "Esiste un bundle (PROD-A-1030, PROD-B-2030) con metadati valorizzati"
+    ],
+    "test_data": [
+      "Bundle da cancellare: (PROD-A-1030, PROD-B-2030)"
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Cancellare il bundle (PROD-A-1030, PROD-B-2030) confermando l'operazione",
+      "Accedere alla sezione/strumento di consultazione dei log di configurazione",
+      "Filtrare i log per il bundle (PROD-A-1030, PROD-B-2030) o per ID bundle",
+      "Aprire il dettaglio del record di log relativo all'operazione di cancellazione"
+    ],
+    "expected_results": [
+      "È presente un record di log associato alla cancellazione del bundle",
+      "Nel log, la sezione \"before\" contiene i metadati del bundle prima della cancellazione",
+      "Nel log, la sezione \"after\" risulta vuota/null (o equivalente) a seguito della cancellazione, oppure indica chiaramente lo stato di eliminazione secondo lo standard di audit adottato"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: non è definito lo standard di audit per la cancellazione (after null vs flag). Il test accetta entrambe le implementazioni purché il before/after sia presente e interpretabile."
+  },
+  {
+    "test_id": "REQ-F-010.TC07",
+    "title": "Autorizzazione: utente senza permessi Marketing non può creare/modificare/cancellare bundle",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo non autorizzato (es. 'Sales' o 'Viewer')",
+      "Esiste almeno un bundle (PROD-A-1001, PROD-B-2001) per verificare il tentativo di modifica/cancellazione"
+    ],
+    "test_data": [
+      "Utente: \"viewer.user\" (ruolo Viewer)",
+      "Bundle esistente: (PROD-A-1001, PROD-B-2001)"
+    ],
+    "steps": [
+      "Accedere al configuratore come utente con ruolo non autorizzato",
+      "Navigare alla sezione di gestione bundle/combinazioni",
+      "Verificare la presenza/assenza dell'azione \"Crea nuovo bundle\"",
+      "Tentare di aprire il dettaglio del bundle (PROD-A-1001, PROD-B-2001)",
+      "Tentare di modificare un metadato (es. nome commerciale) e salvare",
+      "Tentare di cancellare il bundle"
+    ],
+    "expected_results": [
+      "L'utente non autorizzato non visualizza l'azione di creazione oppure riceve un errore di autorizzazione al tentativo",
+      "Il salvataggio di modifiche viene impedito con messaggio di permesso insufficiente (HTTP 403 o messaggio applicativo equivalente)",
+      "La cancellazione viene impedita con messaggio di permesso insufficiente (HTTP 403 o messaggio applicativo equivalente)",
+      "Non viene creato alcun log di configurazione relativo a operazioni non autorizzate (nessun record di audit per create/update/delete effettuate dall'utente non autorizzato)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita esplicitamente 'Marketing' come attore autorizzato; i ruoli alternativi sono esempi e vanno mappati ai ruoli reali del sistema."
+  },
+  {
+    "test_id": "REQ-F-010.TC08",
+    "title": "Validazione dati: impossibile salvare un bundle con metadati obbligatori mancanti",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Nel catalogo prodotti esistono i prodotti 'PROD-A-1100' e 'PROD-B-2100'"
+    ],
+    "test_data": [
+      "Prodotto A: PROD-A-1100",
+      "Prodotto B: PROD-B-2100",
+      "Nome commerciale: (vuoto)",
+      "Target: (non selezionato)",
+      "Periodo di acquistabilità: data inizio 2026-06-01, data fine (vuota)",
+      "Stato di attivazione: \"Attivo\"",
+      "Testo promo/USP: (vuoto)"
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Selezionare l'azione \"Crea nuovo bundle\"",
+      "Selezionare il prodotto A \"PROD-A-1100\"",
+      "Selezionare il prodotto B \"PROD-B-2100\"",
+      "Lasciare vuoto il campo nome commerciale",
+      "Non selezionare alcun target",
+      "Impostare la data inizio acquistabilità a \"2026-06-01\"",
+      "Lasciare vuota la data fine acquistabilità",
+      "Lasciare vuoto il testo promo/USP",
+      "Tentare di salvare il bundle"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio del bundle",
+      "Il sistema evidenzia i campi mancanti/invalidi con messaggi di validazione (almeno: nome commerciale, target, data fine acquistabilità se obbligatoria secondo form)",
+      "Non viene creato alcun bundle in lista/matrice per la coppia (PROD-A-1100, PROD-B-2100)",
+      "Non viene generato alcun log di configurazione di tipo create (before/after) per un'operazione non completata"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita quali metadati siano obbligatori vs opzionali; il test assume che almeno nome commerciale, target e periodo di acquistabilità siano richiesti per poter configurare un bundle. Adeguare la lista campi obbligatori alle regole effettive di UI/back-end."
+  },
+  {
+    "test_id": "REQ-F-010.TC09",
+    "title": "Edge case: periodo di acquistabilità non valido (data fine precedente alla data inizio)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Nel catalogo prodotti esistono i prodotti 'PROD-A-1200' e 'PROD-B-2200'",
+      "Nel configuratore è disponibile il cluster target 'CLUSTER-001'"
+    ],
+    "test_data": [
+      "Prodotto A: PROD-A-1200",
+      "Prodotto B: PROD-B-2200",
+      "Nome commerciale: \"Bundle Date Invertite\"",
+      "Durata: \"3 mesi\"",
+      "Target: \"CLUSTER-001\"",
+      "Periodo di acquistabilità: data inizio 2026-07-10, data fine 2026-07-01",
+      "Stato: \"Attivo\"",
+      "Testo promo/USP: \"Promo date invertite\""
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Selezionare l'azione \"Crea nuovo bundle\"",
+      "Compilare i campi del bundle con i dati indicati",
+      "Impostare la data fine acquistabilità a un valore precedente alla data inizio",
+      "Tentare di salvare il bundle"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio del bundle",
+      "Il sistema mostra un messaggio di validazione che indica che la data fine deve essere maggiore o uguale alla data inizio (o regola equivalente)",
+      "Il bundle non viene creato in lista/matrice",
+      "Non viene generato alcun log di configurazione di tipo create per l'operazione fallita"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La regola di coerenza tra data inizio e data fine è implicita nel concetto di intervallo temporale; non è esplicitata negli AC ma necessaria per rendere verificabile il campo 'periodo di acquistabilità'."
+  },
+  {
+    "test_id": "REQ-F-010.TC10",
+    "title": "Integrazione: mancata disponibilità del tool/servizio cluster target impedisce la selezione target e il salvataggio",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Marketing' abilitato alla gestione bundle nel configuratore",
+      "Nel catalogo prodotti esistono i prodotti 'PROD-A-1300' e 'PROD-B-2300'",
+      "Il servizio/integrazione che fornisce i cluster target al configuratore è non disponibile (es. HTTP 503/timeout) o viene simulato in test"
+    ],
+    "test_data": [
+      "Prodotto A: PROD-A-1300",
+      "Prodotto B: PROD-B-2300",
+      "Nome commerciale: \"Bundle Target Non Disponibile\"",
+      "Periodo di acquistabilità: 2026-08-01 / 2026-08-31",
+      "Stato: \"Attivo\""
+    ],
+    "steps": [
+      "Accedere al configuratore come utente Marketing",
+      "Selezionare l'azione \"Crea nuovo bundle\"",
+      "Selezionare il prodotto A \"PROD-A-1300\"",
+      "Selezionare il prodotto B \"PROD-B-2300\"",
+      "Inserire il nome commerciale \"Bundle Target Non Disponibile\"",
+      "Aprire il controllo UI per la selezione del target",
+      "Osservare il comportamento del sistema in presenza di errore/timeout del servizio cluster",
+      "Tentare di salvare il bundle senza poter selezionare un target"
+    ],
+    "expected_results": [
+      "Il sistema mostra un messaggio di errore esplicito relativo all'impossibilità di caricare i cluster target (errore servizio/timeout)",
+      "Il sistema non consente di selezionare un target finché il servizio non è disponibile",
+      "Il salvataggio del bundle viene impedito se il target è obbligatorio (oppure il sistema consente il salvataggio solo se il target non è obbligatorio: comportamento da allineare alle regole effettive)",
+      "Non viene creato alcun bundle se il salvataggio è impedito",
+      "Non viene generato alcun log di configurazione di tipo create per un'operazione non completata"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna irrisolta nel requisito: l'esistenza/integrazione del tool cluster è 'da discutere con DTO'. Il test valida la resilienza del configuratore quando la sorgente cluster non è disponibile. La obbligatorietà del target non è esplicitata: indicata come punto da chiarire."
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "test_id": "REQ-UI-002.TC01",
+    "title": "Visualizzazione predefinita delle offerte in layout a card (operatore)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Operatore' abilitato all’accesso alla schermata offerte",
+      "Nel sistema sono presenti almeno 3 offerte disponibili e visibili all’operatore (es. OFF-1001, OFF-1002, OFF-1003)",
+      "La funzionalità 'vista offerte operatore' è attiva (nessun feature flag disabilitante)"
+    ],
+    "test_data": [
+      "Utente: operatore1",
+      "Offerte visibili: OFF-1001, OFF-1002, OFF-1003"
+    ],
+    "steps": [
+      "Effettuare il login come utente con ruolo 'Operatore'",
+      "Navigare alla schermata destinata all’operatore per la consultazione delle offerte",
+      "Osservare il layout di presentazione delle offerte al primo caricamento della schermata"
+    ],
+    "expected_results": [
+      "La schermata mostra le offerte con layout a card come visualizzazione predefinita (non è una tabella/lista come vista iniziale)",
+      "Sono presenti almeno 3 card, una per ciascuna offerta OFF-1001, OFF-1002, OFF-1003",
+      "Ogni offerta è rappresentata da una card separata (non aggregata in un unico contenitore indistinto)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Canale e attore dedotti dal testo ('schermata destinata all'operatore'): si assume un’interfaccia web per operatore."
+  },
+  {
+    "test_id": "REQ-UI-002.TC02",
+    "title": "Ogni card è chiaramente distinguibile e include controlli di espansione e selezione",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Operatore'",
+      "Nel sistema sono presenti almeno 2 offerte visibili all’operatore (OFF-2001, OFF-2002)"
+    ],
+    "test_data": [
+      "Offerte visibili: OFF-2001, OFF-2002"
+    ],
+    "steps": [
+      "Aprire la schermata offerte dell’operatore",
+      "Individuare la card dell’offerta OFF-2001",
+      "Verificare la presenza di un controllo per espandere/mostrare maggiori informazioni nella card OFF-2001",
+      "Verificare la presenza di un controllo per selezionare l’offerta nella card OFF-2001",
+      "Attivare il controllo di espansione della card OFF-2001",
+      "Attivare il controllo di selezione sulla card OFF-2001"
+    ],
+    "expected_results": [
+      "Le card OFF-2001 e OFF-2002 risultano visivamente separate e chiaramente distinguibili (es. spaziatura/bordo/ombreggiatura tale da non confondere i confini tra card adiacenti)",
+      "La card OFF-2001 contiene un controllo esplicito per espandere/mostrare informazioni aggiuntive",
+      "La card OFF-2001 contiene un controllo esplicito per selezionare l’offerta",
+      "Dopo l’espansione, la card OFF-2001 mostra informazioni aggiuntive rispetto allo stato non espanso (contenuto aggiuntivo visibile nella stessa card)",
+      "Dopo la selezione, l’offerta OFF-2001 risulta selezionata in modo verificabile (es. stato selezionato evidenziato e/o indicatore di selezione presente sulla card)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica quali informazioni aggiuntive siano mostrate in espansione né il tipo di indicatore di selezione; il test verifica la variazione di stato e la presenza di un feedback visibile."
+  },
+  {
+    "test_id": "REQ-UI-002.TC03",
+    "title": "Gestione errore UI: tentativo di selezione senza offerte disponibili/visibili",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Operatore'",
+      "Non esistono offerte disponibili e visibili per l’operatore (dataset vuoto o filtri applicati che restituiscono 0 risultati)"
+    ],
+    "test_data": [
+      "Dataset offerte: vuoto (0 offerte visibili)"
+    ],
+    "steps": [
+      "Aprire la schermata offerte dell’operatore",
+      "Verificare che non siano presenti card di offerte",
+      "Tentare un’azione di selezione offerta dalla schermata (se presente un’azione globale) oppure verificare che non sia possibile selezionare alcuna offerta"
+    ],
+    "expected_results": [
+      "La schermata non mostra alcuna card offerta",
+      "La UI mostra uno stato 'nessun risultato' o messaggio equivalente, senza errori di rendering",
+      "Non è possibile selezionare un’offerta inesistente; eventuali controlli di selezione non sono presenti o risultano disabilitati"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce il comportamento in assenza di offerte; questo test valida che la vista a card non vada in errore e che non consenta selezioni non valide."
+  },
+  {
+    "test_id": "REQ-UI-002.TC04",
+    "title": "Autorizzazione: accesso alla schermata offerte operatore da utente non operatore",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo diverso da 'Operatore' (es. 'Cliente' o 'Admin')",
+      "La schermata offerte operatore è raggiungibile via navigazione o URL"
+    ],
+    "test_data": [
+      "Utente: cliente1 (ruolo non operatore)"
+    ],
+    "steps": [
+      "Effettuare il login come utente con ruolo non 'Operatore'",
+      "Tentare di navigare alla schermata destinata all’operatore per la consultazione delle offerte (tramite menu o URL diretto)"
+    ],
+    "expected_results": [
+      "L’utente non operatore non può accedere alla schermata operatore (accesso negato o redirezione controllata)",
+      "Non viene mostrata la vista a card delle offerte operatore a un utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non menziona esplicitamente permessi/ruoli, ma l’espressione 'schermata destinata all’operatore' implica restrizione di accesso; test inserito per coprire autorizzazioni implicite."
+  },
+  {
+    "test_id": "REQ-UI-002.TC05",
+    "title": "Validazione usabilità misurabile: identificazione e selezione rapida delle offerte in vista a card",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato con ruolo 'Operatore'",
+      "Nel sistema sono presenti almeno 10 offerte visibili all’operatore (OFF-3001...OFF-3010)",
+      "È disponibile un ambiente di test con strumenti di misurazione tempi (cronometro o logging eventi UI)",
+      "Sono definiti criteri di misurazione interni al test (soglie) per rendere verificabile l’AC"
+    ],
+    "test_data": [
+      "Offerte visibili: OFF-3001...OFF-3010",
+      "Target offerta da selezionare: OFF-3007",
+      "Soglia tempo (assunzione testabile): selezione completata entro 10 secondi dal caricamento della schermata"
+    ],
+    "steps": [
+      "Aprire la schermata offerte dell’operatore e attendere il completamento del caricamento",
+      "Avviare la misurazione del tempo al completamento del caricamento della schermata",
+      "Individuare la card dell’offerta OFF-3007 scorrendo la vista se necessario",
+      "Selezionare l’offerta OFF-3007 tramite il controllo di selezione presente sulla card",
+      "Arrestare la misurazione del tempo quando la selezione risulta visivamente confermata"
+    ],
+    "expected_results": [
+      "L’operatore riesce a identificare la card OFF-3007 nella vista a card senza ambiguità",
+      "L’operatore riesce a selezionare OFF-3007 con conferma visiva di selezione",
+      "Il tempo misurato tra caricamento completato e selezione confermata è <= 10 secondi"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è dichiarativo ('Test utente confermano...') e non definisce metriche. Per renderlo verificabile è stata introdotta un’assunzione misurabile (soglia 10s) da concordare con PO/UX; in alternativa, sostituire con protocollo di usability test ufficiale (es. SUS, task completion rate) se disponibile."
+  }
+]

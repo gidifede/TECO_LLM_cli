@@ -1,0 +1,234 @@
+[
+  {
+    "test_id": "REQ-UI-006.TC01",
+    "title": "Visualizzazione condizioni mancanti e azioni di sanatoria per prodotto non sottoscrivibile (canale web)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il cliente C001 con profilo attivo e autenticabile su canale web",
+      "Esiste il prodotto P001 selezionabile dal cliente",
+      "Per C001 e P001 il sistema determina stato 'Non sottoscrivibile' con almeno una condizione mancante valorizzata (es. documento di identità scaduto)",
+      "Il servizio di determinazione proponibilità/sottoscrivibilità è disponibile e risponde correttamente"
+    ],
+    "test_data": [
+      "Cliente: C001",
+      "Prodotto: P001",
+      "Condizione mancante: 'Documento di identità valido' = NON soddisfatta (documento scaduto)",
+      "Azione proposta: 'Aggiorna documento di identità'"
+    ],
+    "steps": [
+      "Autenticarsi come cliente C001 su canale web",
+      "Navigare alla pagina di dettaglio del prodotto P001",
+      "Aprire la sezione 'Stato di sottoscrivibilità/proponibilità' (o equivalente)",
+      "Visualizzare l'elenco delle condizioni mancanti associate a P001 per C001",
+      "Visualizzare le azioni necessarie indicate per sanare ciascuna condizione mancante"
+    ],
+    "expected_results": [
+      "Lo stato del prodotto P001 risulta 'Non sottoscrivibile' (o equivalente) per il cliente C001",
+      "È presente un elenco chiaramente leggibile delle condizioni mancanti, che include 'Documento di identità valido' non soddisfatta",
+      "Per la condizione mancante è indicata almeno un'azione necessaria coerente, che include 'Aggiorna documento di identità'",
+      "Non vengono mostrate azioni di sanatoria eseguibili a sportello sul canale web (solo indicazione delle azioni necessarie)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i testi esatti delle etichette UI né lo stato nominale (es. 'proponibile' vs 'sottoscrivibile'); il test verifica la presenza di uno stato e di condizioni/azioni in forma chiaramente comprensibile."
+  },
+  {
+    "test_id": "REQ-UI-006.TC02",
+    "title": "Workflow di sanatoria eseguibile dall'operatore in canale fisico UP (sportello)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste l'operatore O001 abilitato al canale fisico UP",
+      "Esiste il cliente C002 identificabile dall'operatore",
+      "Esiste il prodotto P002 per cui C002 risulta 'Non sottoscrivibile' a causa di una condizione sanabile a sportello",
+      "Per la condizione sanabile a sportello il sistema espone un workflow di sanatoria (es. caricamento/aggiornamento documento) dove previsto",
+      "Il sistema di logging applicativo è attivo e consultabile per verifica"
+    ],
+    "test_data": [
+      "Operatore: O001 (ruolo: operatore sportello UP)",
+      "Cliente: C002",
+      "Prodotto: P002",
+      "Condizione mancante sanabile: 'Documento di identità valido' = NON soddisfatta",
+      "Documento nuovo: Carta d'identità n. AA1234567, scadenza 2031-12-31"
+    ],
+    "steps": [
+      "Autenticarsi come operatore O001 nel canale fisico UP",
+      "Ricercare e selezionare il cliente C002",
+      "Aprire il dettaglio del prodotto P002",
+      "Visualizzare lo stato di sottoscrivibilità e le condizioni mancanti",
+      "Selezionare l'azione di sanatoria disponibile a sportello per la condizione 'Documento di identità valido'",
+      "Eseguire il workflow di sanatoria inserendo i dati del nuovo documento e confermare",
+      "Ricaricare/aggiornare la sezione stato e condizioni del prodotto P002"
+    ],
+    "expected_results": [
+      "L'interfaccia operatore mostra chiaramente la condizione mancante iniziale per C002 su P002",
+      "È presente un'azione eseguibile a sportello (workflow) per la condizione sanabile e risulta selezionabile dall'operatore",
+      "Il workflow consente l'inserimento dei dati documento e la conferma senza errori",
+      "Dopo la sanatoria, la condizione 'Documento di identità valido' risulta soddisfatta (rimossa dall'elenco delle mancanti o marcata come risolta)",
+      "Lo stato di sottoscrivibilità/proponibilità di P002 si aggiorna coerentemente (es. diventa 'Sottoscrivibile' se non vi sono altre condizioni mancanti)",
+      "È presente una traccia di log dell'azione di sanatoria con almeno: identificativo operatore O001, cliente C002, prodotto P002, tipo azione 'Aggiornamento documento', timestamp, esito 'successo'"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "canale fisico UP"
+    ],
+    "notes": "Il requisito indica 'dove previsto' per la sanatoria a sportello: il test presuppone l'esistenza di almeno una condizione sanabile via workflow in UP. I campi minimi del log sono un'assunzione per rendere verificabile AC-3."
+  },
+  {
+    "test_id": "REQ-UI-006.TC03",
+    "title": "Assenza di workflow a sportello quando la condizione non è sanabile in UP (solo indicazione azioni)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste l'operatore O001 abilitato al canale fisico UP",
+      "Esiste il cliente C003",
+      "Esiste il prodotto P003 per cui C003 risulta 'Non sottoscrivibile' a causa di una condizione NON sanabile a sportello (es. 'Valutazione rischio in corso')",
+      "Il sistema è configurato per non offrire workflow a sportello per tale condizione"
+    ],
+    "test_data": [
+      "Operatore: O001",
+      "Cliente: C003",
+      "Prodotto: P003",
+      "Condizione mancante non sanabile: 'Valutazione rischio completata' = NON soddisfatta",
+      "Azione necessaria indicata: 'Attendere completamento valutazione/contattare backoffice' (o equivalente)"
+    ],
+    "steps": [
+      "Autenticarsi come operatore O001 nel canale fisico UP",
+      "Ricercare e selezionare il cliente C003",
+      "Aprire il dettaglio del prodotto P003",
+      "Visualizzare condizioni mancanti e azioni necessarie",
+      "Verificare la presenza di eventuali pulsanti/azioni eseguibili a sportello per la condizione non sanabile"
+    ],
+    "expected_results": [
+      "La condizione mancante non sanabile è mostrata in modo chiaro",
+      "È indicata un'azione necessaria coerente (testo informativo) per sanare/risolvere la condizione",
+      "Non è disponibile alcun comando/workflow eseguibile a sportello per la condizione non sanabile (assenza di pulsante o pulsante disabilitato con motivazione)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "canale fisico UP"
+    ],
+    "notes": "Il requisito non definisce l'elenco delle condizioni sanabili/non sanabili: il test usa un esempio rappresentativo per verificare il comportamento 'se possibile'."
+  },
+  {
+    "test_id": "REQ-UI-006.TC04",
+    "title": "Tracciamento log per tentativo di sanatoria fallito (errore validazione o servizio)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste l'operatore O001 abilitato al canale fisico UP",
+      "Esiste il cliente C004",
+      "Esiste il prodotto P004 con condizione mancante sanabile a sportello tramite workflow",
+      "Il sistema di logging applicativo è attivo e consultabile per verifica",
+      "È possibile simulare un errore (es. documento con formato non valido o servizio documentale che risponde 500/timeout)"
+    ],
+    "test_data": [
+      "Operatore: O001",
+      "Cliente: C004",
+      "Prodotto: P004",
+      "Input non valido: Numero documento = '###' (formato non valido) oppure servizio documentale in errore 500",
+      "Condizione sanabile: 'Documento di identità valido' = NON soddisfatta"
+    ],
+    "steps": [
+      "Autenticarsi come operatore O001 nel canale fisico UP",
+      "Selezionare il cliente C004 e aprire il prodotto P004",
+      "Avviare l'azione di sanatoria a sportello per la condizione sanabile",
+      "Inserire l'input non valido (o eseguire l'azione con il servizio documentale in errore) e confermare",
+      "Consultare i log applicativi relativi all'operazione appena eseguita"
+    ],
+    "expected_results": [
+      "Il sistema segnala il fallimento dell'operazione di sanatoria con un messaggio di errore comprensibile (validazione o errore tecnico)",
+      "La condizione mancante rimane non risolta dopo il fallimento",
+      "È presente una traccia di log dell'azione di sanatoria con esito 'fallito' (o equivalente) e con riferimento a operatore O001, cliente C004, prodotto P004, timestamp e dettaglio errore/codice esito"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "canale fisico UP"
+    ],
+    "notes": "AC-3 non specifica struttura e contenuto minimo dei log; sono stati assunti campi minimi per rendere il criterio verificabile. Il requisito non esplicita gestione errori: il test verifica che l'esito sia tracciato e che la condizione non venga marcata come sanata."
+  },
+  {
+    "test_id": "REQ-UI-006.TC05",
+    "title": "Visualizzazione prodotto sottoscrivibile senza condizioni mancanti (assenza elenco e azioni)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste il cliente C005 con profilo attivo e autenticabile",
+      "Esiste il prodotto P005 selezionabile",
+      "Per C005 e P005 il sistema determina stato 'Sottoscrivibile/Proponibile' senza condizioni mancanti"
+    ],
+    "test_data": [
+      "Cliente: C005",
+      "Prodotto: P005",
+      "Condizioni mancanti: nessuna"
+    ],
+    "steps": [
+      "Autenticarsi come cliente C005 su canale web",
+      "Navigare alla pagina di dettaglio del prodotto P005",
+      "Aprire la sezione 'Stato di sottoscrivibilità/proponibilità' (o equivalente)"
+    ],
+    "expected_results": [
+      "Lo stato del prodotto P005 risulta 'Sottoscrivibile/Proponibile' (o equivalente) per il cliente C005",
+      "Non viene mostrato alcun elenco di condizioni mancanti (oppure è mostrato esplicitamente 'Nessuna condizione mancante')",
+      "Non vengono mostrate azioni di sanatoria quando non esistono condizioni mancanti"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la resa UI in assenza di condizioni; il test accetta entrambe le soluzioni purché non ambigue (assenza elenco o messaggio 'nessuna condizione mancante')."
+  },
+  {
+    "test_id": "REQ-UI-006.TC06",
+    "title": "Accesso a sanatoria a sportello consentito solo a operatore UP (cliente non può eseguire azioni UP)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il cliente C006 autenticabile su canale web",
+      "Esiste il prodotto P006 con condizione mancante che risulta sanabile a sportello in canale fisico UP",
+      "Il sistema distingue i profili 'cliente' e 'operatore UP' per l'esecuzione dei workflow a sportello"
+    ],
+    "test_data": [
+      "Cliente: C006",
+      "Prodotto: P006",
+      "Condizione mancante sanabile a sportello: 'Documento di identità valido' = NON soddisfatta"
+    ],
+    "steps": [
+      "Autenticarsi come cliente C006 su canale web",
+      "Navigare al dettaglio del prodotto P006",
+      "Individuare le azioni indicate per sanare la condizione mancante",
+      "Tentare di avviare un eventuale workflow a sportello (se presente come link/CTA) oppure verificare che non sia disponibile"
+    ],
+    "expected_results": [
+      "Le condizioni mancanti sono visibili e comprensibili per il cliente",
+      "Le azioni necessarie sono indicate, ma non è possibile avviare un workflow di sanatoria a sportello dal canale web come cliente",
+      "Se un'azione a sportello è rappresentata in UI, risulta non cliccabile oppure richiede profilo operatore e il sistema impedisce l'esecuzione (messaggio/redirect coerente)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita regole di autorizzazione, ma indica che in canale fisico UP l'operatore può eseguire azioni: il test verifica che tale capacità non sia disponibile al cliente su web."
+  }
+]

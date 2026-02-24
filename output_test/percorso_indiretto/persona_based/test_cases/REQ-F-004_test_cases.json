@@ -1,0 +1,416 @@
+[
+  {
+    "story_id": "REQ-F-004.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-004.US01.TC01",
+        "title": "Impostazione del tempo minimo di ri-esposizione da utente autorizzato (dashboard)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo autorizzato (es. ruolo: Marketing Admin) abilitato all'accesso alla dashboard",
+          "La dashboard/interfaccia dedicata alla configurazione è disponibile e raggiungibile",
+          "È definita a sistema l'unità di misura della configurazione (es. giorni)"
+        ],
+        "test_data": [
+          "Utente: marketing.admin@example.com / Password valida",
+          "Valore tempo minimo ri-esposizione: 7",
+          "Unità di misura attesa: giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Navigare alla sezione di configurazione della frequenza/ri-esposizione prodotto per cliente",
+          "Inserire il valore 7 nel campo del tempo minimo di ri-esposizione",
+          "Verificare che l'unità di misura mostrata sia 'giorni' (o quella prevista dalla configurazione)",
+          "Cliccare su 'Salva' (o azione equivalente di conferma)"
+        ],
+        "expected_results": [
+          "La sezione di configurazione è accessibile all'utente autorizzato",
+          "L'unità di misura visualizzata è coerente con la configurazione prevista (es. 'giorni')",
+          "Il sistema conferma il salvataggio della configurazione (messaggio di successo e/o stato aggiornato)",
+          "Il valore salvato risulta visualizzato come 7 nella schermata di configurazione dopo il salvataggio (anche ricaricando la pagina)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'unità di misura è assunta come definita a livello di configurazione (es. giorni); il requisito originale non specifica range min/max oltre alla validità del valore."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC02",
+        "title": "Modifica del tempo minimo di ri-esposizione e disponibilità del nuovo valore per il Motore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo autorizzato abilitato all'accesso alla dashboard",
+          "Esiste una configurazione già salvata per il tempo minimo di ri-esposizione (es. 7 giorni)",
+          "È disponibile un endpoint/servizio o meccanismo verificabile con cui il Motore legge la configurazione (es. API di configurazione o tabella DB accessibile in test)"
+        ],
+        "test_data": [
+          "Utente: marketing.admin@example.com / Password valida",
+          "Valore iniziale: 7",
+          "Nuovo valore: 14"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la sezione di configurazione della frequenza/ri-esposizione",
+          "Sostituire il valore esistente con 14",
+          "Cliccare su 'Salva'",
+          "Recuperare la configurazione tramite il canale previsto per il Motore (es. chiamata API di configurazione o lettura fonte dati di configurazione in ambiente di test)"
+        ],
+        "expected_results": [
+          "Il sistema conferma il salvataggio della modifica",
+          "La configurazione persistita risulta pari a 14 (stessa unità di misura prevista)",
+          "Il valore 14 è recuperabile dal canale previsto per il Motore per le successive valutazioni"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: modalità tecnica con cui il Motore legge la configurazione (API/DB/cache) non specificata; il test va adattato all'architettura reale."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC03",
+        "title": "Accesso negato o salvataggio non consentito per utente non autorizzato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente non autorizzato alla modifica della configurazione (es. ruolo: Viewer o utente non Marketing)",
+          "La dashboard/interfaccia dedicata è disponibile"
+        ],
+        "test_data": [
+          "Utente non autorizzato: viewer.user@example.com / Password valida",
+          "Valore tentato: 10"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente non autorizzato",
+          "Tentare di navigare alla sezione di configurazione della frequenza/ri-esposizione",
+          "Se la sezione è visibile, inserire il valore 10 nel campo del tempo minimo di ri-esposizione",
+          "Se presente, cliccare su 'Salva'"
+        ],
+        "expected_results": [
+          "L'utente non autorizzato non può accedere alla sezione di configurazione (pagina non raggiungibile) oppure non può eseguire il salvataggio (controllo di autorizzazione lato server)",
+          "In caso di tentativo di salvataggio, il sistema non modifica la configurazione esistente",
+          "Il sistema mostra un messaggio di errore/permessi insufficienti o un esito equivalente (es. HTTP 403 in chiamata backend)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica se l'accesso sia negato a livello UI o solo a livello di salvataggio; il test accetta entrambe le implementazioni purché la modifica non sia possibile."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC04",
+        "title": "Validazione input: valore vuoto, negativo o non numerico impedisce il salvataggio",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo autorizzato abilitato all'accesso alla dashboard",
+          "La dashboard/interfaccia dedicata è disponibile"
+        ],
+        "test_data": [
+          "Utente: marketing.admin@example.com / Password valida",
+          "Valore vuoto: ''",
+          "Valore negativo: -1",
+          "Valore non numerico: 'abc'",
+          "Valore non intero: '1,5' (o '1.5' a seconda della localizzazione)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la sezione di configurazione della frequenza/ri-esposizione",
+          "Lasciare il campo del tempo minimo vuoto",
+          "Cliccare su 'Salva'",
+          "Inserire -1 nel campo del tempo minimo",
+          "Cliccare su 'Salva'",
+          "Inserire 'abc' nel campo del tempo minimo",
+          "Cliccare su 'Salva'",
+          "Inserire '1,5' (o '1.5') nel campo del tempo minimo",
+          "Cliccare su 'Salva'"
+        ],
+        "expected_results": [
+          "Per valore vuoto, il sistema blocca il salvataggio e mostra un errore di validazione sul campo",
+          "Per valore -1, il sistema blocca il salvataggio e mostra un errore che indica che il valore deve essere un intero non negativo",
+          "Per valore 'abc', il sistema blocca il salvataggio e mostra un errore che indica che il valore deve essere numerico",
+          "Per valore decimale, il sistema blocca il salvataggio e mostra un errore che indica che il valore deve essere un intero",
+          "In tutti i casi di errore, la configurazione persistita non viene modificata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede 'numero intero non negativo'. La gestione esatta dei messaggi può variare, ma deve essere presente un blocco al salvataggio e nessuna persistenza di valori non validi."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC05",
+        "title": "Errore di salvataggio configurazione quando il servizio di configurazione non è raggiungibile",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo autorizzato abilitato all'accesso alla dashboard",
+          "È possibile simulare l'indisponibilità del servizio di configurazione/persistenza (es. spegnimento servizio, fault injection, regola di rete)",
+          "La dashboard/interfaccia dedicata è disponibile"
+        ],
+        "test_data": [
+          "Utente: marketing.admin@example.com / Password valida",
+          "Valore tentato: 5"
+        ],
+        "steps": [
+          "Impostare il servizio di configurazione/persistenza in stato non raggiungibile (timeout/errore)",
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la sezione di configurazione della frequenza/ri-esposizione",
+          "Inserire il valore 5 nel campo del tempo minimo",
+          "Cliccare su 'Salva'",
+          "Ripristinare la raggiungibilità del servizio di configurazione/persistenza",
+          "Ricaricare la schermata di configurazione"
+        ],
+        "expected_results": [
+          "Il salvataggio fallisce con un messaggio di errore chiaro (es. 'Impossibile salvare la configurazione, riprovare più tardi')",
+          "Il sistema non mostra un falso esito di successo",
+          "Dopo il ripristino del servizio e il reload, la configurazione risulta invariata rispetto al valore precedente al test"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: modalità di fault injection e gestione errori del servizio di configurazione non specificate; il test verifica l'assenza di persistenza e la corretta segnalazione all'utente."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-004.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-004.US02.TC01",
+        "title": "Inclusione prodotto quando non esiste una presentazione precedente per (cliente, prodotto)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione valida dell'intervallo minimo di ri-esposizione (es. 7 giorni) leggibile dal Motore",
+          "Per il cliente C123 e il prodotto P001 non esistono eventi di presentazione precedenti registrati",
+          "È disponibile un canale di invocazione del Motore per generazione offerte (API/servizio) e un set di prodotti candidati che includa P001"
+        ],
+        "test_data": [
+          "Intervallo minimo configurato: 7 giorni",
+          "Cliente: C123",
+          "Prodotto candidato: P001",
+          "Timestamp richiesta offerte: 2026-02-23T10:00:00Z"
+        ],
+        "steps": [
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P001 tra i prodotti candidati",
+          "Acquisire la risposta del Motore con l'elenco prodotti proposti"
+        ],
+        "expected_results": [
+          "Il Motore valuta la regola di frequenza per P001 rispetto al cliente C123",
+          "In assenza di una presentazione precedente per (C123, P001), P001 non viene bloccato dalla regola di frequenza",
+          "P001 risulta incluso tra le proposte restituite, salvo esclusioni dovute ad altre regole di eleggibilità non oggetto di questo test"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il test isola la regola di frequenza; se esistono altre regole che possono escludere P001, predisporre dati per renderlo eleggibile."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC02",
+        "title": "Esclusione prodotto quando il tempo dall'ultima presentazione è inferiore all'intervallo minimo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione valida dell'intervallo minimo di ri-esposizione pari a 7 giorni leggibile dal Motore",
+          "Esiste un evento di presentazione registrato per (cliente C123, prodotto P001) a 2026-02-20T10:00:00Z",
+          "È disponibile un canale di invocazione del Motore per generazione offerte e un set di prodotti candidati che includa P001"
+        ],
+        "test_data": [
+          "Intervallo minimo configurato: 7 giorni",
+          "Cliente: C123",
+          "Prodotto candidato: P001",
+          "Ultima presentazione P001 a C123: 2026-02-20T10:00:00Z",
+          "Timestamp richiesta offerte: 2026-02-23T10:00:00Z (3 giorni dopo)"
+        ],
+        "steps": [
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P001 tra i prodotti candidati",
+          "Acquisire la risposta del Motore con l'elenco prodotti proposti"
+        ],
+        "expected_results": [
+          "Il Motore recupera la data/ora dell'ultima presentazione di P001 a C123",
+          "Il Motore calcola che il tempo trascorso (3 giorni) è inferiore all'intervallo minimo (7 giorni)",
+          "P001 non è incluso tra le proposte restituite"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "L'unità (giorni) è assunta coerente con la configurazione; se l'unità è diversa, adeguare i timestamp."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC03",
+        "title": "Inclusione prodotto quando il tempo dall'ultima presentazione è maggiore o uguale all'intervallo minimo (caso limite uguaglianza)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione valida dell'intervallo minimo di ri-esposizione pari a 7 giorni leggibile dal Motore",
+          "Esiste un evento di presentazione registrato per (cliente C123, prodotto P001) a 2026-02-16T10:00:00Z",
+          "È disponibile un canale di invocazione del Motore per generazione offerte e un set di prodotti candidati che includa P001"
+        ],
+        "test_data": [
+          "Intervallo minimo configurato: 7 giorni",
+          "Cliente: C123",
+          "Prodotto candidato: P001",
+          "Ultima presentazione P001 a C123: 2026-02-16T10:00:00Z",
+          "Timestamp richiesta offerte: 2026-02-23T10:00:00Z (esattamente 7 giorni dopo)"
+        ],
+        "steps": [
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P001 tra i prodotti candidati",
+          "Acquisire la risposta del Motore con l'elenco prodotti proposti"
+        ],
+        "expected_results": [
+          "Il Motore recupera la data/ora dell'ultima presentazione di P001 a C123",
+          "Il Motore calcola che il tempo trascorso è maggiore o uguale all'intervallo minimo configurato",
+          "P001 può essere incluso tra le proposte restituite (se soddisfa le altre regole di eleggibilità)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Caso limite per verificare la condizione 'maggiore o uguale'. Predisporre eleggibilità positiva per evitare falsi negativi."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC04",
+        "title": "Registrazione dell'evento di presentazione dopo una proposta",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione valida dell'intervallo minimo di ri-esposizione leggibile dal Motore",
+          "Per il cliente C123 e il prodotto P002 non esistono eventi di presentazione precedenti registrati",
+          "È disponibile un meccanismo verificabile per leggere gli eventi di presentazione (es. tabella eventi, topic, API audit) in ambiente di test"
+        ],
+        "test_data": [
+          "Cliente: C123",
+          "Prodotto proposto: P002",
+          "Timestamp richiesta offerte: 2026-02-23T10:00:00Z"
+        ],
+        "steps": [
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P002 tra i prodotti candidati",
+          "Verificare che la risposta includa P002 tra i prodotti proposti",
+          "Recuperare gli eventi di presentazione registrati per (C123, P002) tramite il meccanismo previsto (audit/event store/log applicativo strutturato)"
+        ],
+        "expected_results": [
+          "Dopo la proposta, esiste un evento di presentazione registrato per la coppia (cliente C123, prodotto P002)",
+          "L'evento contiene un timestamp coerente con l'istante di proposta (o con la finestra temporale definita dal sistema)",
+          "L'evento è utilizzabile per i controlli di frequenza successivi (es. è recuperabile dal Motore o dal repository previsto)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito originale non dettaglia il formato dell'evento; il test verifica l'esistenza e la recuperabilità dell'informazione necessaria al controllo di frequenza."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC05",
+        "title": "Test di integrazione: dopo una proposta, una richiesta successiva prima dell'intervallo non ri-espone lo stesso prodotto",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Intervallo minimo configurato pari a 7 giorni e disponibile al Motore in runtime",
+          "Il Motore è integrato con la persistenza degli eventi di presentazione (scrittura e lettura operative)",
+          "Esiste un cliente C999 e un prodotto P010 eleggibile",
+          "È possibile controllare/forzare il tempo di sistema o usare timestamp deterministici in ambiente di test (es. clock fittizio) per riprodurre le finestre temporali"
+        ],
+        "test_data": [
+          "Intervallo minimo configurato: 7 giorni",
+          "Cliente: C999",
+          "Prodotto: P010",
+          "Prima richiesta: 2026-02-23T10:00:00Z",
+          "Seconda richiesta: 2026-02-26T10:00:00Z (3 giorni dopo)"
+        ],
+        "steps": [
+          "Inviare la prima richiesta di generazione offerte al Motore per il cliente C999 includendo P010 tra i candidati",
+          "Verificare che la risposta della prima richiesta includa P010",
+          "Inviare la seconda richiesta di generazione offerte per lo stesso cliente C999 includendo P010 tra i candidati con timestamp a 3 giorni dalla prima richiesta",
+          "Acquisire la risposta della seconda richiesta"
+        ],
+        "expected_results": [
+          "Dopo la prima richiesta, il sistema registra la presentazione di P010 a C999",
+          "Alla seconda richiesta, il Motore recupera l'ultima presentazione di P010 a C999",
+          "Poiché il tempo trascorso (3 giorni) è inferiore a 7 giorni, P010 non è incluso tra le proposte della seconda risposta"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Questo test soddisfa esplicitamente l'AC di integrazione del requisito originale. Richiede controllo del tempo o dati deterministici."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC06",
+        "title": "Gestione configurazione non leggibile: il Motore non deve produrre una proposta incoerente senza segnalazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile simulare l'indisponibilità o errore del componente di lettura configurazione per il Motore (timeout/errore)",
+          "È disponibile un canale di invocazione del Motore per generazione offerte"
+        ],
+        "test_data": [
+          "Cliente: C123",
+          "Prodotto candidato: P001",
+          "Errore simulato: timeout lettura configurazione"
+        ],
+        "steps": [
+          "Impostare la lettura della configurazione in errore (es. servizio config non raggiungibile)",
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P001 tra i prodotti candidati",
+          "Acquisire l'esito della richiesta (risposta o errore)"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'errore di lettura configurazione in modo controllato (es. risposta di errore, oppure applicazione di un comportamento di fallback esplicitamente tracciabile tramite log/metriche)",
+          "Non viene restituita una risposta 'silenziosamente' incoerente rispetto alla regola di frequenza senza alcuna evidenza di fallback o errore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Comportamento di fallback non specificato nel requisito (allow/block/default). Il test verifica almeno la gestione controllata e la tracciabilità (errore o fallback esplicito)."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC07",
+        "title": "Gestione timestamp ultima presentazione corrotto o non disponibile",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Intervallo minimo configurato disponibile al Motore",
+          "Per (cliente C123, prodotto P003) esiste un record di ultima presentazione non parsabile o mancante del timestamp (dato corrotto) in ambiente di test controllato",
+          "È disponibile un canale di invocazione del Motore per generazione offerte"
+        ],
+        "test_data": [
+          "Cliente: C123",
+          "Prodotto candidato: P003",
+          "Record ultima presentazione corrotto: timestamp = 'NOT_A_DATE' oppure campo mancante"
+        ],
+        "steps": [
+          "Preparare il dato di ultima presentazione corrotto per (C123, P003)",
+          "Inviare una richiesta di generazione offerte al Motore per il cliente C123 includendo P003 tra i prodotti candidati",
+          "Acquisire l'esito della richiesta (risposta o errore) e i log applicativi se disponibili"
+        ],
+        "expected_results": [
+          "Il Motore gestisce il dato corrotto senza crash (nessun errore non gestito)",
+          "L'esito è deterministico e tracciabile (es. prodotto escluso per sicurezza oppure richiesta in errore oppure prodotto incluso con warning), con evidenza tramite log/metriche"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Comportamento non specificato nel requisito; il test verifica robustezza e tracciabilità dell'anomalia. Adeguare l'expected result definitivo quando viene presa una decisione di prodotto."
+      }
+    ]
+  }
+]

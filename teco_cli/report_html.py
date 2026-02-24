@@ -10,7 +10,6 @@ from datetime import datetime
 # Colori predefiniti per catena (background, border) — Chart.js
 CHART_COLORS: dict[str, tuple[str, str]] = {
     "direct": ("rgba(22, 163, 74, 0.7)", "rgba(22, 163, 74, 1)"),
-    "indirect_ac": ("rgba(37, 99, 235, 0.7)", "rgba(37, 99, 235, 1)"),
     "indirect_persona": ("rgba(168, 85, 247, 0.7)", "rgba(168, 85, 247, 1)"),
 }
 
@@ -194,7 +193,7 @@ def generate_evaluation_html(
     Parametri:
         evaluation: risultato della valutazione (JSON dal modello)
         requirement: requisito originale
-        tc_sets: {"direct": [...], "indirect_ac": [...], ...} — TC inviati
+        tc_sets: {"direct": [...], "indirect_persona": [...]} — TC inviati
         chain_metadata: {"direct": {"label": "...", "naming": "..."}, ...}
         model: nome del modello utilizzato
     """

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-017</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-017</h1>
+  <div class="subtitle">Mappatura della journey digitale per acquisto del secondo prodotto</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:41</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-017</div>
+  <div class="req-field"><strong>Titolo:</strong> Mappatura della journey digitale per acquisto del secondo prodotto</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">La journey digitale del cliente deve includere:
+- trigger di innesco per un cliente che inizia l&#x27;acquisto di un singolo prodotto A, nel caso in cui tale prodotto sia in una offerta valida in un bundle con B per cui il cliente è in target;
+- visualizzazione della proposta di bundle prima del checkout
+- interazioni possibili (aggiunta al carrello, chiusura, posticipo), 
+- nel caso in cui l&#x27;utente rifiuti il bundle e perfezioni l&#x27;acquisto del prodotto A, persistenza dell&#x27;offerta di upgrade ad (A, B) nella sezione Loyalty di Gruppo, in base alle regole di abilitazione all&#x27;upgrade definite dall&#x27;utente marketing per lo specifico bundle (A, B).
+
+Se invece l&#x27;utente accetta di acquistare il bundle (A,B) all&#x27;interno del journey iniziato per A, allora le fasi di inserimento dati (eventualmente mancanti) del cliente, questionari, prese visioni o firme di documenti per A e B vanno accorpate, se possibile  in modo omogeneo nel task flow del cliente (si veda il REQ-F-018).
+
+L&#x27;area loyalty del cliente mostra sempre al cliente le offerte di singoli prodotti e bundle sottoscrivibili, al netto dei bundle già in possesso (NB: se il cliente possiede un prodotto A, i bundle che includono A e per i quali NON è possibile l&#x27;upgrade non sono sottoscrivibili e non vanno quindi mostrati). Per ciascuna offerta dell&#x27;area Loyalty il cliente deve poter vedere i testi/grafiche delle promo e le call ti action di sottoscrizione.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Esiste un diagramma o documento che descrive ogni step della journey dal trigger all&#x27;acquisto del secondo prodotto.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>La mappatura include la condizione di trigger (prima del checkout) e la visualizzazione come pop-up.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>La mappatura specifica la persistenza della proposta nella sezione Loyalty di Gruppo e la finestra temporale di validità.</td></tr>
+<tr><td class='ac-num'>AC-4</td><td>La mappatura indica che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#16a34a">90</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">28</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Il set direct copre tutti gli AC (4/4) con poche informazioni aggiunte (2) e una sola ridondanza, mantenendosi aderente alla natura documentale degli AC. Il set indirect_persona introduce molte assunzioni non tracciabili (canali App/Web, Motore di Offerte, dettagli tecnici di integrazione/HTTP/TTL) e presenta anche una lacuna sulla copertura effettiva di AC-4 secondo quanto richiesto, oltre a diverse ridondanze; per questo risulta meno coerente col requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#dcfce7;color:#16a34a">
+          <div class="score-value">90</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-017.TC01</td><td>Introduce canali/strumenti specifici di repository documentale (Confluence/SharePoint/Jira) non citati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.TC05</td><td>Introduce l&#x27;apertura di una non conformità/defect e una classificazione &#x27;missing documentation&#x27; non prevista dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-017.TC03, REQ-F-017.TC06</td><td>Entrambi verificano la presenza/qualità della finestra temporale di validità nella persistenza in Loyalty (AC-3); TC06 è un approfondimento/edge del medesimo controllo documentale.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">28</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">19</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/4 (75%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:75.0%"></div>
+        </div>
+      </div>
+      <div class="uncovered"><strong>AC non coperti:</strong><ul><li>AC-4</li></ul></div>
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-017.US01.TC01</td><td>Introduce esplicitamente il canale &#x27;Web&#x27; e condizioni di autenticazione (&#x27;utente non autenticato o autenticato&#x27;) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC02</td><td>Introduce esplicitamente il canale &#x27;App&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC01</td><td>Introduce un &#x27;Motore di Offerte&#x27; come componente e relative marcature (&#x27;bundle valido&#x27;, &#x27;in target&#x27;) non nominato nel requisito (concetti presenti, ma non l&#x27;implementazione/componente).</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC04</td><td>Assume concetti di &#x27;carrello&#x27; e comportamento &#x27;include il secondo prodotto B nel percorso&#x27; come implementazione; il requisito parla di interazioni possibili ma non definisce carrello/semantica operativa.</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC09</td><td>Introduce dettagli tecnici (HTTP 500/timeout, endpoint pop-up) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC01</td><td>Introduce eventi e contratti di integrazione (&#x27;bundle_rifiutato&#x27;, &#x27;acquisto_A_perfezionato&#x27;, event bus/API) non definiti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC02</td><td>Introduce metadati tecnici di validità (validFrom/validTo/TTL) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC03</td><td>Introduce requisiti di &#x27;time travel&#x27; o configurazione finestra breve (es. 5 minuti) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC05</td><td>Assume comportamento di refresh/caching (refresh = nuova valutazione) non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC01</td><td>Assume un backend/servizio Loyalty e marcature &#x27;sottoscrivibile&#x27; fornite dal backend come fonte di verità; il requisito non descrive architettura o sorgente dati.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-4</td><td>AC-4 richiede che &#x27;la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto&#x27;. I TC tracciano AC-4 ma verificano coerenza di macro-step tra A e B, non che B segua lo stesso funnel del primo prodotto nel senso richiesto dall&#x27;AC (funnel del primo prodotto come riferimento unico). Inoltre manca un controllo esplicito dell&#x27;accorpamento fasi (dati/questionari/prese visioni/firme) richiamato nella descrizione come conseguenza dell&#x27;accettazione bundle.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-017.US01.TC01, REQ-F-017.US01.TC02</td><td>Stesso scenario &#x27;pop-up pre-checkout&#x27; duplicato su canali diversi (Web vs App) senza che il requisito richieda copertura per canale.</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC05, REQ-F-017.US01.TC06</td><td>Scenario molto simile: chiusura vs posticipo con stesso esito atteso (non bloccare acquisto A).</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC06, REQ-F-017.US03.TC05, REQ-F-017.US01.TC10</td><td>Tre test documentali sovrapposti che ricontrollano porzioni simili della mappatura (AC-1/AC-2/AC-3) con expected results quasi identici.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-017&quot;,
+  &quot;title&quot;: &quot;Mappatura della journey digitale per acquisto del secondo prodotto&quot;,
+  &quot;description&quot;: &quot;La journey digitale del cliente deve includere:\n- trigger di innesco per un cliente che inizia l&#x27;acquisto di un singolo prodotto A, nel caso in cui tale prodotto sia in una offerta valida in un bundle con B per cui il cliente è in target;\n- visualizzazione della proposta di bundle prima del checkout\n- interazioni possibili (aggiunta al carrello, chiusura, posticipo), \n- nel caso in cui l&#x27;utente rifiuti il bundle e perfezioni l&#x27;acquisto del prodotto A, persistenza dell&#x27;offerta di upgrade ad (A, B) nella sezione Loyalty di Gruppo, in base alle regole di abilitazione all&#x27;upgrade definite dall&#x27;utente marketing per lo specifico bundle (A, B).\n\nSe invece l&#x27;utente accetta di acquistare il bundle (A,B) all&#x27;interno del journey iniziato per A, allora le fasi di inserimento dati (eventualmente mancanti) del cliente, questionari, prese visioni o firme di documenti per A e B vanno accorpate, se possibile  in modo omogeneo nel task flow del cliente (si veda il REQ-F-018).\n\nL&#x27;area loyalty del cliente mostra sempre al cliente le offerte di singoli prodotti e bundle sottoscrivibili, al netto dei bundle già in possesso (NB: se il cliente possiede un prodotto A, i bundle che includono A e per i quali NON è possibile l&#x27;upgrade non sono sottoscrivibili e non vanno quindi mostrati). Per ciascuna offerta dell&#x27;area Loyalty il cliente deve poter vedere i testi/grafiche delle promo e le call ti action di sottoscrizione.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Esiste un diagramma o documento che descrive ogni step della journey dal trigger all&#x27;acquisto del secondo prodotto.&quot;,
+    &quot;La mappatura include la condizione di trigger (prima del checkout) e la visualizzazione come pop-up.&quot;,
+    &quot;La mappatura specifica la persistenza della proposta nella sezione Loyalty di Gruppo e la finestra temporale di validità.&quot;,
+    &quot;La mappatura indica che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-017.TC01</td><td>Verifica esistenza e completezza del documento/diagramma di journey end-to-end (trigger → acquisto secondo prodotto)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-017.TC02</td><td>Verifica che la mappatura includa trigger prima del checkout e visualizzazione proposta bundle come pop-up</td><td>UI</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.TC03</td><td>Verifica che la mappatura specifichi persistenza in sezione Loyalty di Gruppo e finestra temporale di validità</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.TC04</td><td>Verifica che la mappatura indichi che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-017.TC05</td><td>Negativo: assenza del documento/diagramma di mappatura per REQ-F-017</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-017.TC06</td><td>Edge case documentale: finestra temporale di validità non specificata o ambigua nella persistenza Loyalty</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 21 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-017.US01.TC01</td><td>Visualizzazione pop-up bundle pre-checkout per cliente in target con bundle (A,B) valido (Web)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC02</td><td>Visualizzazione pop-up bundle pre-checkout per cliente in target con bundle (A,B) valido (App)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC03</td><td>Azioni disponibili sul pop-up bundle: aggiungi al carrello, chiudi, posticipa</td><td>UI</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC04</td><td>Aggiunta del bundle al carrello: il secondo prodotto segue lo stesso funnel del primo</td><td>E2E</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC05</td><td>Chiusura della proposta: proseguimento e completamento acquisto di A senza blocchi</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC06</td><td>Posticipo della proposta: proseguimento e completamento acquisto di A senza blocchi</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC07</td><td>Cliente non in target: il pop-up bundle non viene mostrato</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC08</td><td>Bundle non valido al trigger: il pop-up bundle non viene mostrato</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC09</td><td>Errore tecnico di caricamento pop-up: il cliente può proseguire con l&#x27;acquisto di A</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US01.TC10</td><td>Verifica documentazione: la mappatura descrive journey end-to-end e include pop-up pre-checkout</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC01</td><td>Loyalty mostra solo offerte sottoscrivibili ed esclude bundle già in possesso</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC02</td><td>Cliente possiede A: non mostrare bundle che includono A se upgrade non possibile</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC03</td><td>Ogni offerta mostrata in Loyalty espone contenuti promo e CTA di sottoscrizione</td><td>UI</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC04</td><td>Dopo rifiuto bundle e acquisto A: proposta upgrade (A,B) persistita visibile in Loyalty entro finestra di validità</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC05</td><td>Refresh Loyalty: offerta non più sottoscrivibile viene rimossa/non mostrata</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US02.TC06</td><td>Verifica documentazione: persistenza proposta in Loyalty e finestra temporale di validità</td><td>Functional</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC01</td><td>Persistenza upgrade (A,B) nel Motore dopo rifiuto bundle e perfezionamento acquisto A (upgrade abilitato)</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC02</td><td>Gestione finestra temporale: proposta upgrade persistita include validità e risulta disponibile entro la finestra</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC03</td><td>Scadenza finestra temporale: proposta upgrade non più disponibile dopo la scadenza</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC04</td><td>Upgrade non abilitato da regole Marketing: il Motore non persiste la proposta</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-017.US03.TC05</td><td>Verifica documentazione: journey end-to-end include persistenza e finestra temporale validità</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [4, 2, 0, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 1, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

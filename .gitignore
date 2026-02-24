@@ -9,4 +9,4 @@ dist/
 build/
 
 # Output generati dalla pipeline
-output_test/
+# output_test/ — incluso nel repo per preservare i risultati delle valutazioni

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-NF-001</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-NF-001</h1>
+  <div class="subtitle">Controllo accessi e autorizzazioni per inserimento/approvazione eccezioni e modifica configurazioni</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:30</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-NF-001</div>
+  <div class="req-field"><strong>Titolo:</strong> Controllo accessi e autorizzazioni per inserimento/approvazione eccezioni e modifica configurazioni</div>
+  <div class="req-field"><strong>Categoria:</strong> NON_FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Deve essere implementato un meccanismo di controllo degli accessi (Role-Based Access Control) che garantisca che solo determinati ruoli autorizzati possano inserire o approvare eccezioni manuali e modificare le configurazioni critiche nella dashboard del marketing. Questo requisito copre l&#x27;autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Esiste una definizione dei ruoli autorizzati (almeno: team marketing con permessi di modifica, ruoli specifici autorizzati ad inserire/approvare eccezioni).</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Gli utenti non appartenenti ai ruoli autorizzati non possono accedere alle funzioni di inserimento/approvazione eccezioni né modificare la matrice.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>I tentativi di accesso non autorizzato sono bloccati e segnalati secondo le policy aziendali (esito negativo verificabile in test di sicurezza).</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">78</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">56</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct introduce meno informazioni non tracciabili (7 added_info) rispetto all&#x27;indirect_persona (11 added_info) ed evita scenari extra-requisito (session timeout, revoca permessi in-sessione, fault IAM, stress logging) che aumentano le assunzioni. Inoltre l&#x27;indirect_persona presenta ridondanze (3) su casi ripetitivi di diniego+log. Per questo il direct ottiene un punteggio di coerenza superiore (78 vs 56).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">78</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-NF-001.TC01</td><td>Introduce nomi di ruoli specifici (&#x27;Marketing_Modifica&#x27;) e dettagli di oggetti/parametri di configurazione (&#x27;Matrice offerte&#x27;, &#x27;Soglia_minima_importo&#x27;, versioni, valori EUR) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC02</td><td>Introduce campi/dati di eccezione (ClienteID, Offerta, motivazione, validità) e ipotesi di stato workflow (&#x27;In attesa di approvazione&#x27;) non specificati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC03</td><td>Introduce stati e campi di approvazione (commento, stato &#x27;Approvata&#x27;, ID eccezione) non descritti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC04</td><td>Introduce canale API e dettagli tecnici non citati (endpoint &#x27;POST /api/eccezioni&#x27;, codici HTTP 403/401) e verifica su &#x27;audit/log applicativo&#x27; come fonte dati.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC05</td><td>Introduce canale API e dettagli tecnici non citati (endpoint &#x27;PUT /api/configurazioni/matrice-offerte&#x27;, payload JSON, codici HTTP 403) e specifica un parametro di matrice non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC06</td><td>Assume integrazione con SIEM/log aggregator, presenza di header &#x27;X-Correlation-ID&#x27;, campi minimi di audit e possibile alerting: il requisito dice solo &#x27;segnalati secondo le policy aziendali&#x27; senza questi dettagli.</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC07</td><td>Introduce regola &#x27;deny by default&#x27; e comportamento UI (redirect a pagina non autorizzato) non esplicitati nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte&#x27;</td><td>I test coprono esempi (matrice/eccezioni) ma non dimostrano esplicitamente la copertura di &#x27;tutte&#x27; le funzionalità di configurazione del motore offerte oltre alla matrice (il requisito lo afferma come ambito).</td></tr>
+<tr><td class='mono'>AC-1: &#x27;Esiste una definizione dei ruoli autorizzati (almeno...)&#x27;</td><td>I TC verificano l&#x27;accesso per ruoli esemplificativi, ma non verificano l&#x27;esistenza/consultabilità della &#x27;definizione dei ruoli autorizzati&#x27; come artefatto/configurazione (es. catalogo ruoli/mapping) separatamente dall&#x27;uso in runtime.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      <p class='empty'>Nessuna ridondanza.</p>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">56</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-NF-001.US01.TC01</td><td>Introduce struttura UI (&#x27;Configurazioni critiche&#x27;), dettagli di matrice (righe/colonne, segmenti Gold, soglie) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC02</td><td>Introduce dati e campi di eccezione (&#x27;Sconto extra&#x27;, motivo campagna), e stato workflow ipotetico (&#x27;In attesa di approvazione&#x27;) non specificati.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC03</td><td>Introduce workflow e stato (&#x27;Approvata&#x27;) e modalità di approvazione non descritti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC04</td><td>Assume canali/strumenti di evidenza specifici (audit log, SIEM, console centralizzata) e disponibilità di consultazione per il team di test, non esplicitati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC05</td><td>Scenario &#x27;sessione scaduta&#x27;, timeout/invalidazione token e richiesta di re-autenticazione: non richiesto dal requisito (che parla di RBAC e segnalazione accessi non autorizzati).</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC06</td><td>Scenario &#x27;permessi revocati durante la sessione&#x27; e ricalcolo permessi al momento dell&#x27;azione: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC07</td><td>Scenario di errore IAM/authorization (timeout/500) e comportamento fail-safe: non esplicitato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC04</td><td>Assume &#x27;campi minimi di audit&#x27; (utente, risorsa, timestamp, esito) come obbligatori: il requisito non li definisce, rimanda a policy.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC05</td><td>Scenario di carico/attacco (100 tentativi in 2 minuti), perdita eventi, throttling/aggregazione: non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC06</td><td>Scenario &#x27;utente non autenticato&#x27; su URL/route specifica (esempio /dashboard/eccezioni/approvazione) e tracciamento &#x27;anonymous&#x27;: il requisito non menziona accessi anonimi né URL.</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC07</td><td>Scenario di disallineamento IdP vs mapping applicativo: non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte&#x27;</td><td>Come nel set direct, i TC si focalizzano su matrice ed eccezioni e non dimostrano esplicitamente la copertura dell&#x27;intero perimetro &#x27;tutte le funzionalità&#x27; di configurazione del motore offerte.</td></tr>
+<tr><td class='mono'>AC-1: &#x27;Esiste una definizione dei ruoli autorizzati (almeno...)&#x27;</td><td>I TC presuppongono l&#x27;esistenza di un &#x27;catalogo ruoli aziendale&#x27; ma non verificano direttamente la presenza della definizione/mappatura dei ruoli autorizzati come requisito (artefatto o configurazione).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Sovrapposto a REQ-NF-001.US02.TC02 e REQ-NF-001.US02.TC03: stesso pattern &#x27;utente non autorizzato -&gt; accesso negato -&gt; evidenza di segnalazione&#x27;, cambia solo la funzione target.</td></tr>
+<tr><td class='mono'></td><td>Sovrapposto a REQ-NF-001.US02.TC01 e REQ-NF-001.US02.TC03: stesso scenario base con variazione della funzione.</td></tr>
+<tr><td class='mono'></td><td>Sovrapposto a REQ-NF-001.US02.TC01 e REQ-NF-001.US02.TC02: stesso scenario base con variazione della funzione.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-NF-001&quot;,
+  &quot;title&quot;: &quot;Controllo accessi e autorizzazioni per inserimento/approvazione eccezioni e modifica configurazioni&quot;,
+  &quot;description&quot;: &quot;Deve essere implementato un meccanismo di controllo degli accessi (Role-Based Access Control) che garantisca che solo determinati ruoli autorizzati possano inserire o approvare eccezioni manuali e modificare le configurazioni critiche nella dashboard del marketing. Questo requisito copre l&#x27;autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte.&quot;,
+  &quot;category&quot;: &quot;NON_FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Esiste una definizione dei ruoli autorizzati (almeno: team marketing con permessi di modifica, ruoli specifici autorizzati ad inserire/approvare eccezioni).&quot;,
+    &quot;Gli utenti non appartenenti ai ruoli autorizzati non possono accedere alle funzioni di inserimento/approvazione eccezioni né modificare la matrice.&quot;,
+    &quot;I tentativi di accesso non autorizzato sono bloccati e segnalati secondo le policy aziendali (esito negativo verificabile in test di sicurezza).&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-NF-001.TC01</td><td>Accesso consentito a modifica configurazioni critiche per ruolo Marketing con permessi di modifica</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC02</td><td>Accesso consentito a inserimento eccezione manuale per ruolo autorizzato alle eccezioni</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC03</td><td>Accesso consentito ad approvazione eccezione manuale per ruolo autorizzato all&#x27;approvazione</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC04</td><td>Blocco accesso a inserimento eccezione per utente non autorizzato (UI e API)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC05</td><td>Blocco accesso a modifica matrice/configurazioni critiche per utente non autorizzato (UI e API)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC06</td><td>Tracciamento e segnalazione dei tentativi di accesso non autorizzato secondo policy (audit/log + alert)</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.TC07</td><td>Accesso negato per utente autenticato senza ruolo (nessuna membership) alle funzioni protette</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 14 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-NF-001.US01.TC01</td><td>Accesso e salvataggio modifica configurazione critica (matrice) con ruolo autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC02</td><td>Accesso e inserimento eccezione manuale con ruolo autorizzato all&#x27;inserimento</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC03</td><td>Accesso e approvazione eccezione con ruolo autorizzato all&#x27;approvazione</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC04</td><td>Utente autenticato con permessi parziali tenta operazione non autorizzata (approvazione eccezioni) e viene bloccato con segnalazione</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC05</td><td>Sessione scaduta durante salvataggio modifica matrice: operazione fallisce e richiede nuova autenticazione</td><td>Edge Case</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC06</td><td>Permessi revocati mentre l&#x27;utente è in sessione: successivo accesso/salvataggio viene bloccato e segnalato</td><td>Edge Case</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US01.TC07</td><td>Errore del sistema di identity/authorization: accesso alle funzioni protette negato (fail-safe) e segnalato</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC01</td><td>Utente non autorizzato tenta accesso a &#x27;Inserisci eccezione&#x27;: accesso negato e evidenza di segnalazione disponibile</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC02</td><td>Utente non autorizzato tenta accesso a &#x27;Approva eccezioni&#x27;: accesso negato e evidenza di segnalazione disponibile</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC03</td><td>Utente non autorizzato tenta modifica configurazioni critiche (matrice): operazione bloccata e segnalata con evidenza verificabile</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC04</td><td>Test di sicurezza RBAC: verifica end-to-end di blocco + segnalazione per tentativi non autorizzati (suite)</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC05</td><td>Elevato numero di tentativi non autorizzati: la segnalazione avviene senza perdere eventi rilevanti</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC06</td><td>Utente non autenticato tenta accesso diretto a URL/endpoint protetto: accesso negato e segnalazione secondo policy</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-NF-001.US02.TC07</td><td>Disallineamento ruoli vs permessi effettivi: l&#x27;accesso non autorizzato viene comunque bloccato e segnalato</td><td>Integration</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 7, 2, 0], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 11, 2, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

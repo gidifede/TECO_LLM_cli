@@ -1,0 +1,112 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-001",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 62,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-001.TC01",
+        "detail": "Assume l'esistenza di UI/API di configurazione, ruolo di accesso, feature flag 'NBO_ENABLED', metadati/versione motore in output e canale 'web': elementi non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.TC02",
+        "detail": "Introduce dettagli non presenti: catalogo offerte con ID noti, regole specifiche (R1/R2) e assunzione che l'output non introduca offerte non presenti nell'input esterno."
+      },
+      {
+        "test_id": "REQ-F-001.TC03",
+        "detail": "Introduce contratto API/HTTP (es. 400), validazioni input, logging con correlation id e gestione errori: non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.TC04",
+        "detail": "Assume che il motore chiami un servizio esterno di raccomandazioni e specifica timeout (5s), codici 502/503, metriche/logging e fallback: non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.TC06",
+        "detail": "Assume che l'output debba essere lista vuota (o campo 'offers' vuoto) quando tutte le offerte sono escluse: comportamento non definito dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'massimizzare il cross-selling e minimizzare le proposte non pertinenti al cliente'",
+        "detail": "I TC verificano soprattutto il filtraggio/esclusione, ma non validano in alcun modo l'aspetto 'massimizzare il cross-selling' (anche solo come evidenza funzionale/criterio osservabile)."
+      },
+      {
+        "source": "AC-2: 'rispetto a un input di raccomandazioni esterne e alle regole configurate'",
+        "detail": "Non c'è un test che dimostri esplicitamente la dipendenza congiunta da entrambi (input esterno + regole) in modo non ambiguo: TC02 lo fa, ma gli altri negativi (TC03/TC04) testano casi non richiesti dall'AC e non aggiungono copertura sostanziale del requisito."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-001.TC03",
+          "REQ-F-001.TC04"
+        ],
+        "detail": "Entrambi testano scenari negativi di integrazione/indisponibilità input esterno con attesi simili (errore/fallback deterministico e 'non proporre offerte a caso'), con sovrapposizione parziale rispetto ad AC-2."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 6,
+    "coherence_score": 63,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-001.US01.TC01",
+        "detail": "Introduce feature flag e segmentazione cliente (Retail) con regole per segmento: non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC02",
+        "detail": "Assume che l'output non includa offerte non presenti nelle raccomandazioni esterne (salvo fallback): vincolo non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC03",
+        "detail": "Assume una regola di precedenza ('prevalgono le regole vincolanti') non definita nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC04",
+        "detail": "Introduce gestione input mancante/vuoto come caso negativo con esiti alternativi (errore vs lista vuota): il requisito non richiede questo comportamento."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC05",
+        "detail": "Introduce indisponibilità del configuratore regole (503/timeout, standard di integrazione, logging/trace): non esplicitati nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: 'attivata e documentata come obiettivo primario'",
+        "detail": "Manca una verifica esplicita della 'documentazione' dell'obiettivo primario; US01.TC01 verifica l'effetto a runtime con NBO=ON, ma non la presenza di documentazione come richiesto dall'AC."
+      },
+      {
+        "source": "Descrizione requisito: 'massimizzare il cross-selling'",
+        "detail": "Come nel set direct, i TC non validano alcuna evidenza funzionale osservabile legata alla 'massimizzazione del cross-selling', limitandosi a coerenza/filtraggio e assenza di non pertinenza."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-001.US01.TC02",
+          "REQ-F-001.US01.TC03"
+        ],
+        "detail": "Entrambi verificano che regole configurate escludano offerte dall'output anche se presenti nelle raccomandazioni esterne; TC03 è una specializzazione del caso già coperto da TC02."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "indirect_persona",
+    "ranking": [
+      "indirect_persona",
+      "direct"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (3/3). Tuttavia il set indirect_persona introduce una lacuna più rilevante ma circoscritta (manca la verifica della 'documentazione' richiesta da AC-1), mentre il set direct aggiunge più assunzioni tecniche specifiche (HTTP code, correlation id, timeout, metadati output, canale web) e presenta una ridondanza più marcata sui negativi di integrazione (TC03/TC04). Con la formula richiesta, indirect_persona ottiene un punteggio leggermente superiore (63 vs 62) grazie a minori penalità complessive."
+  }
+}

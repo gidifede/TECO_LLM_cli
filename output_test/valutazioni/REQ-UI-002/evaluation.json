@@ -1,0 +1,122 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-002",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 71,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-002.TC01",
+        "detail": "Introduzione di 'feature flag' e condizione 'nessun feature flag disabilitante' non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.TC01",
+        "detail": "Specifica del canale 'web' e assunzione esplicita di interfaccia web; il requisito parla solo di 'schermata' per operatore senza canale."
+      },
+      {
+        "test_id": "REQ-UI-002.TC02",
+        "detail": "Dettagli di implementazione visiva (spaziatura/bordo/ombreggiatura) e forme di feedback ('outline/check/indicatore') non specificati (ammissibili come esempi, ma non tracciabili come requisiti)."
+      },
+      {
+        "test_id": "REQ-UI-002.TC03",
+        "detail": "Scenario di assenza offerte con messaggio 'nessun risultato' e gestione selezione globale/disabilitata: comportamento non descritto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.TC04",
+        "detail": "Controlli di autorizzazione/ruoli per accesso schermata e gestione 'accesso negato/redirezione': non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.TC05",
+        "detail": "Definizione di una soglia temporale specifica (<= 10 secondi) e strumenti di misurazione: il requisito richiede conferma tramite test utente ma non definisce metriche/soglie."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'facilita la consultazione rapida e la presentazione delle singole proposte al cliente'",
+        "detail": "I TC non verificano la parte 'presentazione ... al cliente' (es. supporto alla presentazione/consultazione durante interazione con cliente); viene testata solo identificazione/selezione in ottica operatore."
+      }
+    ],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 53,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-002.US01.TC01",
+        "detail": "Canale/contesto 'front-end commerciale' e dettagli 'operatore sportello/sala': non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC02",
+        "detail": "Vincoli di non sovrapposizione/fusione e dettagli visuali (bordi/riquadri) come aspettative specifiche non presenti nel requisito (che richiede solo 'visivamente separata')."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC03",
+        "detail": "Comportamento di contrazione e possibilità che i dettagli siano mostrati 'in un'area collegata alla card': non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC04",
+        "detail": "Requisito aggiunto che la selezione non impatti altre card ('nessuna selezione involontaria'): non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC05",
+        "detail": "Autorizzazioni e abilitazioni specifiche della sezione offerte: non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC06",
+        "detail": "Gestione dataset vuoto con divieto di 'card vuote/placeholder' e messaggio specifico: non descritto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC07",
+        "detail": "Edge case 'una sola offerta' e relative aspettative: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC08",
+        "detail": "Gestione overflow testo (troncamento/scroll) e robustezza layout: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC09",
+        "detail": "Gestione errore tecnico durante selezione (messaggi, persistenza stato, assenza blocchi): non descritto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC10",
+        "detail": "Richiesta di archiviazione/report dei risultati e definizione di metriche (tempo medio, tasso di successo) non presenti nel requisito (AC-3 richiede solo conferma da test utente, non reporting/threshold specifiche)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'facilita la consultazione rapida e la presentazione delle singole proposte al cliente'",
+        "detail": "Come per il set direct, non c'è una verifica esplicita della 'presentazione al cliente' (contesto/azione di presentazione), solo identificazione e selezione da parte dell'operatore."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-002.US01.TC02",
+          "REQ-UI-002.US01.TC03",
+          "REQ-UI-002.US01.TC04",
+          "REQ-UI-002.US01.TC07"
+        ],
+        "detail": "Scenari sovrapposti su separazione card + controlli espansione/selezione; TC07 replica in gran parte verifiche già coperte da TC02/TC03/TC04 cambiando solo la cardinalità (1 offerta)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (3/3). Il set direct introduce meno informazioni non tracciabili (6 vs 10) e non presenta ridondanze, ottenendo un punteggio più alto (71 vs 53). Il set indirect_persona aggiunge molti dettagli di canale/contesto e numerosi edge/negative case non richiesti dal requisito, oltre a una ridondanza significativa."
+  }
+}

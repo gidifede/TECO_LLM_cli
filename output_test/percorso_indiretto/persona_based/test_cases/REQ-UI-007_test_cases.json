@@ -1,0 +1,289 @@
+[
+  {
+    "story_id": "REQ-UI-007.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-007.US01.TC01",
+        "title": "APP - Visualizzazione pop-up proposta bundle prima del checkout con trigger soddisfatto (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale APP disponibile e utente in sessione come Cliente digitale (autenticato o guest, secondo configurazione standard del canale)",
+          "Percorso di acquisto disponibile (carrello/checkout abilitati)",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON (configurato per soddisfare il trigger)",
+          "Ambiente: QA/Staging con regole trigger attive",
+          "Punto del journey: schermata immediatamente precedente al checkout (es. carrello o step riepilogo ordine, secondo flusso APP)"
+        ],
+        "steps": [
+          "Aprire l'APP",
+          "Avviare un percorso di acquisto standard fino ad avere il carrello valorizzato con SKU_BUNDLE_TRIGGER_ON",
+          "Navigare fino alla schermata immediatamente precedente al checkout",
+          "Osservare la UI prima di avviare il checkout"
+        ],
+        "expected_results": [
+          "La UI mostra un pop-up contenente la proposta bundle prima che l'utente entri nel checkout",
+          "Il pop-up è visualizzato nel contesto in cui le condizioni di trigger risultano soddisfatte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "app"
+        ],
+        "notes": "Dipendenza esterna: definizione puntuale delle condizioni di trigger e identificazione del punto esatto 'prima del checkout' nel journey APP."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC02",
+        "title": "WEB - Visualizzazione pop-up proposta bundle prima del checkout con trigger soddisfatto (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale web disponibile e utente in sessione come Cliente digitale (autenticato o guest, secondo configurazione standard del canale)",
+          "Percorso di acquisto disponibile (carrello/checkout abilitati)",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON (configurato per soddisfare il trigger)",
+          "Browser: Chrome (ultima versione stabile)",
+          "Ambiente: QA/Staging con regole trigger attive",
+          "Punto del journey: pagina carrello o step riepilogo ordine immediatamente precedente al checkout"
+        ],
+        "steps": [
+          "Aprire il sito web",
+          "Avviare un percorso di acquisto standard fino ad avere il carrello valorizzato con SKU_BUNDLE_TRIGGER_ON",
+          "Navigare fino alla pagina immediatamente precedente al checkout",
+          "Osservare la UI prima di avviare il checkout"
+        ],
+        "expected_results": [
+          "La UI mostra un pop-up contenente la proposta bundle prima che l'utente entri nel checkout",
+          "Il pop-up è visualizzato nel contesto in cui le condizioni di trigger risultano soddisfatte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "web"
+        ],
+        "notes": "Dipendenza esterna: definizione puntuale delle condizioni di trigger e identificazione del punto esatto 'prima del checkout' nel journey web."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC03",
+        "title": "APP+WEB - Il pop-up non viene mostrato quando le condizioni di trigger non sono soddisfatte",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali APP e web disponibili",
+          "Percorso di acquisto disponibile (carrello/checkout abilitati)",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un contesto di acquisto che NON soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_OFF (configurato per NON soddisfare il trigger)",
+          "Ambiente: QA/Staging con regole trigger attive"
+        ],
+        "steps": [
+          "Su APP, avviare un percorso di acquisto fino alla schermata immediatamente precedente al checkout con SKU_BUNDLE_TRIGGER_OFF nel carrello",
+          "Osservare la UI prima di avviare il checkout su APP",
+          "Su web, avviare un percorso di acquisto fino alla pagina immediatamente precedente al checkout con SKU_BUNDLE_TRIGGER_OFF nel carrello",
+          "Osservare la UI prima di avviare il checkout su web"
+        ],
+        "expected_results": [
+          "Su APP, nessun pop-up di proposta bundle viene mostrato prima del checkout",
+          "Su web, nessun pop-up di proposta bundle viene mostrato prima del checkout",
+          "L'assenza del pop-up è coerente con il fatto che le condizioni di trigger non risultano soddisfatte"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Il test assume la disponibilità di un set dati/contesto che non attiva il trigger. Se il trigger dipende da parametri non controllabili (es. profilazione), serve un meccanismo di override in QA."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC04",
+        "title": "APP+WEB - Accesso al checkout tramite percorso alternativo: il pop-up rispetta la regola 'prima del checkout' quando il trigger è soddisfatto",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali APP e web disponibili",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un percorso alternativo/non standard che porta al checkout (es. 'Acquista ora', deep link, ripresa carrello, shortcut)",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i/contesto: SKU_BUNDLE_TRIGGER_ON (trigger soddisfatto)",
+          "Percorso alternativo: 'Acquista ora' (o equivalente disponibile nel canale) che porta al checkout"
+        ],
+        "steps": [
+          "Su APP, avviare il percorso alternativo che porta al checkout con contesto SKU_BUNDLE_TRIGGER_ON",
+          "Arrestarsi nel punto immediatamente precedente all'ingresso nel checkout (ultimo step prima del checkout, secondo il percorso alternativo)",
+          "Osservare la UI su APP",
+          "Su web, avviare il percorso alternativo che porta al checkout con contesto SKU_BUNDLE_TRIGGER_ON",
+          "Arrestarsi nel punto immediatamente precedente all'ingresso nel checkout (ultimo step prima del checkout, secondo il percorso alternativo)",
+          "Osservare la UI su web"
+        ],
+        "expected_results": [
+          "Su APP, il pop-up della proposta bundle viene mostrato prima dell'ingresso nel checkout anche nel percorso alternativo, quando il trigger è soddisfatto",
+          "Su web, il pop-up della proposta bundle viene mostrato prima dell'ingresso nel checkout anche nel percorso alternativo, quando il trigger è soddisfatto",
+          "In nessun caso il pop-up viene mostrato dopo che l'utente è già entrato nel checkout"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Il requisito non definisce quali siano i 'percorsi alternativi': va concordato un elenco di percorsi supportati per la copertura. Necessaria definizione operativa di 'entrato nel checkout' per canale."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC05",
+        "title": "APP - Verifica aspetto e comportamento del pop-up rispetto alle specifiche UI/UX (test utente verificabile)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale APP disponibile",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Disponibili specifiche UI/UX approvate (mock, design system, checklist di comportamento) per il pop-up su APP",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON",
+          "Checklist UI/UX APP: UIX_POPUP_BUNDLE_APP_v1 (documento di riferimento)"
+        ],
+        "steps": [
+          "Aprire l'APP",
+          "Raggiungere la schermata immediatamente precedente al checkout con trigger soddisfatto",
+          "Verificare la presenza del pop-up",
+          "Confrontare layout, testi, CTA e componenti del pop-up con la checklist UI/UX APP",
+          "Interagire con gli elementi previsti dal pop-up (es. CTA principale/secondaria o chiusura) secondo la checklist"
+        ],
+        "expected_results": [
+          "Il pop-up rispetta gli attributi UI previsti dalla specifica (layout, testi, icone/immagini, CTA) senza deviazioni",
+          "Il comportamento del pop-up rispetta quanto previsto dalla specifica (interazioni consentite e risposta della UI alle interazioni) ed è verificabile tramite checklist"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "app"
+        ],
+        "notes": "Gli AC 'verificabili in test utente' sono dichiarativi: il test li rende verificabili assumendo l'esistenza di una checklist UI/UX versionata. Se mancante, il test non è eseguibile."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC06",
+        "title": "WEB - Verifica aspetto e comportamento del pop-up rispetto alle specifiche UI/UX (test utente verificabile)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale web disponibile",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Disponibili specifiche UI/UX approvate (mock, design system, checklist di comportamento) per il pop-up su web",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON",
+          "Browser: Chrome (ultima versione stabile)",
+          "Checklist UI/UX web: UIX_POPUP_BUNDLE_WEB_v1 (documento di riferimento)"
+        ],
+        "steps": [
+          "Aprire il sito web",
+          "Raggiungere la pagina immediatamente precedente al checkout con trigger soddisfatto",
+          "Verificare la presenza del pop-up",
+          "Confrontare layout, testi, CTA e componenti del pop-up con la checklist UI/UX web",
+          "Interagire con gli elementi previsti dal pop-up (es. CTA principale/secondaria o chiusura) secondo la checklist"
+        ],
+        "expected_results": [
+          "Il pop-up rispetta gli attributi UI previsti dalla specifica (layout, testi, icone/immagini, CTA) senza deviazioni",
+          "Il comportamento del pop-up rispetta quanto previsto dalla specifica (interazioni consentite e risposta della UI alle interazioni) ed è verificabile tramite checklist"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "web"
+        ],
+        "notes": "Gli AC 'verificabili in test utente' sono dichiarativi: il test li rende verificabili assumendo l'esistenza di una checklist UI/UX versionata. Se mancante, il test non è eseguibile."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC07",
+        "title": "APP - Errore tecnico di rendering del pop-up: la prosecuzione verso il checkout non viene bloccata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale APP disponibile",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate",
+          "Disponibile un meccanismo di fault injection per simulare errore di rendering UI (es. feature flag, mock del componente, crash controllato del widget)"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON",
+          "Fault injection: POPUP_RENDERING_ERROR=ON (APP)"
+        ],
+        "steps": [
+          "Abilitare il fault injection POPUP_RENDERING_ERROR=ON su APP",
+          "Aprire l'APP",
+          "Raggiungere la schermata immediatamente precedente al checkout con trigger soddisfatto",
+          "Tentare di proseguire verso il checkout"
+        ],
+        "expected_results": [
+          "Il pop-up non viene renderizzato correttamente (errore riproducibile secondo fault injection)",
+          "L'utente può comunque proseguire ed entrare nel checkout senza blocchi",
+          "Non si verificano crash dell'APP durante la transizione verso il checkout"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "app"
+        ],
+        "notes": "Edge case richiesto dalla story. Il comportamento di fallback non è specificato: il test verifica solo il non-blocco/crash. Necessaria capacità di simulare l'errore in QA."
+      },
+      {
+        "test_id": "REQ-UI-007.US01.TC08",
+        "title": "WEB - Errore tecnico di rendering del pop-up: la prosecuzione verso il checkout non viene bloccata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale web disponibile",
+          "Configurazione/regole di trigger disponibili e attive in ambiente di test",
+          "Esiste almeno un contesto di acquisto che soddisfa le condizioni di trigger documentate",
+          "Disponibile un meccanismo di fault injection per simulare errore di rendering UI (es. blocco risorsa JS/CSS del componente, feature flag, mock)"
+        ],
+        "test_data": [
+          "Prodotto/i nel carrello: SKU_BUNDLE_TRIGGER_ON",
+          "Browser: Chrome (ultima versione stabile)",
+          "Fault injection: POPUP_RENDERING_ERROR=ON (WEB) oppure blocco della risorsa del componente pop-up"
+        ],
+        "steps": [
+          "Abilitare il fault injection POPUP_RENDERING_ERROR=ON su web (o bloccare la risorsa del componente pop-up)",
+          "Aprire il sito web",
+          "Raggiungere la pagina immediatamente precedente al checkout con trigger soddisfatto",
+          "Tentare di proseguire verso il checkout"
+        ],
+        "expected_results": [
+          "Il pop-up non viene renderizzato correttamente (errore riproducibile secondo fault injection)",
+          "L'utente può comunque proseguire ed entrare nel checkout senza blocchi",
+          "La pagina non va in errore bloccante (nessun blocco della navigazione al checkout)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "web"
+        ],
+        "notes": "Edge case richiesto dalla story. Il comportamento di fallback non è specificato: il test verifica solo il non-blocco. Necessaria capacità di simulare l'errore in QA."
+      }
+    ]
+  }
+]

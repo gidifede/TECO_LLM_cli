@@ -1,0 +1,649 @@
+[
+  {
+    "story_id": "REQ-V-004.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-004.US01.TC01",
+        "title": "Web/App - Verifica pre-acquisto eseguita prima della conferma finale (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Carrello contenente una combinazione di prodotti configurata come 'permessa' e 'sottoscrivibile' dal Motore di Offerte",
+          "Servizio di verifica pre-acquisto del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione prodotti: COMBO_OK_01 (permessa e sottoscrivibile secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello i prodotti della combinazione COMBO_OK_01",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Avviare l’azione di conferma finale (es. 'Conferma/Procedi al pagamento')"
+        ],
+        "expected_results": [
+          "Prima della finalizzazione dell’acquisto, il sistema invoca la verifica pre-acquisto della combinazione verso il Motore di Offerte",
+          "Se l’esito è positivo, l’utente può proseguire oltre la conferma finale senza blocchi legati a combinazione/sottoscrivibilità",
+          "Non viene mostrata alcuna segnalazione di combinazione non consentita o offerta non sottoscrivibile"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "La user story non specifica evidenze tecniche dell’invocazione (es. chiamata API). Per automazione si assume disponibilità di log/telemetria o mock/spia del servizio per verificare l’invocazione pre-acquisto."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC02",
+        "title": "Web/App - Blocco acquisto per combinazione non permessa con segnalazione all’utente",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Carrello contenente una combinazione di prodotti configurata come 'non permessa' dal Motore di Offerte",
+          "Servizio di verifica pre-acquisto del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione prodotti: COMBO_VIETATA_01 (non permessa secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello i prodotti della combinazione COMBO_VIETATA_01",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Avviare l’azione di conferma finale (es. 'Conferma/Procedi al pagamento')"
+        ],
+        "expected_results": [
+          "Il sistema esegue la verifica pre-acquisto prima della finalizzazione",
+          "Il sistema blocca il completamento dell’acquisto",
+          "Il sistema mostra una segnalazione comprensibile che indica che la combinazione non è consentita, senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "Il testo/UI del messaggio non è specificato: la verifica si basa sulla presenza di una segnalazione utente che indichi chiaramente il divieto e sull’impossibilità di finalizzare."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC03",
+        "title": "Web/App - Blocco acquisto per esito di esclusione sottoscrivibilità con segnalazione all’utente",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Carrello contenente una combinazione di prodotti configurata come 'permessa' ma con esito sottoscrivibilità 'non soddisfatta/esclusione' dal Motore di Offerte",
+          "Servizio di verifica pre-acquisto del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione prodotti: COMBO_ESCLUSA_01 (permessa ma non sottoscrivibile secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello i prodotti della combinazione COMBO_ESCLUSA_01",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Avviare l’azione di conferma finale (es. 'Conferma/Procedi al pagamento')"
+        ],
+        "expected_results": [
+          "Il sistema esegue la verifica pre-acquisto prima della finalizzazione",
+          "Il sistema blocca il completamento dell’acquisto",
+          "Il sistema mostra una segnalazione comprensibile che indica che l’offerta non è sottoscrivibile, senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "Le condizioni di sottoscrivibilità non sono dettagliate: si assume che il Motore di Offerte restituisca un esito di esclusione per COMBO_ESCLUSA_01."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC04",
+        "title": "Web/App - Servizio verifica pre-acquisto indisponibile: acquisto non completabile e messaggio di errore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Carrello contenente una combinazione di prodotti qualsiasi",
+          "Servizio di verifica pre-acquisto del Motore di Offerte non disponibile (timeout/5xx) oppure non raggiungibile"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione prodotti: COMBO_OK_01 (o altra combinazione)",
+          "Simulazione indisponibilità: timeout 30s o HTTP 503 dal servizio Motore di Offerte"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello la combinazione prevista",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Avviare l’azione di conferma finale (es. 'Conferma/Procedi al pagamento')"
+        ],
+        "expected_results": [
+          "Il sistema tenta di eseguire la verifica pre-acquisto prima della finalizzazione",
+          "In caso di indisponibilità del servizio, il sistema impedisce la finalizzazione dell’acquisto",
+          "Il sistema mostra una segnalazione di errore comprensibile all’utente (es. impossibile completare l’operazione, riprovare più tardi), senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "L’AC originale sui log (AC-3) è verificato end-to-end assumendo che l’errore venga tracciato dal Motore di Offerte quando riceve/gestisce la richiesta o quando l’ecosistema registra l’errore di invocazione; i dettagli dipendono dall’implementazione."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC05",
+        "title": "Web/App - Modifica carrello dopo verifica positiva: la verifica deve essere rieseguita prima della finalizzazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Servizio di verifica pre-acquisto del Motore di Offerte disponibile e raggiungibile",
+          "Disponibilità di evidenza verificabile dell’esecuzione verifica (es. contatore chiamate su mock, log di audit, o header/correlation id)"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione iniziale: COMBO_OK_01 (permessa e sottoscrivibile)",
+          "Prodotto aggiuntivo: PROD_X (che modifica la combinazione risultante)"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello i prodotti della combinazione COMBO_OK_01",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Tornare al carrello",
+          "Aggiungere il prodotto PROD_X (oppure rimuovere un prodotto della combinazione)",
+          "Ritornare al checkout fino alla schermata immediatamente precedente alla conferma finale",
+          "Avviare l’azione di conferma finale"
+        ],
+        "expected_results": [
+          "Il sistema esegue una nuova verifica pre-acquisto sulla combinazione aggiornata prima della finalizzazione (non riusa l’esito precedente)",
+          "L’esito della finalizzazione dipende dalla nuova verifica (se positiva consente, se negativa blocca con segnalazione coerente)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "La story richiede riesecuzione della verifica dopo modifica carrello; per automazione è necessaria una modalità di osservabilità (mock/spia/telemetria) per dimostrare che la chiamata sia stata ripetuta."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC06",
+        "title": "Web/App - Combinazione sia non permessa sia non sottoscrivibile: blocco con segnalazione coerente e non tecnica",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente digitale autenticato sul canale (Web o App)",
+          "Carrello contenente una combinazione per cui il Motore di Offerte restituisce più motivi di esclusione (almeno 'non permessa' e 'non sottoscrivibile')",
+          "Servizio di verifica pre-acquisto del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canali: Web, App",
+          "Combinazione prodotti: COMBO_MULTI_ESCLUSIONE_01 (non permessa e non sottoscrivibile secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Aprire il canale digitale (Web o App) ed effettuare il login",
+          "Aggiungere al carrello i prodotti della combinazione COMBO_MULTI_ESCLUSIONE_01",
+          "Procedere al checkout fino alla schermata immediatamente precedente alla conferma finale dell’acquisto",
+          "Avviare l’azione di conferma finale"
+        ],
+        "expected_results": [
+          "Il sistema blocca il completamento dell’acquisto",
+          "Il sistema mostra una segnalazione coerente per l’utente che motiva il blocco senza esporre dettagli tecnici (es. codici regola, stacktrace, payload)",
+          "La segnalazione non consente comunque di proseguire con la finalizzazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "La story non definisce priorità tra motivi (non permessa vs non sottoscrivibile). Il test verifica coerenza e assenza di dettagli tecnici, non un testo specifico."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-004.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-004.US02.TC01",
+        "title": "Front-end commerciale - Verifica pre-vendita eseguita prima della finalizzazione (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Proposta contenente una combinazione di prodotti configurata come 'permessa' e 'sottoscrivibile' dal Motore di Offerte",
+          "Servizio di verifica pre-vendita/pre-finalizzazione del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione prodotti: COMBO_OK_01 (permessa e sottoscrivibile secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione COMBO_OK_01",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Avviare l’azione di finalizzazione della vendita"
+        ],
+        "expected_results": [
+          "Prima della finalizzazione, il sistema invoca la verifica pre-vendita della combinazione verso il Motore di Offerte",
+          "Se l’esito è positivo, la vendita risulta finalizzabile senza blocchi legati a combinazione/sottoscrivibilità",
+          "Non viene mostrata alcuna segnalazione di combinazione non consentita o offerta non sottoscrivibile"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La story non specifica la modalità di evidenza dell’invocazione; per automazione si assume mock/spia del servizio o tracciamento con correlation id."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC02",
+        "title": "Front-end commerciale - Blocco vendita per combinazione non permessa con segnalazione all’operatore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Proposta contenente una combinazione configurata come 'non permessa' dal Motore di Offerte",
+          "Servizio di verifica pre-vendita del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione prodotti: COMBO_VIETATA_01 (non permessa secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione COMBO_VIETATA_01",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Avviare l’azione di finalizzazione della vendita"
+        ],
+        "expected_results": [
+          "Il sistema esegue la verifica pre-vendita prima della finalizzazione",
+          "Il sistema blocca la prosecuzione/finalizzazione della vendita",
+          "Il sistema mostra una segnalazione visibile all’operatore che indica che la combinazione non è consentita, senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Non è definito dove appare la segnalazione: il test verifica che sia visibile prima/contestualmente al tentativo di finalizzazione e che impedisca l’azione."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC03",
+        "title": "Front-end commerciale - Blocco vendita per esito di esclusione sottoscrivibilità con segnalazione all’operatore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Proposta contenente una combinazione 'permessa' ma con esito sottoscrivibilità 'esclusione' dal Motore di Offerte",
+          "Servizio di verifica pre-vendita del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione prodotti: COMBO_ESCLUSA_01 (permessa ma non sottoscrivibile secondo Motore di Offerte)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione COMBO_ESCLUSA_01",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Avviare l’azione di finalizzazione della vendita"
+        ],
+        "expected_results": [
+          "Il sistema esegue la verifica pre-vendita prima della finalizzazione",
+          "Il sistema blocca la prosecuzione/finalizzazione della vendita",
+          "Il sistema mostra una segnalazione visibile all’operatore che indica che l’offerta non è sottoscrivibile, senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Le condizioni di sottoscrivibilità non sono dettagliate: si assume che il Motore di Offerte restituisca un esito di esclusione per COMBO_ESCLUSA_01."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC04",
+        "title": "Front-end commerciale - Servizio verifica pre-vendita indisponibile: vendita non finalizzabile e segnalazione di errore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Proposta contenente una combinazione di prodotti qualsiasi",
+          "Servizio di verifica pre-vendita del Motore di Offerte non disponibile (timeout/5xx) oppure non raggiungibile"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione prodotti: COMBO_OK_01 (o altra combinazione)",
+          "Simulazione indisponibilità: timeout 30s o HTTP 503 dal servizio Motore di Offerte"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione prevista",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Avviare l’azione di finalizzazione della vendita"
+        ],
+        "expected_results": [
+          "Il sistema tenta di eseguire la verifica pre-vendita prima della finalizzazione",
+          "In caso di indisponibilità del servizio, il sistema impedisce la finalizzazione della vendita",
+          "Il sistema mostra una segnalazione di errore comprensibile all’operatore (es. impossibile completare l’operazione, riprovare), senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "L’AC originale sui log (AC-3) è verificato end-to-end assumendo che l’errore venga tracciato dal Motore di Offerte quando riceve/gestisce la richiesta o che sia tracciato l’errore di invocazione; dipendenza dall’implementazione."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC05",
+        "title": "Front-end commerciale - Modifica proposta dopo verifica positiva: la verifica deve essere rieseguita prima della finalizzazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Servizio di verifica pre-vendita del Motore di Offerte disponibile e raggiungibile",
+          "Disponibilità di evidenza verificabile dell’esecuzione verifica (es. contatore chiamate su mock, log di audit, o correlation id)"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione iniziale: COMBO_OK_01 (permessa e sottoscrivibile)",
+          "Variazione proposta: sostituzione variante VAR_A con VAR_B (che modifica la combinazione risultante)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione COMBO_OK_01",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Modificare la proposta cambiando la variante VAR_A in VAR_B",
+          "Avviare l’azione di finalizzazione della vendita"
+        ],
+        "expected_results": [
+          "Il sistema esegue una nuova verifica pre-vendita sulla combinazione aggiornata prima della finalizzazione (non riusa l’esito precedente)",
+          "L’esito della finalizzazione dipende dalla nuova verifica (se positiva consente, se negativa blocca con segnalazione coerente)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La story richiede riesecuzione della verifica dopo modifica proposta; per automazione è necessaria osservabilità dell’invocazione."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC06",
+        "title": "Front-end commerciale - Segnalazione presente ma finalizzazione comunque possibile: deve risultare impossibile finalizzare",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con profilo abilitato alla vendita",
+          "Proposta con combinazione che genera esito di blocco (non permessa o non sottoscrivibile) dal Motore di Offerte",
+          "Servizio di verifica pre-vendita del Motore di Offerte disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: front-end commerciale",
+          "Combinazione prodotti: COMBO_VIETATA_01 (non permessa) oppure COMBO_ESCLUSA_01 (non sottoscrivibile)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con credenziali operatore valide",
+          "Creare una proposta di vendita inserendo la combinazione di test",
+          "Procedere fino alla schermata/step immediatamente precedente alla finalizzazione della vendita",
+          "Verificare che sia mostrata una segnalazione di blocco",
+          "Tentare di finalizzare la vendita nonostante la segnalazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce la finalizzazione della vendita (azione non eseguibile o restituisce errore bloccante)",
+          "La vendita non viene registrata/chiusa come completata",
+          "La segnalazione rimane visibile e coerente con il motivo di blocco, senza dettagli tecnici"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Questo test formalizza l’edge case di enforcement: la presenza della segnalazione deve corrispondere a un blocco effettivo."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-004.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-004.US03.TC01",
+        "title": "Motore di Offerte - Valutazione regole combinazioni e risposta 'permessa' (nessun blocco)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione pre-finalizzazione",
+          "Regole di business per combinazioni vietate configurate e attive",
+          "Logging decisionale disponibile"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0001",
+          "Combinazione prodotti: COMBO_OK_01 (non presente tra le combinazioni vietate)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0001 e combinazione COMBO_OK_01",
+          "Acquisire la risposta del Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte valuta la combinazione rispetto alle regole che proibiscono specifiche combinazioni",
+          "La risposta indica che la combinazione non è bloccata per regole di combinazione vietata (esito non di blocco)",
+          "La risposta è utilizzabile dal chiamante per consentire la prosecuzione (assenza di indicazione di 'blocco' per combinazione)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story non definisce un payload standard. Si assume che l’esito includa almeno un indicatore booleano/enum di blocco e un messaggio/causale non tecnica."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC02",
+        "title": "Motore di Offerte - Combinazione non permessa: restituzione esito di blocco con segnalazione di esclusione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione pre-finalizzazione",
+          "Regole di business per combinazioni vietate configurate includendo COMBO_VIETATA_01",
+          "Logging decisionale disponibile"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0002",
+          "Combinazione prodotti: COMBO_VIETATA_01 (vietata da regola)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0002 e combinazione COMBO_VIETATA_01",
+          "Acquisire la risposta del Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte valuta la combinazione rispetto alle regole che proibiscono specifiche combinazioni",
+          "La risposta indica un esito di blocco che impedisce la finalizzazione da parte del chiamante",
+          "La risposta include una segnalazione/causale di esclusione comprensibile (non tecnica) riferita al divieto di combinazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica il formato della segnalazione: il test verifica la presenza di una causale non tecnica e di un flag/esito bloccante."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC03",
+        "title": "Motore di Offerte - Verifica sottoscrivibilità pre-acquisto: restituzione esito valido/non valido",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione pre-finalizzazione",
+          "Regole di sottoscrivibilità attive",
+          "Logging decisionale disponibile"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0003",
+          "Combinazione prodotti: COMBO_OK_01 (sottoscrivibile)",
+          "Request validation_id alternativo: VAL-2026-0004",
+          "Combinazione prodotti alternativa: COMBO_ESCLUSA_01 (non sottoscrivibile)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0003 e combinazione COMBO_OK_01",
+          "Acquisire la risposta del Motore di Offerte per VAL-2026-0003",
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0004 e combinazione COMBO_ESCLUSA_01",
+          "Acquisire la risposta del Motore di Offerte per VAL-2026-0004"
+        ],
+        "expected_results": [
+          "Per VAL-2026-0003 la risposta indica esito 'valido/sottoscrivibile' (non bloccante)",
+          "Per VAL-2026-0004 la risposta indica esito 'non valido/esclusione' (bloccante)",
+          "Gli esiti sono restituiti in fase pre-acquisto/pre-sottoscrizione (prima della finalizzazione lato canale)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La story non definisce la tassonomia degli esiti: si assume un esito distinguibile tra valido e non valido e utilizzabile dal chiamante per bloccare/consentire."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC04",
+        "title": "Motore di Offerte - Esito di esclusione: tracciamento nei log con campi minimi richiesti",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione",
+          "Logging decisionale abilitato e consultabile (es. indice log, tabella audit, stream centralizzato)",
+          "Regole configurate per produrre un’esclusione deterministica per COMBO_VIETATA_01"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0005",
+          "Combinazione prodotti: COMBO_VIETATA_01 (produce esclusione)",
+          "Timestamp atteso: entro finestra di 60s dall’invocazione"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0005 e combinazione COMBO_VIETATA_01",
+          "Acquisire la risposta del Motore di Offerte",
+          "Consultare i log delle decisioni filtrando per validation_id VAL-2026-0005 (o correlation id equivalente)"
+        ],
+        "expected_results": [
+          "La risposta del Motore di Offerte indica un esito di esclusione/blocco",
+          "Nei log delle decisioni è presente un record relativo alla richiesta VAL-2026-0005",
+          "Il record di log include almeno: identificativo richiesta/contesto (VAL-2026-0005 o correlation id), regola o motivo di esclusione, timestamp, esito valorizzato a 'esclusione' (o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Lo schema log non è specificato: il test valida la presenza dei campi minimi richiesti dall’AC. La modalità di consultazione dipende dall’infrastruttura di logging."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC05",
+        "title": "Motore di Offerte - Errore per regola incoerente/non valutabile: esito errore e logging decisionale",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione",
+          "È presente almeno una regola volutamente configurata in modo incoerente o non valutabile (es. riferimento a attributo mancante)",
+          "Logging decisionale disponibile e consultabile"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0006",
+          "Combinazione prodotti: COMBO_TRIGGER_REGOLA_ERRATA_01"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0006 e combinazione COMBO_TRIGGER_REGOLA_ERRATA_01",
+          "Acquisire la risposta del Motore di Offerte",
+          "Consultare i log delle decisioni filtrando per validation_id VAL-2026-0006 (o correlation id equivalente)"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte restituisce un esito di errore (non un esito 'valido')",
+          "L’esito restituito è utilizzabile dal chiamante per impedire la finalizzazione (bloccante o equivalente)",
+          "Nei log delle decisioni è presente un record con: identificativo richiesta/contesto, motivo di errore o riferimento alla regola, timestamp, esito valorizzato a 'errore' (o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il comportamento di dettaglio dell’errore non è specificato: il test verifica che l’errore sia gestito e tracciato, non il codice specifico."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC06",
+        "title": "Motore di Offerte - Più motivi di esclusione: logging ripetibile e consultabile dei motivi",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione",
+          "Regole configurate per produrre più motivi di esclusione per la stessa richiesta (es. combinazione vietata + condizione di sottoscrivibilità)",
+          "Logging decisionale disponibile e consultabile"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0007",
+          "Combinazione prodotti: COMBO_MULTI_ESCLUSIONE_01",
+          "Numero invocazioni ripetute: 2"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0007 e combinazione COMBO_MULTI_ESCLUSIONE_01",
+          "Consultare i log delle decisioni filtrando per validation_id VAL-2026-0007",
+          "Ripetere la stessa richiesta con lo stesso payload e un nuovo validation_id VAL-2026-0008",
+          "Consultare i log delle decisioni filtrando per validation_id VAL-2026-0008"
+        ],
+        "expected_results": [
+          "Per ciascuna richiesta, il Motore di Offerte restituisce un esito di esclusione/blocco",
+          "Per ciascuna richiesta, nei log è presente un record che riporta più motivi di esclusione in forma consultabile (es. lista/array o campi multipli)",
+          "L’ordine o la rappresentazione dei motivi nei log è ripetibile tra richieste equivalenti (stesso set di motivi e stessa convenzione di ordinamento/struttura)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story richiede ripetibilità/consultabilità ma non definisce ordinamento: il test verifica stabilità della rappresentazione (stesso set e stessa struttura) tra invocazioni equivalenti."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC07",
+        "title": "Motore di Offerte - Logging non disponibile: esito comunque gestito e gestione errore di logging senza perdita di tracciabilità (da definire)",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte in esecuzione e raggiungibile via API/servizio di validazione",
+          "Sistema di logging decisionale non disponibile oppure endpoint di logging che restituisce errore",
+          "Regole configurate per produrre un’esclusione o un errore deterministico"
+        ],
+        "test_data": [
+          "Request validation_id: VAL-2026-0009",
+          "Combinazione prodotti: COMBO_VIETATA_01 (esclusione) oppure COMBO_TRIGGER_REGOLA_ERRATA_01 (errore)",
+          "Simulazione indisponibilità logging: sink log down / errore scrittura"
+        ],
+        "steps": [
+          "Disabilitare o rendere non disponibile il sink di logging decisionale",
+          "Inviare al Motore di Offerte una richiesta di validazione/pre-finalizzazione con validation_id VAL-2026-0009 e combinazione prevista",
+          "Acquisire la risposta del Motore di Offerte",
+          "Ripristinare la disponibilità del sink di logging",
+          "Verificare l’esistenza di meccanismi di recupero tracciabilità (es. coda/ritentativo) consultando i log o la coda tecnica, se disponibile"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte restituisce comunque un esito coerente (esclusione o errore) utilizzabile dal chiamante per bloccare/gestire la finalizzazione",
+          "L’assenza del logging non provoca un esito 'valido' improprio",
+          "È presente un’evidenza di gestione dell’errore di logging (es. evento tecnico, coda di retry, o altra traccia) che consenta di non perdere completamente la tracciabilità, se implementata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story indica che la gestione dell’errore di logging è 'da definire': questo test potrebbe richiedere adattamento in base alla soluzione scelta (coda, retry, fallback)."
+      }
+    ]
+  }
+]

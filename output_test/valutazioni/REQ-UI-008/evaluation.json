@@ -1,0 +1,102 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-008",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 80,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-008.TC01",
+        "detail": "Introduzione di vincoli non richiesti dal requisito: verifica che l'immagine 'punta all'asset atteso' e riferimenti a CDN/URL specifici; il requisito richiede solo che l'immagine sia mostrata e leggibile."
+      },
+      {
+        "test_id": "REQ-UI-008.TC03",
+        "detail": "Inserite soglie numeriche esemplificative (es. 14px, 4.5:1) non presenti nel requisito; il requisito parla di conformità alle linee guida ma non fornisce valori."
+      },
+      {
+        "test_id": "REQ-UI-008.TC04",
+        "detail": "Scenario negativo di 'non conformità' in caso di nome mancante: il requisito non definisce scenari negativi né comportamento/valutazione di conformità in presenza di dati mancanti."
+      },
+      {
+        "test_id": "REQ-UI-008.TC05",
+        "detail": "Scenario negativo su immagine 404/timeout: il requisito non menziona CDN, errori di caricamento o gestione immagine mancante."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-008.TC01",
+          "REQ-UI-008.TC02"
+        ],
+        "detail": "Scenari quasi identici (presenza e correttezza dei 4 contenuti obbligatori) duplicati per Web e App; differiscono solo per canale."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 8,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-008.US01.TC01",
+        "detail": "Assunzione di meccanismi non citati (configurazione QA, deep link, feature flag) e disponibilità di payload/DTO/log ispezionabili per validare i valori."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC01",
+        "detail": "Ambiguità introdotta sul formato dello sconto (percentuale vs importo) non indicata dal requisito, che parla genericamente di 'valore dello sconto suggerito'."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC02",
+        "detail": "Assunzione di strumenti di debug/proxy/log per App non menzionati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC05",
+        "detail": "Introduce regole alternative non richieste ('placeholder o blocco visualizzazione') e richiede una 'decisione di prodotto documentata' non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC05",
+        "detail": "Aggiunge requisiti di robustezza ('no crash', 'pagina web in errore') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC06",
+        "detail": "Introduce molteplici comportamenti di fallback (blocco, fallback, mostrare 0,00) e vincoli su placeholder tecnici ('null', 'NaN') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC08",
+        "detail": "Introduce matrice di compatibilità e test multi-device/browser come requisito implicito; il requisito richiede solo leggibilità su versioni App e Web, non su una lista di device/browser."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC03",
+        "detail": "Aggiunge 'regole di formattazione prezzi' nel perimetro delle linee guida; nel requisito si citano solo dimensioni e contrasto."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-008.US01.TC03",
+          "REQ-UI-008.US01.TC04"
+        ],
+        "detail": "Scenari quasi identici di verifica leggibilità/linee guida duplicati per Web e App."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct introduce meno informazioni non tracciabili (4 elementi) rispetto all'indirect_persona (8 elementi, inclusi assunti su payload/log, feature flag/deep link, gestione placeholder/blocco, no-crash e matrice device/browser). Anche le ridondanze sono comparabili ma il direct resta piu aderente al requisito, ottenendo un punteggio superiore (80 vs 58)."
+  }
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "story_id": "REQ-NF-006.US01",
+    "title": "Limitare la visibilità dei dati in dashboard in base ai ruoli (Marketing)",
+    "persona": "Team Marketing",
+    "goal": "visualizzare ed esportare in dashboard solo i dati consentiti dal mio ruolo e configurare/verificare i permessi di visualizzazione tramite l’interfaccia di amministrazione ruoli",
+    "benefit": "operare nel rispetto di sicurezza, privacy e governance, evitando accessi non autorizzati e riducendo il rischio di data leakage",
+    "user_story": "Come Team Marketing\nVoglio visualizzare ed esportare in dashboard solo i dati consentiti dal mio ruolo e poter configurare/verificare i permessi tramite l’interfaccia di amministrazione dei ruoli\nIn modo che l’accesso alle informazioni sia conforme a sicurezza, privacy e governance",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un profilo Team Marketing associato a specifici permessi di visualizzazione ALLORA vedo solo i dati esplicitamente autorizzati per quel ruolo e non vedo i dati non autorizzati.",
+      "QUANDO il mio ruolo non include il permesso di esportazione ALLORA le funzionalità di esportazione dati non sono disponibili (non visibili o non utilizzabili) per il mio utente.",
+      "QUANDO il mio ruolo include il permesso di esportazione ALLORA posso esportare solo i dati che risultano visibili/consentiti al mio ruolo.",
+      "QUANDO configuro o modifico i permessi di visualizzazione tramite l’interfaccia di amministrazione dei ruoli ALLORA le modifiche sono salvate e applicate alle successive sessioni/azioni di consultazione dati.",
+      "QUANDO verifico i permessi tramite l’interfaccia di amministrazione dei ruoli ALLORA posso confermare in modo oggettivo quali dataset/sezioni sono abilitati o negati per il ruolo."
+    ],
+    "business_rules": [
+      "La visualizzazione dei dati in dashboard è consentita esclusivamente ai ruoli autorizzati (RBAC).",
+      "Le funzionalità di esportazione dati sono disponibili solo agli utenti autorizzati.",
+      "I permessi di visualizzazione devono essere configurabili e verificabili tramite interfaccia di amministrazione ruoli."
+    ],
+    "edge_cases": [
+      "Utente Team Marketing senza alcun permesso di visualizzazione: la dashboard non deve mostrare dati e deve gestire lo scenario con messaggio/empty state coerente.",
+      "Utente con permessi parziali: alcune sezioni/dataset visibili e altre oscurate senza esporre metadati sensibili.",
+      "Tentativo di accesso diretto a una vista/dettaglio non autorizzato (es. URL o chiamata API): accesso negato.",
+      "Cambio permessi durante una sessione attiva: comportamento da chiarire (es. refresh richiesto o applicazione immediata).",
+      "Tentativo di esportare dati non visibili: export bloccato o limita l’export ai soli dati visibili."
+    ],
+    "assumptions": [
+      "Il requisito non elenca ruoli specifici: si assume che Team Marketing sia un ruolo/persona con profilo associabile a permessi di visualizzazione ed eventualmente di export.",
+      "Si assume esista (o sia prevista) un’“interfaccia di amministrazione dei ruoli” accessibile a utenti autorizzati; non sono specificati quali ruoli possano amministrare.",
+      "Non è specificato il perimetro dei “dati” (dataset, sezioni, livelli di dettaglio): si assume che i permessi siano applicabili almeno a sezioni o dataset della dashboard."
+    ],
+    "notes": "Requisito non funzionale applicato alla dashboard. L’AC sull’RBAC e quello sulla configurabilità/verificabilità dei permessi sono stati resi testabili includendo anche la disponibilità dell’export, citata in descrizione ma non esplicitata negli AC."
+  },
+  {
+    "story_id": "REQ-NF-006.US02",
+    "title": "Controllo accessi e consultazione log/report in base ai ruoli (Compliance)",
+    "persona": "Team Compliance",
+    "goal": "accedere a dati, log e report solo se autorizzato dal mio ruolo e verificare/configurare i permessi tramite l’interfaccia di amministrazione ruoli",
+    "benefit": "garantire auditabilità e conformità evitando accessi impropri a informazioni sensibili",
+    "user_story": "Come Team Compliance\nVoglio accedere a dati, log e report solo se autorizzato dal mio ruolo e poter verificare/configurare i permessi tramite l’interfaccia di amministrazione dei ruoli\nIn modo che i controlli di audit e conformità avvengano nel rispetto di sicurezza, privacy e governance",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un profilo Team Compliance ALLORA vedo solo i dati/log/report autorizzati per il mio ruolo e non vedo quelli non autorizzati.",
+      "QUANDO il mio ruolo non include il permesso di esportazione ALLORA non posso esportare dati/log/report dalla dashboard.",
+      "QUANDO il mio ruolo include il permesso di esportazione ALLORA posso esportare solo dati/log/report che risultano visibili/consentiti al mio ruolo.",
+      "QUANDO configuro o modifico i permessi di visualizzazione tramite l’interfaccia di amministrazione dei ruoli ALLORA le modifiche sono salvate e applicate alle successive consultazioni.",
+      "QUANDO verifico i permessi tramite l’interfaccia di amministrazione dei ruoli ALLORA posso determinare quali ambiti informativi (dati/log/report) sono consentiti al ruolo."
+    ],
+    "business_rules": [
+      "Accesso ai dati/log/report governato da RBAC: visibilità solo ai ruoli autorizzati.",
+      "Export consentito solo a utenti autorizzati e limitato al perimetro visibile dal ruolo.",
+      "Permessi configurabili e verificabili tramite interfaccia di amministrazione ruoli."
+    ],
+    "edge_cases": [
+      "Utente Compliance non autorizzato ai log: la sezione log non deve essere accessibile né elencare dettagli.",
+      "Filtri o ricerche su log non autorizzati: devono restituire accesso negato o nessun risultato senza leak informativi.",
+      "Accesso a report storici non autorizzati: accesso negato.",
+      "Tentativo di export massivo: consentito solo se esplicitamente autorizzato; in caso contrario blocco funzionalità."
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia la granularità dei permessi: si assume che possano applicarsi almeno a sezioni (dati, log, report) della dashboard.",
+      "Non sono definiti i ruoli amministrativi: si assume che Team Compliance possa almeno verificare i permessi; la possibilità di configurarli dipende da autorizzazioni non specificate."
+    ],
+    "notes": "AC condivisi concettualmente con US01 (RBAC e configurazione/verifica permessi). Il requisito cita anche l’export nella descrizione: è stato reso esplicito e testabile negli AC della story."
+  }
+]

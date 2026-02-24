@@ -1,0 +1,615 @@
+[
+  {
+    "story_id": "REQ-D-009.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-009.US01.TC01",
+        "title": "Export manuale disponibile ed eseguibile per ruolo Marketing autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "All'utente è assegnato un ruolo con permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "La dashboard è raggiungibile e contiene almeno una vista dati con risultati > 0",
+          "La vista dati corrente è completamente caricata (nessun loader attivo)"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Ruolo: MARKETING_EXPORT",
+          "Vista dashboard: 'Campagne - Performance'",
+          "Filtri: Periodo = 'Ultimi 30 giorni'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ok",
+          "Aprire la vista 'Campagne - Performance'",
+          "Verificare che la vista mostri i dati (righe/valori) e che il caricamento sia completato",
+          "Verificare la presenza dell'azione di export manuale (es. pulsante/azione 'Esporta' o 'Download')",
+          "Avviare l'export manuale dalla vista corrente",
+          "Attendere il completamento dell'operazione di export"
+        ],
+        "expected_results": [
+          "La vista dati risulta consultabile e popolata prima dell'export (dati visibili e caricamento completato)",
+          "L'azione di export manuale è visibile e abilitata per il ruolo autorizzato",
+          "L'export manuale si completa con successo",
+          "Viene generato e scaricato un file di export relativo al dataset della vista corrente (nessun errore applicativo mostrato)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il formato del file (CSV/XLSX/JSON) non è specificato dal requisito: la verifica si concentra su disponibilità dell'azione e download riuscito del dataset della vista corrente."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC02",
+        "title": "Export manuale non disponibile per ruolo Marketing non autorizzato con messaggio coerente",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "All'utente è assegnato un ruolo con permesso 'EXPORT_DASHBOARD_MANUALE'=false",
+          "La dashboard è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ko",
+          "Ruolo: MARKETING_NO_EXPORT",
+          "Vista dashboard: 'Campagne - Performance'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ko",
+          "Aprire la vista 'Campagne - Performance'",
+          "Verificare la presenza dell'azione di export manuale nella UI",
+          "Se l'azione è visibile ma disabilitata, tentare di cliccarla",
+          "Se l'azione non è visibile, tentare di avviare l'export tramite eventuale scorciatoia/URL/azione contestuale disponibile in UI (se presente)"
+        ],
+        "expected_results": [
+          "L'utente non può avviare l'export manuale (azione non visibile oppure visibile ma bloccata)",
+          "Se viene effettuato un tentativo di export, il sistema mostra un messaggio coerente con i permessi (es. 'Non hai i permessi per esportare')",
+          "Nessun file di export viene generato o scaricato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story ammette due comportamenti UI (azione non visibile o bloccata). Il test accetta entrambe le modalità purché l'export non sia eseguibile e il messaggio sia coerente."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC03",
+        "title": "La consultazione dei dati in dashboard ha priorità: export non sostituisce la rappresentazione UI",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE' può essere true o false",
+          "La dashboard è raggiungibile e contiene una vista dati con metriche/righe visibili"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Vista dashboard: 'Campagne - Performance'",
+          "Filtri: Canale = 'Email', Periodo = 'Ultimi 7 giorni'"
+        ],
+        "steps": [
+          "Accedere alla dashboard",
+          "Aprire la vista 'Campagne - Performance'",
+          "Applicare i filtri Canale = 'Email' e Periodo = 'Ultimi 7 giorni'",
+          "Attendere il caricamento completo della vista",
+          "Verificare che la UI mostri i dati della vista (tabella/grafico con valori)",
+          "Se disponibile, aprire l'azione di export manuale senza avviare il download (es. aprire menu export)",
+          "Chiudere il menu export (se presente) e rimanere sulla vista"
+        ],
+        "expected_results": [
+          "I dati risultano consultabili e completi nella rappresentazione della vista prima di qualsiasi export (valori/righe visibili e coerenti con i filtri applicati)",
+          "La UI della vista rimane utilizzabile e non viene sostituita dall'export (nessun redirect o schermata che impedisca la consultazione dei dati)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce cosa significhi 'completi' in termini di riconciliazione numerica: la verifica è intesa come 'dati renderizzati e consultabili senza stati di errore/loader'."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC04",
+        "title": "Export automatico abilitato: accesso alla configurazione consentito solo se autorizzato e salvataggio configurazione",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Funzionalità 'EXPORT_AUTOMATICO_PROGRAMMATO' abilitata (feature flag/configurazione attiva)",
+          "Utente Team Marketing autenticato",
+          "All'utente è assegnato un ruolo con permesso 'CONFIG_EXPORT_AUTOMATICO'=true",
+          "La dashboard espone un punto di accesso alla configurazione export automatico (es. voce di menu 'Export programmati')"
+        ],
+        "test_data": [
+          "Utente: mkt_autoexport_ok",
+          "Ruolo: MARKETING_EXPORT_AUTO",
+          "Configurazione: Nome = 'Export settimanale campagne', Frequenza = 'Settimanale', Giorno = 'Lunedì', Ora = '08:00', Dataset = 'Vista corrente'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_autoexport_ok",
+          "Navigare alla sezione di configurazione 'Export programmati' (o equivalente)",
+          "Verificare che la sezione sia accessibile",
+          "Inserire i dati di configurazione previsti dalla UI (nome, frequenza, dataset/vista)",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "La sezione di configurazione export automatico è accessibile solo per l'utente autorizzato",
+          "Il sistema salva la configurazione senza errori",
+          "La configurazione salvata risulta visibile in elenco/dettaglio (o confermata da messaggio di successo) con i valori inseriti"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dettagli di schedulazione/destinazione/notifiche non sono specificati: il test valida l'accesso autorizzato e la persistenza di una configurazione minima esposta dalla UI quando la feature è abilitata."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC05",
+        "title": "Export automatico abilitato: accesso alla configurazione negato per utente non autorizzato",
+        "type": "Authorization",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Funzionalità 'EXPORT_AUTOMATICO_PROGRAMMATO' abilitata (feature flag/configurazione attiva)",
+          "Utente Team Marketing autenticato",
+          "All'utente è assegnato un ruolo con permesso 'CONFIG_EXPORT_AUTOMATICO'=false"
+        ],
+        "test_data": [
+          "Utente: mkt_autoexport_ko",
+          "Ruolo: MARKETING_EXPORT_ONLY"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_autoexport_ko",
+          "Tentare di navigare alla sezione di configurazione 'Export programmati' (o equivalente)",
+          "Se la sezione non è visibile, tentare di accedervi tramite URL diretto (se applicabile)"
+        ],
+        "expected_results": [
+          "La sezione di configurazione export automatico non è accessibile all'utente non autorizzato (non visibile oppure accesso negato)",
+          "Se viene tentato l'accesso, il sistema mostra un messaggio coerente con i permessi o una schermata di accesso negato",
+          "Nessuna configurazione viene creata o modificata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia la modalità di negazione (hide vs block). Il test accetta entrambe purché l'accesso sia impedito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC06",
+        "title": "Export automatico non presente nel rilascio: export manuale non bloccato e assenza documentata come opzionale",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Funzionalità 'EXPORT_AUTOMATICO_PROGRAMMATO' disabilitata/non rilasciata",
+          "Utente Team Marketing autenticato",
+          "All'utente è assegnato un ruolo con permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "La dashboard è raggiungibile e contiene una vista dati con risultati > 0"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Ruolo: MARKETING_EXPORT",
+          "Vista dashboard: 'Campagne - Performance'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ok",
+          "Verificare che non siano presenti sezioni/blocchi UI relativi a 'Export programmati' (o che risultino chiaramente non disponibili)",
+          "Aprire la vista 'Campagne - Performance'",
+          "Avviare l'export manuale"
+        ],
+        "expected_results": [
+          "L'assenza dell'export automatico non introduce blocchi funzionali sull'export manuale",
+          "L'export manuale è disponibile ed eseguibile con successo per l'utente autorizzato",
+          "L'assenza della funzionalità di automazione risulta indicata/documentata in UI o documentazione accessibile dall'utente (es. nota informativa, help, release notes linkate)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di 'documentata come opzionale' non è specificata: la verifica richiede un'evidenza consultabile (UI/help/release notes) che indichi che l'export automatico è opzionale/non incluso nel rilascio."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC07",
+        "title": "Sessione scaduta durante export manuale: richiesta nuova autenticazione e export non avviato",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing con permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "La dashboard è raggiungibile",
+          "Possibilità di simulare sessione scaduta (es. riduzione TTL sessione o invalidazione token)"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Vista dashboard: 'Campagne - Performance'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ok",
+          "Aprire la vista 'Campagne - Performance' e attendere il caricamento completo",
+          "Invalidare la sessione utente (es. scadenza token/timeout forzato)",
+          "Tentare di avviare l'export manuale"
+        ],
+        "expected_results": [
+          "Il sistema richiede all'utente di autenticarsi nuovamente (redirect a login o prompt di re-auth)",
+          "L'export non viene avviato e nessun file viene scaricato",
+          "Non si verificano errori applicativi non gestiti (es. stack trace)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: capacità di forzare/scadere la sessione in ambiente di test."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC08",
+        "title": "Export manuale con dataset vuoto: gestione senza errore (file vuoto/solo header o messaggio)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "Esiste una combinazione di filtri che produce zero risultati nella vista selezionata"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Vista dashboard: 'Campagne - Performance'",
+          "Filtri: Periodo = '01/01/2000 - 07/01/2000' (intervallo senza dati)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ok",
+          "Aprire la vista 'Campagne - Performance'",
+          "Applicare i filtri che producono zero risultati",
+          "Verificare che la UI mostri zero risultati (es. tabella vuota o messaggio 'Nessun dato')",
+          "Avviare l'export manuale"
+        ],
+        "expected_results": [
+          "La dashboard rappresenta correttamente l'assenza di dati (zero risultati) prima dell'export",
+          "L'export gestisce il dataset vuoto senza errore applicativo",
+          "Il sistema produce un output coerente con dataset vuoto (file scaricato vuoto/solo header oppure messaggio informativo che non ci sono dati da esportare)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica il comportamento atteso per dataset vuoto; il test accetta 'file vuoto/solo header' oppure 'messaggio e nessun file' purché non ci siano errori."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC09",
+        "title": "Errore durante generazione export: errore gestito e possibilità di riprovare senza corrompere lo stato",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "Possibilità di simulare un errore del servizio di generazione export (es. risposta 500/timeout controllato)"
+        ],
+        "test_data": [
+          "Utente: mkt_export_ok",
+          "Vista dashboard: 'Campagne - Performance'",
+          "Simulazione errore: servizio export risponde HTTP 500 alla prima richiesta, poi 200 alla seconda"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_ok",
+          "Aprire la vista 'Campagne - Performance' e attendere il caricamento completo",
+          "Avviare l'export manuale (con servizio export configurato per fallire)",
+          "Osservare l'esito dell'operazione",
+          "Riprovare ad avviare l'export manuale (con servizio export configurato per riuscire)"
+        ],
+        "expected_results": [
+          "Al primo tentativo, il sistema mostra un errore gestito (messaggio comprensibile) e non scarica file parziali/corrotti",
+          "L'UI rimane stabile e consente di riprovare l'export",
+          "Al secondo tentativo, l'export si completa con successo e il file viene scaricato",
+          "Non si osservano effetti collaterali persistenti sullo stato della dashboard (es. blocco permanente dell'azione export)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: ability to mock/fault-inject sul servizio di export in test/integration environment."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC10",
+        "title": "Revoca permesso export durante la sessione: export bloccato al momento dell'esecuzione",
+        "type": "Authorization",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato",
+          "All'inizio della sessione l'utente ha permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "È possibile modificare i permessi del ruolo/utente durante la sessione (es. da console IAM) e farli valere senza nuovo login o alla prima chiamata server-side"
+        ],
+        "test_data": [
+          "Utente: mkt_export_dynamic",
+          "Ruolo iniziale: MARKETING_EXPORT",
+          "Azione amministrativa: revoca 'EXPORT_DASHBOARD_MANUALE' durante sessione"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente mkt_export_dynamic",
+          "Aprire una vista dati e attendere il caricamento completo",
+          "Revocare il permesso 'EXPORT_DASHBOARD_MANUALE' all'utente mentre la sessione è attiva",
+          "Tentare di avviare l'export manuale"
+        ],
+        "expected_results": [
+          "Al momento dell'esecuzione, l'export viene bloccato per mancanza di autorizzazione",
+          "Il sistema mostra un messaggio coerente con i permessi",
+          "Nessun file viene generato o scaricato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: gestione refresh permessi lato backend; se i permessi sono valutati solo al login, questo test evidenzierà un gap rispetto all'edge case richiesto dalla story."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-009.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-009.US02.TC01",
+        "title": "Consultazione dati completa per ruolo Compliance autorizzato prima dell'export",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato",
+          "All'utente è assegnato un ruolo Compliance con accesso alla dashboard e ai dati previsti",
+          "La dashboard è raggiungibile e contiene almeno una vista dati con risultati > 0"
+        ],
+        "test_data": [
+          "Utente: cmp_view_ok",
+          "Ruolo: COMPLIANCE_VIEW",
+          "Vista dashboard: 'Audit - Eventi'",
+          "Filtri: Periodo = 'Ultimi 90 giorni'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_view_ok",
+          "Aprire la vista 'Audit - Eventi'",
+          "Applicare il filtro Periodo = 'Ultimi 90 giorni'",
+          "Attendere il caricamento completo della vista",
+          "Consultare i dati mostrati (es. tabella/grafico) senza avviare export"
+        ],
+        "expected_results": [
+          "La vista dati è consultabile e mostra i risultati attesi senza errori",
+          "La rappresentazione dei dati risulta completa e disponibile prima di qualsiasi export (dati renderizzati e interazione possibile con la vista)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La definizione di 'completa' non è quantitativa nel requisito; viene verificata come corretta renderizzazione e consultabilità della vista prima dell'export."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC02",
+        "title": "Export manuale eseguibile per ruolo Compliance autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato",
+          "All'utente è assegnato un ruolo con permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "La dashboard è raggiungibile e la vista dati corrente è completamente caricata"
+        ],
+        "test_data": [
+          "Utente: cmp_export_ok",
+          "Ruolo: COMPLIANCE_EXPORT",
+          "Vista dashboard: 'Audit - Eventi'",
+          "Filtri: Severità = 'Alta'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_export_ok",
+          "Aprire la vista 'Audit - Eventi'",
+          "Applicare il filtro Severità = 'Alta'",
+          "Attendere il caricamento completo della vista",
+          "Avviare l'export manuale dalla vista corrente",
+          "Attendere il completamento dell'export"
+        ],
+        "expected_results": [
+          "L'azione di export manuale è disponibile per l'utente autorizzato",
+          "L'export manuale si completa con successo e viene scaricato un file relativo al dataset della vista corrente",
+          "Non vengono mostrati errori applicativi"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica audit trail dell'export: non viene verificata la registrazione dell'evento."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC03",
+        "title": "Export manuale negato per ruolo Compliance non autorizzato con messaggio coerente",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato",
+          "All'utente è assegnato un ruolo con permesso 'EXPORT_DASHBOARD_MANUALE'=false",
+          "La dashboard è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: cmp_export_ko",
+          "Ruolo: COMPLIANCE_NO_EXPORT",
+          "Vista dashboard: 'Audit - Eventi'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_export_ko",
+          "Aprire la vista 'Audit - Eventi'",
+          "Verificare la presenza dell'azione di export manuale nella UI",
+          "Se l'azione è visibile ma disabilitata, tentare di cliccarla",
+          "Se l'azione non è visibile, tentare di avviare l'export tramite eventuale scorciatoia/URL/azione contestuale disponibile in UI (se presente)"
+        ],
+        "expected_results": [
+          "L'utente non può avviare l'export manuale (azione non visibile oppure bloccata)",
+          "In caso di tentativo, il sistema mostra un messaggio coerente con i permessi",
+          "Nessun file viene scaricato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il comportamento UI può essere hide o block; entrambi sono accettati purché l'export non sia eseguibile."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC04",
+        "title": "Perimetro dati Compliance: export non include dati non visibili (dettaglio vs aggregato)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Compliance autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "Il ruolo Compliance ha limitazioni di visibilità dati (es. solo aggregati, nessun dettaglio record-level) configurate nel sistema",
+          "La vista selezionata può mostrare sia aggregati sia (per ruoli più elevati) dettagli, ma per questo ruolo i dettagli non sono accessibili"
+        ],
+        "test_data": [
+          "Utente: cmp_export_limited",
+          "Ruolo: COMPLIANCE_AGGREGATE_ONLY",
+          "Vista dashboard: 'Audit - Eventi' (modalità aggregata)",
+          "Verifica: presenza colonna/azione 'Dettaglio evento' non disponibile per il ruolo"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_export_limited",
+          "Aprire la vista 'Audit - Eventi'",
+          "Verificare che la UI non consenta l'accesso ai dettagli non autorizzati (es. link 'Dettaglio' assente o accesso negato)",
+          "Avviare l'export manuale dalla vista corrente",
+          "Aprire il file esportato"
+        ],
+        "expected_results": [
+          "La UI impedisce l'accesso ai dati non consentiti dal ruolo (dettaglio non disponibile o accesso negato)",
+          "Il file esportato contiene esclusivamente il perimetro dati visibile/consentito nella dashboard per quel ruolo (nessun campo/record di dettaglio non autorizzato)",
+          "L'export si completa senza errori"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione esplicita dalla story: l'export non può includere dati non visibili in dashboard per quel ruolo. Richiede che esista una differenziazione configurabile tra aggregato/dettaglio in ambiente di test."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC05",
+        "title": "Indisponibilità/timeout del servizio export: errore gestito e nessun file parziale/corrotto",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Compliance autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "Possibilità di simulare timeout/indisponibilità del servizio export (es. gateway che risponde 504 o timeout)"
+        ],
+        "test_data": [
+          "Utente: cmp_export_ok",
+          "Vista dashboard: 'Audit - Eventi'",
+          "Simulazione: servizio export non risponde entro 30s oppure restituisce HTTP 504"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_export_ok",
+          "Aprire la vista 'Audit - Eventi' e attendere il caricamento completo",
+          "Avviare l'export manuale mentre il servizio export è in timeout/indisponibile",
+          "Attendere l'esito dell'operazione"
+        ],
+        "expected_results": [
+          "Il sistema mostra un errore gestito relativo all'indisponibilità/timeout del servizio export",
+          "Non viene scaricato alcun file parziale o corrotto",
+          "L'utente può rimanere sulla dashboard senza perdita della consultazione dati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: fault injection o mock del servizio di export per riprodurre timeout/504."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC06",
+        "title": "Export automatico abilitato: accesso alla configurazione consentito solo se previsto dalle autorizzazioni (Compliance)",
+        "type": "Authorization",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Funzionalità 'EXPORT_AUTOMATICO_PROGRAMMATO' abilitata (feature flag/configurazione attiva)",
+          "Utente Team Compliance autenticato",
+          "All'utente è assegnato un ruolo con permesso 'CONFIG_EXPORT_AUTOMATICO' impostato secondo scenario (true/false)"
+        ],
+        "test_data": [
+          "Scenario A - Utente: cmp_autoexport_ok, Ruolo: COMPLIANCE_AUTO_ALLOWED, CONFIG_EXPORT_AUTOMATICO=true",
+          "Scenario B - Utente: cmp_autoexport_ko, Ruolo: COMPLIANCE_AUTO_DENIED, CONFIG_EXPORT_AUTOMATICO=false"
+        ],
+        "steps": [
+          "Eseguire Scenario A: accedere alla dashboard come cmp_autoexport_ok",
+          "Tentare di accedere alla sezione 'Export programmati' (o equivalente)",
+          "Eseguire Scenario B: accedere alla dashboard come cmp_autoexport_ko",
+          "Tentare di accedere alla sezione 'Export programmati' (o equivalente), anche via URL diretto se applicabile"
+        ],
+        "expected_results": [
+          "Scenario A: la sezione di configurazione export automatico è accessibile all'utente autorizzato",
+          "Scenario B: la sezione di configurazione export automatico è non visibile o accesso negato per l'utente non autorizzato, con messaggio coerente",
+          "Scenario B: nessuna configurazione viene creata o modificata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test combinato per ridurre ridondanza; se in automazione è preferibile separare gli scenari, scindere in due TC distinti."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC07",
+        "title": "Export automatico non presente nel rilascio: export manuale resta disponibile se autorizzato e assenza documentata",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Funzionalità 'EXPORT_AUTOMATICO_PROGRAMMATO' disabilitata/non rilasciata",
+          "Utente Team Compliance autenticato",
+          "Permesso 'EXPORT_DASHBOARD_MANUALE'=true",
+          "La dashboard è raggiungibile e contiene una vista dati con risultati > 0"
+        ],
+        "test_data": [
+          "Utente: cmp_export_ok",
+          "Ruolo: COMPLIANCE_EXPORT",
+          "Vista dashboard: 'Audit - Eventi'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente cmp_export_ok",
+          "Verificare che non siano presenti funzionalità di configurazione export automatico (o che siano chiaramente non disponibili)",
+          "Aprire la vista 'Audit - Eventi' e attendere il caricamento completo",
+          "Avviare l'export manuale"
+        ],
+        "expected_results": [
+          "L'export manuale rimane disponibile ed eseguibile con successo per l'utente autorizzato",
+          "L'assenza dell'export automatico è indicata/documentata come opzionale (evidenza consultabile in UI/help/release notes)",
+          "Non sono presenti blocchi funzionali che impediscano l'export manuale a causa dell'assenza dell'automazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Come per US01: la forma della documentazione non è specificata; è richiesta un'evidenza consultabile dall'utente."
+      }
+    ]
+  }
+]

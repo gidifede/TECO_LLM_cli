@@ -1,0 +1,235 @@
+[
+  {
+    "test_id": "REQ-V-004.TC01",
+    "title": "Blocco pre-acquisto di combinazione prodotti non permessa con messaggio di errore",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Nel motore regole e/o configurazione di business è attiva una regola che proibisce la combinazione: Prodotto A + Prodotto B",
+      "Catalogo prodotti contiene Prodotto A e Prodotto B acquistabili singolarmente"
+    ],
+    "test_data": [
+      "Prodotto A: \"Internet Casa 1Gb\" (ID: A-1001)",
+      "Prodotto B: \"Opzione TV Premium\" (ID: B-2001)",
+      "Combinazione non permessa: A-1001 + B-2001",
+      "Carrello: [A-1001, B-2001]"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente autenticato",
+      "Aggiungere al carrello il Prodotto A (A-1001)",
+      "Aggiungere al carrello il Prodotto B (B-2001)",
+      "Procedere al checkout fino al passo immediatamente precedente alla conferma acquisto",
+      "Avviare la conferma dell'acquisto"
+    ],
+    "expected_results": [
+      "Il sistema esegue la verifica della combinazione prodotti prima del completamento dell'acquisto",
+      "Il sistema blocca la prosecuzione dell'acquisto per la combinazione A-1001 + B-2001",
+      "Il sistema mostra un messaggio di segnalazione della combinazione non permessa (errore bloccante) associato al carrello/checkout",
+      "Non viene creato alcun ordine/pratica di acquisto in stato confermato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori/canali non esplicitati nel requisito: è stato inferito il canale web e l'attore 'cliente'. La specifica della combinazione non permessa è assunta come configurabile nel motore regole."
+  },
+  {
+    "test_id": "REQ-V-004.TC02",
+    "title": "Acquisto consentito con combinazione permessa e verifiche pre-acquisto superate",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Nel motore regole è attiva la regola che proibisce A-1001 + B-2001",
+      "Non esistono regole che proibiscono la combinazione: Prodotto A + Prodotto C",
+      "Catalogo prodotti contiene Prodotto A e Prodotto C acquistabili"
+    ],
+    "test_data": [
+      "Prodotto A: \"Internet Casa 1Gb\" (ID: A-1001)",
+      "Prodotto C: \"Router Wi‑Fi 6\" (ID: C-3001)",
+      "Combinazione permessa: A-1001 + C-3001",
+      "Carrello: [A-1001, C-3001]"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente autenticato",
+      "Aggiungere al carrello il Prodotto A (A-1001)",
+      "Aggiungere al carrello il Prodotto C (C-3001)",
+      "Procedere al checkout fino al passo immediatamente precedente alla conferma acquisto",
+      "Confermare l'acquisto"
+    ],
+    "expected_results": [
+      "Il sistema esegue le verifiche di sottoscrivibilità prima del completamento dell'acquisto",
+      "La combinazione A-1001 + C-3001 non viene segnalata come non permessa",
+      "L'acquisto viene completato con creazione dell'ordine/pratica in stato confermato (o equivalente stato di successo)",
+      "Non vengono mostrati messaggi di errore bloccanti relativi a combinazioni non permesse o sottoscrivibilità"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i dettagli delle verifiche di sottoscrivibilità né gli stati ordine: sono stati usati esiti generici ma verificabili (blocco vs completamento)."
+  },
+  {
+    "test_id": "REQ-V-004.TC03",
+    "title": "Log decisionale tracciato in caso di esclusione per combinazione non permessa",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Nel motore regole è attiva una regola che proibisce la combinazione: A-1001 + B-2001",
+      "Logging delle decisioni abilitato e consultabile (es. via aggregatore log o tabella decision logs)",
+      "È disponibile un identificativo di correlazione per la transazione (es. correlationId/traceId) esposto al livello applicativo o recuperabile dai log"
+    ],
+    "test_data": [
+      "Prodotto A: \"Internet Casa 1Gb\" (ID: A-1001)",
+      "Prodotto B: \"Opzione TV Premium\" (ID: B-2001)",
+      "Carrello: [A-1001, B-2001]"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente autenticato",
+      "Aggiungere al carrello i prodotti A-1001 e B-2001",
+      "Tentare la conferma dell'acquisto per attivare la decisione di esclusione",
+      "Recuperare dai log l'evento relativo alla decisione usando l'identificativo di correlazione della transazione",
+      "Ispezionare il contenuto dell'evento di log decisionale"
+    ],
+    "expected_results": [
+      "Nei log delle decisioni è presente un evento relativo alla transazione di checkout",
+      "L'evento indica un esito di esclusione/KO per combinazione non permessa",
+      "L'evento contiene almeno: identificativo transazione (correlationId/traceId o equivalente), timestamp, esito (KO/esclusione), motivazione o codice regola (o identificativo regola) associato alla combinazione non permessa"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce lo schema dei log: sono state assunte informazioni minime tipiche per rendere verificabile il tracciamento (id transazione, timestamp, esito, motivo/codice regola)."
+  },
+  {
+    "test_id": "REQ-V-004.TC04",
+    "title": "Blocco pre-acquisto per sottoscrivibilità non valida (cliente non sottoscrivibile) con segnalazione",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Configurata una condizione di sottoscrivibilità che renda non sottoscrivibile l'offerta selezionata per il profilo del cliente (es. flag cliente non idoneo o requisito mancante)",
+      "Catalogo prodotti contiene Prodotto D acquistabile"
+    ],
+    "test_data": [
+      "Prodotto D: \"Mobile Unlimited\" (ID: D-4001)",
+      "Cliente: \"CLI-9001\" con condizione di non sottoscrivibilità attiva per D-4001",
+      "Carrello: [D-4001]"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente CLI-9001",
+      "Aggiungere al carrello il Prodotto D (D-4001)",
+      "Procedere al checkout fino al passo immediatamente precedente alla conferma acquisto",
+      "Avviare la conferma dell'acquisto"
+    ],
+    "expected_results": [
+      "Il sistema esegue le verifiche di sottoscrivibilità prima del completamento dell'acquisto",
+      "Il sistema blocca la prosecuzione dell'acquisto per esito di sottoscrivibilità non valido",
+      "Il sistema mostra un messaggio di segnalazione dell'inidoneità/sottoscrivibilità non valida (errore bloccante)",
+      "Non viene creato alcun ordine/pratica di acquisto in stato confermato"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La causa di non sottoscrivibilità non è specificata dal requisito: è stata modellata come condizione configurabile sul profilo cliente/prodotto per rendere il test ripetibile."
+  },
+  {
+    "test_id": "REQ-V-004.TC05",
+    "title": "Log decisionale tracciato in caso di errore durante la verifica di sottoscrivibilità",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Logging delle decisioni abilitato e consultabile",
+      "Il componente/servizio che esegue le verifiche di sottoscrivibilità è configurato per simulare indisponibilità/timeout (es. fault injection, mock, o ambiente di test con servizio down)"
+    ],
+    "test_data": [
+      "Prodotto E: \"Assicurazione Device\" (ID: E-5001)",
+      "Carrello: [E-5001]",
+      "Simulazione errore: timeout verifica sottoscrivibilità (es. 30s)"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente autenticato",
+      "Aggiungere al carrello il Prodotto E (E-5001)",
+      "Procedere al checkout fino al passo immediatamente precedente alla conferma acquisto",
+      "Avviare la conferma dell'acquisto mentre il servizio di verifica sottoscrivibilità risulta in timeout/indisponibile",
+      "Recuperare dai log l'evento relativo alla decisione usando l'identificativo di correlazione della transazione",
+      "Ispezionare il contenuto dell'evento di log decisionale"
+    ],
+    "expected_results": [
+      "Il sistema non consente il completamento dell'acquisto se la verifica di sottoscrivibilità non può essere validata (errore bloccante)",
+      "Il sistema mostra un messaggio di errore che indica impossibilità di completare l'operazione (senza confermare l'acquisto)",
+      "Nei log delle decisioni è presente un evento relativo alla transazione con esito di errore (KO) associato alla verifica di sottoscrivibilità",
+      "L'evento di log include almeno: identificativo transazione, timestamp, esito (errore/KO), dettaglio errore o codice eccezione (es. TIMEOUT)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la strategia in caso di indisponibilità del servizio: è stata assunta una policy 'fail-closed' coerente con l'obiettivo di evitare offerte non valide. Se la policy reale fosse diversa, adeguare attesi e criteri."
+  },
+  {
+    "test_id": "REQ-V-004.TC06",
+    "title": "Edge case: aggiornamento carrello rimuovendo il prodotto che rende la combinazione non permessa e sblocco del checkout",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente cliente autenticato sul canale web",
+      "Nel motore regole è attiva una regola che proibisce la combinazione: A-1001 + B-2001",
+      "Catalogo prodotti contiene A-1001 e B-2001"
+    ],
+    "test_data": [
+      "Prodotto A: \"Internet Casa 1Gb\" (ID: A-1001)",
+      "Prodotto B: \"Opzione TV Premium\" (ID: B-2001)",
+      "Carrello iniziale: [A-1001, B-2001]",
+      "Carrello dopo modifica: [A-1001]"
+    ],
+    "steps": [
+      "Accedere al canale web come utente cliente autenticato",
+      "Aggiungere al carrello i prodotti A-1001 e B-2001",
+      "Procedere al checkout fino al passo immediatamente precedente alla conferma acquisto",
+      "Avviare la conferma dell'acquisto e osservare il blocco per combinazione non permessa",
+      "Tornare al carrello",
+      "Rimuovere dal carrello il Prodotto B (B-2001)",
+      "Procedere nuovamente al checkout fino alla conferma acquisto",
+      "Confermare l'acquisto"
+    ],
+    "expected_results": [
+      "Alla prima conferma, il sistema blocca l'acquisto per combinazione non permessa",
+      "Dopo la rimozione di B-2001, la combinazione non è più segnalata come non permessa",
+      "Il sistema riesegue le verifiche pre-acquisto sul carrello aggiornato",
+      "L'acquisto può essere completato con carrello [A-1001] (ordine/pratica confermata)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica quando avviene l'enforcement (aggiunta al carrello vs checkout): il test valida esplicitamente l'enforcement pre-acquisto al momento della conferma e la corretta rivalutazione dopo modifica carrello."
+  }
+]

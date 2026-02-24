@@ -1,0 +1,177 @@
+[
+  {
+    "test_id": "REQ-F-033.TC01",
+    "title": "Integrazione dati: esportazione dal motore offerte allo strumento di reporting (run manuale/forzato)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con motore di offerte e sistema di reporting aziendale disponibili e raggiungibili",
+      "Esiste un meccanismo di esportazione dati dal motore offerte al sistema di reporting (job/servizio/API) configurato in ambiente",
+      "Nel motore offerte esistono offerte integrate in almeno due stati: attiva e storicizzata",
+      "Sono disponibili log tecnici o una tabella di audit nel sistema di reporting per verificare gli eventi di alimentazione (es. timestamp ultimo import, numero record importati)"
+    ],
+    "test_data": [
+      "Offerta O-1001 (stato: attiva), canale: WEB, cluster: \"Retail\", periodo vendite: 2026-01",
+      "Offerta O-2002 (stato: storicizzata), canale: APP, cluster: \"Premium\", periodo vendite: 2025-12",
+      "Esecuzione job di esportazione: modalità forzata/manuale (se prevista)"
+    ],
+    "steps": [
+      "Verificare nel motore di offerte la presenza delle offerte O-1001 e O-2002 con gli attributi attesi (stato, canale, cluster)",
+      "Avviare l'esportazione dati dal motore offerte verso il sistema di reporting (esecuzione manuale/forzata del job o invocazione del servizio di export)",
+      "Attendere il completamento dell'esportazione",
+      "Accedere al sistema di reporting e consultare i log/audit di alimentazione per l'ultimo run",
+      "Verificare nel sistema di reporting la disponibilità dei dati importati relativi alle offerte O-1001 e O-2002"
+    ],
+    "expected_results": [
+      "L'esportazione termina con esito positivo (stato job/servizio: SUCCESS) senza errori bloccanti",
+      "Nel sistema di reporting risulta registrato un evento di alimentazione con timestamp coerente con l'esecuzione del test",
+      "Nel sistema di reporting risultano presenti dati associati alle offerte O-1001 e O-2002 importati dal motore offerte",
+      "I record importati mantengono la distinzione tra offerta attiva e storicizzata (campo/stato valorizzato coerentemente)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "AC-1 è parzialmente non verificabile perché le regole di frequenza e storicizzazione non sono definite nel requisito. Il test valida l'alimentazione dati in senso generale (esportazione e disponibilità nel reporting) e la presenza di informazioni di stato (attiva/storicizzata) come proxy della storicizzazione. Attori e canali UI non sono esplicitati; il requisito indica integrazione verso sistema di reporting aziendale."
+  },
+  {
+    "test_id": "REQ-F-033.TC02",
+    "title": "Integrazione dati: verifica alimentazione secondo frequenza configurata (schedulazione)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con motore di offerte e sistema di reporting aziendale disponibili",
+      "Job/servizio di esportazione schedulato con una frequenza configurata in ambiente (es. ogni 15 minuti) e tracciata in configurazione",
+      "Disponibilità di log/audit nel sistema di reporting con timestamp per ogni alimentazione",
+      "Nel motore offerte esiste almeno una nuova/aggiornata offerta da esportare"
+    ],
+    "test_data": [
+      "Frequenza schedulazione configurata: 15 minuti (valore di esempio; usare il valore effettivo configurato in ambiente)",
+      "Offerta O-3003 (stato: attiva), aggiornata al tempo T0 (es. modifica descrizione o flag di disponibilità)"
+    ],
+    "steps": [
+      "Rilevare e annotare la frequenza di schedulazione effettivamente configurata per il job di esportazione",
+      "Aggiornare nel motore offerte l'offerta O-3003 al tempo T0",
+      "Attendere un intervallo pari alla frequenza configurata più una tolleranza operativa (es. +2 minuti)",
+      "Accedere al sistema di reporting e consultare log/audit dell'ultimo run",
+      "Verificare che i dati relativi all'offerta O-3003 risultino importati/aggiornati nel sistema di reporting"
+    ],
+    "expected_results": [
+      "Nel sistema di reporting è presente un evento di alimentazione con timestamp successivo a T0 e coerente con la frequenza configurata (entro la tolleranza definita dal test)",
+      "I dati dell'offerta O-3003 nel sistema di reporting risultano aggiornati rispetto alla modifica effettuata al tempo T0",
+      "Non risultano run duplicati anomali rispetto alla frequenza configurata (assenza di alimentazioni multiple nello stesso intervallo non previste)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "AC-1 richiede frequenza e storicizzazione 'da definire': questo test presuppone che in ambiente esista una frequenza configurata e verificabile tramite configurazione/log. La tolleranza temporale è un'assunzione necessaria per rendere il criterio misurabile."
+  },
+  {
+    "test_id": "REQ-F-033.TC03",
+    "title": "Integrazione dati: verifica storicizzazione (presenza di snapshot/versioni nel reporting)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di reporting aziendale con modello dati che supporta storicizzazione (es. tabella storico, versioning o snapshot per periodo)",
+      "Meccanismo di esportazione dal motore offerte al reporting attivo",
+      "Nel motore offerte esiste un'offerta O-4004 inizialmente attiva e successivamente resa storicizzata/chiusa",
+      "È possibile eseguire almeno due alimentazioni consecutive (manuali o schedulate) in tempi distinti"
+    ],
+    "test_data": [
+      "Offerta O-4004: stato iniziale attiva al tempo T1; successivamente resa storicizzata al tempo T2",
+      "Due esecuzioni di export: Run#1 dopo T1, Run#2 dopo T2"
+    ],
+    "steps": [
+      "Impostare l'offerta O-4004 in stato 'attiva' nel motore offerte e annotare il tempo T1",
+      "Eseguire l'esportazione dati (Run#1) e attendere completamento",
+      "Impostare l'offerta O-4004 in stato 'storicizzata/chiusa' nel motore offerte e annotare il tempo T2",
+      "Eseguire l'esportazione dati (Run#2) e attendere completamento",
+      "Nel sistema di reporting, cercare i record relativi all'offerta O-4004 e verificare la presenza di informazioni storicizzate (versioni/snapshot o tracciamento temporale)"
+    ],
+    "expected_results": [
+      "Dopo Run#1 il sistema di reporting contiene dati per O-4004 con stato 'attiva' (o equivalente) e riferimento temporale coerente",
+      "Dopo Run#2 il sistema di reporting contiene dati per O-4004 con stato 'storicizzata/chiusa' (o equivalente) e riferimento temporale coerente",
+      "Nel sistema di reporting è possibile distinguere lo stato nel tempo (es. due versioni/snapshot o uno storico che consenta di ricostruire T1 e T2), senza perdita dei dati precedenti"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "La modalità di storicizzazione non è definita nel requisito: il test verifica la capacità del reporting di mantenere traccia temporale/versioning come interpretazione necessaria di 'storicizzazione'. Se il modello dati non prevede versioni ma solo stato corrente, il requisito necessita chiarimenti."
+  },
+  {
+    "test_id": "REQ-F-033.TC04",
+    "title": "Negativo integrazione: sistema di reporting non disponibile durante l'esportazione",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Meccanismo di esportazione dal motore offerte al sistema di reporting configurato",
+      "Possibilità di simulare indisponibilità del sistema di reporting (es. stop servizio, blocco rete, DNS non risolvibile) in ambiente di test",
+      "Disponibilità di log del motore offerte per verificare errori di esportazione e politiche di retry/fallimento"
+    ],
+    "test_data": [
+      "Offerta O-5005 (stato: attiva) presente nel motore offerte",
+      "Simulazione indisponibilità reporting: endpoint non raggiungibile (timeout 30s) o HTTP 503 (se via API)"
+    ],
+    "steps": [
+      "Rendere indisponibile il sistema di reporting (o l'endpoint di ingest) secondo la modalità prevista in ambiente",
+      "Avviare l'esportazione dati dal motore offerte verso il reporting",
+      "Attendere l'esito dell'esportazione",
+      "Ripristinare la disponibilità del sistema di reporting",
+      "Consultare i log del motore offerte relativi al tentativo di esportazione"
+    ],
+    "expected_results": [
+      "L'esportazione fallisce in modo controllato (esito job/servizio: FAILED o equivalente) senza corrompere dati locali del motore offerte",
+      "Nei log del motore offerte è presente un errore esplicito relativo all'indisponibilità del reporting (timeout/503/connessione rifiutata) con timestamp",
+      "Non risultano record parziali incoerenti nel sistema di reporting relativi al run fallito (nessun import incompleto per O-5005)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non specifica comportamento in errore (retry, DLQ, alerting). Il test valida almeno gestione controllata del fallimento e tracciabilità dell'errore come requisito qualitativo minimo per un'integrazione enterprise."
+  },
+  {
+    "test_id": "REQ-F-033.TC05",
+    "title": "Negativo integrazione: dati obbligatori mancanti per una offerta impediscono l'alimentazione (validazione input export)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Meccanismo di esportazione attivo",
+      "Esiste una validazione lato motore offerte o lato reporting sui campi minimi necessari all'import (es. ID offerta, stato, canale, periodo)",
+      "Disponibilità di log/audit per identificare record scartati o errori di validazione"
+    ],
+    "test_data": [
+      "Offerta O-6006 con campo obbligatorio mancante o non valido (es. canale/touchpoint nullo oppure stato non valorizzato)",
+      "Almeno una offerta valida di controllo O-6007 (stato: attiva, canale: WEB, cluster: Retail)"
+    ],
+    "steps": [
+      "Creare o predisporre nel motore offerte l'offerta O-6006 con il campo obbligatorio mancante/non valido secondo le regole di validazione disponibili in ambiente",
+      "Verificare che l'offerta O-6007 sia valida e pronta per l'esportazione",
+      "Avviare l'esportazione dati verso il sistema di reporting",
+      "Consultare l'esito dell'esportazione e i log/audit di validazione",
+      "Nel sistema di reporting verificare la presenza dei dati per O-6007 e l'assenza (o gestione scarto) per O-6006"
+    ],
+    "expected_results": [
+      "L'offerta valida O-6007 viene esportata e risulta presente nel sistema di reporting",
+      "L'offerta non valida O-6006 non viene importata nel reporting oppure viene importata in stato 'scartato/errore' secondo il meccanismo previsto, senza generare dati incompleti utilizzabili",
+      "Nei log/audit è presente una segnalazione esplicita del motivo di scarto/errore per O-6006 (campo mancante/non valido)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non elenca i campi obbligatori. Questo test richiede che in progettazione siano definite le regole minime di validazione dell'export; in assenza, il test va adeguato al contratto dati effettivo (schema)."
+  }
+]

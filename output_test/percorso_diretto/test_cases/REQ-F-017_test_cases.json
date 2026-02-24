@@ -1,0 +1,176 @@
+[
+  {
+    "test_id": "REQ-F-017.TC01",
+    "title": "Verifica esistenza e completezza del documento/diagramma di journey end-to-end (trigger → acquisto secondo prodotto)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Repository/documentale di progetto accessibile (es. Confluence/SharePoint/Jira allegati) contenente la documentazione di analisi funzionale",
+      "Disponibili le versioni più recenti dei requisiti REQ-F-017 e (se referenziato) REQ-F-018"
+    ],
+    "test_data": [
+      "Documento/diagramma di journey identificato come artefatto ufficiale per REQ-F-017 (es. 'Journey Bundle Upgrade A+B vX.Y')"
+    ],
+    "steps": [
+      "Accedere al repository documentale di progetto",
+      "Ricercare l'artefatto di mappatura associato a REQ-F-017 tramite codice requisito o titolo",
+      "Aprire il documento/diagramma individuato",
+      "Verificare che il documento descriva sequenzialmente tutti gli step a partire dal trigger fino all'esito di acquisto del secondo prodotto (accettazione bundle) e fino all'esito alternativo (rifiuto bundle e acquisto A)",
+      "Verificare che ogni step riporti attore e canale (se indicati) e l'evento/azione che lo innesca"
+    ],
+    "expected_results": [
+      "È presente almeno un artefatto (diagramma o documento) referenziabile univocamente come mappatura della journey per REQ-F-017",
+      "L'artefatto copre l'intero flusso dal trigger alla conclusione dell'acquisto del secondo prodotto oppure al completamento dell'acquisto di A con rifiuto del bundle",
+      "Gli step sono descritti in modo non ambiguo e ordinato (sequenza verificabile), senza salti logici tra trigger, proposta bundle, decisione utente e outcome"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [],
+    "notes": "Gli AC sono prevalentemente documentali (non direttamente eseguibili su UI/servizi). Questo test valida la presenza e la copertura della mappatura; non verifica l'implementazione. Attori/canali non sono esplicitati nel requisito: se assenti nel documento, segnalarlo come gap di analisi."
+  },
+  {
+    "test_id": "REQ-F-017.TC02",
+    "title": "Verifica che la mappatura includa trigger prima del checkout e visualizzazione proposta bundle come pop-up",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Disponibile il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Nel documento sono descritti i punti del funnel (incluso 'checkout')"
+    ],
+    "test_data": [
+      "Scenario documentale: cliente in target per bundle (A,B) con offerta valida mentre sta acquistando A"
+    ],
+    "steps": [
+      "Aprire il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Individuare lo step relativo alla condizione di trigger durante il journey di acquisto di A",
+      "Verificare nel documento la posizione del trigger rispetto al checkout (deve essere antecedente)",
+      "Individuare lo step di visualizzazione della proposta bundle",
+      "Verificare che la modalità di visualizzazione sia esplicitata come pop-up"
+    ],
+    "expected_results": [
+      "La mappatura descrive esplicitamente una condizione di trigger che avviene prima del checkout del prodotto A",
+      "La mappatura descrive la visualizzazione della proposta bundle (A,B) e la qualifica come pop-up",
+      "Il legame tra trigger e pop-up è chiaro (il pop-up è conseguenza del trigger nello stesso tratto di funnel)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [],
+    "notes": "Il requisito descrive anche possibili interazioni (aggiunta al carrello/chiusura/posticipo), ma non sono incluse negli AC: non vengono qui rese obbligatorie per pass/fail, salvo presenza nel documento."
+  },
+  {
+    "test_id": "REQ-F-017.TC03",
+    "title": "Verifica che la mappatura specifichi persistenza in sezione Loyalty di Gruppo e finestra temporale di validità",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Disponibile il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Nel documento è presente la sezione relativa all'esito 'rifiuto bundle e acquisto A completato'"
+    ],
+    "test_data": [
+      "Scenario documentale: utente rifiuta il bundle e completa l'acquisto di A"
+    ],
+    "steps": [
+      "Aprire il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Individuare il ramo di flusso relativo al rifiuto del bundle e al completamento acquisto di A",
+      "Verificare che il documento descriva la persistenza della proposta di upgrade (A,B) nella sezione Loyalty di Gruppo",
+      "Verificare che il documento specifichi una finestra temporale di validità dell'offerta persistita (es. durata, data scadenza, o regola temporale)",
+      "Verificare che sia indicato che la persistenza è soggetta a regole di abilitazione all'upgrade definite dal marketing (per lo specifico bundle)"
+    ],
+    "expected_results": [
+      "La mappatura indica che, in caso di rifiuto bundle e acquisto A completato, la proposta di upgrade (A,B) viene resa disponibile nella sezione Loyalty di Gruppo",
+      "La mappatura riporta una finestra temporale di validità dell'offerta persistita (informazione verificabile: durata o condizione di scadenza)",
+      "La mappatura vincola la persistenza/mostrabilità alle regole di abilitazione upgrade definite dal marketing per il bundle (A,B)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [],
+    "notes": "Dipendenza esterna: 'regole di abilitazione all'upgrade definite dall'utente marketing' non sono specificate nel requisito; il test verifica solo che la mappatura le referenzi e le tratti come vincolo, non la correttezza delle regole."
+  },
+  {
+    "test_id": "REQ-F-017.TC04",
+    "title": "Verifica che la mappatura indichi che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Disponibile il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Nel documento è presente il ramo di flusso relativo all'accettazione del bundle (A,B)"
+    ],
+    "test_data": [
+      "Scenario documentale: utente accetta di acquistare bundle (A,B) durante il journey iniziato per A"
+    ],
+    "steps": [
+      "Aprire il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Individuare il ramo di flusso in cui l'utente accetta il bundle (A,B)",
+      "Verificare che la mappatura indichi esplicitamente che la sottoscrizione del secondo prodotto (B) segue lo stesso funnel del primo prodotto (A)",
+      "Verificare che il documento espliciti l'accorpamento delle fasi (dati cliente/questionari/prese visioni/firme) ove possibile in modo omogeneo nel task flow, oppure che rimandi chiaramente a REQ-F-018 per tale dettaglio"
+    ],
+    "expected_results": [
+      "La mappatura dichiara che la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto",
+      "La mappatura descrive o referenzia in modo tracciabile (es. link/ID requisito) come avviene l'accorpamento delle fasi tra A e B, coerentemente con il funnel unico"
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [],
+    "notes": "Il requisito rimanda a REQ-F-018 per dettagli di accorpamento: dipendenza esterna non risolta. Il test accetta come conforme anche un rimando esplicito e tracciabile a REQ-F-018."
+  },
+  {
+    "test_id": "REQ-F-017.TC05",
+    "title": "Negativo: assenza del documento/diagramma di mappatura per REQ-F-017",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Repository/documentale di progetto accessibile",
+      "Nessun artefatto di mappatura è stato pubblicato o l'accesso è limitato (scenario da simulare con permessi o ricerca senza risultati)"
+    ],
+    "test_data": [
+      "Query di ricerca: 'REQ-F-017' e 'Mappatura journey bundle A B'"
+    ],
+    "steps": [
+      "Accedere al repository documentale di progetto",
+      "Eseguire una ricerca per codice requisito 'REQ-F-017'",
+      "Eseguire una ricerca per parole chiave relative al titolo del requisito",
+      "Verificare i risultati della ricerca e gli eventuali allegati collegati al requisito"
+    ],
+    "expected_results": [
+      "Non viene trovato alcun documento/diagramma che soddisfi AC-1",
+      "Il requisito risulta non verificabile e viene aperta una non conformità/defect di tipo 'missing documentation' (o evidenza equivalente nel processo di QA)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [],
+    "notes": "Test negativo di maturità/completezza: non verifica comportamento software ma la condizione necessaria per validare il requisito così come scritto (AC documentali)."
+  },
+  {
+    "test_id": "REQ-F-017.TC06",
+    "title": "Edge case documentale: finestra temporale di validità non specificata o ambigua nella persistenza Loyalty",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Disponibile il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Nel documento è presente la sezione relativa alla persistenza in Loyalty"
+    ],
+    "test_data": [
+      "Esempi di definizioni non accettabili: 'valida per un po'', 'valida finché disponibile', assenza totale di durata/scadenza"
+    ],
+    "steps": [
+      "Aprire il documento/diagramma di mappatura della journey per REQ-F-017",
+      "Individuare lo step/regola relativo alla finestra temporale di validità dell'offerta persistita in Loyalty",
+      "Verificare se la finestra temporale è espressa con un valore o condizione verificabile (es. '7 giorni', 'fino a data X', 'fino a esaurimento budget' con regola di chiusura definita)",
+      "Se la definizione è assente o ambigua, registrare l'evidenza"
+    ],
+    "expected_results": [
+      "Se la finestra temporale è definita in modo misurabile, il controllo passa",
+      "Se la finestra temporale è assente o ambigua, il controllo fallisce e viene aperta una non conformità perché AC-3 non è verificabile"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [],
+    "notes": "Questo test rende verificabile un AC potenzialmente dichiarativo: per 'finestra temporale di validità' si assume sia necessaria una definizione misurabile (durata o condizione di scadenza non ambigua)."
+  }
+]

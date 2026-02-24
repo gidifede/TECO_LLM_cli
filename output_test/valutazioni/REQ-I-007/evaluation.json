@@ -1,0 +1,167 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-007",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 68,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-007.TC01",
+        "detail": "Introduce esempi di interfacce consumer specifiche (\"API pubblica\" e \"portale web interno\") e relativi dettagli operativi (token/credenziali, endpoint GET /offerte) non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-I-007.TC01",
+        "detail": "Assume un modello di risposta/acknowledgement dell'endpoint eventi con HTTP 200/202 e riferimento a eventId; il requisito non definisce protocolli/codici di risposta."
+      },
+      {
+        "test_id": "REQ-I-007.TC01",
+        "detail": "Assume stati e nomenclatura (es. stato iniziale 'CREATA') e una 'mappatura configurata' evento→transizione non descritta nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.TC02",
+        "detail": "Interpreta 'riproducibile' come idempotenza/deduplica su eventId e richiede comportamento specifico su duplicati; il requisito non menziona gestione duplicati."
+      },
+      {
+        "test_id": "REQ-I-007.TC03",
+        "detail": "Introduce regole di validazione payload e codici errore (es. HTTP 400) non definiti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.TC04",
+        "detail": "Introduce gestione di eventType non mappato (rifiuto o 'ignored'); il requisito non specifica cosa accade per trigger/eventi non previsti."
+      },
+      {
+        "test_id": "REQ-I-007.TC05",
+        "detail": "Introduce requisiti di sicurezza/autorizzazione (mTLS/API key/OAuth, 401/403) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.TC06",
+        "detail": "Introduce politiche di retry e assenza di transizioni duplicate in scenari di failure di rete/503; il requisito non parla di retry/affidabilità della consegna."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"i verticali sono gli unici sistemi che comandano le transizioni di stato (vendita effettiva, altri trigger)\"",
+        "detail": "Non c'è un test che verifichi esplicitamente che il Motore NON effettui transizioni 'autonome' senza eventi dai verticali (es. assenza di cambi stato in assenza di eventi / solo-event-driven come vincolo di business). I TC coprono il rifiuto di input non valido/non mappato, ma non l'assenza di transizioni senza eventi."
+      },
+      {
+        "source": "AC-2: \"resa disponibile su tutte le interfacce che acquisiscono dal motore l'elenco delle offerte disponibili\"",
+        "detail": "La verifica su \"tutte le interfacce\" è implementata come 'almeno due' interfacce (TC01) oppure una (TC06 non verifica interfacce); non esiste un meccanismo di copertura sistematica di tutte le interfacce esistenti (se >2)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-007.TC01",
+          "REQ-I-007.TC06"
+        ],
+        "detail": "Entrambi includono un flusso E2E che porta a transizione e (in parte) verifica visibilità verso consumer; TC06 aggiunge failure+retry ma ripete parte del controllo di transizione/visibilità già in TC01."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 13,
+    "coherence_score": 47,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-007.US01.TC01",
+        "detail": "Introduce logging/audit come requisito verificabile e come fonte di verità per tracciabilità; il requisito non menziona audit/log."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC01",
+        "detail": "Assume esplicitamente una 'regola di mapping evento→transizione' esterna condivisa e stati astratti S0/S1; il requisito non parla di mapping/stati specifici né di un artefatto esterno."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC02",
+        "detail": "Assume regole di presenza nell'elenco offerte e richiede assenza di 'stati intermedi/parziali' (consistenza/atomicità di esposizione) non definite nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC03",
+        "detail": "Introduce controlli di sicurezza/allowlist/claim e audit del tentativo non autorizzato; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC04",
+        "detail": "Introduce comportamento e tracciabilità per proposalId mancante/non valido (errori e audit); il requisito non specifica gestione errori né audit."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC05",
+        "detail": "Introduce deduplica/idempotenza basata su eventId come precondizione e atteso; non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC06",
+        "detail": "Introduce concetto di state machine condivisa, evento fuori sequenza e messaggistica di 'transizione non ammessa'; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC07",
+        "detail": "Introduce atomicità/rollback su DB e simulazioni fault injection; il requisito non menziona transazioni/atomicità."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC01",
+        "detail": "Introduce dettagli di contratto di risposta (correlationId, timestamp, campi risposta) e headers (Content-Type, Authorization) non definiti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC03",
+        "detail": "Introduce codici HTTP 400/422 e motivazioni specifiche di validazione/correlazione; non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC04",
+        "detail": "Introduce requisito che il verticale possa determinare l'esito finale del reinvio tramite risposta/meccanismo previsto; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC06",
+        "detail": "Introduce indisponibilità endpoint per 2 minuti e deduplica/idempotenza come requisito; non esplicitati dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"i verticali sono gli unici sistemi che comandano le transizioni di stato\"",
+        "detail": "Come per il set direct, manca un test esplicito che dimostri che in assenza di eventi dai verticali il Motore non effettua transizioni di stato (vincolo 'solo verticali'). I test coprono rifiuti/non autorizzazioni, ma non l'assenza di transizioni senza eventi."
+      },
+      {
+        "source": "AC-2: \"resa disponibile su tutte le interfacce\"",
+        "detail": "I TC (US01.TC02, US02.TC02, US02.TC06) verificano 'almeno un'interfaccia' e suggeriscono di replicare su più interfacce, ma non includono un set di verifiche che copra effettivamente 'tutte le interfacce' esistenti."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-007.US01.TC02",
+          "REQ-I-007.US02.TC02"
+        ],
+        "detail": "Entrambi testano lo stesso scenario E2E: evento da verticale → transizione → visibilità su elenco offerte."
+      },
+      {
+        "test_ids": [
+          "REQ-I-007.US01.TC05",
+          "REQ-I-007.US02.TC04",
+          "REQ-I-007.US02.TC06"
+        ],
+        "detail": "Tutti focalizzati su duplicati/retry/idempotenza (con varianti di failure di rete), sovrapponendo lo stesso rischio funzionale non richiesto esplicitamente dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-I-007.US01.TC04",
+          "REQ-I-007.US02.TC03"
+        ],
+        "detail": "Entrambi coprono input incompleti/non validi e attese di KO + nessun aggiornamento, con differenze minori sui campi."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono AC-1 e AC-2, ma il set direct introduce meno informazioni non tracciabili (8 elementi vs 12) e presenta meno ridondanze (1 vs 3), ottenendo un punteggio di coerenza superiore (68 vs 47). Il set indirect_persona amplia molto oltre il requisito (audit/log, atomicità, state machine, dettagli contrattuali di risposta), aumentando le 'added_info' e riducendo la fedeltà al testo del requisito."
+  }
+}

@@ -1,0 +1,223 @@
+[
+  {
+    "test_id": "REQ-F-028.TC01",
+    "title": "Creazione modifica matrice tramite workflow integrato con Motore di Offerte (happy path) e applicazione dopo approvazione",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una matrice abilitazioni (prodotti vs figure) con almeno una regola attiva per il Prodotto 'Prestito Personale' e Figura 'Consulente Junior'.",
+      "Workflow formale di modifica abilitazioni attivo e integrato con il Motore di Offerte.",
+      "Utente 'richiedente' autenticato con ruolo abilitato a proporre modifiche (es. 'Gestore Abilitazioni').",
+      "Utente 'approvatore' autenticato con ruolo abilitato ad approvare (es. 'Responsabile Compliance')."
+    ],
+    "test_data": [
+      "Prodotto: 'Prestito Personale'",
+      "Figura: 'Consulente Junior'",
+      "Modifica richiesta: abilitazione da 'NON ABILITATO' a 'ABILITATO'",
+      "Motivazione modifica: 'Estensione canale vendita per campagna Q2'",
+      "Identificativo offerta di test nel Motore di Offerte: 'OFF-TEST-1001'"
+    ],
+    "steps": [
+      "Il richiedente accede al sistema di gestione abilitazioni.",
+      "Il richiedente avvia una nuova richiesta di modifica matrice tramite il workflow integrato.",
+      "Il richiedente seleziona Prodotto 'Prestito Personale'.",
+      "Il richiedente seleziona Figura 'Consulente Junior'.",
+      "Il richiedente imposta la modifica a 'ABILITATO' e inserisce la motivazione 'Estensione canale vendita per campagna Q2'.",
+      "Il richiedente invia la richiesta nel workflow.",
+      "L'approvatore accede al sistema e apre la richiesta in stato 'In revisione' (o equivalente).",
+      "L'approvatore approva la richiesta.",
+      "Dal Motore di Offerte, si ricalcola/valida l'offerta 'OFF-TEST-1001' per la Figura 'Consulente Junior' sul Prodotto 'Prestito Personale'."
+    ],
+    "expected_results": [
+      "La richiesta di modifica viene creata con uno stato iniziale coerente con il workflow (es. 'In revisione' / 'In attesa di approvazione').",
+      "Prima dell'approvazione, la matrice effettiva utilizzata dal Motore di Offerte non risulta modificata per la coppia Prodotto/Figura selezionata.",
+      "Dopo l'approvazione, la matrice effettiva risulta aggiornata per la coppia Prodotto/Figura selezionata (stato 'ABILITATO').",
+      "Il Motore di Offerte consente l'operatività/validazione dell'offerta 'OFF-TEST-1001' coerentemente con la nuova abilitazione.",
+      "La modifica risulta tracciata con autore (richiedente), timestamp di creazione e stato finale 'Approvato' (o equivalente)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori (richiedente/approvatore) inferiti dal concetto di workflow formale (approvazione/revisione) presente nel requisito. Il canale è dedotto come web poiché non sono menzionati app/altro."
+  },
+  {
+    "test_id": "REQ-F-028.TC02",
+    "title": "Verifica audit trail e ricostruzione storia modifiche della matrice (autore, timestamp, stati)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Workflow formale di modifica abilitazioni attivo.",
+      "Esistono almeno 2 modifiche storiche sulla stessa coppia Prodotto/Figura, create in momenti diversi, con esiti differenti (es. una 'Approvata' e una 'Rifiutata').",
+      "Utente autenticato con permesso di consultazione audit trail (es. ruolo 'Auditor' o 'Gestore Abilitazioni')."
+    ],
+    "test_data": [
+      "Prodotto: 'Carta di Credito Classic'",
+      "Figura: 'Consulente Senior'",
+      "Intervallo date filtro audit: ultimi 90 giorni"
+    ],
+    "steps": [
+      "L'utente accede alla sezione di consultazione matrice abilitazioni.",
+      "L'utente apre la vista 'Storico/Audit trail' per la coppia Prodotto 'Carta di Credito Classic' e Figura 'Consulente Senior'.",
+      "L'utente applica il filtro temporale 'ultimi 90 giorni'.",
+      "L'utente apre il dettaglio della modifica più recente.",
+      "L'utente torna alla lista storico e apre il dettaglio di una modifica precedente."
+    ],
+    "expected_results": [
+      "La lista storico mostra le modifiche in ordine cronologico (o comunque con data/ora chiaramente visibile e ordinabile).",
+      "Per ogni modifica sono visibili almeno: autore, timestamp e stato di approvazione (es. 'In revisione', 'Approvato', 'Rifiutato').",
+      "Nel dettaglio di ciascuna modifica sono visibili i valori 'prima' e 'dopo' della regola di abilitazione (o informazione equivalente che consenta la ricostruzione della variazione).",
+      "È possibile ricostruire la sequenza delle modifiche (storia) senza lacune per l'intervallo filtrato."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica UI/filtri; si assume esista una funzionalità di consultazione audit trail 'leggibile' che permetta di vedere almeno autore, timestamp, stato e contenuto della variazione per ricostruire la storia."
+  },
+  {
+    "test_id": "REQ-F-028.TC03",
+    "title": "Tentativo di modifica diretta della matrice (fuori workflow) respinto e registrato come tentativo non autorizzato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Workflow formale di modifica abilitazioni attivo.",
+      "Esiste un endpoint/operazione di persistenza della matrice (API o servizio interno) che potrebbe essere invocato bypassando il workflow.",
+      "Utente autenticato con credenziali valide ma senza contesto workflow (es. sessione tecnica o utente applicativo che tenta editing diretto).",
+      "Accesso ai log di sicurezza/audit per verifica evento (lettura consentita a un ruolo di audit o tramite console log)."
+    ],
+    "test_data": [
+      "Richiesta di update diretto matrice: Prodotto 'Mutuo Prima Casa', Figura 'Consulente Junior', nuovo valore 'ABILITATO'",
+      "Metodo di invocazione: chiamata API diretta 'PUT /abilitazioni/matrice' (o operazione equivalente)"
+    ],
+    "steps": [
+      "L'utente tenta di aggiornare la matrice inviando una richiesta di modifica diretta (fuori workflow) per la coppia Prodotto/Figura indicata.",
+      "L'utente verifica lo stato della matrice per la coppia Prodotto/Figura dopo il tentativo.",
+      "L'utente (o auditor) consulta i log di sicurezza/audit relativi ai tentativi non autorizzati nello stesso intervallo temporale."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta l'operazione di modifica diretta fuori workflow con un errore esplicito (es. HTTP 403/401 o errore applicativo 'Operazione consentita solo tramite workflow').",
+      "La matrice non risulta modificata per la coppia Prodotto/Figura oggetto del tentativo.",
+      "Nei log è presente un evento di tentativo non autorizzato che include almeno: identificativo utente/utenza, timestamp, operazione tentata e risorsa/oggetto (coppia Prodotto/Figura o identificativo equivalente)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica canali/tecnologie; il 'tentativo fuori workflow' è modellato come chiamata API diretta per rendere il test verificabile e automatizzabile. Adeguare endpoint/codici errore alle specifiche tecniche reali."
+  },
+  {
+    "test_id": "REQ-F-028.TC04",
+    "title": "Autorizzazione: utente senza permessi non può avviare una modifica nel workflow",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Workflow formale di modifica abilitazioni attivo.",
+      "Utente autenticato con ruolo privo di permessi di proposta modifica (es. 'Operatore Commerciale').",
+      "Esiste una matrice abilitazioni consultabile."
+    ],
+    "test_data": [
+      "Prodotto: 'Prestito Personale'",
+      "Figura: 'Consulente Junior'",
+      "Modifica richiesta: 'ABILITATO'"
+    ],
+    "steps": [
+      "L'utente senza permessi accede al sistema di gestione abilitazioni.",
+      "L'utente tenta di avviare una nuova richiesta di modifica matrice tramite workflow.",
+      "L'utente tenta di compilare e inviare la richiesta di modifica per Prodotto/Figura indicati."
+    ],
+    "expected_results": [
+      "Il sistema impedisce l'avvio e/o l'invio della richiesta di modifica nel workflow per mancanza permessi.",
+      "Il sistema mostra un messaggio/errore di autorizzazione (es. 'Permessi insufficienti').",
+      "Non viene creata alcuna richiesta di workflow associata al tentativo dell'utente senza permessi."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia ruoli; i ruoli sono inferiti per coprire il vincolo 'solo attraverso workflow' e prevenire editing non autorizzato."
+  },
+  {
+    "test_id": "REQ-F-028.TC05",
+    "title": "Integrazione: indisponibilità del Motore di Offerte durante l'applicazione della modifica approvata",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Workflow formale di modifica abilitazioni attivo e integrato con il Motore di Offerte.",
+      "Esiste una richiesta di modifica pronta per essere approvata (o già approvata) che richiede propagazione verso il Motore di Offerte.",
+      "Simulazione indisponibilità Motore di Offerte (timeout/503) attivabile in ambiente di test.",
+      "Utente 'approvatore' autenticato con permessi di approvazione."
+    ],
+    "test_data": [
+      "Coppia Prodotto/Figura: 'Carta di Credito Gold' / 'Consulente Senior'",
+      "Esito integrazione simulato: timeout 30s o HTTP 503 dal Motore di Offerte"
+    ],
+    "steps": [
+      "L'approvatore apre la richiesta di modifica nel workflow.",
+      "L'approvatore approva la richiesta (o avvia l'azione che ne determina l'applicazione).",
+      "Si forza la chiamata di integrazione verso il Motore di Offerte a fallire (timeout/503).",
+      "Si consulta lo stato della richiesta nel workflow dopo il fallimento di integrazione.",
+      "Si verifica la matrice effettiva utilizzata dal Motore di Offerte per la coppia Prodotto/Figura."
+    ],
+    "expected_results": [
+      "Il sistema gestisce il fallimento di integrazione senza applicare una modifica parziale/incoerente.",
+      "La richiesta nel workflow assume uno stato coerente con l'errore (es. 'Errore di integrazione', 'In attesa di sincronizzazione' o equivalente) e non risulta 'Approvata e applicata' se la propagazione non è avvenuta.",
+      "La matrice effettiva nel Motore di Offerte rimane invariata fino a sincronizzazione riuscita.",
+      "È registrato un evento/log tecnico dell'errore di integrazione con timestamp e dettaglio dell'esito (timeout/503) associabile alla richiesta."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "api"
+    ],
+    "notes": "Il requisito menziona integrazione col Motore di Offerte ma non specifica modalità/strategie di retry; il test verifica almeno assenza di applicazioni parziali e tracciabilità dell'evento di errore."
+  },
+  {
+    "test_id": "REQ-F-028.TC06",
+    "title": "Edge case: richiesta workflow con dati obbligatori mancanti non inviabile e non produce modifiche",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Workflow formale di modifica abilitazioni attivo.",
+      "Utente 'richiedente' autenticato con permessi di proposta modifica."
+    ],
+    "test_data": [
+      "Prodotto: 'Prestito Personale'",
+      "Figura: (non selezionata)",
+      "Modifica richiesta: 'ABILITATO'",
+      "Motivazione: (vuota)"
+    ],
+    "steps": [
+      "Il richiedente avvia una nuova richiesta di modifica matrice tramite workflow.",
+      "Il richiedente seleziona il Prodotto 'Prestito Personale'.",
+      "Il richiedente lascia non selezionata la Figura.",
+      "Il richiedente lascia vuota la motivazione.",
+      "Il richiedente tenta di inviare la richiesta."
+    ],
+    "expected_results": [
+      "Il sistema blocca l'invio indicando chiaramente i campi obbligatori mancanti (almeno Figura e/o motivazione, se previsti come obbligatori dall'implementazione del workflow).",
+      "Non viene creata alcuna richiesta valida nel workflow (oppure viene creata in stato 'Bozza' non inoltrata) e non viene applicata alcuna modifica alla matrice.",
+      "Non viene generato alcun evento di 'tentativo non autorizzato' (poiché l'azione è nel workflow ma con validazione dati fallita)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita i campi obbligatori del workflow; si assume esistano almeno i riferimenti Prodotto/Figura e una motivazione per garantire compliance e tracciabilità. Adeguare le validazioni ai requisiti di dettaglio."
+  }
+]

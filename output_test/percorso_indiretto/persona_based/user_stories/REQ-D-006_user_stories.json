@@ -1,0 +1,35 @@
+[
+  {
+    "story_id": "REQ-D-006.US01",
+    "title": "Persistenza e tracciamento stato proposta con scadenza",
+    "persona": "Motore di Offerte",
+    "goal": "registrare e mantenere in modo persistente i dati e lo stato delle proposte per ciascun cliente, includendo la scadenza e lo storico dei cambiamenti di stato",
+    "benefit": "rendere disponibili ai canali i dati aggiornati della proposta e garantire auditabilità e gestione corretta della validità temporale",
+    "user_story": "Come Motore di Offerte\nVoglio registrare e mantenere in modo persistente i dati e lo stato delle proposte per ciascun cliente, includendo la scadenza e lo storico dei cambiamenti di stato\nIn modo che i canali possano effettuare controlli e il sistema garantisca auditabilità e corretta gestione della validità temporale",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte genera una proposta per un cliente ALLORA esiste un record persistente che contiene almeno: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato corrente e data/ora di scadenza",
+      "QUANDO lo stato di una proposta cambia (es. da 'presentata' a 'aggiunta al carrello') ALLORA il Motore di Offerte registra il cambiamento in modo che la sequenza degli stati sia riproducibile per audit",
+      "QUANDO la data/ora di scadenza della proposta è superata ALLORA il record viene espirato o reso non disponibile ai consumatori e questo comportamento risulta verificabile tramite test"
+    ],
+    "business_rules": [
+      "Lo stato della proposta deve essere persistito e aggiornato per cliente e per identificativo proposta",
+      "La proposta deve includere una data/ora di scadenza e, oltre tale soglia, deve risultare non disponibile",
+      "I cambiamenti di stato devono essere conservati in modo da consentire audit (riproducibilità della storia degli stati)"
+    ],
+    "edge_cases": [
+      "Generazione proposta con uno o più campi obbligatori mancanti (es. id cliente o data scadenza): la persistenza deve fallire o rifiutare l'operazione secondo validazioni definite",
+      "Aggiornamento stato su id proposta inesistente o non associato al cliente: l'operazione deve essere rifiutata e tracciata",
+      "Aggiornamento stato dopo scadenza: il sistema deve impedire l'aggiornamento o gestirlo coerentemente con la regola di non disponibilità post-scadenza",
+      "Richiesta dati lato canale per proposta scaduta: il sistema deve restituire assenza/non disponibilità del record",
+      "Transizioni di stato ripetute o duplicate (es. due volte 'aggiunta al carrello'): il sistema deve garantire coerenza dello storico (idempotenza o deduplica) secondo comportamento atteso"
+    ],
+    "assumptions": [
+      "La modalità con cui i dati sono resi disponibili ai canali (API/eventi/letture dirette) non è specificata nel requisito e sarà definita a livello di integrazione",
+      "La regola di calcolo della scadenza (es. 10 giorni dalla vendita del primo prodotto) è un esempio: si assume che il Motore riceva o calcoli una data/ora di scadenza da persistere",
+      "L’elenco completo e vincolante degli stati e delle transizioni ammesse non è definito nel requisito; si assume che almeno gli stati citati siano supportati"
+    ],
+    "notes": "Requisito di natura dati/sistema: non emergono azioni dirette di UI per altre personas. L’AC 'disponibili per controlli lato canale' è interpretato come 'non disponibili post-scadenza ai consumatori dei dati' e come necessità di esposizione/consultazione tramite integrazioni da definire."
+  }
+]

@@ -1,0 +1,445 @@
+[
+  {
+    "story_id": "REQ-F-018.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-018.US01.TC01",
+        "title": "Visualizzazione pop-up bundle su evento pre-checkout (aggiunta primo prodotto al carrello) prima del checkout - Web",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e raggiungibile",
+          "Catalogo prodotti disponibile con almeno 1 prodotto acquistabile (Prodotto A)",
+          "Carrello vuoto",
+          "Funzionalità proposta bundle attiva (nessun feature flag disabilitante)",
+          "Il servizio/motore di proposta bundle è disponibile e risponde entro tempi accettabili"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Evento pre-checkout: 'Aggiunta al carrello' del Prodotto A",
+          "Proposta bundle attesa: presenza di almeno 1 secondo prodotto (Prodotto B) associato al Prodotto A (es. 'Auricolari ABC')"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Navigare alla pagina di dettaglio del Prodotto A",
+          "Cliccare su 'Aggiungi al carrello'",
+          "Verificare la comparsa del pop-up con proposta bundle prima di qualsiasi accesso alla schermata di checkout",
+          "Chiudere il pop-up senza procedere al checkout",
+          "Navigare al carrello"
+        ],
+        "expected_results": [
+          "Dopo l'aggiunta al carrello del Prodotto A, il sistema mostra un pop-up contenente una proposta di bundle (almeno un prodotto aggiuntivo proposto)",
+          "Il pop-up viene mostrato in un punto del flusso precedente all'ingresso nella schermata di checkout",
+          "La chiusura del pop-up non blocca la navigazione e consente di proseguire nel funnel (es. verso il carrello)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Si assume che l'evento pre-checkout primario sia l'aggiunta al carrello del primo prodotto. Il contenuto esatto della proposta (quali prodotti) dipende dalle regole del motore offerte."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC02",
+        "title": "Visualizzazione pop-up bundle su evento pre-checkout (aggiunta primo prodotto al carrello) prima del checkout - App",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "App installata e avviabile",
+          "Catalogo prodotti disponibile con almeno 1 prodotto acquistabile (Prodotto A)",
+          "Carrello vuoto",
+          "Funzionalità proposta bundle attiva",
+          "Il servizio/motore di proposta bundle è disponibile e risponde entro tempi accettabili"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Evento pre-checkout: 'Aggiunta al carrello' del Prodotto A",
+          "Proposta bundle attesa: presenza di almeno 1 secondo prodotto (Prodotto B) associato al Prodotto A"
+        ],
+        "steps": [
+          "Aprire l'App",
+          "Navigare alla pagina di dettaglio del Prodotto A",
+          "Toccare 'Aggiungi al carrello'",
+          "Verificare la comparsa del pop-up con proposta bundle prima di qualsiasi accesso alla schermata di checkout",
+          "Chiudere il pop-up senza procedere al checkout",
+          "Aprire la schermata carrello dall'icona carrello"
+        ],
+        "expected_results": [
+          "Dopo l'aggiunta al carrello del Prodotto A, l'App mostra un pop-up contenente una proposta di bundle",
+          "Il pop-up viene mostrato prima dell'ingresso nella schermata di checkout",
+          "La chiusura del pop-up non blocca l'utente e consente di proseguire nel funnel"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Comportamento atteso uniforme rispetto al Web; eventuali differenze UI (modale nativa vs overlay) non impattano la verifica funzionale."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC03",
+        "title": "Il pop-up risulta già mostrato prima dell'accesso alla schermata di checkout (verifica assenza in checkout)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e raggiungibile",
+          "Catalogo prodotti disponibile con almeno 1 prodotto acquistabile (Prodotto A)",
+          "Carrello vuoto",
+          "Funzionalità proposta bundle attiva",
+          "Il servizio/motore di proposta bundle è disponibile"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Aggiungere il Prodotto A al carrello",
+          "Attendere la visualizzazione del pop-up proposta bundle",
+          "Chiudere il pop-up",
+          "Andare al carrello",
+          "Cliccare 'Procedi al checkout' per entrare nella schermata di checkout"
+        ],
+        "expected_results": [
+          "Il pop-up proposta bundle viene mostrato prima del checkout (in un punto precedente del flusso)",
+          "All'ingresso nella schermata di checkout, il pop-up proposta bundle non viene mostrato (non compare in checkout)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La user story richiede che la proposta sia mostrata esclusivamente prima del checkout; questo test valida che in checkout non venga riproposta."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC04",
+        "title": "Ripetibilità: il pop-up compare nuovamente ripetendo lo stesso scenario nelle medesime condizioni",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e raggiungibile",
+          "Catalogo prodotti disponibile con almeno 1 prodotto acquistabile (Prodotto A)",
+          "Funzionalità proposta bundle attiva",
+          "Il servizio/motore di proposta bundle è disponibile",
+          "Possibilità di ripristinare lo stato iniziale (carrello svuotabile, sessione resettabile)"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Numero ripetizioni scenario: 2"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Verificare che il carrello sia vuoto",
+          "Aggiungere il Prodotto A al carrello",
+          "Verificare la comparsa del pop-up proposta bundle",
+          "Svuotare il carrello",
+          "Ripetere l'aggiunta del Prodotto A al carrello nelle stesse condizioni iniziali",
+          "Verificare nuovamente la comparsa del pop-up proposta bundle"
+        ],
+        "expected_results": [
+          "Alla prima esecuzione dello scenario, il pop-up proposta bundle viene mostrato",
+          "Alla seconda esecuzione dello scenario nelle medesime condizioni, il pop-up proposta bundle viene mostrato nuovamente",
+          "La comparsa del pop-up risulta ripetibile e osservabile in modo deterministico nello scenario di test"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La ripetibilità è verificata ripristinando lo stato (carrello vuoto). Non è specificato se esistano regole di frequency capping; se presenti, potrebbero rendere il test non valido e vanno chiarite."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC05",
+        "title": "Accesso diretto alla schermata di checkout (deep link/percorso abbreviato): il pop-up non deve comparire in checkout",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale App disponibile",
+          "Esiste un meccanismo di deep link o percorso abbreviato che porta alla schermata di checkout",
+          "Funzionalità proposta bundle attiva"
+        ],
+        "test_data": [
+          "Deep link checkout: 'myapp://checkout' (esempio, da sostituire con quello reale)"
+        ],
+        "steps": [
+          "Aprire l'App",
+          "Eseguire il deep link (o percorso abbreviato) verso la schermata di checkout",
+          "Osservare il comportamento all'apertura della schermata di checkout"
+        ],
+        "expected_results": [
+          "Il pop-up proposta bundle non viene mostrato nella schermata di checkout"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Edge case esplicitato: comportamento alternativo (dove/come mostrare la proposta se si salta il pre-checkout) non è definito; il test valida solo il vincolo 'non in checkout'."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC06",
+        "title": "Indisponibilità del servizio proposta: l'utente può proseguire verso il checkout senza blocchi",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canale Web disponibile e raggiungibile",
+          "Catalogo prodotti disponibile con almeno 1 prodotto acquistabile (Prodotto A)",
+          "Carrello vuoto",
+          "Possibilità di simulare indisponibilità/errore del servizio proposta (es. mock 5xx/timeout)",
+          "Funzionalità proposta bundle attiva"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Simulazione errore servizio proposta: HTTP 503 oppure timeout > 10s"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Attivare la simulazione di errore/timeout del servizio proposta",
+          "Aggiungere il Prodotto A al carrello",
+          "Navigare al carrello",
+          "Cliccare 'Procedi al checkout'"
+        ],
+        "expected_results": [
+          "Il flusso utente non viene bloccato dall'errore del servizio proposta",
+          "L'utente riesce a entrare nella schermata di checkout",
+          "Il pop-up proposta bundle non viene mostrato se la proposta non è disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La modalità di fallback (messaggio informativo vs silenzioso) non è specificata; il test verifica l'assenza di blocchi e la possibilità di proseguire."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-018.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-018.US02.TC01",
+        "title": "Generazione e invio proposta bundle su evento add-to-cart prima dell'ingresso in checkout (integrazione Motore → Canale) - Web",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente integrato disponibile (Motore offerte + Canale Web)",
+          "Tracciamento eventi pre-checkout abilitato (evento 'add-to-cart')",
+          "Carrello vuoto",
+          "Logging/monitoring disponibile per verificare richiesta e risposta tra canale e motore (es. correlation-id)"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Evento: add-to-cart del Prodotto A",
+          "Correlation-Id: 'corr-018-0001' (esempio)",
+          "Tempo massimo atteso per invio proposta: 2s (assunzione tecnica da confermare)"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Aggiungere il Prodotto A al carrello generando l'evento pre-checkout",
+          "Raccogliere il Correlation-Id della chiamata (da header/log del canale)",
+          "Verificare nei log del motore la ricezione dell'evento pre-checkout associato al Correlation-Id",
+          "Verificare nei log del motore la generazione della proposta bundle per il Prodotto A",
+          "Verificare l'invio della proposta dal motore al canale Web prima dell'ingresso in checkout",
+          "Dal canale Web, procedere al checkout"
+        ],
+        "expected_results": [
+          "Il motore riceve l'evento pre-checkout (add-to-cart) e genera una proposta bundle associata al Prodotto A",
+          "Il motore invia la proposta al canale Web prima che l'utente entri nella schermata di checkout",
+          "Entrando in checkout, la proposta risulta già disponibile/inviata (non viene generata o inviata per la prima volta in checkout)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La soglia temporale (2s) è un'assunzione per rendere verificabile il 'prima del checkout' dal punto di vista tecnico; va confermata con NFR/SLAs."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC02",
+        "title": "Trigger alternativo basato su pagina pre-finalizzazione: invio proposta prima del checkout quando add-to-cart non è disponibile - App",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente integrato disponibile (Motore offerte + App)",
+          "Nel funnel App esiste una pagina/evento alternativo pre-checkout configurato come trigger (es. 'Riepilogo carrello' o pagina pre-finalizzazione)",
+          "Carrello contenente il Prodotto A",
+          "Logging/monitoring disponibile per verificare chiamate e tempi"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Trigger alternativo: 'Visualizzazione pagina Riepilogo carrello' (esempio, da sostituire con quello reale)",
+          "Correlation-Id: 'corr-018-0002' (esempio)"
+        ],
+        "steps": [
+          "Aprire l'App",
+          "Aggiungere il Prodotto A al carrello senza generare l'evento add-to-cart verso il motore (condizione di test: add-to-cart non disponibile)",
+          "Navigare alla pagina/evento alternativo pre-checkout configurato",
+          "Raccogliere il Correlation-Id della chiamata al motore (da log/strumentazione)",
+          "Verificare nei log del motore la ricezione del trigger alternativo",
+          "Verificare nei log del motore la generazione e l'invio della proposta al canale App prima dell'ingresso in checkout",
+          "Procedere dalla pagina pre-finalizzazione alla schermata di checkout"
+        ],
+        "expected_results": [
+          "Il motore supporta il trigger alternativo pre-checkout e lo tratta come evento valido per la generazione proposta",
+          "La proposta bundle viene inviata al canale App prima dell'ingresso in checkout"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story non specifica quale sia il trigger alternativo per ciascun funnel/canale; il test richiede la definizione/configurazione del trigger reale."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC03",
+        "title": "E2E: invio proposta dal motore e comparsa pop-up prima del checkout (scenario completo) - Web",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente end-to-end disponibile (Motore offerte + Canale Web + eventuali servizi catalogo/carrello/checkout)",
+          "Carrello vuoto",
+          "Prodotto A acquistabile e abilitato a ricevere proposta bundle",
+          "Monitoraggio disponibile per correlare evento, invio proposta e visualizzazione pop-up"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Prodotto B proposto: 'Auricolari ABC' (esempio, se previsto dal motore)"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Aggiungere il Prodotto A al carrello",
+          "Verificare che il motore abbia inviato una proposta bundle al canale (tramite log/telemetria o risposta API)",
+          "Verificare sul canale Web la comparsa del pop-up proposta bundle prima di entrare in checkout",
+          "Chiudere il pop-up",
+          "Procedere al checkout"
+        ],
+        "expected_results": [
+          "Il motore genera e invia la proposta al canale digitale prima dell'ingresso in checkout",
+          "Il pop-up proposta bundle compare nelle condizioni previste (dopo inserimento del primo prodotto) e prima del checkout"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Questo test collega esplicitamente integrazione (invio) e comportamento UI (comparsa pop-up) come richiesto dai test end-to-end."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC04",
+        "title": "Ripetibilità del trigger e dell'invio proposta: esecuzione ripetuta dello stesso scenario con evidenza documentabile",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente integrato disponibile (Motore offerte + Canale Web)",
+          "Carrello svuotabile e sessione ripristinabile tra esecuzioni",
+          "Logging/monitoring disponibile per estrarre prove (timestamp, correlation-id, evento, risposta)"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Numero ripetizioni scenario: 2",
+          "Formato evidenza: estrazione log con campi [timestamp, evento, correlation-id, esito invio]"
+        ],
+        "steps": [
+          "Eseguire una prima volta lo scenario: aggiungere il Prodotto A al carrello",
+          "Registrare evidenze dell'evento pre-checkout e dell'invio proposta (timestamp, correlation-id, esito)",
+          "Ripristinare lo stato iniziale (svuotare carrello e resettare sessione se necessario)",
+          "Eseguire una seconda volta lo scenario: aggiungere il Prodotto A al carrello nelle medesime condizioni",
+          "Registrare nuovamente evidenze dell'evento pre-checkout e dell'invio proposta"
+        ],
+        "expected_results": [
+          "In entrambe le esecuzioni, il trigger pre-checkout risulta attivato e tracciabile",
+          "In entrambe le esecuzioni, il motore genera e invia la proposta con esito positivo",
+          "Le evidenze raccolte sono sufficienti a documentare la ripetibilità del trigger nei casi di test (es. log con correlation-id e timestamp)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La user story richiede che il trigger sia documentabile; questo test formalizza l'evidenza minima. Eventuali meccanismi anti-ripetizione lato motore/canale vanno chiariti."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC05",
+        "title": "Latenza elevata nella generazione: la proposta non deve essere inviata dopo l'ingresso in checkout (verifica temporale)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente integrato disponibile (Motore offerte + Canale Web)",
+          "Carrello vuoto",
+          "Possibilità di introdurre latenza controllata nel motore (es. delay artificiale) o di simulare tempi di risposta elevati",
+          "Disponibilità di timestamp lato canale e lato motore per confronto"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Latenza simulata motore: 8s (esempio, da calibrare)",
+          "Tempo utente per entrare in checkout dopo add-to-cart: 3s (esecuzione rapida)"
+        ],
+        "steps": [
+          "Aprire il canale Web",
+          "Attivare la simulazione di latenza elevata nel motore",
+          "Aggiungere il Prodotto A al carrello",
+          "Procedere immediatamente al checkout",
+          "Raccogliere i timestamp di ingresso in checkout lato canale",
+          "Verificare nei log del motore i timestamp di generazione e invio proposta"
+        ],
+        "expected_results": [
+          "Se l'utente entra in checkout prima che la proposta sia stata inviata, il sistema non invia la proposta in ritardo come se fosse pre-checkout (la proposta non deve risultare inviata dopo l'ingresso in checkout come adempimento di AC-1)",
+          "L'ingresso in checkout resta possibile e non viene bloccato dall'attesa della proposta"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il comportamento atteso in caso di latenza (annullamento invio, invio ma non mostrato, timeout) non è definito; il test verifica il vincolo temporale 'prima del checkout' e la non interferenza col checkout."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC06",
+        "title": "Richieste duplicate dello stesso evento (retry): gestione idempotenza dell'invio proposta",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente integrato disponibile (Motore offerte + Canale App o Web)",
+          "Carrello vuoto",
+          "Possibilità di inviare due volte lo stesso evento pre-checkout con lo stesso identificativo evento (event-id) o stesso correlation-id",
+          "Logging/monitoring disponibile per contare le proposte inviate"
+        ],
+        "test_data": [
+          "Prodotto A: 'Smartphone XYZ 128GB' (acquistabile)",
+          "Event-Id: 'evt-dup-0001' (esempio)",
+          "Numero invii duplicati: 2"
+        ],
+        "steps": [
+          "Inviare al motore un evento pre-checkout per il Prodotto A con Event-Id 'evt-dup-0001'",
+          "Inviare nuovamente lo stesso evento pre-checkout con lo stesso Event-Id 'evt-dup-0001'",
+          "Verificare nei log del motore la gestione delle due richieste",
+          "Verificare lato canale il numero di proposte ricevute/mostrabili associate all'evento"
+        ],
+        "expected_results": [
+          "Il comportamento del motore rispetto ai duplicati è deterministico e documentabile (es. una sola proposta inviata oppure duplicati gestiti secondo regola definita)",
+          "Non si verificano effetti collaterali non controllati (es. invii multipli non tracciati) che rendano non ripetibile il test"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La regola di idempotenza non è specificata; il test serve a rendere osservabile e documentabile il comportamento, requisito implicito per la ripetibilità."
+      }
+    ]
+  }
+]

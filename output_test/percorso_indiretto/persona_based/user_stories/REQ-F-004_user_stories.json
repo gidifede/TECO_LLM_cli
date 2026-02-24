@@ -1,0 +1,65 @@
+[
+  {
+    "story_id": "REQ-F-004.US01",
+    "title": "Configurare l’intervallo minimo di ri-esposizione di un prodotto per cliente",
+    "persona": "Team Marketing",
+    "goal": "configurare e modificare il tempo minimo prima che lo stesso prodotto possa essere riproposto allo stesso cliente",
+    "benefit": "evitare riproposizioni ravvicinate e gestire la pressione commerciale secondo le policy di campagna",
+    "user_story": "Come Team Marketing\nVoglio configurare e modificare il tempo minimo di ri-esposizione di uno stesso prodotto per cliente\nIn modo che il Motore eviti riproposizioni ravvicinate in base alle regole di campagna",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard/interfaccia dedicata con un profilo autorizzato ALLORA posso impostare un valore di tempo minimo di ri-esposizione per uno stesso prodotto verso lo stesso cliente.",
+      "QUANDO modifico il valore di tempo minimo di ri-esposizione ALLORA il nuovo valore viene salvato e risulta disponibile al Motore per le successive valutazioni.",
+      "QUANDO imposto il tempo minimo di ri-esposizione ALLORA l’unità di misura è coerente con la configurazione prevista (es. giorni) e il valore deve essere valido (es. numero intero non negativo)."
+    ],
+    "business_rules": [
+      "La configurazione del tempo minimo di ri-esposizione è modificabile solo da team/utenti autorizzati tramite dashboard o interfaccia dedicata.",
+      "Il tempo minimo di ri-esposizione è applicato per coppia (cliente, prodotto) rispetto alla data/ora dell’ultima presentazione registrata dal Motore."
+    ],
+    "edge_cases": [
+      "Utente non autorizzato tenta di accedere alla configurazione: la UI nega l’accesso o impedisce il salvataggio.",
+      "Valore non valido (vuoto, negativo, non numerico): la UI impedisce il salvataggio e mostra errore.",
+      "Configurazione non disponibile (es. servizio di configurazione non raggiungibile): l’utente non riesce a salvare e viene informato dell’errore."
+    ],
+    "assumptions": [
+      "Il requisito non specifica range min/max e formato esatto del campo: si assume un valore numerico intero con unità di misura definita a livello di configurazione (es. giorni).",
+      "Il requisito cita anche un flag per proporre offerte a chi possiede già un prodotto del bundle e una finestra X giorni, ma non fornisce acceptance criteria: tale parte non è trasformabile in AC testabili in questa US senza ulteriori dettagli."
+    ],
+    "notes": "Gli acceptance criteria del requisito coprono la configurazione del tempo minimo e il rispetto della regola da parte del Motore; qui sono riscritti dal punto di vista Marketing per la parte di configurazione. Dipendenza esterna: dettaglio su REQ-F-25/26 e specifiche del flag “upgrade”/X giorni non presenti nel requisito."
+  },
+  {
+    "story_id": "REQ-F-004.US02",
+    "title": "Applicare la regola di frequenza per evitare la ri-proposta ravvicinata dello stesso prodotto",
+    "persona": "Motore di Offerte",
+    "goal": "evitare di proporre lo stesso prodotto allo stesso cliente prima della scadenza dell’intervallo minimo configurato",
+    "benefit": "garantire coerenza con le regole di ingaggio e ridurre ripetizioni non desiderate nelle proposte",
+    "user_story": "Come Motore di Offerte\nVoglio applicare l’intervallo minimo configurato prima di ri-proporre lo stesso prodotto allo stesso cliente\nIn modo che non venga ri-esposto un prodotto prima del termine previsto",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO ricevo una richiesta di generazione offerte per un cliente ALLORA verifico per ciascun prodotto candidato la data/ora dell’ultima presentazione a quel cliente.",
+      "QUANDO il tempo trascorso dall’ultima presentazione di un prodotto allo stesso cliente è inferiore all’intervallo minimo configurato ALLORA non includo quel prodotto tra le proposte restituite.",
+      "QUANDO il tempo trascorso dall’ultima presentazione di un prodotto allo stesso cliente è maggiore o uguale all’intervallo minimo configurato ALLORA il prodotto può essere incluso tra le proposte (se soddisfa le altre regole di eleggibilità).",
+      "QUANDO avviene una proposta di un prodotto a un cliente ALLORA registro l’evento di presentazione in modo che sia utilizzabile per i controlli di frequenza successivi.",
+      "QUANDO, dopo una proposta, avviene un successivo evento di richiesta offerta prima del periodo configurato ALLORA non ri-espondo lo stesso prodotto (come da test di integrazione)."
+    ],
+    "business_rules": [
+      "L’intervallo minimo di ri-esposizione è letto da configurazione (dashboard/interfaccia dedicata) e applicato in runtime.",
+      "La regola è per cliente e per prodotto: il blocco riguarda la riproposizione dello stesso prodotto allo stesso cliente.",
+      "In assenza di una presentazione precedente per (cliente, prodotto), il prodotto non è bloccato dalla regola di frequenza."
+    ],
+    "edge_cases": [
+      "Configurazione mancante o non leggibile: comportamento non specificato nel requisito (necessaria decisione: fallback a default, blocco o allow).",
+      "Timestamp dell’ultima presentazione non disponibile/corrotto: comportamento non specificato (necessaria decisione su gestione errore e logging).",
+      "Richieste concorrenti di offerta che potrebbero generare doppia registrazione della presentazione: necessaria gestione di idempotenza/consistenza (non dettagliata nel requisito)."
+    ],
+    "assumptions": [
+      "Si assume che il Motore disponga di un meccanismo di persistenza/lettura della ‘ultima presentazione’ per (cliente, prodotto), coerente con le responsabilità già attribuite al Motore.",
+      "Il requisito non definisce esplicitamente se l’intervallo è in giorni o include ore/minuti: si assume che il calcolo sia coerente con l’unità configurata."
+    ],
+    "notes": "Questa US copre gli AC (2) e (3) del requisito e include anche la necessità implicita di registrare la presentazione per rendere verificabile la regola nel tempo. La parte su flag ‘offerta proponibile a chi possiede già un prodotto in bundle’ e ‘ultimi X giorni’ è citata in descrizione ma non ha AC: è una dipendenza verso REQ-F-25/26."
+  }
+]

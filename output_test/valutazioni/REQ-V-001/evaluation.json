@@ -1,0 +1,161 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-001",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 75,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-001.TC01",
+        "detail": "Assume un canale specifico per il configuratore ('web') e una UI amministrativa; il requisito non specifica il canale del configuratore."
+      },
+      {
+        "test_id": "REQ-V-001.TC01",
+        "detail": "Introduce campi/attributi non menzionati (es. 'Motivazione' nel configuratore) e una combinazione di esempio dettagliata (Prodotto/Opzione/Durata)."
+      },
+      {
+        "test_id": "REQ-V-001.TC02",
+        "detail": "Assume modalità di invocazione/UX ('Calcola'/'Trova offerte') e verifica esplicita di output via API; non specificato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.TC03",
+        "detail": "Introduce il canale 'app' come canale supportato specifico; il requisito parla genericamente di 'canali supportati' senza elencarli."
+      },
+      {
+        "test_id": "REQ-V-001.TC04",
+        "detail": "Assume dettagli di implementazione dell'eccezione (campi come durata 24 ore, motivazione, stato 'attiva' e perimetro temporale) non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-V-001.TC05",
+        "detail": "Assume modalità di enforcement RBAC (feature nascosta vs sola lettura vs errore) non specificate dal requisito (il requisito richiede solo che ruoli non autorizzati non possano creare eccezioni)."
+      },
+      {
+        "test_id": "REQ-V-001.TC06",
+        "detail": "Introduce un'ipotesi architetturale (servizio/componente eccezioni separato) e un comportamento 'fail-safe' in caso di indisponibilità; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.TC07",
+        "detail": "Introduce scenario di propagazione/caching e timing di aggiornamento tra configuratore e motore; il requisito non tratta cache/tempi di propagazione."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"...non deve essere proposta ai clienti nei canali supportati\"",
+        "detail": "Copertura parziale dei 'canali supportati': i TC testano web e (assumendo) app, ma il requisito non elenca i canali; manca un approccio che verifichi sistematicamente tutti i canali effettivamente supportati (una volta noti) o che sia parametrico sui canali."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-001.TC02",
+          "REQ-V-001.TC03"
+        ],
+        "detail": "Stesso scenario (esclusione combinazione 'vietata') replicato solo cambiando canale (web vs app) con passi/expected molto simili."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 45,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-001.US01.TC01",
+        "detail": "Introduce il canale/ambiente 'dashboard' e una struttura matrice con dimensioni (Prodotto/Canale/Segmento) non indicate dal requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC02",
+        "detail": "Assume che eccezioni manuali siano gestite dalla 'dashboard' e richiedano una 'motivazione' con riferimenti a campagna/ticket; non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC02",
+        "detail": "Aggiunge dipendenza da 'Servizio RBAC disponibile e rispondente' come precondizione esplicita; il requisito cita conformità RBAC ma non un servizio/architettura."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC03",
+        "detail": "Assume un messaggio UI specifico di autorizzazione insufficiente; il requisito non prescrive feedback UI."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC04",
+        "detail": "Definisce comportamento fail-safe in caso di indisponibilità RBAC (operazione negata) e introduce guasti (timeout/5xx); non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC05",
+        "detail": "Scenario 'combinazione non esistente/non selezionabile' e relativi messaggi; non derivabile dagli AC (che richiedono solo che sia possibile impostare chiaramente lo stato 'vietata' per una combinazione)."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC06",
+        "detail": "Scenario di concorrenza/locking e regole 'last-write-wins' o errore di concorrenza; non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US01.TC07",
+        "detail": "Scenario 'eccezione su combinazione non vietata' con regole alternative; il requisito parla solo di eccezioni che autorizzano proposte vietate."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC01",
+        "detail": "Introduce concetti non presenti (Cliente con ID, 'Motore di Offerte', richiesta di generazione proposte per cliente) e vincola l'input al cliente; il requisito parla genericamente di proposte ai clienti nei canali supportati."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC02",
+        "detail": "Assume che il motore legga e verifichi 'metadati' dell'eccezione (creatore_ruolo) e che l'output possa esporre metadati/tracciabilità (associazione a ID eccezione); non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC03",
+        "detail": "Assume esistenza di record eccezione 'non conforme RBAC' ma comunque leggibile dal motore; il requisito non descrive la gestione di eccezioni invalide già presenti."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC04",
+        "detail": "Introduce indisponibilità del servizio matrice/configurazione e comportamento fail-safe del motore; non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC05",
+        "detail": "Introduce metadati mancanti e regola 'se non verificabile allora ignorare'; non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-001.US02.TC06",
+        "detail": "Introduce ruoli specifici ('Marketing') e assunzioni su sincronizzazione/caching; non nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"...non deve essere proposta ai clienti nei canali supportati\"",
+        "detail": "I TC non valorizzano coerentemente il concetto di 'canali supportati': molti test hanno 'channels': [] e quando citano WEB/APP lo fanno come esempi. Manca una verifica esplicita per ciascun canale effettivamente supportato (una volta noto) o un test parametrico sui canali."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-001.US01.TC02",
+          "REQ-V-001.US02.TC02",
+          "REQ-V-001.US02.TC06"
+        ],
+        "detail": "Ripetono lo scenario 'eccezione autorizzata consente proposta di vietata' con variazioni minime (contesto dashboard vs motore vs E2E)."
+      },
+      {
+        "test_ids": [
+          "REQ-V-001.US01.TC03",
+          "REQ-V-001.US02.TC03",
+          "REQ-V-001.US02.TC05"
+        ],
+        "detail": "Più test coprono il caso 'eccezione non valida/non autorizzata/non verificabile' con expected simili (vietata resta esclusa)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (3/3). Il set direct introduce meno informazioni non tracciabili (8 added_info vs 14) e meno ridondanze (1 vs 2), risultando piu aderente al requisito. Il set indirect_persona aggiunge molte assunzioni architetturali (servizi RBAC/configurazione, metadati eccezione, motore offerte) e numerosi edge case non richiesti, riducendo la coerenza complessiva."
+  }
+}

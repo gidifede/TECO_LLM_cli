@@ -1,0 +1,129 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-003",
+  "direct": {
+    "tc_count": 9,
+    "coherence_score": 61,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-003.TC01",
+        "detail": "Assume un mezzo specifico di recupero log (storage log o API di consultazione) non descritto nel requisito."
+      },
+      {
+        "test_id": "REQ-D-003.TC01",
+        "detail": "Introduce vincoli su formato timestamp e verifica che sia compreso tra inizio/fine test; il requisito richiede solo presenza di data/ora, non formato o range."
+      },
+      {
+        "test_id": "REQ-D-003.TC05",
+        "detail": "Specifica 'range inclusivo' e considerazioni su timezone; il requisito richiede filtraggio per periodo ma non definisce inclusività né timezone."
+      },
+      {
+        "test_id": "REQ-D-003.TC06",
+        "detail": "Introduce canale 'app' come valore; il requisito parla di canale/touchpoint ma non elenca canali specifici."
+      },
+      {
+        "test_id": "REQ-D-003.TC06",
+        "detail": "Assume comportamento in caso di campo obbligatorio mancante: rifiuto evento/errore 4xx e 'non persiste record'; il requisito dice solo che i campi obbligatori sono sempre popolati, non come gestire input incompleti."
+      },
+      {
+        "test_id": "REQ-D-003.TC07",
+        "detail": "Assume errore di validazione e rifiuto evento se motivo_proposta mancante; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-D-003.TC08",
+        "detail": "Scenario di indisponibilità del sistema di logging, retry/buffer e tracciamento via monitoring/errori applicativi: non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-003.TC09",
+        "detail": "Introduce ordinabilità in dashboard e requisiti di granularità/coerenza sequenziale del timestamp; il requisito parla solo di filtraggio per periodo, non di ordinamento o granularità."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'canale/touchpoint su cui è stata mostrata la proposta'",
+        "detail": "I TC usano principalmente 'web' e una volta 'app' ma non validano esplicitamente che il canale corrisponda al touchpoint effettivo di esposizione della proposta (correlazione proposta mostrata -> canale loggato)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-003.TC03",
+          "REQ-D-003.TC04"
+        ],
+        "detail": "Stesso pattern di test filtro in dashboard (cambia solo il campo: cliente vs cluster)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 49,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-003.US01.TC01",
+        "detail": "Introduce attore/ruolo 'Team Marketing' e permessi di accesso; non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC01",
+        "detail": "Introduce valori canale specifici (WEB/APP/STORE) e motivazioni (UPSELL/CROSS_SELL/RETENTION) non presenti come enumerazioni nel requisito (che dà solo esempi)."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC06",
+        "detail": "Assume pipeline dati e latenza accettabile tra sorgente log e dashboard; non specificato."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC07",
+        "detail": "Test di autorizzazione/accesso negato (403, utente non autorizzato): il requisito non tratta sicurezza/permessi."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC08",
+        "detail": "Comportamento per filtro con valore inesistente (lista vuota senza errori): non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC09",
+        "detail": "Validazione input del filtro temporale (inizio > fine) e comportamento 'non applica filtro': non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC10",
+        "detail": "Scenario prestazionale/volume (>=50.000) e assenza di timeout: il requisito non definisce requisiti di performance o SLA."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC05",
+        "detail": "Assume formato ISO-8601 e estremi inclusi nel filtro temporale; non specificato dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-3: 'I campi obbligatori sono sempre popolati per ogni evento di proposta.'",
+        "detail": "Non viene coperto un caso che verifichi direttamente la generazione del log a fronte di un evento di proposta in modo sistematico/trasversale (oltre al singolo evento in US01.TC06) né viene verificato su più eventi/canali; la copertura è presente ma limitata a un esempio."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-003.US01.TC02",
+          "REQ-D-003.US01.TC03",
+          "REQ-D-003.US01.TC04"
+        ],
+        "detail": "Tre test quasi identici di filtro in dashboard (bundle/cliente/cluster) con stesso flusso operativo."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia il set direct introduce meno informazioni non tracciabili (8 added_info vs 8 ma nel set indirect_persona alcune sono più fuori perimetro, es. autorizzazione e performance) e presenta meno ridondanze (1 vs 1 ma più estesa nel persona-based). Inoltre l'indirect_persona aggiunge aspetti estranei al requisito (ruoli/permessi, performance, validazioni UI) che abbassano maggiormente la coerenza complessiva, risultando in un punteggio inferiore (49 vs 61)."
+  }
+}

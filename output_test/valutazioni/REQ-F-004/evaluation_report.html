@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-004</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-004</h1>
+  <div class="subtitle">Regola configurabile di abilitazione di presentazione (frequenza per evitare riproposizione ravvicinata, offerte a chi già possiede un prodotto in bundle)</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:56</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-004</div>
+  <div class="req-field"><strong>Titolo:</strong> Regola configurabile di abilitazione di presentazione (frequenza per evitare riproposizione ravvicinata, offerte a chi già possiede un prodotto in bundle)</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. L&#x27;utente ha indicato che deve essere prevista una regola configurabile di frequenza di presentazione per la stessa proposta: l&#x27;intervallo minimo tra una presentazione e la successiva dello stesso prodotto deve poter essere impostato (per esempio in giorni) e modificato dai team autorizzati.
+
+L&#x27;utente Marketing deve inoltre poter associare a una offerta un flag che decide se tale offerta può essere proposta a chi già possiede uno dei prodotti in bundle (per default: NO) e di decidere se consentire tale &quot;upgrade&quot; almeno per i clienti che abbiano acquistato tale prodotto negli ultimi X giorni. Riferimento ulteriore: REQ-F-25/26</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È possibile configurare, tramite la dashboard o interfaccia dedicata, il tempo minimo di ri-esposizione di uno stesso prodotto per cliente.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il motore rispetta tale configurazione ed evita di proporre lo stesso prodotto al cliente prima del termine dell&#x27;intervallo configurato.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Test di integrazione dimostrano che, dopo una proposta, un successivo evento di richiesta offerta non ri-esporrà il prodotto prima del periodo configurato.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#dc2626">48</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">35</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (3/3) ma ignorano una parte rilevante della descrizione (flag bundle/upgrade, default NO e finestra X giorni), che resta mancante in entrambi. Il set direct introduce meno informazioni non tracciabili (5 vs 10) e meno ridondanze (1 vs 2), ottenendo un punteggio di coerenza piu alto (48 vs 35).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">48</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-004.TC01</td><td>Introduce canale &#x27;web&#x27;, ruoli esemplificativi (Marketing Ops/Admin Regole) e assunzioni UI/persistenza non esplicitate (reload pagina) oltre a &#x27;dashboard/interfaccia dedicata&#x27;.</td></tr>
+<tr><td class='mono'>REQ-F-004.TC03</td><td>Assume esistenza di &#x27;log o storico esposizioni&#x27; con timestamp e regola applicata tramite consultazione di tale storico; il requisito non specifica logging/storico né la modalità di calcolo.</td></tr>
+<tr><td class='mono'>REQ-F-004.TC05</td><td>Dettagli tecnici non tracciabili: endpoint/consumer, storage/servizio, correlationId, assenza/semantica di eventi (&#x27;scartato per frequenza&#x27;).</td></tr>
+<tr><td class='mono'>REQ-F-004.TC06</td><td>Aggiunge un requisito di controllo accessi per utenti non autorizzati (negativo). Il requisito dice solo che team autorizzati possono modificare, ma non richiede esplicitamente il blocco per non autorizzati né le modalità.</td></tr>
+<tr><td class='mono'>REQ-F-004.TC07</td><td>Scenario di indisponibilità dello storico esposizioni e aspettative su gestione errori/fallback e logging: non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description (secondo paragrafo)</td><td>Manca copertura della funzionalità: flag su offerta per proporla (default NO) a clienti che già possiedono un prodotto in bundle e regola &#x27;upgrade&#x27; per clienti che lo hanno acquistato negli ultimi X giorni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-004.TC01, REQ-F-004.TC02</td><td>Entrambi verificano configurazione/modifica via dashboard e persistenza del valore (varia solo il valore 7 vs 14).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">35</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-004.US01.TC01</td><td>Introduce credenziali utente, unità di misura visualizzata come vincolo UI e canale &#x27;dashboard&#x27; (non definito come canale nel requisito).</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC02</td><td>Assume un canale tecnico con cui il Motore legge la configurazione (API/DB) e lo verifica esplicitamente: non specificato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC03</td><td>Dettaglia modalità di negazione accesso (pagina non raggiungibile/HTTP 403) non richieste dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC04</td><td>Aggiunge regole di validazione input (non numerico, negativo, intero) e messaggi di errore: non presenti negli AC/descrizione.</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC05</td><td>Aggiunge scenario di indisponibilità del servizio di configurazione e comportamento atteso UI: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC01</td><td>Assume concetto di &#x27;set di prodotti candidati&#x27; e che il prodotto debba risultare incluso &#x27;salvo altre regole&#x27;: non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC04</td><td>Richiede registrazione di un evento di presentazione e meccanismi di lettura (tabella/topic/API audit): il requisito non lo richiede esplicitamente.</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC05</td><td>Introduce controllo/forzatura del tempo (clock fittizio) come requisito di test e dettagli E2E non citati.</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC06</td><td>Scenario di configurazione non leggibile e vincolo &#x27;non restituire risposta silenziosamente incoerente&#x27; con logging/metriche: non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC07</td><td>Scenario di timestamp corrotto e aspettative di comportamento deterministico/logging: non nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description (secondo paragrafo)</td><td>Manca copertura della funzionalità: flag su offerta per proporla (default NO) a clienti che già possiedono un prodotto in bundle e regola &#x27;upgrade&#x27; per clienti che lo hanno acquistato negli ultimi X giorni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-004.US02.TC02, REQ-F-004.US02.TC05</td><td>Entrambi verificano che una seconda richiesta entro 7 giorni non riproponga lo stesso prodotto (varia il livello: functional vs E2E).</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC03, REQ-F-004.US02.TC05</td><td>Sovrapposizione parziale sul comportamento temporale della ri-esposizione (&gt;= intervallo vs &lt; intervallo) nell&#x27;ambito di richieste successive.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-004&quot;,
+  &quot;title&quot;: &quot;Regola configurabile di abilitazione di presentazione (frequenza per evitare riproposizione ravvicinata, offerte a chi già possiede un prodotto in bundle)&quot;,
+  &quot;description&quot;: &quot;Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. L&#x27;utente ha indicato che deve essere prevista una regola configurabile di frequenza di presentazione per la stessa proposta: l&#x27;intervallo minimo tra una presentazione e la successiva dello stesso prodotto deve poter essere impostato (per esempio in giorni) e modificato dai team autorizzati.\n\nL&#x27;utente Marketing deve inoltre poter associare a una offerta un flag che decide se tale offerta può essere proposta a chi già possiede uno dei prodotti in bundle (per default: NO) e di decidere se consentire tale \&quot;upgrade\&quot; almeno per i clienti che abbiano acquistato tale prodotto negli ultimi X giorni. Riferimento ulteriore: REQ-F-25/26&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È possibile configurare, tramite la dashboard o interfaccia dedicata, il tempo minimo di ri-esposizione di uno stesso prodotto per cliente.&quot;,
+    &quot;Il motore rispetta tale configurazione ed evita di proporre lo stesso prodotto al cliente prima del termine dell&#x27;intervallo configurato.&quot;,
+    &quot;Test di integrazione dimostrano che, dopo una proposta, un successivo evento di richiesta offerta non ri-esporrà il prodotto prima del periodo configurato.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-004.TC01</td><td>Configurazione del tempo minimo di ri-esposizione tramite dashboard da team autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.TC02</td><td>Modifica del tempo minimo di ri-esposizione tramite dashboard da team autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.TC03</td><td>Blocco ri-esposizione: il motore non propone lo stesso prodotto prima della scadenza dell&#x27;intervallo configurato</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.TC04</td><td>Ri-esposizione consentita: il motore può riproporre lo stesso prodotto dopo la scadenza dell&#x27;intervallo configurato</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.TC05</td><td>Integrazione: su evento di richiesta offerta, il prodotto non viene ri-esposto prima del periodo configurato</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-004.TC06</td><td>Autorizzazione: un utente non autorizzato non può configurare/modificare il tempo minimo di ri-esposizione</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.TC07</td><td>Negativo: storico esposizioni non disponibile (timeout/errore) durante richiesta offerta</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 12 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-004.US01.TC01</td><td>Impostazione del tempo minimo di ri-esposizione da utente autorizzato (dashboard)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC02</td><td>Modifica del tempo minimo di ri-esposizione e disponibilità del nuovo valore per il Motore</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC03</td><td>Accesso negato o salvataggio non consentito per utente non autorizzato</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC04</td><td>Validazione input: valore vuoto, negativo o non numerico impedisce il salvataggio</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.US01.TC05</td><td>Errore di salvataggio configurazione quando il servizio di configurazione non è raggiungibile</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC01</td><td>Inclusione prodotto quando non esiste una presentazione precedente per (cliente, prodotto)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC02</td><td>Esclusione prodotto quando il tempo dall&#x27;ultima presentazione è inferiore all&#x27;intervallo minimo</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC03</td><td>Inclusione prodotto quando il tempo dall&#x27;ultima presentazione è maggiore o uguale all&#x27;intervallo minimo (caso limite uguaglianza)</td><td>Edge Case</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC04</td><td>Registrazione dell&#x27;evento di presentazione dopo una proposta</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC05</td><td>Test di integrazione: dopo una proposta, una richiesta successiva prima dell&#x27;intervallo non ri-espone lo stesso prodotto</td><td>E2E</td><td>HIGH</td><td>AC-3, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC06</td><td>Gestione configurazione non leggibile: il Motore non deve produrre una proposta incoerente senza segnalazione</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-004.US02.TC07</td><td>Gestione timestamp ultima presentazione corrotto o non disponibile</td><td>Negative</td><td>MEDIUM</td><td>AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 5, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 1, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

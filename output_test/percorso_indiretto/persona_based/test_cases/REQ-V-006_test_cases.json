@@ -1,0 +1,450 @@
+[
+  {
+    "story_id": "REQ-V-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-006.US01.TC01",
+        "title": "Web/App: esclusione di combinazioni con flag regolatorio 'vietato' dalle offerte mostrate al cliente",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile e popolato con combinazioni/offerte, incluse combinazioni con flag regolatorio = 'vietato'",
+          "Cliente esistente e abilitato alla visualizzazione offerte su Web e App",
+          "Il canale Web e il canale App consumano le proposte dal Motore di Offerte (o servizio equivalente) in ambiente di test"
+        ],
+        "test_data": [
+          "Cliente: CL-10001",
+          "Catalogo combinazioni: COMB-A (consentita), COMB-V1 (vietato)",
+          "Offerta candidata: OFF-20001 contenente COMB-A + COMB-V1",
+          "Offerta candidata: OFF-20002 contenente solo COMB-A"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CL-10001",
+          "Navigare alla sezione di visualizzazione/ricezione proposte/offerte",
+          "Richiedere/visualizzare le offerte disponibili per CL-10001",
+          "Verificare l'elenco offerte restituito dal sistema",
+          "Accedere al canale App come cliente CL-10001",
+          "Navigare alla sezione di visualizzazione/ricezione proposte/offerte",
+          "Richiedere/visualizzare le offerte disponibili per CL-10001",
+          "Verificare l'elenco offerte restituito dal sistema"
+        ],
+        "expected_results": [
+          "Nel canale Web non è presente alcuna offerta che includa COMB-V1 (flag = 'vietato')",
+          "Nel canale Web OFF-20001 non viene mostrata al cliente",
+          "Nel canale Web OFF-20002 (solo combinazioni consentite) è mostrata se eleggibile secondo le regole non oggetto di questa story",
+          "Nel canale App non è presente alcuna offerta che includa COMB-V1 (flag = 'vietato')",
+          "Nel canale App OFF-20001 non viene mostrata al cliente",
+          "Nel canale App OFF-20002 (solo combinazioni consentite) è mostrata se eleggibile secondo le regole non oggetto di questa story"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "Copre l'esclusione su canali digitali. Non valida comportamenti di fallback/sostituzione poiché non specificati."
+      },
+      {
+        "test_id": "REQ-V-006.US01.TC02",
+        "title": "Canale fisico (UP): il cliente non riceve proposte contenenti combinazioni 'vietato'",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile e popolato con combinazioni/offerte, incluse combinazioni con flag regolatorio = 'vietato'",
+          "Sessione di proposta in canale fisico (UP) avviabile per un cliente",
+          "Il canale fisico (UP) utilizza il front-end commerciale e riceve proposte dal Motore di Offerte (o servizio equivalente)"
+        ],
+        "test_data": [
+          "Cliente: CL-10002",
+          "Catalogo combinazioni: COMB-B (consentita), COMB-V2 (vietato)",
+          "Offerta candidata: OFF-20003 contenente COMB-B + COMB-V2",
+          "Offerta candidata: OFF-20004 contenente solo COMB-B"
+        ],
+        "steps": [
+          "Avviare una sessione di proposta in canale UP per il cliente CL-10002",
+          "Richiedere al sistema le proposte/offerte per CL-10002",
+          "Verificare le proposte/offerte presentate al cliente in canale UP"
+        ],
+        "expected_results": [
+          "In canale UP non è presente alcuna proposta/offerta che includa COMB-V2 (flag = 'vietato')",
+          "OFF-20003 non viene presentata al cliente",
+          "OFF-20004 (solo combinazioni consentite) è presentata se eleggibile secondo le regole non oggetto di questa story"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "UP (fisico)"
+        ],
+        "notes": "Il canale UP è interpretato come esperienza cliente assistita in presenza. Non valida l'eventuale UI del front-end commerciale (coperta nella US02)."
+      },
+      {
+        "test_id": "REQ-V-006.US01.TC03",
+        "title": "Edge case: proposta multi-combinazione con una sola combinazione 'vietato' non deve essere mostrata al cliente",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile e popolato con combinazioni/offerte, incluse combinazioni con flag regolatorio = 'vietato'",
+          "Cliente abilitato alla visualizzazione offerte su almeno un canale digitale e sul canale fisico"
+        ],
+        "test_data": [
+          "Cliente: CL-10003",
+          "Combinazioni: COMB-C (consentita), COMB-D (consentita), COMB-V3 (vietato)",
+          "Offerta candidata: OFF-20005 contenente COMB-C + COMB-D + COMB-V3"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CL-10003",
+          "Richiedere/visualizzare le offerte disponibili per CL-10003",
+          "Verificare che OFF-20005 non sia presente",
+          "Avviare una sessione in canale UP per CL-10003",
+          "Richiedere le proposte/offerte per CL-10003",
+          "Verificare che OFF-20005 non sia presente"
+        ],
+        "expected_results": [
+          "OFF-20005 non viene mostrata nel canale Web perché contiene COMB-V3 (flag = 'vietato')",
+          "OFF-20005 non viene mostrata nel canale UP perché contiene COMB-V3 (flag = 'vietato')",
+          "Non risulta alcuna proposta mostrata al cliente che contenga COMB-V3"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web",
+          "UP (fisico)"
+        ],
+        "notes": "Copre esplicitamente l'edge case indicato nella story. Il comportamento di sostituzione/fallback non è verificabile perché non specificato."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-006.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-006.US02.TC01",
+        "title": "Front-end commerciale: richiesta proposte in canale fisico esclude combinazioni 'vietato'",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile e popolato con combinazioni/offerte, incluse combinazioni con flag regolatorio = 'vietato'",
+          "Operatore autenticato sul front-end commerciale con ruolo 'Operatore base' (senza permesso di override)",
+          "Cliente esistente selezionabile dal front-end commerciale"
+        ],
+        "test_data": [
+          "Operatore: OP-001 (ruolo: Operatore base, override: NO)",
+          "Cliente: CL-20001",
+          "Combinazioni: COMB-E (consentita), COMB-V4 (vietato)",
+          "Offerta candidata: OFF-30001 contenente COMB-E + COMB-V4",
+          "Offerta candidata: OFF-30002 contenente solo COMB-E"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-001",
+          "Selezionare il cliente CL-20001",
+          "Richiedere le proposte/offerte per il cliente",
+          "Verificare l'elenco delle proposte mostrate all'operatore"
+        ],
+        "expected_results": [
+          "Nell'elenco proposte non è presente alcuna proposta/offerta che includa COMB-V4 (flag = 'vietato')",
+          "OFF-30001 non viene mostrata all'operatore",
+          "OFF-30002 (solo combinazioni consentite) è mostrata se eleggibile secondo le regole non oggetto di questa story"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "Valida l'esclusione lato canale fisico. Non assume funzionalità di override esposta all'operatore."
+      },
+      {
+        "test_id": "REQ-V-006.US02.TC02",
+        "title": "Tentativo di finalizzazione di una proposta contenente 'vietato' senza override autorizzato viene rifiutato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Operatore autenticato sul front-end commerciale con ruolo 'Operatore base' (senza permesso di override)",
+          "Esiste una proposta/procedura di finalizzazione che può essere avviata passando un identificativo proposta (anche se non mostrata in UI), oppure ricevendo una proposta da sistema a monte"
+        ],
+        "test_data": [
+          "Operatore: OP-001 (ruolo: Operatore base, override: NO)",
+          "Cliente: CL-20002",
+          "Proposta da sistema a monte: OFF-30003 contenente COMB-V5 (vietato)",
+          "Motivo atteso di rifiuto: 'Combinazione vietata senza override autorizzato' (testo messaggio da adeguare all'implementazione)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-001",
+          "Selezionare il cliente CL-20002",
+          "Caricare/ricevere la proposta OFF-30003 (contenente COMB-V5) tramite il flusso previsto dal canale fisico",
+          "Tentare di avviare/finalizzare la proposta OFF-30003"
+        ],
+        "expected_results": [
+          "Il sistema rifiuta automaticamente la proposta OFF-30003 perché contiene una combinazione con flag = 'vietato' e non è presente override autorizzato",
+          "La finalizzazione/avvio della proposta non viene completata (nessuna pratica/ordine creato)",
+          "Viene mostrato all'operatore un errore/blocco che indica l'impossibilità di procedere per presenza di combinazione vietata (contenuto esatto del messaggio dipendente dall'implementazione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "Copre l'edge case 'proposta già composta da sistema a monte'. Se il canale non consente il caricamento diretto per ID, eseguire via integrazione/fixture."
+      },
+      {
+        "test_id": "REQ-V-006.US02.TC03",
+        "title": "Authorization: operatore senza permesso di override non può procedere con proposta contenente 'vietato'",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Operatore autenticato con ruolo privo di permessi di override",
+          "Esiste un meccanismo (UI o API interna del canale) che consenta di tentare l'applicazione di un override o di forzare la finalizzazione"
+        ],
+        "test_data": [
+          "Operatore: OP-002 (ruolo: Operatore base, override: NO)",
+          "Cliente: CL-20003",
+          "Proposta: OFF-30004 contenente COMB-V6 (vietato)",
+          "Azione tentata: 'Applica override' oppure 'Forza finalizzazione' (a seconda del canale/implementazione)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-002",
+          "Selezionare il cliente CL-20003",
+          "Caricare/ricevere la proposta OFF-30004",
+          "Tentare l'azione di override o la finalizzazione forzata della proposta"
+        ],
+        "expected_results": [
+          "L'azione di override viene negata per mancanza di autorizzazione (se l'azione è esposta)",
+          "In ogni caso la proposta OFF-30004 viene rifiutata automaticamente e non procede alla finalizzazione",
+          "Non viene generata alcuna proposta valida contenente COMB-V6 in assenza di override autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "La story non specifica se l'override sia esposto all'operatore: il test va adattato al punto di integrazione disponibile (UI, API canale, o simulazione richiesta override)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-006.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-006.US03.TC01",
+        "title": "Motore di Offerte: generazione proposte esclude combinazioni con flag 'vietato' per tutti i canali",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile via API/integrazione dai canali digitali e fisici",
+          "Catalogo combinazioni configurato includendo combinazioni consentite e vietate",
+          "Logging/telemetria disponibile per verificare la risposta del Motore"
+        ],
+        "test_data": [
+          "Richiesta generazione proposte per cliente: CL-30001",
+          "Combinazioni configurate: COMB-F (consentita), COMB-V7 (vietato)",
+          "Set proposte potenziale include: OFF-40001 (COMB-F + COMB-V7), OFF-40002 (solo COMB-F)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per CL-30001 con contesto canale 'Web'",
+          "Verificare la lista proposte restituita dal Motore",
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per CL-30001 con contesto canale 'App'",
+          "Verificare la lista proposte restituita dal Motore",
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per CL-30001 con contesto canale 'front-end commerciale (sportello/sala)'",
+          "Verificare la lista proposte restituita dal Motore"
+        ],
+        "expected_results": [
+          "Per ciascun contesto canale, il Motore non restituisce alcuna proposta contenente COMB-V7 (flag = 'vietato')",
+          "OFF-40001 non è presente in nessuna delle risposte",
+          "Le proposte contenenti solo combinazioni consentite (es. OFF-40002) possono essere restituite se eleggibili"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazioni verso canali digitali (App/Web)",
+          "integrazioni verso canale fisico (front-end commerciale)"
+        ],
+        "notes": "Valida l'esclusione a livello Motore con copertura multi-canale via parametro/contesto di richiesta."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC02",
+        "title": "Override autorizzato: il Motore genera proposta con combinazione 'vietato' e registra audit trail",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Esiste una sorgente permessi/ruoli consultabile dal Motore e configurata per autorizzare l'override a un ruolo specifico",
+          "Audit trail persistente e consultabile (DB/tabella/event store/log applicativo) in ambiente di test",
+          "È disponibile un meccanismo per richiedere/applicare override (campo nella richiesta, header, o endpoint dedicato) verso il Motore"
+        ],
+        "test_data": [
+          "Cliente: CL-30002",
+          "Combinazione: COMB-V8 (vietato)",
+          "Ruolo/identità chiamante autorizzata: ROLE-OVR-OK (override: SI)",
+          "Richiesta override: override=true per COMB-V8",
+          "Canale contesto: 'front-end commerciale (sportello/sala)'"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di generazione proposta per CL-30002 includendo COMB-V8 e indicando richiesta di override secondo l'interfaccia prevista",
+          "Assicurarsi che la richiesta sia eseguita con identità/ruolo ROLE-OVR-OK",
+          "Verificare la risposta del Motore",
+          "Recuperare l'evento/record di audit trail relativo all'override appena effettuato"
+        ],
+        "expected_results": [
+          "Il Motore restituisce una proposta che include COMB-V8 solo perché l'override risulta autorizzato",
+          "Esiste un record/evento di audit trail generato per l'override",
+          "Nel record/evento di audit trail sono presenti almeno: identificativo combinazione (COMB-V8), timestamp, identità o ruolo (ROLE-OVR-OK) e contesto canale (front-end commerciale (sportello/sala))"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "integrazioni verso canale fisico (front-end commerciale)"
+        ],
+        "notes": "I campi minimi dell'audit trail sono assunti dalla story (non completamente specificati nel requisito). Adeguare la verifica ai campi effettivamente implementati."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC03",
+        "title": "Override non autorizzato: il Motore nega l'eccezione e rifiuta la proposta con combinazione 'vietato'",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Esiste una sorgente permessi/ruoli consultabile dal Motore",
+          "Ruolo chiamante configurato come NON autorizzato all'override"
+        ],
+        "test_data": [
+          "Cliente: CL-30003",
+          "Combinazione: COMB-V9 (vietato)",
+          "Ruolo/identità chiamante non autorizzata: ROLE-OVR-NO (override: NO)",
+          "Richiesta override: override=true per COMB-V9",
+          "Canale contesto: 'Web'"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di generazione proposta per CL-30003 includendo COMB-V9 e indicando richiesta di override",
+          "Assicurarsi che la richiesta sia eseguita con identità/ruolo ROLE-OVR-NO",
+          "Verificare la risposta del Motore"
+        ],
+        "expected_results": [
+          "Il Motore non genera alcuna proposta contenente COMB-V9",
+          "Il Motore rifiuta la proposta/risponde con errore di autorizzazione o esito di rifiuto coerente con l'interfaccia (es. codice errore/flag di rifiuto)",
+          "Non viene scritto alcun audit trail di override autorizzato per questa richiesta"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "integrazioni verso canali digitali (App/Web)"
+        ],
+        "notes": "Copre l'edge case 'ruolo non autorizzato'. Il formato dell'errore dipende dall'API del Motore."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC04",
+        "title": "Fail-safe: errore/timeout nel recupero permessi mantiene il divieto e rifiuta la proposta",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Il Motore di Offerte consulta un servizio/DB permessi per valutare l'override",
+          "È possibile simulare indisponibilità del servizio permessi (timeout/5xx) in ambiente di test (mock o fault injection)"
+        ],
+        "test_data": [
+          "Cliente: CL-30004",
+          "Combinazione: COMB-V10 (vietato)",
+          "Richiesta override: override=true per COMB-V10",
+          "Simulazione: servizio permessi risponde 503 o timeout > 5s"
+        ],
+        "steps": [
+          "Configurare il servizio permessi/mock per restituire errore 503 o timeout alla richiesta di autorizzazione override",
+          "Inviare al Motore una richiesta di generazione proposta per CL-30004 includendo COMB-V10 e indicando richiesta di override",
+          "Verificare la risposta del Motore"
+        ],
+        "expected_results": [
+          "Il Motore non genera alcuna proposta contenente COMB-V10",
+          "La proposta viene rifiutata (fail-safe) in assenza di verifica positiva dell'autorizzazione",
+          "Non viene scritto audit trail di override autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "integrazioni verso canali digitali (App/Web)",
+          "integrazioni verso canale fisico (front-end commerciale)"
+        ],
+        "notes": "L'edge case è esplicitato nella story. La forma dell'errore verso i canali dipende dal contratto API."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC05",
+        "title": "Rifiuto automatico: proposta contenente 'vietato' senza override viene respinta dal Motore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Il Motore riceve in input (o compone internamente) una proposta che include una combinazione con flag = 'vietato'",
+          "Non viene fornito alcun parametro/contesto di override"
+        ],
+        "test_data": [
+          "Cliente: CL-30005",
+          "Proposta/insieme combinazioni richieste: include COMB-V11 (vietato)",
+          "Override: assente"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta che porti alla generazione/validazione di una proposta contenente COMB-V11 senza indicare override",
+          "Verificare la risposta del Motore"
+        ],
+        "expected_results": [
+          "Il Motore rifiuta automaticamente la proposta che contiene COMB-V11 in assenza di override autorizzato",
+          "Non viene restituita ai canali alcuna proposta contenente COMB-V11"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "integrazioni verso canali digitali (App/Web)",
+          "integrazioni verso canale fisico (front-end commerciale)"
+        ],
+        "notes": "Test focalizzato sul criterio di rifiuto automatico. Se l'API non prevede una 'proposta in input', usare un caso di configurazione che la generi."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC06",
+        "title": "Audit trail non scrivibile: comportamento dell'override quando la persistenza audit fallisce",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Override autorizzato configurato per un ruolo specifico",
+          "È possibile simulare errore di persistenza dell'audit trail (DB down/permessi mancanti) in ambiente di test"
+        ],
+        "test_data": [
+          "Cliente: CL-30006",
+          "Combinazione: COMB-V12 (vietato)",
+          "Ruolo/identità chiamante autorizzata: ROLE-OVR-OK (override: SI)",
+          "Simulazione: persistenza audit trail fallisce (es. errore DB 500)"
+        ],
+        "steps": [
+          "Configurare il componente di persistenza audit trail/mock per fallire in scrittura",
+          "Inviare al Motore una richiesta di override autorizzato per generare proposta includendo COMB-V12",
+          "Verificare la risposta del Motore",
+          "Verificare l'assenza del record/evento di audit trail relativo alla richiesta"
+        ],
+        "expected_results": [
+          "L'esito della generazione proposta in presenza di fallimento audit trail è determinato dall'implementazione e deve essere chiarito",
+          "Se l'implementazione applica un principio di sicurezza/compliance, la proposta non deve essere restituita quando l'audit trail non è scrivibile",
+          "Non risulta alcun audit trail scritto per l'operazione (coerente con la simulazione di errore)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "integrazioni verso canali digitali (App/Web)",
+          "integrazioni verso canale fisico (front-end commerciale)"
+        ],
+        "notes": "Criterio AC-2 richiede tracciamento. La story indica comportamento non specificato in caso di audit non scrivibile: test utile per chiarimento/definizione; atteso preferibile = blocco dell'override."
+      }
+    ]
+  }
+]

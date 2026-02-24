@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-D-008</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-D-008</h1>
+  <div class="subtitle">Formati di export supportati</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:51</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-D-008</div>
+  <div class="req-field"><strong>Titolo:</strong> Formati di export supportati</div>
+  <div class="req-field"><strong>Categoria:</strong> DATI</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Le esportazioni dei log sono funzionalità disponibili a un utente rispetto alle autorizzazioni associate al suo specifico ruolo. Esse devono poter essere prodotte nei principali formati disponibili per le analisi (sicuramente csv/excel) ed eventuali altri formati come JSON e XML, assicurando compatibilità con i sistemi di audit già in uso. I file prodotti devono rispettare gli standard di formato (JSON valido, XML ben formato) in modo che possano essere processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>L&#x27;export dei log è disponibile solo agli utenti autorizzati.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>I file JSON, XML, CSV/excel sono sono validi in base ai relativi standard e contengono le informazioni richieste (evento, timestamp, utente quando presente).</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Un file di esempio per ciascun formato può essere scaricato/esportato dal sistema.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">68</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">48</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (3/3), ma il set direct introduce meno informazioni non tracciabili (meno &#x27;added_info&#x27;) e ha meno elementi extra-requisito (es. formati non supportati, dataset enormi, sicurezza/stack trace). Inoltre nel set indirect_persona c&#x27;e una deviazione potenziale sull&#x27;interpretazione di &#x27;CSV/excel&#x27; come alternativa (TC01) e piu scenari non richiesti, che abbassano maggiormente la coerenza. Per questo il punteggio del direct (68) supera quello dell&#x27;indirect_persona (48).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">68</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-008.TC01</td><td>Introduzione di ruolo specifico &#x27;Auditor&#x27;, utente &#x27;auditor1&#x27;, UI &#x27;sezione consultazione log&#x27; e azione &#x27;Esporta&#x27; non esplicitati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC01</td><td>Assunzione di filtro temporale &#x27;ultime 24 ore&#x27; e di almeno 3 record; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC01</td><td>Expected su &#x27;apribile con Excel/LibreOffice senza errori di parsing&#x27; e intestazione/colonne specifiche: il requisito richiede validità standard e campi richiesti, ma non impone tool o struttura tabellare dettagliata.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC02</td><td>Assunzione che il formato Excel sia specificamente XLSX e che esista un &#x27;foglio&#x27; con intestazioni; il requisito dice &#x27;CSV/excel&#x27; ma non specifica estensione/struttura.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC03</td><td>Dettaglio tecnico di validazione tramite &#x27;parser JSON standard&#x27; e assunzioni su presenza/assenza del campo &#x27;utente&#x27; (assente vs null) non determinate dal requisito (che richiede solo &#x27;utente quando presente&#x27; e JSON valido).</td></tr>
+<tr><td class='mono'>REQ-D-008.TC04</td><td>Dettaglio tecnico di validazione tramite &#x27;parser XML standard&#x27; e scelta elementi/attributi; il requisito richiede XML ben formato ma non impone rappresentazione.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC05</td><td>Tentativo di chiamata diretta a un endpoint e citazione HTTP 403: il requisito non menziona API/endpoint né codici di errore.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC06</td><td>Assunzione che esista una specifica &#x27;funzionalità file di esempio&#x27; in UI/area documentazione e che per Excel esista un file di esempio separato: il requisito richiede scaricabilità di un esempio per ciascun formato, ma non il canale/UI.</td></tr>
+<tr><td class='mono'>REQ-D-008.TC08</td><td>Scenario di indisponibilità del &#x27;servizio di generazione file&#x27;, gestione errori e resilienza UI: non previsto dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;assicurando compatibilità con i sistemi di audit già in uso&#x27; e &#x27;processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste&#x27;</td><td>Nessun test verifica esplicitamente la compatibilità/consumabilità da parte di sistemi di audit esterni (es. import in un sistema di audit, o verifica di vincoli richiesti da tali sistemi).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-008.TC03, REQ-D-008.TC07</td><td>Entrambi verificano export JSON e presenza campi minimi (evento, timestamp, utente quando presente); TC07 è in gran parte un sottoinsieme/specializzazione di TC03.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">48</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-008.US01.TC01</td><td>Introduzione di &#x27;dashboard&#x27;, sezione &#x27;Export log&#x27; e canale &#x27;dashboard&#x27; non citati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC01</td><td>Assunzione &#x27;area download/esportazioni&#x27; e requisito che i file &#x27;non risultino vuoti&#x27; se esistono log: il requisito non richiede non-vuotezza, solo validità standard e campi richiesti.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC01</td><td>Accetta &#x27;CSV o Excel&#x27; come alternativa (se CSV non disponibile): il requisito indica supporto CSV/excel (entrambi citati) e non esplicita che uno possa sostituire l&#x27;altro.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC02</td><td>Ruolo/organizzazione &#x27;Team Compliance&#x27; e permesso &#x27;export abilitato/disabilitato&#x27; non esplicitati nel requisito (che parla genericamente di utenti autorizzati).</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC03</td><td>Vincolo/aspettativa su formato timestamp &#x27;es. ISO-8601&#x27; e dati di esempio specifici: il requisito non definisce formato timestamp.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC05</td><td>Assunzioni su &#x27;colonne fisse&#x27; vs &#x27;struttura dinamica&#x27; per CSV/Excel: non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC07</td><td>Scenario di rifiuto formato non supportato (YAML/TXT), codici 400, e requisito di non esporre stack trace: non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC08</td><td>Gestione caratteri speciali/escaping CSV e preservazione caratteri: non richiesto esplicitamente dal requisito (che parla di validità standard, non di casi speciali di escaping).</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC09</td><td>Scenario dataset molto grande (500.000 record), timeout/SLA e gestione file parziali: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC10</td><td>Assunzione che lo scarico file di esempio richieda la stessa autorizzazione dell&#x27;export: il requisito non lo specifica.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;assicurando compatibilità con i sistemi di audit già in uso&#x27; e &#x27;processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste&#x27;</td><td>Come nel set direct, manca una verifica esplicita di compatibilità con sistemi di audit esterni (integrazione/import o vincoli specifici richiesti).</td></tr>
+<tr><td class='mono'>AC-2: &#x27;I file JSON, XML, CSV/excel sono validi ...&#x27;</td><td>La validazione esplicita di CSV/Excel rispetto a uno &#x27;standard&#x27; è trattata come &#x27;apribile&#x27; e presenza colonne; non c&#x27;è una verifica oggettiva di conformità (es. CSV RFC/dialetto definito) né una chiara validazione del formato Excel oltre l&#x27;apertura.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-008.US01.TC03, REQ-D-008.US01.TC04, REQ-D-008.US01.TC05</td><td>Tre TC molto simili che ripetono lo stesso pattern (export + verifica campi minimi + utente quando presente) cambiando solo il formato; ridondanza parziale rispetto a un approccio parametrico.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-D-008&quot;,
+  &quot;title&quot;: &quot;Formati di export supportati&quot;,
+  &quot;description&quot;: &quot;Le esportazioni dei log sono funzionalità disponibili a un utente rispetto alle autorizzazioni associate al suo specifico ruolo. Esse devono poter essere prodotte nei principali formati disponibili per le analisi (sicuramente csv/excel) ed eventuali altri formati come JSON e XML, assicurando compatibilità con i sistemi di audit già in uso. I file prodotti devono rispettare gli standard di formato (JSON valido, XML ben formato) in modo che possano essere processati dai sistemi di audit esterni senza necessità di conversioni aggiuntive non previste.&quot;,
+  &quot;category&quot;: &quot;DATI&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;L&#x27;export dei log è disponibile solo agli utenti autorizzati.&quot;,
+    &quot;I file JSON, XML, CSV/excel sono sono validi in base ai relativi standard e contengono le informazioni richieste (evento, timestamp, utente quando presente).&quot;,
+    &quot;Un file di esempio per ciascun formato può essere scaricato/esportato dal sistema.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-008.TC01</td><td>Export log consentito a utente autorizzato con selezione formato CSV</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.TC02</td><td>Export log consentito a utente autorizzato con selezione formato Excel</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.TC03</td><td>Export log consentito a utente autorizzato in formato JSON con validazione JSON</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.TC04</td><td>Export log consentito a utente autorizzato in formato XML con validazione XML well-formed</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.TC05</td><td>Export log non disponibile a utente non autorizzato</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-008.TC06</td><td>Scaricamento di un file di esempio per ciascun formato supportato</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-008.TC07</td><td>Validazione contenuto minimo richiesto: presenza evento e timestamp e gestione &#x27;utente quando presente&#x27;</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.TC08</td><td>Gestione errore: tentativo di export quando il servizio di generazione file non è disponibile</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 10 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-008.US01.TC01</td><td>Avvio export log da dashboard con selezione formato supportato (CSV/Excel, JSON, XML) - utente autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC02</td><td>Accesso/uso export log negato a utente Team Compliance senza autorizzazione</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC03</td><td>Validazione contenuto e standard del file esportato in JSON (campi minimi e utente quando presente)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC04</td><td>Validazione contenuto e standard del file esportato in XML (ben formato, campi minimi e utente quando presente)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC05</td><td>Validazione contenuto e leggibilità del file esportato in CSV/Excel (colonne minime e utente quando presente)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC06</td><td>Scaricamento file di esempio per ciascun formato supportato</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC07</td><td>Rifiuto controllato di un formato non supportato (manomissione richiesta)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC08</td><td>Gestione caratteri speciali nell&#x27;export: CSV con escaping corretto e JSON/XML validi</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC09</td><td>Export con dataset molto grande: completamento o errore/timeout gestito senza file corrotto</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-008.US01.TC10</td><td>Tentativo di scaricare file di esempio senza autorizzazione export: accesso negato</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 9, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 2, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,733 @@
+[
+  {
+    "story_id": "REQ-F-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-002.US01.TC01",
+        "title": "Creazione bundle (A,B) da dashboard senza data-entry dell’intera matrice NxN",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato alla configurazione bundle in dashboard",
+          "La dashboard è raggiungibile e il catalogo prodotti contiene almeno i prodotti 'Prodotto A' e 'Prodotto B'"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Prodotti: Prodotto A = 'Conto Premium', Prodotto B = 'Carta Gold'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Navigare alla sezione di configurazione bundle/combinazioni prodotto",
+          "Selezionare l’azione 'Crea nuovo bundle'",
+          "Selezionare la coppia di prodotti (A,B) = (Conto Premium, Carta Gold)",
+          "Salvare la creazione del bundle"
+        ],
+        "expected_results": [
+          "La dashboard consente di creare un bundle selezionando una singola coppia (A,B) senza richiedere l’inserimento di tutte le combinazioni teoriche della matrice",
+          "Il bundle (Conto Premium, Carta Gold) risulta creato ed è visibile nell’elenco/ricerca bundle"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story specifica che la matrice NxN è un concetto logico e non deve richiedere data entry completo; il test verifica che la UI consenta inserimenti puntuali."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC02",
+        "title": "Impostazione e salvataggio dello stato regolatorio (consentita/vietata) su un bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Stato regolatorio: 'Consentita'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare lo stato regolatorio su 'Consentita'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema consente di selezionare lo stato regolatorio del bundle tra 'vietata' e 'consentita'",
+          "Dopo il salvataggio, lo stato regolatorio 'Consentita' risulta persistito e visualizzato al riaccesso del dettaglio bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC03",
+        "title": "Impostazione e salvataggio del flag marketing su un bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Flag marketing: 'Interessante'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare il flag marketing su 'Interessante'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema consente di impostare un flag di interesse marketing per il bundle",
+          "Dopo il salvataggio, il flag marketing 'Interessante' risulta persistito e visualizzato al riaccesso del dettaglio bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non standardizza i valori del flag marketing; il test usa un valore esemplificativo coerente con la user story."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC04",
+        "title": "Associazione e salvataggio dello sconto su un bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Sconto: '10%'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare lo sconto su '10%'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema consente di associare uno sconto al bundle",
+          "Dopo il salvataggio, lo sconto '10%' risulta persistito e visualizzato al riaccesso del dettaglio bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Vincoli numerici/valuta dello sconto non specificati nel requisito; il test verifica la persistenza di un valore percentuale esemplificativo."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC05",
+        "title": "Definizione e salvataggio del periodo di validità (data inizio/fine) su un bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Data inizio: 2026-03-01",
+          "Data fine: 2026-03-31"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare la data inizio su 2026-03-01",
+          "Impostare la data fine su 2026-03-31",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema consente di impostare data inizio e data fine per la validità del bundle",
+          "Dopo il salvataggio, la validità 2026-03-01 / 2026-03-31 risulta persistita e visualizzata al riaccesso del dettaglio bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC06",
+        "title": "Definizione e salvataggio del target di applicazione su un bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "Esiste almeno un segmento/cluster target selezionabile in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Target: 'Clienti Retail - Nuovi clienti'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Selezionare il target 'Clienti Retail - Nuovi clienti'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema consente di definire un target di applicazione per il bundle",
+          "Dopo il salvataggio, il target 'Clienti Retail - Nuovi clienti' risulta persistito e visualizzato al riaccesso del dettaglio bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il formato/struttura del target non è specificato; si assume un selettore coerente con segmenti disponibili a sistema."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC07",
+        "title": "Spegnimento e riattivazione di un bundle senza perdita di configurazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) con parametri già salvati (es. stato regolatorio, flag marketing, sconto, validità, target)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Stato attivazione: OFF poi ON"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare lo stato di attivazione del bundle su 'OFF'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare lo stato di attivazione del bundle su 'ON'",
+          "Salvare le modifiche del bundle",
+          "Riaprire il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Dopo il salvataggio, lo stato di attivazione 'OFF' risulta persistito e visualizzato al riaccesso",
+          "La configurazione del bundle (parametri commerciali/regolatori) risulta ancora presente quando il bundle è OFF",
+          "Dopo la riattivazione e salvataggio, lo stato di attivazione 'ON' risulta persistito e visualizzato al riaccesso"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola 'OFF non elimina la configurazione' è verificata controllando che i parametri restino invariati dopo lo spegnimento."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC08",
+        "title": "Negativo: validazione periodo di validità con data fine precedente alla data inizio",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Data inizio: 2026-04-10",
+          "Data fine: 2026-04-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare la data inizio su 2026-04-10",
+          "Impostare la data fine su 2026-04-01",
+          "Tentare di salvare le modifiche del bundle"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio del bundle con data fine precedente alla data inizio",
+          "Il sistema mostra un messaggio di errore che indica l’incoerenza tra data inizio e data fine",
+          "Nessuna modifica alla validità viene persistita (al riaccesso rimangono i valori precedenti)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non esplicita la validazione date, ma l’edge case la richiede; il messaggio di errore è verificato come presenza e significato, non come testo esatto."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC09",
+        "title": "Negativo: prevenzione duplicati nella creazione di un bundle con stessa coppia (A,B)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste già il bundle (Conto Premium, Carta Gold) in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Nuovo bundle richiesto: (Conto Premium, Carta Gold)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Navigare alla sezione di creazione bundle/combinazioni prodotto",
+          "Selezionare l’azione 'Crea nuovo bundle'",
+          "Selezionare la coppia di prodotti (A,B) = (Conto Premium, Carta Gold)",
+          "Tentare di salvare la creazione del bundle"
+        ],
+        "expected_results": [
+          "Il sistema impedisce la creazione di un bundle duplicato per la stessa coppia (A,B)",
+          "Il sistema mostra un messaggio che indica che la combinazione è già presente",
+          "Non viene creato un nuovo record duplicato nell’elenco bundle"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La gestione duplicati è indicata come edge case; il requisito originale non specifica la regola, quindi si verifica che la UI/servizio eviti duplicazioni osservabili."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC10",
+        "title": "Authorization: accesso negato alla configurazione bundle per utente non Marketing",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente non autorizzato alla configurazione bundle (es. profilo 'Viewer' o altro ruolo non Marketing)",
+          "La dashboard è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: viewer_01"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente viewer_01",
+          "Tentare di navigare alla sezione di configurazione bundle/combinazioni prodotto",
+          "Tentare di aprire il dettaglio di un bundle esistente"
+        ],
+        "expected_results": [
+          "L’utente non autorizzato non può accedere alla sezione di configurazione bundle oppure visualizza la sezione in sola lettura senza possibilità di modifica",
+          "Non sono disponibili azioni di creazione/modifica/salvataggio per l’utente non autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia RBAC; la user story richiede un profilo Marketing autorizzato. Il comportamento (blocco totale vs sola lettura) va confermato con Business/IT Security."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC11",
+        "title": "Edge case: modifica concorrente dello stesso bundle con gestione conflitti/ultimo salvataggio",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esistono due utenti con profilo Marketing autorizzato: marketing_admin_01 e marketing_admin_02",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente 1: marketing_admin_01",
+          "Utente 2: marketing_admin_02",
+          "Valore flag marketing U1: 'Interessante'",
+          "Valore flag marketing U2: 'Non interessante'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold) in una prima sessione",
+          "Accedere alla dashboard come marketing_admin_02 in una seconda sessione",
+          "Aprire il dettaglio dello stesso bundle (Conto Premium, Carta Gold)",
+          "Nella sessione di marketing_admin_01 impostare il flag marketing su 'Interessante'",
+          "Salvare le modifiche nella sessione di marketing_admin_01",
+          "Nella sessione di marketing_admin_02 impostare il flag marketing su 'Non interessante'",
+          "Salvare le modifiche nella sessione di marketing_admin_02",
+          "Ricaricare il dettaglio del bundle (Conto Premium, Carta Gold)"
+        ],
+        "expected_results": [
+          "Il sistema gestisce la concorrenza in modo deterministico: o blocca il secondo salvataggio con messaggio di conflitto, oppure applica una regola di 'ultimo salvataggio' rendendo visibile l’ultimo valore salvato",
+          "Lo stato finale visualizzato in dashboard è coerente con la gestione adottata e non risulta in uno stato parzialmente aggiornato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica la strategia di concorrenza; il test accetta due esiti ammessi (conflitto o last-write-wins) ma richiede coerenza e assenza di aggiornamenti parziali."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC12",
+        "title": "Integration/E2E: propagazione delle modifiche al Motore di Offerte entro SLA concordato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "Il Motore di Offerte è disponibile e interrogabile in ambiente di test (API/strumentazione/log) per verificare l’effetto delle configurazioni",
+          "È definito e misurabile un SLA di propagazione (valore fornito dal contesto di test)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Modifica: stato regolatorio = 'Vietata'",
+          "SLA propagazione: 5 minuti (esempio; usare il valore concordato in ambiente)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Impostare lo stato regolatorio su 'Vietata'",
+          "Salvare le modifiche del bundle",
+          "Registrare l’istante di salvataggio (timestamp)",
+          "Interrogare il Motore di Offerte (o la sua fonte dati) per verificare la configurazione del bundle fino al raggiungimento dello SLA",
+          "Generare/recuperare una proposta dal Motore di Offerte che includerebbe il bundle (Conto Premium, Carta Gold) se consentito"
+        ],
+        "expected_results": [
+          "La modifica risulta persistita in dashboard immediatamente dopo il salvataggio",
+          "Entro lo SLA concordato, il Motore di Offerte recepisce la modifica (bundle marcato come vietato)",
+          "Entro lo SLA, il Motore di Offerte non propone il bundle (Conto Premium, Carta Gold) come offerta vendibile (o lo esclude dalle proposte, coerentemente con lo stato 'vietata')"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Lo SLA non è indicato nel requisito; il valore va parametrizzato nel test. La modalità di verifica sul Motore (API, DB, log, eventi) dipende dall’instrumentation disponibile."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC13",
+        "title": "Negativo/Integration: propagazione non completata entro SLA con stato e messaggio in dashboard",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "È possibile simulare un ritardo/errore di propagazione verso il Motore di Offerte (es. disabilitando il consumer/event bus o forzando timeout in ambiente di test)",
+          "È definito e misurabile un SLA di propagazione (valore fornito dal contesto di test)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Modifica: flag marketing = 'Interessante'",
+          "SLA propagazione: 5 minuti (esempio; usare il valore concordato in ambiente)"
+        ],
+        "steps": [
+          "Abilitare la condizione di test che causa ritardo/errore di propagazione verso il Motore di Offerte",
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Modificare il flag marketing impostandolo su 'Interessante'",
+          "Salvare le modifiche del bundle",
+          "Attendere il superamento dello SLA di propagazione",
+          "Verificare in dashboard la presenza di uno stato/indicazione di propagazione e relativo messaggio"
+        ],
+        "expected_results": [
+          "La modifica risulta persistita in dashboard dopo il salvataggio",
+          "Dopo il superamento dello SLA, la dashboard mostra uno stato di propagazione non completata/errore e un messaggio informativo per l’utente",
+          "Non risultano indicazioni fuorvianti di propagazione completata se il Motore non ha recepito la modifica"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito/US citano stato e messaggio in dashboard come edge case, ma non definiscono il modello di stato; il test verifica la presenza di un’indicazione chiara e coerente."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC14",
+        "title": "Negativo: tentativo di attivare un bundle marcato come 'vietata' per motivi regolatori",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "Il bundle è impostato con stato regolatorio = 'Vietata'"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Stato regolatorio: 'Vietata'",
+          "Stato attivazione richiesto: 'ON'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio del bundle (Conto Premium, Carta Gold)",
+          "Verificare che lo stato regolatorio sia 'Vietata'",
+          "Tentare di impostare lo stato di attivazione su 'ON'",
+          "Tentare di salvare le modifiche del bundle"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l’attivazione del bundle quando lo stato regolatorio è 'Vietata' oppure consente il salvataggio ma mantiene l’offerta non applicabile (comportamento da confermare)",
+          "Il sistema mostra un messaggio che indica che l’attivazione non è consentita per vincoli regolatori o che l’offerta resterà non applicabile",
+          "Lo stato finale del bundle in dashboard è coerente con il vincolo regolatorio e non porta a una configurazione contraddittoria (attivo e vietato senza avviso)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story elenca l’edge case ma non specifica la regola di sistema; il test richiede coerenza e feedback utente. L’esito atteso preciso va allineato con Compliance."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-002.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-002.US02.TC01",
+        "title": "Configurazione touchpoint consentiti e non consentiti per un bundle (inclusi Web/App e ruoli umani)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "In dashboard è disponibile un catalogo/registry touchpoint che include: Web, App, OSP, OFE, Consulente sala UP, Consulente remoto"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint consentiti: [Web, App]",
+          "Touchpoint non consentiti: [OFE]"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio/configurazione del bundle (Conto Premium, Carta Gold)",
+          "Aprire la sezione 'Touchpoint' del bundle",
+          "Aggiungere 'Web' alla lista dei touchpoint consentiti",
+          "Aggiungere 'App' alla lista dei touchpoint consentiti",
+          "Aggiungere 'OFE' alla lista dei touchpoint non consentiti",
+          "Salvare la configurazione touchpoint",
+          "Riaprire la sezione 'Touchpoint' del bundle"
+        ],
+        "expected_results": [
+          "La dashboard consente di associare una lista di touchpoint consentiti e/o una lista di touchpoint non consentiti per il bundle",
+          "La lista touchpoint include sia canali digitali (Web, App) sia touchpoint umani/ruoli operativi (es. OSP, OFE, consulenti) come valori selezionabili",
+          "Dopo il salvataggio, le liste (consentiti/non consentiti) risultano persistite e visualizzate correttamente al riaccesso"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non menziona esplicitamente i touchpoint; la tracciabilità è verso AC-3 (persistenza/effetto sul motore). Dipendenza esterna: registry touchpoint e relativi codici/etichette."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC02",
+        "title": "Negativo: configurazione incoerente con lo stesso touchpoint sia consentito sia non consentito",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "Il touchpoint 'Web' è disponibile nel registry touchpoint"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint: Web (inserito sia in consentiti sia in non consentiti)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio/configurazione del bundle (Conto Premium, Carta Gold)",
+          "Aprire la sezione 'Touchpoint' del bundle",
+          "Aggiungere 'Web' alla lista dei touchpoint consentiti",
+          "Aggiungere 'Web' alla lista dei touchpoint non consentiti",
+          "Tentare di salvare la configurazione touchpoint"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della configurazione incoerente oppure risolve automaticamente il conflitto secondo una regola deterministica",
+          "Se il sistema impedisce il salvataggio, viene mostrato un messaggio di errore che indica il conflitto sul touchpoint",
+          "Se il sistema risolve automaticamente, la configurazione salvata rispetta una precedenza deterministica (es. prevale 'non consentito') e la UI lo riflette chiaramente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola di precedenza non è specificata; si assume prevalga 'NON PUÒ'. Il test ammette entrambe le strategie purché deterministiche e trasparenti."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC03",
+        "title": "Edge case: nessun touchpoint configurato per un bundle",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint consentiti: []",
+          "Touchpoint non consentiti: []"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire il dettaglio/configurazione del bundle (Conto Premium, Carta Gold)",
+          "Aprire la sezione 'Touchpoint' del bundle",
+          "Rimuovere eventuali touchpoint presenti da entrambe le liste (consentiti e non consentiti)",
+          "Salvare la configurazione touchpoint",
+          "Riaprire la sezione 'Touchpoint' del bundle"
+        ],
+        "expected_results": [
+          "Il sistema gestisce in modo esplicito la configurazione con liste vuote: o impedisce il salvataggio richiedendo almeno un touchpoint, oppure consente il salvataggio mantenendo liste vuote",
+          "Dopo il salvataggio, lo stato (liste vuote o validazione bloccante) è coerente e ripetibile al riaccesso"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il comportamento atteso con nessun touchpoint è indicato come da chiarire nella user story; il test verifica che il sistema non sia ambiguo (validazione o salvataggio esplicito)."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC04",
+        "title": "Negativo: selezione di touchpoint non riconosciuto/non più disponibile a sistema",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "È possibile simulare un touchpoint deprecato/non presente (es. rimozione dal registry o risposta API che non include più un valore precedentemente salvato)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint deprecato: 'KIOSK_OLD' (esempio)"
+        ],
+        "steps": [
+          "Configurare l’ambiente in modo che il touchpoint 'KIOSK_OLD' non sia presente nel registry touchpoint",
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire la sezione 'Touchpoint' del bundle (Conto Premium, Carta Gold)",
+          "Tentare di aggiungere 'KIOSK_OLD' (se selezionabile) oppure verificare la gestione di un valore precedentemente salvato ma non più disponibile",
+          "Tentare di salvare la configurazione touchpoint"
+        ],
+        "expected_results": [
+          "Il sistema non consente di selezionare touchpoint non presenti nel registry oppure segnala chiaramente che il touchpoint non è più disponibile",
+          "Il salvataggio non introduce valori non riconosciuti nella configurazione persistita",
+          "Se esistono valori storici non più disponibili, la UI li gestisce in modo non bloccante e tracciabile (es. etichetta 'non più disponibile') oppure richiede la correzione prima del salvataggio"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: governance del registry touchpoint e strategia di backward compatibility non specificate."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC05",
+        "title": "Integration: effetto dei touchpoint NON consentiti sulle proposte del Motore di Offerte entro SLA",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "Il Motore di Offerte è disponibile e interrogabile in ambiente di test per verificare proposte per touchpoint specifici",
+          "È definito e misurabile un SLA di propagazione (valore fornito dal contesto di test)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint non consentiti: [App]",
+          "Touchpoint consentiti: [Web]",
+          "SLA propagazione: 5 minuti (esempio; usare il valore concordato in ambiente)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire la sezione 'Touchpoint' del bundle (Conto Premium, Carta Gold)",
+          "Impostare 'Web' tra i touchpoint consentiti",
+          "Impostare 'App' tra i touchpoint non consentiti",
+          "Salvare la configurazione touchpoint",
+          "Registrare l’istante di salvataggio (timestamp)",
+          "Entro lo SLA, richiedere al Motore di Offerte una proposta per il touchpoint 'Web'",
+          "Entro lo SLA, richiedere al Motore di Offerte una proposta per il touchpoint 'App'"
+        ],
+        "expected_results": [
+          "Entro lo SLA, il Motore di Offerte recepisce la configurazione touchpoint del bundle",
+          "Per il touchpoint 'Web' il bundle risulta proponibile/vendibile (se non bloccato da altri vincoli)",
+          "Per il touchpoint 'App' il bundle non risulta proponibile/vendibile in quanto marcato come NON consentito"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia l’API di proposta per touchpoint; la verifica va implementata con i metodi disponibili (API, log, eventi, DB)."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC06",
+        "title": "Negativo/Integration: propagazione touchpoint non completata entro SLA con indicazione in dashboard",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con profilo Marketing autorizzato",
+          "Esiste il bundle (Conto Premium, Carta Gold) già creato in dashboard",
+          "È possibile simulare un ritardo/errore di propagazione verso il Motore di Offerte",
+          "È definito e misurabile un SLA di propagazione (valore fornito dal contesto di test)"
+        ],
+        "test_data": [
+          "Utente: marketing_admin_01",
+          "Bundle: (Conto Premium, Carta Gold)",
+          "Touchpoint consentiti: [OSP]",
+          "Touchpoint non consentiti: [OFE]",
+          "SLA propagazione: 5 minuti (esempio; usare il valore concordato in ambiente)"
+        ],
+        "steps": [
+          "Abilitare la condizione di test che causa ritardo/errore di propagazione verso il Motore di Offerte",
+          "Accedere alla dashboard come utente marketing_admin_01",
+          "Aprire la sezione 'Touchpoint' del bundle (Conto Premium, Carta Gold)",
+          "Impostare 'OSP' tra i touchpoint consentiti",
+          "Impostare 'OFE' tra i touchpoint non consentiti",
+          "Salvare la configurazione touchpoint",
+          "Attendere il superamento dello SLA di propagazione",
+          "Verificare in dashboard la presenza di uno stato/indicazione di propagazione e relativo messaggio"
+        ],
+        "expected_results": [
+          "La configurazione touchpoint risulta persistita in dashboard dopo il salvataggio",
+          "Dopo il superamento dello SLA, la dashboard mostra uno stato di propagazione non completata/errore e un messaggio informativo per l’utente",
+          "La dashboard non indica 'propagazione completata' se l’invio/applicazione verso il Motore non è avvenuta"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case richiesto dalla user story; il modello di stato di propagazione non è specificato e va allineato con il team di piattaforma."
+      }
+    ]
+  }
+]

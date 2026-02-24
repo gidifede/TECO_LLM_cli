@@ -1,0 +1,187 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-011",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 62,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-011.TC01",
+        "detail": "Introduce canale specifico 'web' e precondizione 'dashboard disponibile nel canale web': il requisito non menziona canali/piattaforme."
+      },
+      {
+        "test_id": "REQ-UI-011.TC01",
+        "detail": "Introduce autenticazione/utente autenticato come precondizione: il requisito non menziona accesso, login o ruoli."
+      },
+      {
+        "test_id": "REQ-UI-011.TC02",
+        "detail": "Assume che l'aggiornamento avvenga 'senza cambio pagina o refresh manuale': il requisito dice 'interattivo' ma non specifica questa modalità."
+      },
+      {
+        "test_id": "REQ-UI-011.TC03",
+        "detail": "Richiede una 'fonte di verità' (export/query BI/report back-office) per confronto: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.TC04",
+        "detail": "Introduce regola di validazione periodo (inizio <= fine) e messaggio di errore: non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.TC05",
+        "detail": "Introduce gestione esplicita dello 'stato vuoto' (messaggio 'Nessun dato disponibile' o grafico vuoto): non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.TC06",
+        "detail": "Introduce architettura a servizi/API, fault injection, HTTP 500/timeout e comportamento di error handling: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.TC07",
+        "detail": "Introduce requisiti di autorizzazione (redirect login/401/403) e protezione dashboard: non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'combinare filtri e visualizzare le informazioni rilevanti per analisi rapide e decisioni di marketing' + 'dashboard interattiva (non solo tabelle statiche)'",
+        "detail": "I test non verificano esplicitamente che la soluzione sia una 'dashboard interattiva' e non una presentazione solo tabellare/statica (es. presenza/uso di visualizzazioni interattive vs sole tabelle)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-011.TC02",
+          "REQ-UI-011.TC03"
+        ],
+        "detail": "Entrambi verificano aggiornamento interattivo e coerenza dati dopo applicazione filtri; TC03 estende con combinazione e confronto, ma c'è sovrapposizione sostanziale su AC-2/AC-3."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 14,
+    "coherence_score": 37,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-011.US01.TC01",
+        "detail": "Introduce ruoli/persona ('Team Marketing') e autenticazione: non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC01",
+        "detail": "Introduce ruoli/persona ('Team Compliance'): non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC01",
+        "detail": "Campo channels='dashboard' come canale: il requisito non definisce canali (web/app/dashboard come canale)."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC02",
+        "detail": "Expected result: 'senza richiedere consultazione di tabelle statiche come unico output' introduce vincolo non espresso negli AC (il requisito preferisce dashboard interattiva ma non formula un criterio verificabile su tabelle)."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC03",
+        "detail": "Introduce valori attesi numerici specifici (es. 'Numero transazioni'=125) e necessità dataset controllato: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC03",
+        "detail": "Introduce valori attesi numerici specifici (es. 'Totale operazioni'=42) e dataset controllato: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC05",
+        "detail": "Introduce gestione esplicita dello stato 'nessun dato': non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC04",
+        "detail": "Introduce gestione esplicita dello stato 'nessun dato': non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC06",
+        "detail": "Introduce regola di validazione periodo (fine < inizio) e comportamento UI di blocco/errore: non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC05",
+        "detail": "Introduce regola di validazione periodo (fine < inizio) e comportamento UI di blocco/errore: non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC07",
+        "detail": "Introduce error handling tecnico (mock API, 500/timeout) e strategia 'mantiene ultimo stato valido o stato vuoto': non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC06",
+        "detail": "Introduce error handling tecnico (timeout) e requisiti di resilienza/ri-tentativo: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC08",
+        "detail": "Introduce matrice permessi/entitlement IAM e scenario utente non autorizzato: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC07",
+        "detail": "Introduce matrice permessi/entitlement IAM e scenario utente non autorizzato: non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'dashboard interattiva (non solo tabelle statiche)'",
+        "detail": "Non c'è un test che verifichi in modo diretto che l'output non sia limitato a tabelle statiche (il riferimento compare in un expected result, ma non come verifica strutturata/oggettiva della presenza di componenti di dashboard/visualizzazioni interattive)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC01",
+          "REQ-UI-011.US02.TC01"
+        ],
+        "detail": "Stesso scenario (presenza controlli filtro) duplicato per due ruoli non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC03",
+          "REQ-UI-011.US02.TC03"
+        ],
+        "detail": "Stesso scenario (combinazione filtri + verifica coerenza tramite KPI/valore di riferimento) duplicato per due ruoli non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC05",
+          "REQ-UI-011.US02.TC04"
+        ],
+        "detail": "Stesso scenario (zero risultati/stato vuoto) duplicato per due ruoli non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC06",
+          "REQ-UI-011.US02.TC05"
+        ],
+        "detail": "Stesso scenario (periodo non valido) duplicato per due ruoli non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC07",
+          "REQ-UI-011.US02.TC06"
+        ],
+        "detail": "Stesso scenario (errore tecnico durante refresh) duplicato per due ruoli non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-011.US01.TC08",
+          "REQ-UI-011.US02.TC07"
+        ],
+        "detail": "Stesso scenario (autorizzazione/utente non autorizzato) duplicato per due ruoli non richiesti dal requisito."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3), ma il set direct introduce meno informazioni non tracciabili (8 added_info vs 14) e molte meno ridondanze (1 vs 6). Il set indirect_persona aggiunge inoltre ruoli/persona e logiche IAM non presenti nel requisito, aumentando significativamente le assunzioni. Per questo il punteggio di coerenza del direct risulta superiore (62 vs 37)."
+  }
+}

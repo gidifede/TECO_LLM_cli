@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-F-022.US01",
+    "title": "Configurare i criteri di priorità ed eccezioni per la NBO",
+    "persona": "Team Marketing",
+    "goal": "impostare i criteri di priorità della logica Next Best Offer e configurare eventuali eccezioni che consentano di proporre prodotti già posseduti",
+    "benefit": "guidare le raccomandazioni in modo coerente con la strategia commerciale e gestire casi particolari senza interventi tecnici",
+    "user_story": "Come Team Marketing\nVoglio impostare i criteri di priorità della logica Next Best Offer e configurare eccezioni per includere prodotti già posseduti\nIn modo che le proposte risultino allineate alle priorità commerciali e gestiscano correttamente le eccezioni previste",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO configuro un'eccezione per una coppia cliente/prodotto ALLORA la NBO può includere quel prodotto anche se risulta già posseduto dal cliente",
+      "QUANDO non esiste alcuna eccezione configurata per una coppia cliente/prodotto ALLORA la NBO esclude quel prodotto se risulta già posseduto dal cliente"
+    ],
+    "business_rules": [
+      "Le eccezioni che consentono di proporre prodotti già posseduti devono essere esplicitamente configurate dal Team Marketing",
+      "In assenza di eccezioni, i prodotti già posseduti dal cliente non devono essere proposti"
+    ],
+    "edge_cases": [
+      "Eccezione configurata per cliente/prodotto non più valido o non presente nel catalogo: l'eccezione non deve produrre proposte non risolvibili e deve essere gestita come configurazione non applicabile",
+      "Configurazioni di eccezione duplicate o confliggenti: deve essere deterministico quale regola prevale (da chiarire)",
+      "Cliente senza informazioni aggiornate di possesso prodotti: la proposta potrebbe includere prodotti già posseduti; il comportamento atteso va chiarito"
+    ],
+    "assumptions": [
+      "Esiste una funzionalità di configurazione (dashboard) che consente al Team Marketing di impostare priorità e gestire eccezioni, anche se non dettagliata nel requisito",
+      "Le eccezioni sono configurabili almeno a livello di coppia cliente/prodotto come indicato dagli acceptance criteria"
+    ],
+    "notes": "Il requisito cita criteri di priorità impostati dal marketing ma non specifica UI/permessi/dettaglio del modello di configurazione. Gli AC originali 1-4 sono principalmente di calcolo/algoritmo (coperti nelle US del Motore)."
+  },
+  {
+    "story_id": "REQ-F-022.US02",
+    "title": "Calcolare e fornire raccomandazioni NBO ordinate usando cluster e propensity",
+    "persona": "Motore di Offerte",
+    "goal": "identificare automaticamente i prodotti più rilevanti da proporre in logica NBO usando cluster e propensity, applicando criteri di priorità e regole di esclusione possesso con eccezioni",
+    "benefit": "generare proposte personalizzate e verificabili (real-time o batch) a supporto dei canali di vendita",
+    "user_story": "Come Motore di Offerte\nVoglio calcolare una lista ordinata di prodotti raccomandati in logica Next Best Offer usando cluster, propensity e criteri di priorità\nIn modo che i canali possano ottenere proposte personalizzate coerenti e verificabili",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore calcola la NBO per un cliente con cluster e valori di propensity disponibili ALLORA produce una lista ordinata di raccomandazioni utilizzando esplicitamente come input il cluster e i valori di propensity associati",
+      "QUANDO eseguo la NBO su un campione di clienti ALLORA i prodotti proposti risultano ordinati secondo la propensione calcolata per il cluster di riferimento (salvo l'applicazione dei criteri di priorità configurati)",
+      "QUANDO il cliente possiede già un prodotto ALLORA quel prodotto non compare tra le proposte NBO",
+      "QUANDO esiste un'eccezione configurata per la coppia cliente/prodotto ALLORA il prodotto può comparire tra le proposte NBO anche se già posseduto",
+      "QUANDO la NBO viene eseguita in un ambiente di test con dati noti ALLORA i risultati sono replicabili e verificabili (stessi input producono stesso output secondo le regole vigenti)"
+    ],
+    "business_rules": [
+      "La selezione NBO deve basarsi su: (1) criteri di priorità configurati dal Team Marketing, (2) caratteristiche del cluster di clientela, (3) modelli/valori di propensity associati al cliente",
+      "L'output della NBO è una lista ordinata di raccomandazioni",
+      "Esclusione dei prodotti già posseduti dal cliente, salvo eccezioni esplicite configurate"
+    ],
+    "edge_cases": [
+      "Cluster non disponibile per il cliente: la NBO non può applicare l'ordinamento per cluster; comportamento atteso da definire (es. nessuna proposta o fallback)",
+      "Valori di propensity mancanti/incompleti: comportamento atteso da definire (es. esclusione prodotti senza propensity o ordinamento parziale)",
+      "Dati di possesso prodotti non disponibili o incoerenti: rischio di proporre prodotti già posseduti; va definita la gestione (blocco, fallback, warning)",
+      "Esecuzioni batch vs real-time con dataset differenti: possibile non replicabilità se cambiano gli input; per i test va fissato un set di dati e una versione modello",
+      "Parità di propensity tra prodotti: criterio di tie-break non specificato (da definire per garantire replicabilità)"
+    ],
+    "assumptions": [
+      "I modelli/valori di propensity e l'informazione di cluster sono già disponibili al Motore (o accessibili) e sono versionati/stabili in ambiente di test per garantire replicabilità",
+      "I criteri di priorità del marketing sono applicabili come regole deterministiche nel calcolo dell'ordinamento (il dettaglio non è specificato nel requisito)"
+    ],
+    "notes": "Copertura AC: (1) ordinamento per propensity/cluster; (2) esclusione possesso con eccezioni; (3) input esplicito cluster+propensity e output lista ordinata; (4) replicabilità in test. Il requisito è ampio ma coerente; mancano dettagli su fallback (assenza cluster/propensity), tie-break e definizione formale di 'criteri di priorità marketing'."
+  }
+]

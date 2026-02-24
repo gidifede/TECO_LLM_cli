@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-F-008.US01",
+    "title": "Consultazione log di proposte ed azioni di configurazione per analisi efficacia offerte",
+    "persona": "Team Marketing",
+    "goal": "consultare tramite dashboard i log delle decisioni del Motore di Offerte e delle operazioni di configurazione effettuate dal Team Marketing",
+    "benefit": "analizzare l’efficacia di offerte e messaggi promozionali/USP e verificare l’impatto delle modifiche di configurazione",
+    "user_story": "Come Team Marketing\nVoglio consultare tramite dashboard i log delle decisioni del Motore di Offerte e delle operazioni di configurazione\nIn modo che possa analizzare l’efficacia delle offerte e dei messaggi promozionali e verificare l’impatto delle modifiche",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte genera una proposta, un’esclusione o un ordinamento di offerte/bundle ALLORA deve essere disponibile un record di log consultabile in dashboard con almeno: offerte/bundle proposte/escluse/ordinate e relative motivazioni.",
+      "QUANDO viene registrata una proposta ALLORA nel log consultabile in dashboard devono essere presenti almeno: touchpoint della proposta (UP/Web/App), data e ora (timestamp) ed esito (abbandono oppure finalizzazione lato operatore oppure finalizzazione lato cliente in modalità self).",
+      "QUANDO un utente Marketing effettua un’operazione di configurazione (creazione/modifica/cancellazione) su bundle, regole di pricing, campagne o parametri ALLORA deve essere disponibile un record di log consultabile in dashboard relativo a tale operazione.",
+      "QUANDO l’utente Team Marketing accede alla dashboard ALLORA può consultare i log relativi alle decisioni del motore e alle operazioni di configurazione."
+    ],
+    "business_rules": [
+      "La consultazione dei log avviene tramite la dashboard prevista per Marketing, nel rispetto dei ruoli/autorizzazioni assegnati.",
+      "Devono essere tracciati eventi rilevanti sia generati dal motore sia dagli utenti di configurazione (Marketing).",
+      "Il tracciamento delle proposte (inclusi condizioni/motivazioni/messaggi promozionali generati per un cliente) e del relativo esito deve essere storicizzato per finalità di analisi Marketing."
+    ],
+    "edge_cases": [
+      "Touchpoint della proposta non valorizzabile o non riconosciuto: il log deve comunque essere creato e reso consultabile indicando valore non disponibile/unknown secondo standard di sistema.",
+      "Esito non ancora determinabile (es. proposta appena generata): il log deve essere consultabile con esito in stato non disponibile/pending e aggiornabile quando l’informazione diventa disponibile.",
+      "Operazione di configurazione annullata o non andata a buon fine: deve essere chiarito se loggare anche i tentativi falliti (in assenza di dettaglio, vedi assumptions)."
+    ],
+    "assumptions": [
+      "La dashboard consente almeno la consultazione/ricerca dei log; non sono specificati requisiti di filtro, export o insight avanzati in questo requisito.",
+      "Non sono specificati i campi minimi dei log per le operazioni di configurazione (es. utente, prima/dopo); si assume che siano presenti almeno tipo operazione e oggetto (bundle/pricing/campagna/parametro).",
+      "Non è esplicitato se vadano tracciati anche i tentativi falliti di configurazione: si assume che il requisito copra almeno le operazioni completate con successo."
+    ],
+    "notes": "AC condivisi con REQ-F-008.US02: consultabilità dei log tramite dashboard. Il requisito è ampio (copre logging motore + logging configurazione + storicizzazione esiti); potrebbe beneficiare di ulteriore scomposizione in refinement (es. schema log, retention, aggiornamento esito)."
+  },
+  {
+    "story_id": "REQ-F-008.US02",
+    "title": "Consultazione log per audit di decisioni del motore e modifiche di configurazione",
+    "persona": "Team Compliance",
+    "goal": "consultare tramite dashboard i log delle decisioni del Motore di Offerte e delle operazioni di configurazione",
+    "benefit": "effettuare audit e verifiche di conformità basate su evidenze tracciate e storicizzate",
+    "user_story": "Come Team Compliance\nVoglio consultare tramite dashboard i log delle decisioni del Motore di Offerte e delle operazioni di configurazione\nIn modo che possa svolgere attività di audit e verifica di conformità su regole e proposte generate",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte genera una proposta o un’esclusione ALLORA deve essere disponibile un record di log consultabile in dashboard.",
+      "QUANDO viene eseguita un’operazione di configurazione (creazione/modifica/cancellazione) ALLORA deve essere disponibile un record di log consultabile in dashboard.",
+      "QUANDO l’utente Team Compliance accede alla dashboard ALLORA può consultare i log relativi alle decisioni del motore e alle operazioni di configurazione."
+    ],
+    "business_rules": [
+      "La consultazione dei log avviene tramite la dashboard prevista per Compliance, in base ai ruoli/autorizzazioni assegnati.",
+      "I log devono costituire evidenza consultabile delle decisioni automatiche del motore (proposte/esclusioni e motivazioni) e delle modifiche di configurazione effettuate dagli utenti abilitati."
+    ],
+    "edge_cases": [
+      "Utente Compliance non autorizzato: accesso ai log negato o limitato secondo profilo (il requisito non dettaglia livelli di visibilità).",
+      "Record di log incompleto per dati opzionali (es. esito non disponibile): il record deve rimanere consultabile con indicazione di dato mancante secondo standard di sistema."
+    ],
+    "assumptions": [
+      "Il requisito non specifica quali filtri/ricerche siano disponibili per Compliance; si assume sia richiesta almeno la consultazione dei log.",
+      "I dettagli di retention/immutabilità dei log non sono esplicitati; si assume che la storicizzazione sia sufficiente a supportare audit, demandando i dettagli a requisiti non presenti."
+    ],
+    "notes": "AC condivisi con REQ-F-008.US01: consultabilità dei log tramite dashboard; creazione record di log per proposte/esclusioni e per operazioni di configurazione."
+  }
+]

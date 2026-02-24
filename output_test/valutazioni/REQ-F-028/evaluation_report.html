@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-028</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-028</h1>
+  <div class="subtitle">Gestione centrale delle abilitazioni tramite workflow formale integrato</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:46</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-028</div>
+  <div class="req-field"><strong>Titolo:</strong> Gestione centrale delle abilitazioni tramite workflow formale integrato</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Le abilitazioni (matrice prodotti vs figure) devono essere definite centralmente e aggiornabili soltanto attraverso un workflow formale integrato con il Motore di Offerte. Non sono ammesse modifiche ad-hoc non tracciate: ogni variazione alla matrice deve transitare per un processo formale (approvazione/revisione) e rimanere con audit trail leggibile. Questo garantisce controllo, compliance e tracciabilità delle modifiche sulle abilitazioni di vendita.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Le modifiche alla matrice di abilitazione possono essere effettuate solo attraverso il workflow integrato e non tramite editing diretto non autorizzato.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Ogni modifica è registrata con autore, timestamp e stato di approvazione; è possibile ricostruire la storia delle modifiche.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Tentativi di modifica fuori dal workflow sono respinti e generano log di tentativo non autorizzato.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">66</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">53</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia, il set direct introduce meno informazioni non tracciabili al requisito (9 added_info vs 8 ma nel set indirect_persona ci sono aggiunte più strutturali e pervasive su canale/dashboard/team, più una ridondanza), e ottiene un punteggio di coerenza maggiore (66 vs 53). Il set indirect_persona aggiunge anche scenari non richiesti (collisioni concorrenti) e logging per tentativi &#x27;nel workflow&#x27; da utenti senza permessi, che non è previsto dal requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">66</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-028.TC01</td><td>Introduce ruoli/attori specifici (&#x27;Gestore Abilitazioni&#x27;, &#x27;Responsabile Compliance&#x27;) e stati di workflow esemplificativi; il requisito parla di workflow formale con approvazione/revisione ma non definisce ruoli né stati.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC01</td><td>Assume una verifica operativa tramite &#x27;Identificativo offerta&#x27; e ricalcolo/validazione nel Motore di Offerte; il requisito richiede integrazione col Motore di Offerte ma non specifica che debbano esistere offerte né una validazione offerta come evidenza.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC02</td><td>Assume UI con filtri (ultimi 90 giorni), ordinamento e visualizzazione &#x27;prima/dopo&#x27; nel dettaglio; il requisito richiede audit trail leggibile e ricostruibilità della storia, ma non specifica filtri/ordinamenti né la presenza esplicita del diff &#x27;prima/dopo&#x27;.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC03</td><td>Introduce dettagli tecnici non richiesti (endpoint &#x27;PUT /abilitazioni/matrice&#x27;, codici HTTP 401/403); il requisito richiede respingimento e logging, non specifica API né protocolli.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC04</td><td>Introduce un requisito implicito di autorizzazioni per avvio workflow (ruolo &#x27;Operatore Commerciale&#x27;) e che il tentativo non crei alcuna richiesta; il requisito non parla di gestione permessi/ruoli né di comportamento in caso di tentativo da utente non autorizzato.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC05</td><td>Gestisce indisponibilità del Motore di Offerte (timeout/503) e richiede stati specifici (&#x27;Errore di integrazione&#x27;, &#x27;In attesa di sincronizzazione&#x27;) e log tecnico dell&#x27;errore; il requisito non menziona gestione errori di integrazione, retry o stati specifici.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC06</td><td>Assume campi obbligatori (Figura, motivazione) e comportamento bozza/validazione; il requisito non definisce campi del workflow né obbligatorietà della motivazione.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC01</td><td>Introduce canale &#x27;web&#x27; come vincolo di test; il requisito non menziona canali.</td></tr>
+<tr><td class='mono'>REQ-F-028.TC03</td><td>Introduce canale &#x27;api&#x27; come canale di modifica fuori workflow; il requisito parla genericamente di tentativi fuori workflow, non di canali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      <p class='empty'>Nessuna ridondanza.</p>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">53</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-028.US01.TC01</td><td>Introduce contesto &#x27;Team Marketing&#x27;, &#x27;dashboard&#x27; e una specifica UI/sezioni; il requisito non menziona team, dashboard o canali.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC02</td><td>Introduce tolleranza sul timestamp (&#x27;pochi minuti&#x27;); il requisito richiede registrazione timestamp ma non definisce tolleranze/criteri di coerenza temporale.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC04</td><td>Dettaglia il tentativo fuori workflow come chiamata API/endpoint e richiede accesso a console/SIEM; il requisito non specifica tecnologia/strumenti di osservabilità.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC05</td><td>Afferma che il tentativo di un utente senza permessi via workflow sia &#x27;loggato&#x27; come non autorizzato; il requisito richiede logging per tentativi fuori workflow, non per tentativi nel workflow da utenti senza permessi.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC07</td><td>Introduce gestione collisioni/concorrenza (blocco/coda/merge) e tracciamento dell&#x27;esito; il requisito non menziona concorrenza né regole di collisione.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC08</td><td>Introduce fault injection/mock del Motore di Offerte, errori HTTP 500/timeout e requisiti di atomicità (&#x27;nessuna applicazione parziale&#x27;); il requisito non tratta la gestione dei fallimenti di integrazione.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC01</td><td>Richiede che non esista alcuna modalità di editing diretto (es. inline editing) come vincolo di UI; il requisito vieta modifiche ad-hoc non tracciate, ma non impone specifiche scelte UI.</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC01</td><td>Introduce canale &#x27;dashboard&#x27; come canale primario; il requisito non menziona canali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Scenario molto sovrapposto a REQ-F-028.US01.TC03: entrambi verificano presenza di autore/timestamp/stato in audit trail; differiscono principalmente per contesto (singola richiesta vs storico).</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-028&quot;,
+  &quot;title&quot;: &quot;Gestione centrale delle abilitazioni tramite workflow formale integrato&quot;,
+  &quot;description&quot;: &quot;Le abilitazioni (matrice prodotti vs figure) devono essere definite centralmente e aggiornabili soltanto attraverso un workflow formale integrato con il Motore di Offerte. Non sono ammesse modifiche ad-hoc non tracciate: ogni variazione alla matrice deve transitare per un processo formale (approvazione/revisione) e rimanere con audit trail leggibile. Questo garantisce controllo, compliance e tracciabilità delle modifiche sulle abilitazioni di vendita.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Le modifiche alla matrice di abilitazione possono essere effettuate solo attraverso il workflow integrato e non tramite editing diretto non autorizzato.&quot;,
+    &quot;Ogni modifica è registrata con autore, timestamp e stato di approvazione; è possibile ricostruire la storia delle modifiche.&quot;,
+    &quot;Tentativi di modifica fuori dal workflow sono respinti e generano log di tentativo non autorizzato.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-028.TC01</td><td>Creazione modifica matrice tramite workflow integrato con Motore di Offerte (happy path) e applicazione dopo approvazione</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.TC02</td><td>Verifica audit trail e ricostruzione storia modifiche della matrice (autore, timestamp, stati)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.TC03</td><td>Tentativo di modifica diretta della matrice (fuori workflow) respinto e registrato come tentativo non autorizzato</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-028.TC04</td><td>Autorizzazione: utente senza permessi non può avviare una modifica nel workflow</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-028.TC05</td><td>Integrazione: indisponibilità del Motore di Offerte durante l&#x27;applicazione della modifica approvata</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.TC06</td><td>Edge case: richiesta workflow con dati obbligatori mancanti non inviabile e non produce modifiche</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-028.US01.TC01</td><td>Avvio modifica matrice tramite workflow (nessun editing diretto disponibile)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC02</td><td>Registrazione audit della modifica inserita nel workflow (autore, timestamp, stato)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC03</td><td>Consultazione audit trail: ricostruzione storia modifiche per coppia Prodotto/Figura</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC04</td><td>Tentativo di modifica fuori workflow respinto e tracciato a log come non autorizzato</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC05</td><td>Utente senza permessi non può avviare/completare modifica via workflow e il tentativo è loggato</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC06</td><td>Workflow non completato: la matrice effettiva non riflette la modifica finché non approvata</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC07</td><td>Conflitto modifiche concorrenti sulla stessa coppia: nessun bypass e gestione collisione via workflow</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-028.US01.TC08</td><td>Errore integrazione con Motore di Offerte durante applicazione: nessuna applicazione parziale e tracciamento esito</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 9, 0, 0], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 8, 0, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

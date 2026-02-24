@@ -1,0 +1,250 @@
+[
+  {
+    "test_id": "REQ-NF-001.TC01",
+    "title": "Accesso consentito a modifica configurazioni critiche per ruolo Marketing con permessi di modifica",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato con ruolo 'Marketing_Modifica' abilitato alle funzioni di modifica configurazioni critiche del motore offerte",
+      "Utente U_MKT_MOD esistente e assegnato al ruolo 'Marketing_Modifica'"
+    ],
+    "test_data": [
+      "Credenziali U_MKT_MOD",
+      "Configurazione critica esistente: 'Matrice offerte' con versione corrente v10",
+      "Modifica proposta: aggiornare parametro 'Soglia_minima_importo' da 50,00 EUR a 60,00 EUR"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_MKT_MOD",
+      "Navigare alla sezione di configurazione del motore di offerte",
+      "Aprire la pagina di modifica della 'Matrice offerte'",
+      "Impostare 'Soglia_minima_importo' a 60,00 EUR",
+      "Salvare la modifica"
+    ],
+    "expected_results": [
+      "L'utente accede alla sezione di configurazione senza errori di autorizzazione (nessun 401/403, nessun messaggio di accesso negato)",
+      "La pagina di modifica della 'Matrice offerte' è visualizzata e interattiva (campi editabili)",
+      "Il salvataggio va a buon fine con conferma esplicita (es. messaggio di successo)",
+      "La configurazione risulta aggiornata e persistita (valore 'Soglia_minima_importo' = 60,00 EUR alla riapertura della matrice)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica l'elenco completo dei ruoli né i nomi esatti: sono stati usati nomi di ruolo esemplificativi coerenti con AC-1. Verificare con IAM/azienda la nomenclatura reale e i permessi associati."
+  },
+  {
+    "test_id": "REQ-NF-001.TC02",
+    "title": "Accesso consentito a inserimento eccezione manuale per ruolo autorizzato alle eccezioni",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato con ruolo 'Eccezioni_Inserimento' abilitato all'inserimento di eccezioni manuali",
+      "Utente U_EXC_INS esistente e assegnato al ruolo 'Eccezioni_Inserimento'"
+    ],
+    "test_data": [
+      "Credenziali U_EXC_INS",
+      "Eccezione da inserire: ClienteID=CL-1000456, Offerta=OFF-RET-12, Motivazione='Eccezione commerciale', Validità dal 2026-03-01 al 2026-03-31"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_EXC_INS",
+      "Navigare alla sezione 'Eccezioni manuali'",
+      "Selezionare l'azione 'Nuova eccezione'",
+      "Compilare i campi con i dati dell'eccezione",
+      "Confermare l'inserimento"
+    ],
+    "expected_results": [
+      "L'utente accede alla sezione 'Eccezioni manuali' senza errori di autorizzazione",
+      "Il form di inserimento eccezione è disponibile e consente l'invio",
+      "L'eccezione viene creata con stato coerente al processo (es. 'In attesa di approvazione' se previsto) e risulta visibile in elenco"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non descrive il workflow di stato (es. bozza/attesa approvazione). L'expected result sullo stato è indicato in forma condizionata: allineare con la definizione di processo effettiva."
+  },
+  {
+    "test_id": "REQ-NF-001.TC03",
+    "title": "Accesso consentito ad approvazione eccezione manuale per ruolo autorizzato all'approvazione",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato con ruolo 'Eccezioni_Approvazione' abilitato all'approvazione di eccezioni manuali",
+      "Utente U_EXC_APP esistente e assegnato al ruolo 'Eccezioni_Approvazione'",
+      "Esiste un'eccezione in stato approvabile (es. 'In attesa di approvazione') con ID=EXC-900123"
+    ],
+    "test_data": [
+      "Credenziali U_EXC_APP",
+      "Eccezione da approvare: ID=EXC-900123",
+      "Commento approvazione: 'Verificata e approvata'"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_EXC_APP",
+      "Navigare alla sezione 'Eccezioni manuali'",
+      "Aprire il dettaglio dell'eccezione ID=EXC-900123",
+      "Selezionare l'azione 'Approva'",
+      "Inserire il commento di approvazione",
+      "Confermare l'operazione"
+    ],
+    "expected_results": [
+      "L'utente può visualizzare l'azione 'Approva' nel dettaglio dell'eccezione",
+      "L'operazione di approvazione va a buon fine con conferma esplicita",
+      "Lo stato dell'eccezione ID=EXC-900123 risulta aggiornato a 'Approvata' (o stato equivalente previsto) e persistito"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Nomi ruolo e stati sono assunzioni per rendere testabile AC-1; verificare con analisi IAM e specifiche di processo."
+  },
+  {
+    "test_id": "REQ-NF-001.TC04",
+    "title": "Blocco accesso a inserimento eccezione per utente non autorizzato (UI e API)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato: ruolo 'Viewer' senza permessi su eccezioni e configurazioni critiche",
+      "Utente U_VIEWER esistente e assegnato al ruolo 'Viewer'",
+      "Endpoint backend per creazione eccezione disponibile (es. POST /api/eccezioni)"
+    ],
+    "test_data": [
+      "Credenziali U_VIEWER",
+      "Tentativo di creazione eccezione via UI: ClienteID=CL-1000456, Offerta=OFF-RET-12, Motivazione='Test non autorizzato', Validità 2026-03-01/2026-03-31",
+      "Tentativo di creazione eccezione via API: payload JSON equivalente"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_VIEWER",
+      "Navigare alla sezione 'Eccezioni manuali'",
+      "Verificare la presenza di un'azione per creare una nuova eccezione (es. pulsante 'Nuova eccezione')",
+      "Se l'azione è presente, tentare di aprire il form e inviare l'inserimento",
+      "Eseguire una chiamata diretta all'endpoint di creazione eccezione (POST /api/eccezioni) autenticandosi come U_VIEWER con payload valido"
+    ],
+    "expected_results": [
+      "L'utente non autorizzato non può accedere alla funzione di inserimento: l'azione non è disponibile oppure l'apertura/invio è bloccato con messaggio di accesso negato",
+      "La chiamata API viene rifiutata con esito di autorizzazione negata (HTTP 403 Forbidden o equivalente definito) e nessuna eccezione viene creata",
+      "Non risultano nuovi record di eccezione creati a seguito dei tentativi (verifica su elenco o su audit/log applicativo)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita 'modificare la matrice' oltre alle eccezioni: questo test copre la parte eccezioni. Il codice HTTP atteso è indicato come 403; adeguare se la policy prevede 401 in specifiche condizioni."
+  },
+  {
+    "test_id": "REQ-NF-001.TC05",
+    "title": "Blocco accesso a modifica matrice/configurazioni critiche per utente non autorizzato (UI e API)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato: ruolo 'Viewer' senza permessi di modifica configurazioni critiche",
+      "Utente U_VIEWER esistente e assegnato al ruolo 'Viewer'",
+      "Endpoint backend per aggiornamento matrice/configurazioni disponibile (es. PUT /api/configurazioni/matrice-offerte)"
+    ],
+    "test_data": [
+      "Credenziali U_VIEWER",
+      "Tentativo modifica via UI: 'Soglia_minima_importo' da 50,00 EUR a 60,00 EUR",
+      "Tentativo modifica via API: payload JSON {\"Soglia_minima_importo\": 60.00}"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_VIEWER",
+      "Navigare alla sezione di configurazione del motore di offerte",
+      "Tentare di aprire la pagina di modifica della 'Matrice offerte'",
+      "Se la pagina è accessibile in sola lettura, tentare di modificare un campo e salvare",
+      "Eseguire una chiamata diretta all'endpoint di aggiornamento matrice (PUT /api/configurazioni/matrice-offerte) autenticandosi come U_VIEWER con payload valido"
+    ],
+    "expected_results": [
+      "L'utente non autorizzato non può modificare la matrice/configurazioni: la pagina di modifica è inaccessibile oppure i campi risultano non editabili e il salvataggio è bloccato",
+      "La chiamata API viene rifiutata con esito di autorizzazione negata (HTTP 403 Forbidden o equivalente) e nessuna modifica viene applicata",
+      "La configurazione rimane invariata (valore 'Soglia_minima_importo' resta 50,00 EUR dopo refresh/riapertura)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito usa il termine 'matrice' senza dettagliare l'oggetto: è stato interpretato come matrice offerte/configurazioni critiche del motore offerte."
+  },
+  {
+    "test_id": "REQ-NF-001.TC06",
+    "title": "Tracciamento e segnalazione dei tentativi di accesso non autorizzato secondo policy (audit/log + alert)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato con almeno un ruolo non autorizzato (es. 'Viewer')",
+      "Utente U_VIEWER esistente e assegnato al ruolo 'Viewer'",
+      "Audit logging abilitato per eventi di autorizzazione (accesso negato) su dashboard e API",
+      "Integrazione con sistema di logging/monitoring aziendale attiva (es. SIEM o log aggregator) secondo policy"
+    ],
+    "test_data": [
+      "Credenziali U_VIEWER",
+      "Operazione non autorizzata: PUT /api/configurazioni/matrice-offerte con payload {\"Soglia_minima_importo\": 60.00}",
+      "Identificativo correlazione richiesta (se previsto): X-Correlation-ID=CORR-REQNF001-0001"
+    ],
+    "steps": [
+      "Autenticarsi come U_VIEWER",
+      "Eseguire l'operazione non autorizzata di aggiornamento matrice tramite API includendo l'eventuale X-Correlation-ID",
+      "Recuperare gli eventi di audit/log generati dall'applicazione per la finestra temporale del test",
+      "Recuperare gli eventi corrispondenti nel sistema di logging/monitoring aziendale (se previsto dalla policy)",
+      "Verificare l'eventuale generazione di una segnalazione/alert secondo soglie/policy (se applicabile)"
+    ],
+    "expected_results": [
+      "L'operazione non autorizzata è bloccata (esito 403/negato) e non modifica alcun dato",
+      "È presente un evento di audit/log per 'accesso non autorizzato' contenente almeno: utente (U_VIEWER o subject), risorsa/azione tentata, timestamp, esito negato",
+      "L'evento è propagato/visibile nel sistema di logging/monitoring aziendale secondo le regole di integrazione",
+      "Se la policy prevede alerting per accessi non autorizzati, viene generata una segnalazione verificabile (es. evento/alert con severità e riferimento all'utente/risorsa)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è dichiarativo ('secondo le policy aziendali') e non specifica campi minimi, canali di segnalazione, soglie o tempi di retention: le verifiche sono state rese testabili assumendo audit log applicativo + propagazione a sistema centralizzato e (opzionale) alerting. Allineare alle policy reali (SIEM, retention, mascheramento dati, severità, SLA)."
+  },
+  {
+    "test_id": "REQ-NF-001.TC07",
+    "title": "Accesso negato per utente autenticato senza ruolo (nessuna membership) alle funzioni protette",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Sistema di autenticazione attivo e integrato con la dashboard marketing",
+      "RBAC configurato per negare per default l'accesso alle funzioni protette in assenza di ruoli autorizzati",
+      "Utente U_NO_ROLE esistente e autenticabile ma senza ruoli assegnati"
+    ],
+    "test_data": [
+      "Credenziali U_NO_ROLE"
+    ],
+    "steps": [
+      "Autenticarsi nella dashboard marketing come U_NO_ROLE",
+      "Navigare alla sezione 'Eccezioni manuali'",
+      "Navigare alla sezione di configurazione del motore di offerte",
+      "Tentare di accedere a una pagina di dettaglio/modifica di configurazione critica (es. 'Matrice offerte')"
+    ],
+    "expected_results": [
+      "L'utente non può accedere alle funzioni protette (eccezioni e configurazioni critiche) e riceve accesso negato (UI) o viene reindirizzato a pagina di non autorizzazione",
+      "Non sono disponibili azioni di inserimento/approvazione eccezioni né di salvataggio modifiche configurazioni"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Edge case per verificare il principio 'deny by default' non esplicitato ma coerente con RBAC e AC-2."
+  }
+]

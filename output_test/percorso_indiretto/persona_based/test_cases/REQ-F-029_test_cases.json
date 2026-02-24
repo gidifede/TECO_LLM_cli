@@ -1,0 +1,332 @@
+[
+  {
+    "story_id": "REQ-F-029.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-029.US01.TC01",
+        "title": "Generazione proposta: restituisce solo alternative/combinazioni/sconti con prezzi e condizioni (nessun provisioning/attivazione)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte deployato e raggiungibile in ambiente di test",
+          "Endpoint/API di generazione proposta disponibile (es. /proposals o equivalente)",
+          "Logging applicativo e tracing delle chiamate in uscita del Motore abilitati (es. APM/trace-id)",
+          "Non esistono credenziali/configurazioni nel Motore per invocare sistemi di provisioning/attivazione (se presenti, devono essere disabilitate in test)"
+        ],
+        "test_data": [
+          "Richiesta proposta valida con prodotti/servizi e contesto cliente (es. customerType=Consumer, basketItems=[\"PianoMobile_X\", \"OpzioneDati_10GB\"], canale=WEB)",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US01-TC01)"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di generazione proposta con i dati di test",
+          "Acquisire la risposta del Motore (payload completo)",
+          "Verificare tramite log/tracing del Motore le chiamate in uscita effettuate durante l’elaborazione",
+          "Verificare che non siano stati creati ordini, attivazioni o ticket tecnici in alcun sistema esterno monitorato (se applicabile in ambiente)"
+        ],
+        "expected_results": [
+          "La risposta contiene esclusivamente proposte commerciali sotto forma di lista di alternative e/o combinazioni e/o sconti",
+          "Ogni proposta include prezzi e condizioni (es. importi, durata, vincoli) e non include esiti/identificativi di attivazione/provisioning",
+          "Nei log/tracing non risultano chiamate verso endpoint/servizi di provisioning o attivazione originate dal Motore",
+          "Non risultano operazioni di attivazione/provisioning avviate dal Motore (assenza di side effect operativi riconducibili al Motore)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Canali non specificati nella user story: il test è eseguito a livello API/integration. La verifica di 'nessun provisioning/attivazione' è effettuata via tracing/log e assenza di side effect osservabili."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC02",
+        "title": "Richiesta con flag/parametri di finalizzazione o provisioning: il Motore non esegue azioni operative",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte deployato e raggiungibile in ambiente di test",
+          "Logging applicativo e tracing delle chiamate in uscita del Motore abilitati"
+        ],
+        "test_data": [
+          "Richiesta proposta valida arricchita con parametri riconducibili a finalizzazione/provisioning (es. finalizeOrder=true, provisioning=true, action=ACTIVATE)",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US01-TC02)"
+        ],
+        "steps": [
+          "Inviare al Motore la richiesta di generazione proposta includendo i parametri di finalizzazione/provisioning",
+          "Acquisire la risposta del Motore",
+          "Analizzare log/tracing del Motore relativi alla richiesta",
+          "Verificare eventuali side effect su sistemi esterni monitorati (se applicabile in ambiente)"
+        ],
+        "expected_results": [
+          "Il Motore non invoca alcun endpoint/servizio di provisioning o attivazione",
+          "Il Motore non avvia alcun flusso di finalizzazione ordine/vendita",
+          "La risposta è limitata alla proposizione commerciale (proposte con prezzi e condizioni) oppure la richiesta viene rifiutata secondo le regole di integrazione definite (es. errore 4xx con messaggio esplicito); in entrambi i casi non devono esserci azioni operative",
+          "Non risultano side effect operativi (ordini/attivazioni) avviati dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "L’AC di story indica 'ignorare o rifiutare secondo regole di integrazione definite': non essendo specificate, il test accetta entrambe le modalità purché sia verificata l’assenza di azioni operative."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC03",
+        "title": "E2E generazione→presentazione: nessuna invocazione di flussi di finalizzazione vendita dal Motore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente E2E disponibile con Motore di Offerte integrato con un canale di presentazione (es. portale web o app) come consumer delle proposte",
+          "Tracciamento distribuito attivo tra canale e Motore (correlation-id propagato)",
+          "Monitoraggio chiamate in uscita del Motore attivo (APM/service mesh/proxy)"
+        ],
+        "test_data": [
+          "Scenario E2E: utente/canale richiede proposte per un paniere (es. PianoFibra_Y + TV_Z)",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US01-TC03)"
+        ],
+        "steps": [
+          "Dal canale di presentazione, avviare la richiesta di generazione proposta per il paniere di test",
+          "Verificare che il canale visualizzi le proposte restituite dal Motore",
+          "Raccogliere i trace end-to-end della transazione (canale→Motore e chiamate in uscita del Motore)",
+          "Ispezionare le chiamate in uscita del Motore durante la transazione"
+        ],
+        "expected_results": [
+          "Il canale riceve e presenta una lista di proposte con prezzi e condizioni",
+          "Nel trace end-to-end non risultano chiamate originate dal Motore verso sistemi/endpoint di finalizzazione ordine/vendita",
+          "Nel trace end-to-end non risultano chiamate originate dal Motore verso sistemi/endpoint di provisioning/attivazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "I canali non sono elencati nelle user stories; il test E2E presuppone l’esistenza di almeno un consumer (web/app). Se non disponibile, eseguire come E2E tecnico con consumer simulato e tracing equivalente."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC04",
+        "title": "Indisponibilità sistemi esterni di vendita/provisioning: il Motore non tenta fallback di attivazione/provisioning",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte deployato e raggiungibile in ambiente di test",
+          "Esiste (anche solo a livello di rete/DNS) un endpoint esterno di vendita/provisioning nel perimetro dell’ambiente, bloccabile per simulare indisponibilità",
+          "Logging e tracing del Motore abilitati"
+        ],
+        "test_data": [
+          "Simulazione indisponibilità: blocco rete/timeout verso host di vendita/provisioning (es. drop traffico verso sales.example.local:443 e prov.example.local:443)",
+          "Richiesta proposta valida (es. basketItems=[\"PianoMobile_X\"])",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US01-TC04)"
+        ],
+        "steps": [
+          "Configurare l’ambiente per rendere indisponibili gli endpoint esterni di vendita/provisioning (timeout/connection refused)",
+          "Inviare al Motore una richiesta di generazione proposta valida",
+          "Raccogliere log/tracing del Motore relativi alla richiesta"
+        ],
+        "expected_results": [
+          "Il Motore restituisce comunque la proposta commerciale (se la generazione non dipende da tali sistemi) oppure fallisce solo per motivi interni alla generazione proposta, ma non per tentativi di attivazione/provisioning",
+          "Nei log/tracing non risultano tentativi di chiamata a endpoint di provisioning/attivazione (nessun retry/fallback verso provisioning)",
+          "Non risultano side effect operativi (ordini/attivazioni) avviati dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il test assume che sia possibile simulare indisponibilità a livello infrastrutturale. Se il Motore non ha alcuna configurazione per contattare tali sistemi, l’expected è l’assenza di chiamate; l’indisponibilità non deve influire."
+      },
+      {
+        "test_id": "REQ-F-029.US01.TC05",
+        "title": "Verifica ispettiva: codice/configurazioni/documentazione evidenziano assenza di chiamate di provisioning/attivazione originate dal Motore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Repository del Motore accessibile (branch/release candidata alla delivery)",
+          "Pipeline CI accessibile con report di dipendenze e scansione (es. SBOM, dependency check)",
+          "Documentazione di integrazione disponibile (API catalog, sequence diagram, ADR, README integrazioni)",
+          "Accesso a file di configurazione (es. application.yml, env vars, service registry) della release"
+        ],
+        "test_data": [
+          "Elenco keyword/artefatti da ricercare: \"provision\", \"activate\", \"activation\", \"fulfillment\", \"orderFinalize\", \"submitOrder\"",
+          "Lista endpoint/servizi esterni autorizzati per il Motore (allowlist) se esistente"
+        ],
+        "steps": [
+          "Eseguire una ricerca nel codice sorgente per riferimenti a chiamate/SDK/client verso provisioning/attivazione o finalizzazione ordine",
+          "Verificare le dipendenze applicative (SBOM/librerie) per presenza di client specifici di provisioning/attivazione",
+          "Ispezionare le configurazioni della release per verificare assenza di URL/credenziali verso sistemi di provisioning/attivazione",
+          "Verificare la documentazione di integrazione per dichiarazione esplicita del perimetro: il Motore genera proposte e non avvia provisioning/attivazione",
+          "Produrre evidenza verificabile (link/commit hash/report) dei controlli eseguiti"
+        ],
+        "expected_results": [
+          "Non sono presenti nel codice chiamate/endpoint/azioni di provisioning o attivazione originate dal Motore",
+          "Non sono presenti processi o componenti che finalizzano la vendita/ordine all’interno del Motore",
+          "Le configurazioni non contengono endpoint/credenziali per sistemi di provisioning/attivazione",
+          "La documentazione di integrazione esplicita il confine di responsabilità e l’assenza di chiamate di provisioning/attivazione originate dal Motore",
+          "Le evidenze (report/commit/documenti) sono archiviate e tracciabili per la release"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "AC di natura ispettiva reso testabile tramite evidenze oggettive (ricerche, SBOM, configurazioni, documenti)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-029.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-029.US02.TC01",
+        "title": "Selezione proposta: finalizzazione ordine e provisioning gestiti dai Verticali/sistemi esterni, non dal Motore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente E2E disponibile con: canale/verticale di vendita, Motore di Offerte, e (se previsto) sistema di provisioning esterno",
+          "Tracciamento distribuito attivo tra Verticale, Motore e sistemi esterni (correlation-id propagato)",
+          "Esiste almeno una proposta generabile dal Motore e selezionabile dal Verticale"
+        ],
+        "test_data": [
+          "Scenario: generazione proposta per un paniere (es. PianoMobile_X) e successiva selezione della proposta ID=PROP-12345 (o equivalente)",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US02-TC01)"
+        ],
+        "steps": [
+          "Dal Verticale di vendita, richiedere al Motore la generazione di proposte per il paniere di test",
+          "Dal Verticale, selezionare una proposta tra quelle restituite",
+          "Dal Verticale, avviare la finalizzazione dell’ordine (checkout/conferma) secondo il flusso disponibile",
+          "Raccogliere i trace end-to-end della finalizzazione (Verticale→sistemi esterni e chiamate in uscita del Motore)",
+          "Verificare nei trace quali componenti invocano provisioning/attivazione"
+        ],
+        "expected_results": [
+          "La finalizzazione dell’ordine viene eseguita dal Verticale di vendita e/o dai sistemi esterni dedicati (ordini creati/aggiornati fuori dal Motore)",
+          "Le eventuali chiamate di provisioning/attivazione risultano originate dal Verticale di vendita e/o dal sistema di provisioning esterno, non dal Motore",
+          "Nei trace/log del Motore non risultano chiamate verso endpoint/servizi di finalizzazione ordine o provisioning/attivazione in conseguenza della selezione/finalizzazione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "I confini tra Verticale e sistema di provisioning non sono dettagliati: il test valida che l’origine delle chiamate operative non sia il Motore, indipendentemente da quale componente esterno le esegua."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC02",
+        "title": "Analisi dipendenze: nessuna dipendenza da processi interni al Motore per finalizzare la vendita",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Disponibili diagrammi di sequenza/integrazione o trace di runtime del flusso di checkout/finalizzazione del Verticale",
+          "Accesso a configurazioni di integrazione del Verticale (endpoint chiamati, service discovery) per la release in test"
+        ],
+        "test_data": [
+          "Lista endpoint del Motore consentiti al Verticale (es. solo 'generateProposal', 'getProposalDetails' se esistenti)",
+          "Trace/correlation-id di una finalizzazione ordine eseguita in ambiente (es. X-Correlation-Id=REQ-F-029-US02-TC02)"
+        ],
+        "steps": [
+          "Eseguire una finalizzazione ordine dal Verticale in ambiente di test",
+          "Raccogliere il trace completo del flusso di finalizzazione",
+          "Verificare che le chiamate al Motore (se presenti) siano limitate alla proposizione/prezzi/condizioni",
+          "Verificare che la creazione/conferma ordine e le chiamate di provisioning siano effettuate tramite sistemi esterni e non richiedano processi interni al Motore"
+        ],
+        "expected_results": [
+          "Nel flusso di finalizzazione non risultano step che richiedano l’esecuzione di processi interni al Motore per completare l’ordine",
+          "Eventuali chiamate al Motore durante il checkout non includono operazioni di finalizzazione ordine o provisioning/attivazione",
+          "Le operazioni di completamento ordine/provisioning sono gestite da componenti esterni al Motore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Test focalizzato sulla dipendenza architetturale/di runtime. Se non è disponibile tracing, usare evidenze equivalenti (log applicativi, API gateway logs, service mesh telemetry)."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC03",
+        "title": "Proposta scaduta/non valida in finalizzazione: gestione nel Verticale senza azioni operative dal Motore",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente E2E disponibile con Verticale di vendita e Motore",
+          "Esiste una modalità per rendere una proposta non valida (es. TTL scaduto, rimozione/invalidazione proposta lato Verticale o regola di scadenza)",
+          "Tracciamento/logging disponibili per verificare chiamate del Motore"
+        ],
+        "test_data": [
+          "Proposta con scadenza breve o marcata come scaduta (es. validTo < now)",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US02-TC03)"
+        ],
+        "steps": [
+          "Generare una proposta tramite il Motore e acquisirne l’identificativo",
+          "Attendere la scadenza della proposta o renderla non valida secondo la modalità disponibile",
+          "Dal Verticale, tentare la finalizzazione dell’ordine utilizzando la proposta scaduta/non valida",
+          "Raccogliere log/tracing del Motore e del Verticale durante il tentativo"
+        ],
+        "expected_results": [
+          "Il Verticale gestisce il caso di proposta scaduta/non valida secondo le proprie regole (es. messaggio di errore, richiesta di rigenerazione proposta, blocco checkout)",
+          "Il Motore non avvia alcuna finalizzazione ordine né provisioning/attivazione in conseguenza del tentativo di finalizzazione",
+          "Nei log/tracing del Motore non risultano chiamate operative verso sistemi di vendita/provisioning originate dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La modalità esatta di gestione (messaggio/UX) dipende dal Verticale e non è specificata: il focus è l’assenza di azioni operative originate dal Motore."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC04",
+        "title": "Indisponibilità del Motore al momento della finalizzazione: il Verticale gestisce l’ordine senza richiedere provisioning dal Motore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente E2E disponibile con Verticale di vendita",
+          "Possibilità di simulare indisponibilità del Motore (es. spegnimento servizio, fault injection, blocco rete)",
+          "Esiste un flusso di finalizzazione che può essere avviato con una proposta già selezionata o con dati già acquisiti dal Verticale"
+        ],
+        "test_data": [
+          "Simulazione indisponibilità Motore: HTTP 503/timeout sulla chiamata al Motore",
+          "Header di correlazione (es. X-Correlation-Id=REQ-F-029-US02-TC04)"
+        ],
+        "steps": [
+          "Generare e selezionare una proposta in condizioni normali fino al punto immediatamente precedente la finalizzazione, se necessario",
+          "Rendere indisponibile il Motore (fault injection/stop servizio/blocco rete)",
+          "Dal Verticale, avviare la finalizzazione dell’ordine",
+          "Raccogliere log/tracing del Verticale e dei sistemi esterni coinvolti"
+        ],
+        "expected_results": [
+          "Il Verticale gestisce la finalizzazione secondo le proprie regole in presenza di indisponibilità del Motore (es. prosegue con dati già disponibili, mette in attesa, o fallisce in modo controllato)",
+          "Non risultano tentativi del Motore (indisponibile) di avviare provisioning/attivazione; e non esistono dipendenze che richiedano al Motore di eseguire azioni operative per finalizzare",
+          "Le eventuali chiamate di provisioning/attivazione (se eseguite) risultano originate dal Verticale e/o sistemi esterni, non dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non impone che la finalizzazione debba sempre riuscire senza Motore; impone l’assenza di dipendenze operative dal Motore per provisioning/finalizzazione."
+      },
+      {
+        "test_id": "REQ-F-029.US02.TC05",
+        "title": "Documentazione integrazione E2E: responsabilità esplicitate (Motore propone, sistemi esterni finalizzano/attivano)",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Documentazione di integrazione end-to-end disponibile (es. confluence, ADR, API catalog, diagrammi di sequenza)",
+          "Versione/Release della documentazione associabile alla release software in test"
+        ],
+        "test_data": [
+          "Sezioni da verificare: 'Responsabilità/Ownership', 'Sequence diagram checkout', 'API invocate dal Motore', 'API invocate dal Verticale'",
+          "Checklist termini: 'proposte/prezzi/condizioni' per Motore; 'finalizzazione ordine', 'provisioning/attivazione' per sistemi esterni"
+        ],
+        "steps": [
+          "Aprire la documentazione di integrazione end-to-end relativa al flusso di vendita",
+          "Verificare che sia esplicitato che il Motore fornisce proposte/prezzi/condizioni",
+          "Verificare che sia esplicitato che finalizzazione ordine e attivazione/provisioning sono responsabilità dei sistemi esterni",
+          "Verificare che non siano descritti endpoint/azioni di provisioning/attivazione come chiamate originate dal Motore"
+        ],
+        "expected_results": [
+          "La documentazione descrive esplicitamente il Motore come componente di proposizione (proposte/prezzi/condizioni) e non come orchestratore operativo",
+          "La documentazione descrive esplicitamente che finalizzazione ordine e provisioning/attivazione sono gestiti da sistemi esterni",
+          "Non sono presenti sequence diagram o elenchi API che mostrino chiamate di provisioning/attivazione originate dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Copre l’aspetto documentale richiesto dal requisito originale. Se la documentazione non è versionata, registrare l’evidenza con data e link."
+      }
+    ]
+  }
+]

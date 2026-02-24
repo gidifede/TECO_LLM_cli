@@ -1,0 +1,1020 @@
+[
+  {
+    "story_id": "REQ-V-007.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-007.US01.TC01",
+        "title": "Fail-safe: combinazione con incertezza regolatoria non inclusa nelle proposte verso canali digitali e fisici",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e raggiungibile",
+          "Esiste una combinazione CMB-INC-001 configurata come potenzialmente proponibile in condizioni normali",
+          "È disponibile un meccanismo di detection che per CMB-INC-001 restituisce 'incertezza regolatoria = true'",
+          "Non esiste alcuna approvazione esplicita registrata per CMB-INC-001"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-001",
+          "Esito detection: incertezza regolatoria = true",
+          "Richiesta generazione proposte: contesto cliente/operatore standard (nessuna eccezione)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per un canale digitale",
+          "Verificare l'elenco combinazioni restituito",
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per un canale fisico/operatori",
+          "Verificare l'elenco combinazioni restituito"
+        ],
+        "expected_results": [
+          "La combinazione CMB-INC-001 non è presente tra le proposte restituite per il canale digitale",
+          "La combinazione CMB-INC-001 non è presente tra le proposte restituite per il canale fisico/operatori"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non esplicita i punti di integrazione e i canali a livello tecnico; il test valida la non-proposizione su due richieste rappresentative (digitale e fisico) come da assunzioni."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC02",
+        "title": "Persistenza stato: combinazione bloccata marcata come 'in attesa di revisione manuale'",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo",
+          "È disponibile l'accesso al datastore o API di lettura stato combinazione per verifica",
+          "Esiste la combinazione CMB-INC-002",
+          "Per CMB-INC-002 la detection restituisce 'incertezza regolatoria = true'"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-002",
+          "Esito detection: incertezza regolatoria = true"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta che inneschi la valutazione della combinazione CMB-INC-002",
+          "Recuperare lo stato persistito della combinazione CMB-INC-002 dal datastore/API di stato"
+        ],
+        "expected_results": [
+          "Lo stato della combinazione CMB-INC-002 risulta 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: modalità di accesso al datastore/API di stato non specificata dal requisito; il test assume esista un endpoint o tabella consultabile per verificare lo stato."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC03",
+        "title": "Riabilitazione: ricezione esito di approvazione esplicita da ruolo autorizzato rende la combinazione proponibile",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-003 in stato 'in attesa di revisione manuale'",
+          "È disponibile un canale/endpoint per inviare l'esito di revisione al Motore di Offerte",
+          "È disponibile un'identità/ruolo autorizzato (es. Compliance) riconosciuto dal Motore di Offerte"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-003",
+          "Azione revisione: APPROVA",
+          "Attore: ruolo autorizzato = Compliance"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte l'esito di revisione 'APPROVA' per la combinazione CMB-INC-003 firmato/attribuito a ruolo Compliance",
+          "Richiedere al Motore di Offerte la generazione proposte includendo il contesto in cui CMB-INC-003 sarebbe proponibile"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte registra l'esito di approvazione per CMB-INC-003 (operazione completata con esito positivo)",
+          "La combinazione CMB-INC-003 risulta di nuovo proponibile ed è inclusa tra le proposte generate (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica il formato dell'esito né l'API; il test assume un'azione esplicita tracciata e attribuita a un ruolo autorizzato."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC04",
+        "title": "Assenza di approvazione: combinazione resta non proponibile nel tempo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-004 in stato 'in attesa di revisione manuale'",
+          "Non viene eseguita alcuna azione di revisione/approvazione per CMB-INC-004 durante il test"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-004",
+          "Finestra di osservazione: 2 richieste successive di generazione proposte a distanza di 5 minuti"
+        ],
+        "steps": [
+          "Richiedere al Motore di Offerte la generazione proposte e verificare l'elenco combinazioni",
+          "Attendere 5 minuti senza inviare esiti di revisione",
+          "Richiedere nuovamente la generazione proposte e verificare l'elenco combinazioni"
+        ],
+        "expected_results": [
+          "Alla prima richiesta CMB-INC-004 non è presente tra le proposte",
+          "Alla seconda richiesta CMB-INC-004 non è presente tra le proposte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Interpreta l'AC della story 'rimane non proponibile senza azione esplicita' come verifica su richieste successive (assenza di riabilitazione implicita)."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC05",
+        "title": "Edge: incertezza rilevata dopo che la combinazione era proponibile -> rimossa dalle proposte successive e marcata in revisione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-005 inizialmente proponibile e proposta dal Motore di Offerte",
+          "È possibile far variare l'esito di detection da 'false' a 'true' per CMB-INC-005",
+          "È disponibile una verifica dello stato persistito della combinazione"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-005",
+          "Esito detection iniziale: incertezza regolatoria = false",
+          "Esito detection successivo: incertezza regolatoria = true"
+        ],
+        "steps": [
+          "Richiedere la generazione proposte con esito detection 'false' e verificare che CMB-INC-005 sia presente",
+          "Impostare/ottenere per CMB-INC-005 esito detection 'true'",
+          "Richiedere nuovamente la generazione proposte e verificare l'elenco combinazioni",
+          "Recuperare lo stato persistito di CMB-INC-005"
+        ],
+        "expected_results": [
+          "Con detection 'false' la combinazione CMB-INC-005 risulta proponibile (presente nelle proposte)",
+          "Con detection 'true' la combinazione CMB-INC-005 non è presente nelle proposte successive",
+          "Lo stato di CMB-INC-005 risulta 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza: capacità di simulare/forzare la detection di incertezza non specificata; si assume disponibile in ambiente di test."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC06",
+        "title": "Authorization: esito di revisione da soggetto non autorizzato non riabilita la combinazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-006 in stato 'in attesa di revisione manuale'",
+          "È disponibile un canale/endpoint per inviare l'esito di revisione al Motore di Offerte",
+          "È disponibile un'identità NON autorizzata (es. ruolo = Operatore) riconosciuta dal Motore"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-006",
+          "Azione revisione: APPROVA",
+          "Attore: ruolo non autorizzato = Operatore"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte l'esito di revisione 'APPROVA' per CMB-INC-006 attribuito a ruolo Operatore",
+          "Richiedere la generazione proposte per un contesto in cui CMB-INC-006 sarebbe proponibile se sbloccata",
+          "Recuperare lo stato persistito di CMB-INC-006"
+        ],
+        "expected_results": [
+          "L'operazione di approvazione viene rifiutata o non produce effetti di riabilitazione (esito negativo o nessun cambio stato)",
+          "La combinazione CMB-INC-006 non è presente tra le proposte generate",
+          "Lo stato di CMB-INC-006 rimane 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce il comportamento di errore (codice/ messaggio); il test verifica l'invariante: nessuna riabilitazione senza ruolo autorizzato."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC07",
+        "title": "Edge: esiti di approvazione duplicati sono idempotenti e mantengono stato coerente",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-007 in stato 'in attesa di revisione manuale'",
+          "È disponibile un'identità autorizzata (es. Compliance)",
+          "È possibile inviare più volte lo stesso esito di approvazione"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-007",
+          "Azione revisione: APPROVA (ripetuta 2 volte)",
+          "Attore: ruolo autorizzato = Compliance"
+        ],
+        "steps": [
+          "Inviare l'esito di revisione 'APPROVA' per CMB-INC-007 (prima volta)",
+          "Inviare nuovamente lo stesso esito di revisione 'APPROVA' per CMB-INC-007 (seconda volta)",
+          "Recuperare lo stato finale di CMB-INC-007",
+          "Richiedere la generazione proposte e verificare la presenza di CMB-INC-007"
+        ],
+        "expected_results": [
+          "Dopo la prima approvazione CMB-INC-007 risulta riabilitata/proponibile",
+          "La seconda approvazione non causa regressioni o stati incoerenti (stato finale invariato rispetto al post-primo evento)",
+          "CMB-INC-007 risulta proponibile nelle proposte generate (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce un audit/contatore eventi; la verifica di idempotenza è basata su stato finale e proponibilità."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC08",
+        "title": "Negative: errore tecnico nel salvataggio dello stato di blocco -> combinazione non proposta (comportamento conservativo)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-INC-008",
+          "Per CMB-INC-008 la detection restituisce 'incertezza regolatoria = true'",
+          "È possibile simulare un errore tecnico di persistenza (es. datastore non disponibile) al momento del salvataggio dello stato"
+        ],
+        "test_data": [
+          "Combinazione: CMB-INC-008",
+          "Esito detection: incertezza regolatoria = true",
+          "Fault injection: errore persistenza stato = true"
+        ],
+        "steps": [
+          "Simulare l'errore di persistenza sul salvataggio stato per CMB-INC-008",
+          "Inviare una richiesta di generazione proposte che valuti CMB-INC-008",
+          "Verificare l'elenco combinazioni restituito"
+        ],
+        "expected_results": [
+          "La combinazione CMB-INC-008 non è presente tra le proposte generate nonostante l'errore di persistenza",
+          "Il sistema non espone la combinazione come proponibile in alcun caso durante l'errore (fail-safe)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Dipendenza: capacità di fault injection su persistenza non specificata; il test valida l'invariante di non-proposizione in caso di incertezza anche con errore tecnico."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-007.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-007.US02.TC01",
+        "title": "App/Web: combinazione con incertezza regolatoria non visibile tra le offerte disponibili al cliente digitale",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale digitale (App e Web) è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-DIG-001 per cui la detection restituisce 'incertezza regolatoria = true'",
+          "Non esiste alcuna approvazione esplicita registrata per CMB-DIG-001"
+        ],
+        "test_data": [
+          "Combinazione: CMB-DIG-001",
+          "Canali: App, Web",
+          "Esito detection: incertezza regolatoria = true"
+        ],
+        "steps": [
+          "Da Web, avviare la journey e richiedere la lista offerte/proposte",
+          "Verificare che CMB-DIG-001 non sia presente",
+          "Da App, avviare la journey e richiedere la lista offerte/proposte",
+          "Verificare che CMB-DIG-001 non sia presente"
+        ],
+        "expected_results": [
+          "Su Web la combinazione CMB-DIG-001 non è visualizzata tra le offerte disponibili",
+          "Su App la combinazione CMB-DIG-001 non è visualizzata tra le offerte disponibili"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La story non richiede messaggi UI; la verifica è limitata alla non visualizzazione."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC02",
+        "title": "App/Web: combinazione in stato 'in attesa di revisione manuale' non visibile al cliente digitale",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale digitale (App e Web) è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-DIG-002 con stato nel sistema = 'in attesa di revisione manuale'"
+        ],
+        "test_data": [
+          "Combinazione: CMB-DIG-002",
+          "Stato: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Da Web, richiedere la lista offerte/proposte",
+          "Verificare che CMB-DIG-002 non sia presente",
+          "Da App, richiedere la lista offerte/proposte",
+          "Verificare che CMB-DIG-002 non sia presente"
+        ],
+        "expected_results": [
+          "Su Web la combinazione CMB-DIG-002 non è visualizzata tra le offerte disponibili",
+          "Su App la combinazione CMB-DIG-002 non è visualizzata tra le offerte disponibili"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Copre l'invariante: lo stato 'in attesa di revisione manuale' implica non-proponibilità lato digitale."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC03",
+        "title": "App/Web: combinazione torna visibile solo dopo approvazione esplicita da ruolo autorizzato",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale digitale (App e Web) è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-DIG-003 in stato 'in attesa di revisione manuale'",
+          "È disponibile un utente con ruolo autorizzato (es. Compliance o Marketing) che può approvare CMB-DIG-003"
+        ],
+        "test_data": [
+          "Combinazione: CMB-DIG-003",
+          "Azione revisione: APPROVA",
+          "Attore: ruolo autorizzato = Compliance (o Marketing)"
+        ],
+        "steps": [
+          "Da Web, richiedere la lista offerte/proposte e verificare che CMB-DIG-003 non sia presente",
+          "Eseguire un'azione esplicita di approvazione per CMB-DIG-003 con ruolo autorizzato",
+          "Da Web, richiedere nuovamente la lista offerte/proposte",
+          "Da App, richiedere la lista offerte/proposte"
+        ],
+        "expected_results": [
+          "Prima dell'approvazione CMB-DIG-003 non è visualizzata su Web",
+          "Dopo l'approvazione esplicita CMB-DIG-003 può essere visualizzata tra le offerte su Web (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)",
+          "Dopo l'approvazione esplicita CMB-DIG-003 può essere visualizzata tra le offerte su App (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica tempi di propagazione; se esiste asincronia, introdurre attesa/polling fino a stato 'riabilitata'."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC04",
+        "title": "Edge: combinazione si blocca durante la navigazione -> al refresh non compare più",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il canale digitale è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-DIG-004 inizialmente visibile/proponibile",
+          "È possibile far cambiare lo stato di CMB-DIG-004 a 'in attesa di revisione manuale' durante la sessione"
+        ],
+        "test_data": [
+          "Combinazione: CMB-DIG-004",
+          "Stato iniziale: proponibile",
+          "Stato successivo: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Da Web (o App), richiedere la lista offerte e verificare che CMB-DIG-004 sia presente",
+          "Impostare/ottenere il blocco di CMB-DIG-004 (stato 'in attesa di revisione manuale')",
+          "Eseguire un refresh/nuova richiesta lista offerte nello stesso canale",
+          "Verificare la lista offerte aggiornata"
+        ],
+        "expected_results": [
+          "Prima del blocco CMB-DIG-004 è visibile",
+          "Dopo il refresh successivo al blocco CMB-DIG-004 non è più visibile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La story cita sia App sia Web; il test può essere eseguito su entrambi o parametrizzato per canale in automazione."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC05",
+        "title": "Negative: errore nel recupero dello stato combinazione -> la combinazione non viene mostrata (fail-safe)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale digitale è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-DIG-005 potenzialmente proponibile",
+          "È possibile simulare un errore nel recupero dello stato/valutazione della combinazione (es. timeout/500 dal servizio stato)"
+        ],
+        "test_data": [
+          "Combinazione: CMB-DIG-005",
+          "Fault injection: errore recupero stato = timeout o HTTP 500"
+        ],
+        "steps": [
+          "Simulare l'errore nel recupero dello stato per CMB-DIG-005",
+          "Da Web (o App), richiedere la lista offerte/proposte",
+          "Verificare la presenza di CMB-DIG-005 nella lista"
+        ],
+        "expected_results": [
+          "La combinazione CMB-DIG-005 non è visualizzata tra le offerte disponibili quando lo stato non è recuperabile",
+          "Non è possibile selezionare/acquistare CMB-DIG-005 perché non esposta"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non definisce gestione errori UI; il test verifica solo l'effetto funzionale di non esposizione."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-007.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-007.US03.TC01",
+        "title": "Front-end operatore: combinazione con incertezza regolatoria non visibile tra le offerte vendibili",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il front-end commerciale operatore è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-OP-001 per cui la detection restituisce 'incertezza regolatoria = true'",
+          "Non esiste alcuna approvazione esplicita registrata per CMB-OP-001"
+        ],
+        "test_data": [
+          "Combinazione: CMB-OP-001",
+          "Esito detection: incertezza regolatoria = true"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore abilitato alla consultazione offerte",
+          "Richiedere/aggiornare la lista proposte/offerte per un cliente",
+          "Verificare l'elenco combinazioni mostrato"
+        ],
+        "expected_results": [
+          "La combinazione CMB-OP-001 non è presente tra le offerte/proposte disponibili all'operatore"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non specifica indicatori UI; la verifica è limitata alla non visualizzazione."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC02",
+        "title": "Front-end operatore: combinazione in stato 'in attesa di revisione manuale' non selezionabile né visibile",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il front-end commerciale operatore è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-OP-002 con stato nel sistema = 'in attesa di revisione manuale'"
+        ],
+        "test_data": [
+          "Combinazione: CMB-OP-002",
+          "Stato: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore",
+          "Richiedere/aggiornare la lista proposte/offerte per un cliente",
+          "Verificare che CMB-OP-002 non compaia in lista",
+          "Eseguire una ricerca per identificativo 'CMB-OP-002' (se disponibile)",
+          "Verificare i risultati della ricerca"
+        ],
+        "expected_results": [
+          "CMB-OP-002 non è presente tra le offerte/proposte disponibili",
+          "La ricerca non restituisce CMB-OP-002 come offerta vendibile/proponibile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "La story cita ricerca/filtri come edge case; il test include una verifica tramite ricerca per evitare emersione indiretta."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC03",
+        "title": "Front-end operatore: combinazione torna proponibile solo dopo approvazione esplicita da ruolo autorizzato",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il front-end commerciale operatore è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-OP-003 in stato 'in attesa di revisione manuale'",
+          "È disponibile un utente con ruolo autorizzato (Compliance o Marketing) che può approvare CMB-OP-003"
+        ],
+        "test_data": [
+          "Combinazione: CMB-OP-003",
+          "Azione revisione: APPROVA",
+          "Attore: ruolo autorizzato = Marketing (o Compliance)"
+        ],
+        "steps": [
+          "Accedere al front-end operatore e aggiornare la lista offerte per un cliente",
+          "Verificare che CMB-OP-003 non sia presente",
+          "Eseguire un'azione esplicita di approvazione per CMB-OP-003 con ruolo autorizzato",
+          "Aggiornare nuovamente la lista offerte nel front-end operatore"
+        ],
+        "expected_results": [
+          "Prima dell'approvazione CMB-OP-003 non è proposta all'operatore",
+          "Dopo l'approvazione esplicita CMB-OP-003 può essere proposta all'operatore (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Se la propagazione dello sblocco è asincrona, introdurre attesa/polling fino a stato aggiornato."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC04",
+        "title": "Edge: schermata già aperta -> dopo aggiornamento lista la combinazione bloccata scompare",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il front-end commerciale operatore è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-OP-004 inizialmente proposta e visualizzabile",
+          "È possibile cambiare lo stato di CMB-OP-004 a 'in attesa di revisione manuale' mentre l'operatore è in sessione"
+        ],
+        "test_data": [
+          "Combinazione: CMB-OP-004",
+          "Stato iniziale: proponibile",
+          "Stato successivo: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Accedere al front-end operatore e caricare la lista offerte che include CMB-OP-004",
+          "Lasciare aperta la schermata/lista offerte",
+          "Impostare/ottenere il blocco di CMB-OP-004 (stato 'in attesa di revisione manuale')",
+          "Eseguire l'aggiornamento lista offerte (refresh/ricerca/riapertura lista)",
+          "Verificare la lista aggiornata"
+        ],
+        "expected_results": [
+          "Dopo l'aggiornamento CMB-OP-004 non è più presente tra le offerte/proposte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non specifica notifiche real-time; il test verifica il comportamento al successivo aggiornamento."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC05",
+        "title": "Negative: errore di sincronizzazione motore/front-end non deve consentire proposta di combinazioni bloccate",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il front-end commerciale operatore è integrato con il Motore di Offerte",
+          "Esiste una combinazione CMB-OP-005 in stato 'in attesa di revisione manuale'",
+          "È possibile simulare una condizione di sincronizzazione non aggiornata (es. risposta cache/replica obsoleta lato front-end)"
+        ],
+        "test_data": [
+          "Combinazione: CMB-OP-005",
+          "Stato: in attesa di revisione manuale",
+          "Fault injection: risposta front-end obsoleta o errore chiamata motore"
+        ],
+        "steps": [
+          "Simulare la condizione di sincronizzazione non aggiornata o errore di chiamata al motore",
+          "Accedere al front-end operatore e richiedere la lista offerte",
+          "Tentare di individuare/selezionare CMB-OP-005 (tramite lista o ricerca/filtri, se disponibili)"
+        ],
+        "expected_results": [
+          "CMB-OP-005 non viene resa disponibile come offerta selezionabile/vendibile",
+          "Non è possibile procedere con la proposta della combinazione bloccata perché non esposta come proponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non definisce il comportamento tecnico di caching/sync; il test verifica l'invariante di non-proponibilità."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-007.US04",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-007.US04.TC01",
+        "title": "Dashboard Compliance: combinazione bloccata identificabile nello stato 'in attesa di revisione manuale'",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard per la revisione accessibile al Team Compliance",
+          "Esiste una combinazione CMB-CMP-001 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Compliance"
+        ],
+        "test_data": [
+          "Utente: compliance.user01",
+          "Combinazione: CMB-CMP-001",
+          "Stato atteso: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente compliance.user01",
+          "Navigare alla sezione 'Combinazioni in revisione' (o equivalente)",
+          "Cercare la combinazione CMB-CMP-001",
+          "Aprire il dettaglio della combinazione CMB-CMP-001"
+        ],
+        "expected_results": [
+          "La combinazione CMB-CMP-001 è presente nell'elenco delle combinazioni in revisione (o equivalente)",
+          "Nel dettaglio, lo stato di CMB-CMP-001 è mostrato come 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La UI non è definita dal requisito; i nomi delle sezioni sono indicativi. La verifica fondamentale è l'identificabilità dello stato."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC02",
+        "title": "Compliance autorizzato: approvazione esplicita riabilita la combinazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard o API che consente l'azione esplicita di approvazione",
+          "Esiste una combinazione CMB-CMP-002 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Compliance autorizzato all'approvazione",
+          "È possibile verificare la proponibilità tramite richiesta al Motore di Offerte o stato combinazione"
+        ],
+        "test_data": [
+          "Utente: compliance.user01 (autorizzato)",
+          "Combinazione: CMB-CMP-002",
+          "Azione: APPROVA"
+        ],
+        "steps": [
+          "Accedere alla dashboard con compliance.user01",
+          "Aprire il dettaglio della combinazione CMB-CMP-002",
+          "Eseguire l'azione esplicita 'Approva/Riabilita' (o equivalente)",
+          "Verificare lo stato aggiornato della combinazione",
+          "Richiedere al Motore di Offerte la generazione proposte per un contesto in cui CMB-CMP-002 sarebbe eleggibile"
+        ],
+        "expected_results": [
+          "L'azione di approvazione viene completata con esito positivo",
+          "La combinazione CMB-CMP-002 risulta riabilitata (non più 'in attesa di revisione manuale')",
+          "La combinazione CMB-CMP-002 può tornare proponibile nelle proposte generate (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce lo stato post-approvazione; il test verifica che non sia più bloccata e che torni proponibile."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC03",
+        "title": "Compliance senza azione: la combinazione resta bloccata e non proponibile",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-CMP-003 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Compliance",
+          "Non viene effettuata alcuna azione di approvazione su CMB-CMP-003 durante il test"
+        ],
+        "test_data": [
+          "Utente: compliance.user01",
+          "Combinazione: CMB-CMP-003"
+        ],
+        "steps": [
+          "Accedere alla dashboard con compliance.user01",
+          "Aprire il dettaglio della combinazione CMB-CMP-003",
+          "Uscire dalla dashboard senza eseguire azioni di approvazione",
+          "Richiedere al Motore di Offerte la generazione proposte per un contesto in cui CMB-CMP-003 sarebbe eleggibile"
+        ],
+        "expected_results": [
+          "La combinazione CMB-CMP-003 rimane nello stato 'in attesa di revisione manuale'",
+          "La combinazione CMB-CMP-003 non è inclusa tra le proposte generate"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Interpreta l'assenza di azione come assenza di cambi stato e di proponibilità."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC04",
+        "title": "Negative/Authorization: utente con permessi insufficienti non può approvare/riabilitare",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard o API di approvazione",
+          "Esiste una combinazione CMB-CMP-004 in stato 'in attesa di revisione manuale'",
+          "Esiste un utente compliance.user02 con permessi insufficienti (non autorizzato all'approvazione)"
+        ],
+        "test_data": [
+          "Utente: compliance.user02 (non autorizzato)",
+          "Combinazione: CMB-CMP-004",
+          "Azione: APPROVA"
+        ],
+        "steps": [
+          "Accedere alla dashboard con compliance.user02",
+          "Aprire il dettaglio della combinazione CMB-CMP-004",
+          "Tentare di eseguire l'azione esplicita di approvazione/riabilitazione",
+          "Recuperare lo stato della combinazione CMB-CMP-004"
+        ],
+        "expected_results": [
+          "L'azione di approvazione non è consentita (azione non disponibile o operazione rifiutata)",
+          "Lo stato della combinazione CMB-CMP-004 rimane 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica messaggi/HTTP code; il test verifica il vincolo: solo ruoli autorizzati possono riabilitare."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC05",
+        "title": "Edge: concorrenza su approvazione -> stato finale consistente e determinato dall'ultima azione valida",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una combinazione CMB-CMP-005 in stato 'in attesa di revisione manuale'",
+          "Esistono due utenti autorizzati compliance.user01 e compliance.user03",
+          "È possibile inviare due azioni di approvazione quasi simultanee (es. due sessioni/browser o due chiamate API concorrenti)"
+        ],
+        "test_data": [
+          "Combinazione: CMB-CMP-005",
+          "Utenti: compliance.user01, compliance.user03",
+          "Azioni: APPROVA concorrenti"
+        ],
+        "steps": [
+          "Aprire due sessioni distinte della dashboard (o preparare due chiamate API) per CMB-CMP-005",
+          "Eseguire l'azione di approvazione dalla prima sessione",
+          "Eseguire l'azione di approvazione dalla seconda sessione in concorrenza",
+          "Recuperare lo stato finale di CMB-CMP-005",
+          "Richiedere la generazione proposte per verificare la proponibilità"
+        ],
+        "expected_results": [
+          "Lo stato finale di CMB-CMP-005 è consistente (riabilitata) senza stati intermedi incoerenti",
+          "La combinazione CMB-CMP-005 risulta proponibile dopo il completamento delle azioni (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce gestione conflitti; il test verifica la consistenza dello stato finale a fronte di concorrenza."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC06",
+        "title": "Negative: errore durante approvazione -> combinazione resta bloccata finché l'approvazione non è completata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-CMP-006 in stato 'in attesa di revisione manuale'",
+          "Utente compliance.user01 è autorizzato",
+          "È possibile simulare un errore tecnico durante il salvataggio/propagazione dell'approvazione (es. errore 500)"
+        ],
+        "test_data": [
+          "Combinazione: CMB-CMP-006",
+          "Utente: compliance.user01",
+          "Fault injection: errore durante approvazione = true"
+        ],
+        "steps": [
+          "Accedere alla dashboard con compliance.user01",
+          "Aprire il dettaglio di CMB-CMP-006",
+          "Simulare l'errore tecnico durante l'azione di approvazione",
+          "Eseguire l'azione esplicita di approvazione",
+          "Recuperare lo stato della combinazione CMB-CMP-006",
+          "Richiedere la generazione proposte per un contesto in cui sarebbe eleggibile"
+        ],
+        "expected_results": [
+          "L'azione di approvazione non risulta completata con successo",
+          "La combinazione CMB-CMP-006 rimane nello stato 'in attesa di revisione manuale'",
+          "La combinazione CMB-CMP-006 non è inclusa tra le proposte generate"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Verifica comportamento conservativo: nessuna riabilitazione parziale in caso di errore."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-007.US05",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-007.US05.TC01",
+        "title": "Dashboard Marketing: combinazione bloccata identificabile nello stato 'in attesa di revisione manuale'",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard per la revisione accessibile al Team Marketing",
+          "Esiste una combinazione CMB-MKT-001 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Marketing"
+        ],
+        "test_data": [
+          "Utente: marketing.user01",
+          "Combinazione: CMB-MKT-001",
+          "Stato atteso: in attesa di revisione manuale"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente marketing.user01",
+          "Navigare alla sezione 'Combinazioni in revisione' (o equivalente)",
+          "Cercare la combinazione CMB-MKT-001",
+          "Aprire il dettaglio della combinazione CMB-MKT-001"
+        ],
+        "expected_results": [
+          "La combinazione CMB-MKT-001 è presente nell'elenco delle combinazioni in revisione (o equivalente)",
+          "Nel dettaglio, lo stato di CMB-MKT-001 è mostrato come 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La UI non è definita dal requisito; la verifica fondamentale è l'identificabilità dello stato."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC02",
+        "title": "Marketing autorizzato: approvazione esplicita riabilita la combinazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard o API che consente l'azione esplicita di approvazione",
+          "Esiste una combinazione CMB-MKT-002 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Marketing autorizzato all'approvazione",
+          "È possibile verificare la proponibilità tramite richiesta al Motore di Offerte o stato combinazione"
+        ],
+        "test_data": [
+          "Utente: marketing.user01 (autorizzato)",
+          "Combinazione: CMB-MKT-002",
+          "Azione: APPROVA"
+        ],
+        "steps": [
+          "Accedere alla dashboard con marketing.user01",
+          "Aprire il dettaglio della combinazione CMB-MKT-002",
+          "Eseguire l'azione esplicita 'Approva/Riabilita' (o equivalente)",
+          "Verificare lo stato aggiornato della combinazione",
+          "Richiedere al Motore di Offerte la generazione proposte per un contesto in cui CMB-MKT-002 sarebbe eleggibile"
+        ],
+        "expected_results": [
+          "L'azione di approvazione viene completata con esito positivo",
+          "La combinazione CMB-MKT-002 risulta riabilitata (non più 'in attesa di revisione manuale')",
+          "La combinazione CMB-MKT-002 può tornare proponibile nelle proposte generate (se soddisfa gli altri criteri di eleggibilità non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce lo stato post-approvazione; il test verifica la riabilitazione e la conseguente proponibilità."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC03",
+        "title": "Marketing senza azione: la combinazione resta bloccata e non proponibile",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-MKT-003 in stato 'in attesa di revisione manuale'",
+          "L'utente è autenticato con ruolo Marketing",
+          "Non viene effettuata alcuna azione di approvazione su CMB-MKT-003 durante il test"
+        ],
+        "test_data": [
+          "Utente: marketing.user01",
+          "Combinazione: CMB-MKT-003"
+        ],
+        "steps": [
+          "Accedere alla dashboard con marketing.user01",
+          "Aprire il dettaglio della combinazione CMB-MKT-003",
+          "Uscire dalla dashboard senza eseguire azioni di approvazione",
+          "Richiedere al Motore di Offerte la generazione proposte per un contesto in cui CMB-MKT-003 sarebbe eleggibile"
+        ],
+        "expected_results": [
+          "La combinazione CMB-MKT-003 rimane nello stato 'in attesa di revisione manuale'",
+          "La combinazione CMB-MKT-003 non è inclusa tra le proposte generate"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Interpreta l'assenza di azione come assenza di cambi stato e di proponibilità."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC04",
+        "title": "Authorization: utente Marketing senza autorizzazione specifica non può riabilitare la combinazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard o API di approvazione",
+          "Esiste una combinazione CMB-MKT-004 in stato 'in attesa di revisione manuale'",
+          "Esiste un utente marketing.user02 con autorizzazione mancante alla revisione/approvazione"
+        ],
+        "test_data": [
+          "Utente: marketing.user02 (non autorizzato)",
+          "Combinazione: CMB-MKT-004",
+          "Azione: APPROVA"
+        ],
+        "steps": [
+          "Accedere alla dashboard con marketing.user02",
+          "Aprire il dettaglio della combinazione CMB-MKT-004",
+          "Tentare di eseguire l'azione esplicita di approvazione/riabilitazione",
+          "Recuperare lo stato della combinazione CMB-MKT-004"
+        ],
+        "expected_results": [
+          "L'azione di approvazione non è consentita (azione non disponibile o operazione rifiutata)",
+          "Lo stato della combinazione CMB-MKT-004 rimane 'in attesa di revisione manuale'"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica messaggi/HTTP code; il test verifica il vincolo: solo ruoli autorizzati possono riabilitare."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC05",
+        "title": "Edge: approvazione su combinazione modificata nel frattempo -> riabilitazione applicata all'istanza corretta",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una combinazione CMB-MKT-005 in stato 'in attesa di revisione manuale'",
+          "È presente un meccanismo di versionamento/identificativo istanza (es. versionId) o equivalente per distinguere modifiche",
+          "L'utente marketing.user01 è autorizzato"
+        ],
+        "test_data": [
+          "Combinazione: CMB-MKT-005",
+          "Versione iniziale: v1",
+          "Modifica: aggiornamento combinazione a v2 prima dell'approvazione",
+          "Azione: APPROVA riferita a v1 (se supportato) o a identificativo non aggiornato"
+        ],
+        "steps": [
+          "Accedere alla dashboard con marketing.user01 e aprire CMB-MKT-005 (v1)",
+          "Eseguire una modifica della combinazione che produca una nuova versione/istanza (v2) secondo le capacità dell'ambiente di test",
+          "Tentare l'approvazione di CMB-MKT-005 riferendosi ai dati aperti in precedenza (v1)",
+          "Recuperare lo stato della versione/istanza corrente della combinazione (v2) e l'eventuale versione precedente (v1)"
+        ],
+        "expected_results": [
+          "La riabilitazione non viene applicata in modo errato a una versione/istanza non corretta",
+          "Lo stato finale risulta coerente con l'istanza/versione approvata secondo le regole del sistema (nessuna combinazione non corretta diventa proponibile)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce versionamento né comportamento in caso di modifica; il test valida l'obiettivo di coerenza dello sblocco. Potrebbe richiedere chiarimenti su identificazione versione/istanza."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC06",
+        "title": "Negative: errore di propagazione esito approvazione -> fino a conferma la combinazione resta non proponibile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una combinazione CMB-MKT-006 in stato 'in attesa di revisione manuale'",
+          "Utente marketing.user01 è autorizzato",
+          "È possibile simulare un errore di propagazione dell'esito verso il Motore di Offerte (es. evento non consegnato o timeout)"
+        ],
+        "test_data": [
+          "Combinazione: CMB-MKT-006",
+          "Utente: marketing.user01",
+          "Fault injection: errore propagazione esito = true"
+        ],
+        "steps": [
+          "Accedere alla dashboard con marketing.user01",
+          "Simulare l'errore di propagazione dell'esito di approvazione",
+          "Eseguire l'azione esplicita di approvazione per CMB-MKT-006",
+          "Richiedere al Motore di Offerte la generazione proposte per un contesto in cui CMB-MKT-006 sarebbe eleggibile",
+          "Recuperare lo stato della combinazione CMB-MKT-006"
+        ],
+        "expected_results": [
+          "In assenza di conferma di completamento dell'approvazione, CMB-MKT-006 non risulta proponibile nelle proposte generate",
+          "Lo stato di CMB-MKT-006 rimane 'in attesa di revisione manuale' (o comunque non riabilitato) finché la propagazione non va a buon fine"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica architettura di propagazione; il test verifica l'invariante: nessuna proponibilità senza completamento effettivo dell'azione esplicita."
+      }
+    ]
+  }
+]

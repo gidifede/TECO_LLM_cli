@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-I-004</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-I-004</h1>
+  <div class="subtitle">Matrice centralizzata di configurazione utilizzata da tutti i canali</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:47</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-I-004</div>
+  <div class="req-field"><strong>Titolo:</strong> Matrice centralizzata di configurazione utilizzata da tutti i canali</div>
+  <div class="req-field"><strong>Categoria:</strong> INTEGRAZIONE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Tutte le regole operative (inclusa la regola di frequenza di presentazione e altre configurazioni correlate) devono essere alimentate da una matrice di configurazione unica e centralizzata. Tutti i canali di proposizione (App, Web, OSP/OFE, ecc.) devono consultare e basarsi sulla stessa matrice per assicurare applicazione uniforme delle regole e prevenire inconsistenze tra canali. La matrice deve essere la fonte di verità per le regole di business e le relative eccezioni.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Tutti i canali leggono le regole dalla medesima fonte centralizzata in ambiente di integrazione test.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>La stessa configurazione produce comportamenti coerenti su almeno due canali distinti (es. App e sportello) in test end-to-end.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Le modifiche alla matrice centrale sono immediatamente o prevedibilmente riproducibili dai canali secondo la politica di propagazione definita.</td></tr>
+<tr><td class='ac-num'>AC-4</td><td>Esistono meccanismi di versioning o timestamp per la matrice centralizzata per ricostruire lo stato storico.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">77</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">45</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 17) e ha meno ridondanze (1 vs 3). Il set indirect_persona aggiunge molte assunzioni architetturali (es. &#x27;Motore di Offerte&#x27;, operatori, consensi marketing, parametri T) non presenti nel requisito e in parte sposta la verifica di AC-1 dalla lettura dei canali alla lettura del motore, riducendo la coerenza complessiva. Per questo il punteggio del direct (77) risulta superiore all&#x27;indirect_persona (45).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">77</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-004.TC01</td><td>Assume disponibilità di logging/tracing, correlation-id, endpoint/connection string per dimostrare la &#x27;medesima fonte&#x27;; il requisito non specifica tali meccanismi di prova.</td></tr>
+<tr><td class='mono'>REQ-I-004.TC02</td><td>Introduce concetti operativi non citati (&quot;storico presentazioni&quot;, messaggi/motivazioni di blocco) e un flusso specifico di presentazione offerta per verificare la frequenza.</td></tr>
+<tr><td class='mono'>REQ-I-004.TC03</td><td>Assume una politica di propagazione specifica (&#x27;immediata&#x27;, no-cache/cache invalidabile) non definita nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.TC04</td><td>Fissa un valore di policy (&#x27;refresh massimo = 15 minuti&#x27;) non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.TC05</td><td>Assume esistenza di API/query e possibilità di &#x27;forzare/indicare&#x27; l&#x27;uso di una versione storica durante una valutazione; il requisito richiede solo meccanismi di versioning/timestamp per ricostruzione storica.</td></tr>
+<tr><td class='mono'>REQ-I-004.TC06</td><td>Introduce requisiti di comportamento in indisponibilità (errore controllato, assenza di fallback a regole locali) non esplicitati dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &quot;La matrice deve essere la fonte di verità per le regole di business e le relative eccezioni.&quot;</td><td>I TC validano principalmente la regola di frequenza; non c&#x27;è una verifica esplicita e indipendente che anche &#x27;altre configurazioni correlate&#x27; (non frequenza) e le &#x27;eccezioni&#x27; siano centralizzate e uniformi cross-canale (se non in modo implicito).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-004.TC03, REQ-I-004.TC04</td><td>Entrambi testano AC-3 (propagazione modifiche) con logica molto simile; differiscono solo per assunzione di policy (immediata vs finestra).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">45</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">17</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">17</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-004.US01.TC01</td><td>Introduce un componente architetturale (&#x27;Motore di Offerte&#x27;) come intermediario obbligato; il requisito parla di canali che consultano la matrice, non di un motore centrale.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC01</td><td>Aggiunge una specifica eccezione &#x27;ClienteSegmento=VIP -&gt; 1 ogni 1 giorno&#x27; e dati di versione (42) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC02</td><td>Introduce la necessità di definire e concordare gli &#x27;input rilevanti&#x27; tra canali; il requisito richiede coerenza di comportamento a parità di configurazione, non una tassonomia di input.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC03</td><td>Fissa un parametro di policy T=300 secondi come esempio e imposta una misurazione specifica; il requisito non definisce valori/tempi.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC04</td><td>Assume che versione/timestamp siano inclusi in output o audit log del Motore; il requisito richiede solo che esistano meccanismi di versioning/timestamp per ricostruzione storica.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC05</td><td>Richiede errore &#x27;stesso tipo/codice&#x27; indipendente dal canale; il requisito non impone uniformità di codici/UX, solo uniformità di regole.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC06</td><td>Scenario &#x27;configurazione senza versione/timestamp&#x27; e requisito di warning/errore: non previsto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC07</td><td>Scenario di race condition/atomicità (&#x27;mixed version read&#x27;) non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC01</td><td>Introduce &#x27;ConsensiMarketing=TRUE&#x27; come condizione di scenario; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC01</td><td>Introduce un &#x27;front-end commerciale per operatore&#x27; e ruoli/operatore non citati nel requisito (che parla di canali, non di profili utente).</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC02</td><td>Introduce la regola &#x27;Offerta visibile&#x27; (OFF-777 visibile TRUE/FALSE) come configurazione specifica; il requisito non dettaglia tali regole.</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC03</td><td>Assume esistenza di requestId/correlationId e un endpoint interno di audit; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC04</td><td>Assume che durante la finestra di propagazione sia &#x27;ammessa incoerenza temporanea&#x27; e definisce comportamento atteso nella finestra; il requisito non lo esplicita (dice solo &#x27;immediatamente o prevedibilmente ... secondo policy&#x27;).</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC01</td><td>Introduce OperatoreId e profili operatore; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC03</td><td>Fissa T=300 secondi come policy di propagazione (esempio) e la usa come vincolo di test; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC05</td><td>Introduce durata indisponibilità &#x27;per 5 minuti&#x27; e requisiti di comportamento post-ripristino; non esplicitati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC06</td><td>Test negativo che presuppone una policy temporale T come requisito contrattuale e usa App come riferimento per non conformità; il requisito non definisce valori e non parla di test di non-conformità oltre finestra con confronto canali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-1: &quot;Tutti i canali leggono le regole dalla medesima fonte centralizzata...&quot;</td><td>Molti TC verificano coerenza di output/decisione più che la lettura dalla &#x27;medesima fonte&#x27; (prove tecniche della sorgente). Inoltre, l&#x27;uso del &#x27;Motore di Offerte&#x27; sposta la verifica su Motore→Matrice, lasciando non dimostrato che &#x27;tutti i canali&#x27; consultino/basino le regole sulla stessa matrice (se i canali potrebbero avere logiche proprie).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-004.US01.TC02, REQ-I-004.US03.TC02, REQ-I-004.US02.TC01, REQ-I-004.US02.TC05</td><td>Più TC ripetono lo stesso concetto di coerenza tra due canali a parità di condizioni (AC-2) con variazioni minime di scenario/dati.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC03, REQ-I-004.US02.TC02, REQ-I-004.US03.TC03</td><td>Più TC testano la propagazione entro una finestra T (AC-3) con struttura quasi identica, cambiando solo il canale osservato.</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC04, REQ-I-004.US02.TC03, REQ-I-004.US03.TC04</td><td>Più TC testano la tracciabilità a versione/timestamp per audit (AC-4) con passi molto simili.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-I-004&quot;,
+  &quot;title&quot;: &quot;Matrice centralizzata di configurazione utilizzata da tutti i canali&quot;,
+  &quot;description&quot;: &quot;Tutte le regole operative (inclusa la regola di frequenza di presentazione e altre configurazioni correlate) devono essere alimentate da una matrice di configurazione unica e centralizzata. Tutti i canali di proposizione (App, Web, OSP/OFE, ecc.) devono consultare e basarsi sulla stessa matrice per assicurare applicazione uniforme delle regole e prevenire inconsistenze tra canali. La matrice deve essere la fonte di verità per le regole di business e le relative eccezioni.&quot;,
+  &quot;category&quot;: &quot;INTEGRAZIONE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Tutti i canali leggono le regole dalla medesima fonte centralizzata in ambiente di integrazione test.&quot;,
+    &quot;La stessa configurazione produce comportamenti coerenti su almeno due canali distinti (es. App e sportello) in test end-to-end.&quot;,
+    &quot;Le modifiche alla matrice centrale sono immediatamente o prevedibilmente riproducibili dai canali secondo la politica di propagazione definita.&quot;,
+    &quot;Esistono meccanismi di versioning o timestamp per la matrice centralizzata per ricostruire lo stato storico.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-004.TC01</td><td>Verifica in ambiente di integrazione test che tutti i canali leggano le regole dalla stessa matrice centralizzata</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-004.TC02</td><td>Coerenza E2E su due canali: stessa configurazione produce lo stesso esito di frequenza presentazione</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-004.TC03</td><td>Propagazione modifiche: aggiornamento della matrice centrale reso disponibile ai canali secondo politica definita (scenario &#x27;immediato&#x27;)</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-004.TC04</td><td>Propagazione modifiche: aggiornamento della matrice centrale disponibile ai canali entro finestra temporale prevista (scenario &#x27;prevedibile&#x27;)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-004.TC05</td><td>Versioning/timestamp: ricostruzione dello stato storico della matrice per una data/ora specifica</td><td>Integration</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.TC06</td><td>Gestione indisponibilità matrice: i canali falliscono in modo controllato se la fonte di verità non è raggiungibile</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 18 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-004.US01.TC01</td><td>Recupero regole dal repository/matrice centralizzata in ambiente di integrazione</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC02</td><td>Coerenza decisionale del Motore tra due canali a parità di input rilevanti</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC03</td><td>Propagazione modifica matrice: nuova configurazione disponibile entro la finestra prevista</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC04</td><td>Tracciabilità decisione: riferimento a versione/timestamp della matrice per audit storico</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC05</td><td>Errore matrice non raggiungibile: gestione errore senza applicare regole divergenti per canale</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC06</td><td>Configurazione priva di versione/timestamp: impossibilità di ricostruzione storica rilevata</td><td>Negative</td><td>MEDIUM</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US01.TC07</td><td>Aggiornamento matrice durante valutazione: lettura consistente di una singola versione</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3, AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC01</td><td>Coerenza regole tra App e Sportello: stessa fonte centralizzata in integrazione</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC02</td><td>Propagazione modifica matrice: variazione comportamento riproducibile su App e Sportello entro finestra</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC03</td><td>Audit interno: correlazione comportamento osservato a versione/timestamp della matrice</td><td>Integration</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC04</td><td>Edge case: cambio canale durante finestra di propagazione con possibile incoerenza temporanea tracciabile</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3, AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US02.TC05</td><td>Coerenza tra touchpoint digitali: App e Web applicano la stessa configurazione</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC01</td><td>Sportello applica regole da matrice centralizzata in integrazione (assenza di logiche locali divergenti)</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC02</td><td>Coerenza E2E tra Sportello e App a parità di input rilevanti</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC03</td><td>Propagazione modifica matrice: comportamento in sportello aggiornato entro la finestra prevista</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC04</td><td>Audit a posteriori: ricostruzione versione/timestamp matrice usata per una proposta in sportello</td><td>Integration</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC05</td><td>Connettività degradata/indisponibilità matrice: sportello gestisce errore senza regole locali alternative</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-004.US03.TC06</td><td>Canale sportello non allineato oltre la finestra: incoerenza rilevabile e non conforme alla politica</td><td>Negative</td><td>MEDIUM</td><td>AC-3, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [4, 6, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [4, 17, 1, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

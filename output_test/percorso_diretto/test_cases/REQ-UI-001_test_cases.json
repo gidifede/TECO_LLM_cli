@@ -1,0 +1,257 @@
+[
+  {
+    "test_id": "REQ-UI-001.TC01",
+    "title": "Trasmissione offerte ai canali digitali tramite API/endpoint concordati",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il Motore Offerte è disponibile e raggiungibile in ambiente di test",
+      "Sono disponibili specifiche tecniche (contratto) degli endpoint/API per la distribuzione offerte verso canali digitali",
+      "È disponibile un client di test (es. Postman/Newman o equivalente) con credenziali/chiavi valide se richieste"
+    ],
+    "test_data": [
+      "Offerta generata dal Motore con ID: OFF-10001",
+      "Cliente destinatario: CL-900001",
+      "Prodotto suggerito: \"Assicurazione Casa\"",
+      "Sconto/condizione: \"-10% per 12 mesi\"",
+      "Motivazione: \"Profilo cliente coerente con prodotto\""
+    ],
+    "steps": [
+      "Generare l'offerta OFF-10001 per il cliente CL-900001 tramite il Motore",
+      "Invocare l'API/endpoint di trasmissione verso canali digitali secondo specifica (payload contenente OFF-10001)",
+      "Verificare la risposta dell'endpoint e la presenza dell'identificativo OFF-10001 nella risposta o nel riferimento di consegna",
+      "Recuperare tramite API/endpoint di lettura del canale digitale (se previsto) le offerte associate al cliente CL-900001"
+    ],
+    "expected_results": [
+      "L'API/endpoint di trasmissione risponde con esito di successo (HTTP 2xx o equivalente previsto da specifica)",
+      "L'offerta OFF-10001 risulta consegnata/registrata per i canali digitali secondo il meccanismo concordato (es. riferimento di consegna, ACK, stato)",
+      "La chiamata di lettura offerte per CL-900001 include l'offerta OFF-10001"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica protocolli, autenticazione, formati payload e codici di risposta: il test assume che esista una specifica API/endpoint 'concordata' e valida l'esito secondo quanto definito nel contratto. Attori inferiti: sistemi canali digitali."
+  },
+  {
+    "test_id": "REQ-UI-001.TC02",
+    "title": "Trasmissione offerte al front end commerciale ufficio postale tramite API/endpoint o canale concordato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il Motore Offerte è disponibile e raggiungibile in ambiente di test",
+      "Sono disponibili specifiche tecniche (contratto) del meccanismo di distribuzione verso front end commerciale ufficio postale",
+      "È disponibile un client di test con credenziali/chiavi valide se richieste"
+    ],
+    "test_data": [
+      "Offerta generata dal Motore con ID: OFF-20001",
+      "Cliente destinatario: CL-900002",
+      "Prodotto suggerito: \"Conto Premium\"",
+      "Sconto/condizione: \"Canone azzerato per 6 mesi\"",
+      "Motivazione: \"Comportamento di utilizzo compatibile\""
+    ],
+    "steps": [
+      "Generare l'offerta OFF-20001 per il cliente CL-900002 tramite il Motore",
+      "Invocare il meccanismo di trasmissione concordato verso il front end commerciale ufficio postale (payload contenente OFF-20001)",
+      "Verificare la risposta del canale/endpoint e la presenza dell'identificativo OFF-20001 nella risposta o nel riferimento di consegna",
+      "Recuperare tramite API/endpoint di lettura del canale fisico (se previsto) le offerte associate al cliente CL-900002"
+    ],
+    "expected_results": [
+      "Il canale/endpoint di trasmissione risponde con esito di successo (HTTP 2xx o equivalente previsto da specifica)",
+      "L'offerta OFF-20001 risulta consegnata/registrata per il front end commerciale secondo il meccanismo concordato",
+      "La chiamata di lettura offerte per CL-900002 include l'offerta OFF-20001"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "ufficio_postale"
+    ],
+    "notes": "Il requisito non dettaglia quale applicativo costituisca il 'front end commerciale' né il protocollo di integrazione; il test valida la consegna secondo il contratto concordato. Attori inferiti: operatori OSP/OFE/figure di sala come utenti finali del front end."
+  },
+  {
+    "test_id": "REQ-UI-001.TC03",
+    "title": "Visualizzazione corretta offerta in mockup App/Web (demo/esercitazione)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile un mockup o ambiente demo di App e/o Web collegato al meccanismo di ricezione offerte",
+      "Esiste almeno un cliente demo con offerte disponibili",
+      "L'offerta è stata trasmessa ai canali digitali ed è disponibile per la consultazione"
+    ],
+    "test_data": [
+      "Cliente demo: CL-900001",
+      "Offerta attesa: OFF-10001",
+      "Prodotto suggerito atteso: \"Assicurazione Casa\"",
+      "Sconto/condizione attesa: \"-10% per 12 mesi\"",
+      "Motivazione attesa: \"Profilo cliente coerente con prodotto\""
+    ],
+    "steps": [
+      "Aprire il mockup App o Web",
+      "Accedere/identificare il cliente CL-900001 nel mockup (login o selezione cliente secondo mockup)",
+      "Navigare alla sezione in cui sono mostrate le offerte",
+      "Selezionare l'offerta OFF-10001"
+    ],
+    "expected_results": [
+      "Nel mockup App/Web è presente l'offerta OFF-10001 associata al cliente CL-900001",
+      "La schermata di dettaglio (o la card offerta) mostra correttamente il prodotto suggerito \"Assicurazione Casa\"",
+      "La schermata mostra correttamente lo sconto/condizione \"-10% per 12 mesi\" quando previsto per l'offerta",
+      "La schermata mostra la motivazione \"Profilo cliente coerente con prodotto\" quando prevista per l'offerta"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito parla di 'mockup di App/Web' senza specificare layout e posizionamento dei campi: la verifica è basata sulla presenza e correttezza dei valori minimi richiesti. Le informazioni minime sono interpretate come campi visibili all'utente nel mockup."
+  },
+  {
+    "test_id": "REQ-UI-001.TC04",
+    "title": "Visualizzazione corretta offerta in mockup front end ufficio postale per OSP/OFE/figure di sala (demo/esercitazione)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile un mockup o ambiente demo del front end commerciale ufficio postale collegato al meccanismo di ricezione offerte",
+      "Esiste almeno un cliente demo ricercabile dal front end (es. per codice cliente)",
+      "L'offerta è stata trasmessa al canale ufficio postale ed è disponibile per la consultazione"
+    ],
+    "test_data": [
+      "Cliente demo: CL-900002",
+      "Offerta attesa: OFF-20001",
+      "Prodotto suggerito atteso: \"Conto Premium\"",
+      "Sconto/condizione attesa: \"Canone azzerato per 6 mesi\"",
+      "Motivazione attesa: \"Comportamento di utilizzo compatibile\""
+    ],
+    "steps": [
+      "Aprire il mockup del front end commerciale ufficio postale",
+      "Ricercare/selezionare il cliente CL-900002 nel mockup secondo le funzionalità disponibili",
+      "Aprire la sezione di presentazione offerte del cliente",
+      "Selezionare l'offerta OFF-20001"
+    ],
+    "expected_results": [
+      "Nel mockup del front end commerciale è presente l'offerta OFF-20001 associata al cliente CL-900002",
+      "La vista offerta mostra correttamente il prodotto suggerito \"Conto Premium\"",
+      "La vista offerta mostra correttamente lo sconto/condizione \"Canone azzerato per 6 mesi\" quando previsto per l'offerta",
+      "La vista offerta mostra la motivazione \"Comportamento di utilizzo compatibile\" quando prevista per l'offerta"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "ufficio_postale"
+    ],
+    "notes": "Il requisito non distingue differenze tra profili OSP/OFE/figure di sala nel mockup: il test valida la disponibilità e correttezza delle informazioni minime indipendentemente dal profilo. Se esistono ruoli con permessi differenti, servono AC aggiuntivi."
+  },
+  {
+    "test_id": "REQ-UI-001.TC05",
+    "title": "Gestione campo motivazione non previsto: la UI non mostra valori errati e mantiene prodotto e sconto/condizione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "È disponibile un mockup App/Web e/o front end ufficio postale collegato al meccanismo di ricezione offerte",
+      "È possibile disporre di un'offerta senza motivazione (campo assente o nullo nel payload) secondo regole del Motore"
+    ],
+    "test_data": [
+      "Offerta generata dal Motore con ID: OFF-30001",
+      "Cliente destinatario: CL-900003",
+      "Prodotto suggerito: \"Carta Prepagata\"",
+      "Sconto/condizione: \"Bonus 5 EUR al primo utilizzo\"",
+      "Motivazione: assente/null"
+    ],
+    "steps": [
+      "Generare l'offerta OFF-30001 con motivazione assente/null per il cliente CL-900003",
+      "Trasmettere l'offerta ai canali (digitale e/o ufficio postale) secondo meccanismo concordato",
+      "Aprire il mockup del canale scelto e visualizzare l'offerta OFF-30001"
+    ],
+    "expected_results": [
+      "La UI mostra correttamente il prodotto suggerito \"Carta Prepagata\"",
+      "La UI mostra correttamente lo sconto/condizione \"Bonus 5 EUR al primo utilizzo\"",
+      "La UI non mostra una motivazione valorizzata in modo errato (es. 'null', 'undefined' o testo tecnico) e gestisce l'assenza del campo in modo pulito (es. campo non mostrato o placeholder concordato)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "ufficio_postale"
+    ],
+    "notes": "Il requisito indica 'motivazione se prevista': questo test interpreta che la motivazione possa essere opzionale e verifica una resa UI non tecnica. Il comportamento preciso (nascondere campo vs placeholder) dipende da accordi con marketing/UI."
+  },
+  {
+    "test_id": "REQ-UI-001.TC06",
+    "title": "Errore di trasmissione verso canale digitale: gestione indisponibilità/timeout dell'endpoint",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il Motore Offerte è disponibile in ambiente di test",
+      "È possibile simulare indisponibilità del canale digitale (es. endpoint down, timeout, risposta 5xx) in ambiente di test o tramite mock service"
+    ],
+    "test_data": [
+      "Offerta generata dal Motore con ID: OFF-40001",
+      "Cliente destinatario: CL-900004",
+      "Simulazione errore: timeout di 30s oppure risposta HTTP 503 dall'endpoint digitale"
+    ],
+    "steps": [
+      "Generare l'offerta OFF-40001 per il cliente CL-900004 tramite il Motore",
+      "Configurare la simulazione di indisponibilità del canale digitale (timeout o HTTP 503)",
+      "Invocare l'API/endpoint di trasmissione verso canali digitali con l'offerta OFF-40001",
+      "Verificare l'esito della chiamata e lo stato di consegna registrato (se previsto dal meccanismo concordato)"
+    ],
+    "expected_results": [
+      "La trasmissione verso il canale digitale fallisce con l'errore simulato (timeout o 5xx) senza generare esiti di successo",
+      "Il sistema espone un esito di errore tracciabile (es. codice/descrizione errore o stato consegna 'fallita') secondo specifica del meccanismo concordato",
+      "L'offerta OFF-40001 non risulta disponibile nel canale digitale a seguito del fallimento (assenza in lettura offerte o stato non consegnato, secondo specifica)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non definisce retry, code di messaggistica, DLQ o gestione errori: il test valida almeno che il fallimento sia rilevabile e non produca una falsa disponibilità sul canale."
+  },
+  {
+    "test_id": "REQ-UI-001.TC07",
+    "title": "Payload offerta incompleto: mancanza prodotto suggerito impedisce visualizzazione corretta nei mockup",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "È possibile inviare ai canali un payload offerta con campi mancanti (tramite ambiente di test o servizio di mock)",
+      "È disponibile un mockup App/Web o front end ufficio postale che visualizza le offerte ricevute"
+    ],
+    "test_data": [
+      "Offerta con ID: OFF-50001",
+      "Cliente destinatario: CL-900005",
+      "Prodotto suggerito: assente/null",
+      "Sconto/condizione: \"-5%\"",
+      "Motivazione: \"Campagna retention\""
+    ],
+    "steps": [
+      "Inviare ai canali l'offerta OFF-50001 con campo 'prodotto suggerito' assente/null secondo il meccanismo concordato",
+      "Aprire il mockup del canale scelto e cercare l'offerta OFF-50001"
+    ],
+    "expected_results": [
+      "La UI non presenta l'offerta OFF-50001 come 'correttamente visualizzabile' con dati incoerenti (es. card vuota o titolo mancante)",
+      "Se l'offerta è mostrata, la UI evidenzia chiaramente l'anomalia secondo regole del canale (es. messaggio di errore/placeholder concordato) senza mostrare valori tecnici ('null', 'undefined')",
+      "Il comportamento osservato è tracciabile e ripetibile secondo le regole di validazione dati del canale (es. offerta scartata o mostrata con indicazione di dato mancante)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "ufficio_postale"
+    ],
+    "notes": "Il requisito non specifica regole di validazione o scarto per dati minimi mancanti; questo test interpreta che 'informazioni minime necessarie' includa il prodotto suggerito e verifica che non venga resa una visualizzazione fuorviante. Definire con marketing/UI la resa attesa in caso di dato mancante."
+  }
+]

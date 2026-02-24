@@ -1,0 +1,39 @@
+[
+  {
+    "story_id": "REQ-D-008.US01",
+    "title": "Esportare i log in formati standard per audit (utente autorizzato)",
+    "persona": "Team Compliance",
+    "goal": "esportare i log dal sistema in formati standard (CSV/Excel, JSON, XML) per analisi e audit",
+    "benefit": "poter utilizzare i file nei sistemi di audit esterni senza conversioni aggiuntive e con garanzie di validità del formato",
+    "user_story": "Come Team Compliance\nVoglio esportare i log dal sistema in formati standard (CSV/Excel, JSON, XML)\nIn modo che possa importarli nei sistemi di audit esterni già in uso senza conversioni non previste",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Compliance con autorizzazione all'export accede alla funzionalità di export dei log in dashboard ALLORA può selezionare almeno i formati CSV/Excel, JSON e XML ed avviare l'esportazione",
+      "QUANDO un utente del Team Compliance senza autorizzazione all'export tenta di accedere o utilizzare la funzionalità di export dei log ALLORA il sistema ne impedisce l'uso (accesso negato o azione non disponibile)",
+      "QUANDO il Team Compliance esporta i log in formato JSON ALLORA il file scaricato è JSON valido secondo standard e include almeno i campi: evento, timestamp, utente (quando presente)",
+      "QUANDO il Team Compliance esporta i log in formato XML ALLORA il file scaricato è XML ben formato e include almeno i campi: evento, timestamp, utente (quando presente)",
+      "QUANDO il Team Compliance esporta i log in formato CSV/Excel ALLORA il file scaricato è leggibile da strumenti comuni di analisi (es. Excel) e include almeno le colonne: evento, timestamp, utente (quando presente)",
+      "QUANDO il Team Compliance richiede un export di esempio per un dato formato ALLORA il sistema consente di scaricare/esportare un file di esempio per quel formato"
+    ],
+    "business_rules": [
+      "La funzionalità di export dei log è disponibile solo a utenti con autorizzazione coerente con il ruolo assegnato.",
+      "I file esportati devono essere compatibili con sistemi di audit esterni già in uso, senza necessità di conversioni aggiuntive non previste.",
+      "Il campo 'utente' è incluso solo se presente nei log per lo specifico evento (non deve essere forzato se assente)."
+    ],
+    "edge_cases": [
+      "Utente autorizzato seleziona un formato non supportato (es. tramite manipolazione richiesta): il sistema rifiuta la richiesta con errore controllato.",
+      "Presenza di record di log senza utente: l'export completa comunque e valorizza il campo 'utente' come vuoto/omesso secondo il formato.",
+      "Export con dataset molto grande: il sistema completa l'export o segnala errore/timeout in modo gestito senza produrre file corrotto.",
+      "Caratteri speciali nei campi (es. virgole, newline, caratteri non ASCII): il CSV/Excel risulta correttamente escapato; JSON/XML restano validi."
+    ],
+    "assumptions": [
+      "Il Team Compliance utilizza la dashboard per consultare ed esportare log, coerentemente con la definizione di persona.",
+      "Il requisito cita 'CSV/excel' come minimo garantito; si assume che il sistema offra almeno una delle due opzioni (CSV e/o XLSX) e che entrambe, se presenti, rispettino i criteri di validità richiesti.",
+      "Le 'informazioni richieste' nei file esportati si intendono almeno: evento, timestamp, utente quando presente, come da acceptance criteria."
+    ],
+    "notes": "Gli acceptance criteria del requisito sono interamente coperti in questa US. La parte 'eventuali altri formati come JSON e XML' è stata trattata come formati supportati (oltre a CSV/Excel) perché esplicitati anche negli AC. La definizione puntuale delle 'autorizzazioni' (quali ruoli/permessi specifici) non è dettagliata nel requisito: rimane una dipendenza dalle regole di autorizzazione della dashboard (vedi requisiti sui ruoli autorizzati)."
+  }
+]

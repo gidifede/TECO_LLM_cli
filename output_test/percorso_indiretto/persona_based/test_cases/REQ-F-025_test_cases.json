@@ -1,0 +1,588 @@
+[
+  {
+    "story_id": "REQ-F-025.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-025.US01.TC01",
+        "title": "Blocco riproposizione dello stesso prodotto prima dell'intervallo minimo (canale digitale)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e accessibile dal canale digitale (App/Web).",
+          "Esiste il prodotto P-1001 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Per il cliente C-9001 esiste nello storico una presentazione del prodotto P-1001 avvenuta 2 giorni fa.",
+          "Non esistono eccezioni configurate per il prodotto P-1001 (o per la coppia cliente/prodotto) che consentano deroga."
+        ],
+        "test_data": [
+          "Cliente: C-9001",
+          "Prodotto: P-1001",
+          "Intervallo minimo: 7 giorni",
+          "Ultima presentazione registrata: T0-2 giorni",
+          "Canale: digitale (App o Web)"
+        ],
+        "steps": [
+          "Avvia la generazione/recupero delle proposte per il cliente C-9001 su canale digitale.",
+          "Verifica l'elenco dei prodotti proposti al cliente."
+        ],
+        "expected_results": [
+          "Il prodotto P-1001 non è presente tra le proposte mostrate/generate per il cliente C-9001.",
+          "Le altre proposte (se presenti) non includono duplicati del prodotto P-1001."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)"
+        ],
+        "notes": "Si assume che 'presentazione' sia registrata nello storico e utilizzata come riferimento temporale per il calcolo dell'intervallo."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC02",
+        "title": "Riproposizione consentita dopo il decorso dell'intervallo minimo (canale fisico UP)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e accessibile dal canale fisico (UP).",
+          "Esiste il prodotto P-1002 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Per il cliente C-9002 esiste nello storico una presentazione del prodotto P-1002 avvenuta 8 giorni fa.",
+          "Non esistono eccezioni configurate per il prodotto P-1002."
+        ],
+        "test_data": [
+          "Cliente: C-9002",
+          "Prodotto: P-1002",
+          "Intervallo minimo: 7 giorni",
+          "Ultima presentazione registrata: T0-8 giorni",
+          "Canale: fisico (UP)"
+        ],
+        "steps": [
+          "Avvia la generazione/recupero delle proposte per il cliente C-9002 su canale fisico (UP).",
+          "Verifica l'elenco dei prodotti proposti al cliente."
+        ],
+        "expected_results": [
+          "Il prodotto P-1002 è presente tra le proposte mostrate/generate per il cliente C-9002."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "fisico (UP)"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC03",
+        "title": "Deroga tramite eccezione configurata: riproposizione prima dell'intervallo minimo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo.",
+          "Esiste il prodotto P-1003 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Per il cliente C-9003 esiste nello storico una presentazione del prodotto P-1003 avvenuta 2 giorni fa.",
+          "Esiste un'eccezione configurata per il prodotto P-1003 che consente la riproposizione dopo 1 giorno (o consente esplicitamente la riproposizione anticipata) per la coppia (C-9003, P-1003) o per una regola equivalente applicabile."
+        ],
+        "test_data": [
+          "Cliente: C-9003",
+          "Prodotto: P-1003",
+          "Intervallo minimo standard: 7 giorni",
+          "Eccezione: riproposizione consentita dopo 1 giorno",
+          "Ultima presentazione registrata: T0-2 giorni",
+          "Canale: digitale (App/Web) o fisico (UP)"
+        ],
+        "steps": [
+          "Avvia la generazione/recupero delle proposte per il cliente C-9003 sul canale previsto dal test.",
+          "Verifica l'elenco dei prodotti proposti al cliente."
+        ],
+        "expected_results": [
+          "Il prodotto P-1003 è presente tra le proposte mostrate/generate per il cliente C-9003 nonostante non siano trascorsi 7 giorni.",
+          "La riproposizione risulta coerente con l'eccezione configurata (es. consentita dopo 1 giorno)."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "fisico (UP)"
+        ],
+        "notes": "Il requisito non specifica il modello dati delle eccezioni (per cliente, per segmento, per canale, ecc.); il test presuppone un'eccezione applicabile alla coppia (cliente, prodotto) o equivalente."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC04",
+        "title": "Coerenza multi-canale: proposta vista in digitale e subito dopo in UP viene bloccata",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e condivide lo stesso storico presentazioni per tutti i canali.",
+          "Esiste il prodotto P-1004 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Non esistono eccezioni configurate per il prodotto P-1004.",
+          "Il cliente C-9004 non ha presentazioni pregresse di P-1004 prima dell'esecuzione del test."
+        ],
+        "test_data": [
+          "Cliente: C-9004",
+          "Prodotto: P-1004",
+          "Intervallo minimo: 7 giorni",
+          "Canali: digitale (App/Web) e fisico (UP)"
+        ],
+        "steps": [
+          "Avvia la generazione/recupero delle proposte per il cliente C-9004 su canale digitale.",
+          "Verifica che il prodotto P-1004 sia presente e considera la proposta come 'presentata' (evento di presentazione registrato).",
+          "Entro pochi minuti, avvia la generazione/recupero delle proposte per lo stesso cliente C-9004 su canale fisico (UP).",
+          "Verifica l'elenco dei prodotti proposti su UP."
+        ],
+        "expected_results": [
+          "Su canale digitale, il prodotto P-1004 risulta proposto e la presentazione viene registrata nello storico.",
+          "Su canale fisico (UP), il prodotto P-1004 non viene riproposto perché l'intervallo minimo non è trascorso.",
+          "La decisione di blocco risulta coerente tra canali (stessa regola applicata)."
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "fisico (UP)"
+        ],
+        "notes": "Dipendenza esterna: disponibilità e consistenza dello storico presentazioni cross-canale (latenza di propagazione non specificata)."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC05",
+        "title": "Cliente senza storico presentazioni: il prodotto può essere proposto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il Motore di Offerte è operativo.",
+          "Esiste il prodotto P-1005 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Per il cliente C-9005 non esistono record di presentazione per il prodotto P-1005 nello storico.",
+          "Non esistono eccezioni configurate per il prodotto P-1005."
+        ],
+        "test_data": [
+          "Cliente: C-9005",
+          "Prodotto: P-1005",
+          "Intervallo minimo: 7 giorni",
+          "Storico: assente per (C-9005, P-1005)"
+        ],
+        "steps": [
+          "Avvia la generazione/recupero delle proposte per il cliente C-9005 su un canale a scelta tra digitale o UP.",
+          "Verifica l'elenco dei prodotti proposti al cliente."
+        ],
+        "expected_results": [
+          "Il prodotto P-1005 può essere incluso tra le proposte, non essendoci storico di presentazioni che attivi il blocco."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "fisico (UP)"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC06",
+        "title": "Errore lettura storico presentazioni: comportamento fail-safe (blocco riproposizione)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo.",
+          "Esiste il prodotto P-1006 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "È possibile simulare un errore/timeout nella lettura dello storico presentazioni per il cliente C-9006 (es. servizio storico non disponibile)."
+        ],
+        "test_data": [
+          "Cliente: C-9006",
+          "Prodotto: P-1006",
+          "Intervallo minimo: 7 giorni",
+          "Fault injection: timeout/errore 5xx sul servizio di storico presentazioni"
+        ],
+        "steps": [
+          "Configura la simulazione di indisponibilità/errore del servizio di storico presentazioni per il cliente C-9006.",
+          "Avvia la generazione/recupero delle proposte per il cliente C-9006 su un canale a scelta.",
+          "Verifica l'elenco dei prodotti proposti al cliente e/o l'esito della generazione."
+        ],
+        "expected_results": [
+          "Il sistema non ripropone il prodotto P-1006 in assenza di conferma sul rispetto dell'intervallo (comportamento fail-safe).",
+          "Il sistema registra un errore tecnico/alert relativo all'impossibilità di consultare lo storico (log/monitoring), se previsto."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "fisico (UP)"
+        ],
+        "notes": "Comportamento non definito dal requisito (fail-safe vs fail-open). Questo test assume fail-safe per evitare riproposizioni indesiderate; da confermare in refinement."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-025.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-025.US02.TC01",
+        "title": "Il Motore usa il parametro configurabile di intervallo minimo per prodotto nella valutazione di eleggibilità",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo.",
+          "Esiste una sorgente/configurazione accessibile dal Motore con il parametro di intervallo minimo per prodotto.",
+          "Il prodotto P-2001 ha intervallo minimo configurato a 10 giorni.",
+          "Per il cliente C-9101 esiste nello storico una presentazione del prodotto P-2001 avvenuta 9 giorni fa.",
+          "Non esistono eccezioni configurate per P-2001."
+        ],
+        "test_data": [
+          "Cliente: C-9101",
+          "Prodotto: P-2001",
+          "Intervallo minimo: 10 giorni",
+          "Ultima presentazione registrata: T0-9 giorni"
+        ],
+        "steps": [
+          "Invoca il Motore per generare le presentazioni/proposte per il cliente C-9101 includendo il prodotto P-2001 tra i candidati (se previsto dal processo).",
+          "Recupera l'output del Motore (lista prodotti eleggibili/esclusi e motivazioni se disponibili)."
+        ],
+        "expected_results": [
+          "Il Motore esclude P-2001 perché non sono trascorsi 10 giorni dall'ultima presentazione.",
+          "L'esclusione risulta basata sul parametro configurato per prodotto (10 giorni)."
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: disponibilità dell'interfaccia di configurazione/parametrizzazione consumata dal Motore (non specificata)."
+      },
+      {
+        "test_id": "REQ-F-025.US02.TC02",
+        "title": "Più presentazioni dello stesso prodotto nello stesso giorno: solo la prima ammessa se intervallo > 0",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo.",
+          "Esiste il prodotto P-2002 con intervallo minimo di riproposizione configurato a 1 giorno.",
+          "Per il cliente C-9102 non esistono presentazioni di P-2002 prima dell'esecuzione del test.",
+          "Non esistono eccezioni configurate per P-2002."
+        ],
+        "test_data": [
+          "Cliente: C-9102",
+          "Prodotto: P-2002",
+          "Intervallo minimo: 1 giorno",
+          "Due richieste di generazione nello stesso giorno (T0 e T0 + 10 minuti)"
+        ],
+        "steps": [
+          "Invoca il Motore per generare una presentazione/proposta per il cliente C-9102 che includa P-2002 come candidato.",
+          "Verifica che la presentazione di P-2002 sia stata generata e registrata nello storico.",
+          "Dopo 10 minuti, invoca nuovamente il Motore per generare una presentazione/proposta per lo stesso cliente C-9102 con P-2002 tra i candidati.",
+          "Recupera l'output della seconda generazione."
+        ],
+        "expected_results": [
+          "Nella prima generazione, P-2002 è ammesso e risulta presentato.",
+          "Nella seconda generazione nello stesso giorno, P-2002 è escluso perché l'intervallo minimo (1 giorno) non è trascorso."
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-025.US02.TC03",
+        "title": "Coerenza di applicazione della regola e dei parametri su presentazioni generate per canali differenti",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e genera presentazioni per canale digitale e fisico.",
+          "Esiste il prodotto P-2003 con intervallo minimo di riproposizione configurato a 7 giorni.",
+          "Per il cliente C-9103 esiste nello storico una presentazione del prodotto P-2003 avvenuta 3 giorni fa.",
+          "Non esistono eccezioni configurate per P-2003."
+        ],
+        "test_data": [
+          "Cliente: C-9103",
+          "Prodotto: P-2003",
+          "Intervallo minimo: 7 giorni",
+          "Ultima presentazione: T0-3 giorni",
+          "Canali: digitale (App/Web) e fisico (UP)"
+        ],
+        "steps": [
+          "Invoca il Motore per generare presentazioni per il cliente C-9103 specificando il canale digitale.",
+          "Verifica l'output del Motore per il canale digitale.",
+          "Invoca il Motore per generare presentazioni per lo stesso cliente C-9103 specificando il canale fisico (UP).",
+          "Verifica l'output del Motore per il canale fisico."
+        ],
+        "expected_results": [
+          "Nel canale digitale, il prodotto P-2003 è escluso prima del decorso dei 7 giorni.",
+          "Nel canale fisico (UP), il prodotto P-2003 è escluso con la stessa regola e lo stesso parametro.",
+          "Non emergono differenze di comportamento tra canali a parità di storico e configurazione."
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il canale è un attributo della richiesta al Motore; se non disponibile come parametro esplicito, il test va adattato al meccanismo effettivo di generazione per canale."
+      },
+      {
+        "test_id": "REQ-F-025.US02.TC04",
+        "title": "Test automatico multi-canale: nessuna riproposizione prima dell'intervallo minimo (evidenza E2E)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Pipeline di test automatizzati disponibile (es. CI) con ambienti e dati controllati.",
+          "Il Motore di Offerte è operativo e integrato con i canali digitale e fisico (UP) in ambiente di test.",
+          "Esiste il prodotto P-2004 con intervallo minimo configurato a 7 giorni.",
+          "Il cliente C-9104 ha una presentazione di P-2004 registrata a T0 (durante lo scenario).",
+          "Non esistono eccezioni configurate per P-2004."
+        ],
+        "test_data": [
+          "Cliente: C-9104",
+          "Prodotto: P-2004",
+          "Intervallo minimo: 7 giorni",
+          "Sequenza canali: digitale -> fisico (UP) entro 5 minuti"
+        ],
+        "steps": [
+          "Esegui lo scenario automatizzato che genera una presentazione di P-2004 per C-9104 su canale digitale e verifica che l'evento di presentazione sia registrato.",
+          "Nello stesso scenario automatizzato, richiedi una nuova generazione su canale fisico (UP) entro 5 minuti.",
+          "Raccogli gli artefatti di esecuzione (risposte del Motore, log, report test)."
+        ],
+        "expected_results": [
+          "Il report dei test automatici mostra PASS per la verifica di blocco riproposizione di P-2004 su canale UP entro l'intervallo minimo.",
+          "Gli artefatti dimostrano che la regola è stata applicata coerentemente tra canali (stesso prodotto escluso su UP dopo presentazione digitale)."
+        ],
+        "traced_criteria": [
+          "AC-4",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Questo test definisce un requisito di evidenza automatizzata; l'implementazione concreta dipende dal framework di test e dagli hook disponibili per verificare storico/log."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-025.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-025.US03.TC01",
+        "title": "Utente autorizzato visualizza e modifica l'intervallo minimo per prodotto da dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione è disponibile.",
+          "Esiste un utente U-MKT-01 con ruolo/autorizzazioni che consentono la modifica dei parametri di frequenza per prodotto.",
+          "Esiste il prodotto P-3001 configurato con intervallo minimo di riproposizione pari a 7 giorni."
+        ],
+        "test_data": [
+          "Utente: U-MKT-01 (autorizzato)",
+          "Prodotto: P-3001",
+          "Valore corrente: 7 giorni",
+          "Nuovo valore: 14 giorni"
+        ],
+        "steps": [
+          "Accedi alla dashboard con l'utente U-MKT-01.",
+          "Naviga alla sezione di configurazione della frequenza di riproposizione per prodotto.",
+          "Cerca e seleziona il prodotto P-3001.",
+          "Verifica il valore attuale dell'intervallo minimo.",
+          "Imposta l'intervallo minimo a 14 giorni.",
+          "Salva la modifica."
+        ],
+        "expected_results": [
+          "Il valore visualizzato per P-3001 prima della modifica è 7 giorni.",
+          "Il sistema consente l'inserimento del nuovo valore 14 giorni e conferma il salvataggio.",
+          "Dopo il salvataggio, il valore visualizzato per P-3001 è 14 giorni."
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non dettaglia la UI; i passi assumono funzioni minime di ricerca/selezione prodotto e modifica parametro."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC02",
+        "title": "Audit trail: salvataggio modifica intervallo/eccezioni genera traccia con chi/cosa/quando",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione è disponibile.",
+          "Esiste un utente U-MKT-01 autorizzato.",
+          "Esiste un meccanismo di audit trail attivo e consultabile (es. tabella audit, servizio audit, log applicativo).",
+          "Esiste il prodotto P-3002 con intervallo minimo configurato a 7 giorni."
+        ],
+        "test_data": [
+          "Utente: U-MKT-01",
+          "Prodotto: P-3002",
+          "Modifica: intervallo minimo da 7 a 10 giorni",
+          "Timestamp atteso: data/ora del salvataggio"
+        ],
+        "steps": [
+          "Accedi alla dashboard con l'utente U-MKT-01.",
+          "Seleziona il prodotto P-3002 e modifica l'intervallo minimo da 7 a 10 giorni.",
+          "Salva la modifica.",
+          "Recupera la traccia di audit relativa all'ultima modifica per P-3002 (tramite vista audit/log/servizio)."
+        ],
+        "expected_results": [
+          "Esiste una nuova entry di audit associata alla modifica del prodotto P-3002.",
+          "La entry di audit contiene almeno: identificativo utente (U-MKT-01), campo/parametro modificato (intervallo minimo), valore precedente (7) e nuovo valore (10), timestamp della modifica."
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito richiede la tracciatura ma non specifica dove sia consultabile; il test presuppone un endpoint o repository verificabile in test."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC03",
+        "title": "Utente non autorizzato tenta la modifica: accesso negato e nessuna variazione applicata",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione è disponibile.",
+          "Esiste un utente U-READ-01 privo delle autorizzazioni di modifica (sola lettura o nessun accesso alla funzione).",
+          "Esiste il prodotto P-3003 con intervallo minimo configurato a 7 giorni.",
+          "Audit trail attivo."
+        ],
+        "test_data": [
+          "Utente: U-READ-01 (non autorizzato)",
+          "Prodotto: P-3003",
+          "Tentativo nuovo valore: 14 giorni"
+        ],
+        "steps": [
+          "Accedi alla dashboard con l'utente U-READ-01.",
+          "Naviga alla sezione di configurazione della frequenza di riproposizione per prodotto.",
+          "Seleziona il prodotto P-3003.",
+          "Tenta di impostare l'intervallo minimo a 14 giorni e salvare."
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'operazione di modifica (es. pulsante disabilitato o errore 'accesso negato').",
+          "Il valore dell'intervallo minimo per P-3003 rimane 7 giorni dopo il tentativo.",
+          "Non viene creata alcuna entry di audit di modifica per il tentativo non autorizzato (eventuali log di sicurezza sono ammessi ma non richiesti)."
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC04",
+        "title": "Validazione input: valore intervallo non valido (negativo o non numerico) non viene salvato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione è disponibile.",
+          "Esiste un utente U-MKT-01 autorizzato.",
+          "Esiste il prodotto P-3004 con intervallo minimo configurato a 7 giorni.",
+          "Audit trail attivo."
+        ],
+        "test_data": [
+          "Utente: U-MKT-01",
+          "Prodotto: P-3004",
+          "Valori non validi: -1; 'abc'"
+        ],
+        "steps": [
+          "Accedi alla dashboard con l'utente U-MKT-01.",
+          "Seleziona il prodotto P-3004.",
+          "Inserisci il valore -1 come intervallo minimo.",
+          "Tenta di salvare la modifica.",
+          "Inserisci il valore 'abc' come intervallo minimo.",
+          "Tenta di salvare la modifica."
+        ],
+        "expected_results": [
+          "Il sistema rifiuta il salvataggio con valore -1 e mostra un messaggio di validazione (es. 'valore non valido').",
+          "Il valore configurato per P-3004 rimane 7 giorni dopo il tentativo con -1.",
+          "Il sistema rifiuta il salvataggio con valore 'abc' e mostra un messaggio di validazione.",
+          "Il valore configurato per P-3004 rimane 7 giorni dopo il tentativo con 'abc'.",
+          "Non viene creata alcuna entry di audit per i tentativi di salvataggio falliti."
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola di validazione esatta non è specificata dal requisito; il test assume che valori negativi e non numerici siano invalidi e non salvabili."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC05",
+        "title": "Dopo modifica parametro, il Motore applica il nuovo valore in modo coerente su tutti i canali",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard e Motore di Offerte sono operativi e integrati con i canali digitale e fisico (UP).",
+          "Esiste l'utente U-MKT-01 autorizzato.",
+          "Esiste il prodotto P-3005 con intervallo minimo iniziale 7 giorni.",
+          "Per il cliente C-9205 esiste nello storico una presentazione del prodotto P-3005 avvenuta 8 giorni fa.",
+          "Non esistono eccezioni configurate per P-3005."
+        ],
+        "test_data": [
+          "Utente: U-MKT-01",
+          "Prodotto: P-3005",
+          "Intervallo minimo: da 7 a 14 giorni",
+          "Cliente: C-9205",
+          "Ultima presentazione: T0-8 giorni",
+          "Canali: digitale (App/Web) e fisico (UP)"
+        ],
+        "steps": [
+          "Accedi alla dashboard con l'utente U-MKT-01.",
+          "Modifica l'intervallo minimo del prodotto P-3005 da 7 a 14 giorni e salva.",
+          "Invoca la generazione/recupero proposte per il cliente C-9205 su canale digitale.",
+          "Verifica l'elenco proposte su canale digitale.",
+          "Invoca la generazione/recupero proposte per il cliente C-9205 su canale fisico (UP).",
+          "Verifica l'elenco proposte su canale fisico."
+        ],
+        "expected_results": [
+          "La modifica del parametro a 14 giorni risulta salvata (valore corrente 14).",
+          "Su canale digitale, il prodotto P-3005 è escluso perché sono trascorsi 8 giorni (< 14).",
+          "Su canale fisico (UP), il prodotto P-3005 è escluso con la stessa regola e lo stesso nuovo valore (14 giorni)."
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: tempi di propagazione della configurazione dal dashboard al Motore non specificati; se esiste caching, potrebbe essere necessario attendere un intervallo o forzare refresh."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC06",
+        "title": "Errore scrittura audit trail: salvataggio configurazione viene bloccato (comportamento fail-safe)",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "La dashboard di configurazione è disponibile.",
+          "Esiste un utente U-MKT-01 autorizzato.",
+          "Esiste il prodotto P-3006 con intervallo minimo configurato a 7 giorni.",
+          "È possibile simulare un errore/indisponibilità del componente di audit trail durante il salvataggio."
+        ],
+        "test_data": [
+          "Utente: U-MKT-01",
+          "Prodotto: P-3006",
+          "Nuovo valore: 10 giorni",
+          "Fault injection: errore 5xx/timeout sul servizio audit"
+        ],
+        "steps": [
+          "Configura la simulazione di errore del servizio/componente di audit trail.",
+          "Accedi alla dashboard con l'utente U-MKT-01.",
+          "Seleziona il prodotto P-3006 e imposta l'intervallo minimo a 10 giorni.",
+          "Tenta di salvare la modifica.",
+          "Rimuovi la simulazione di errore audit.",
+          "Ricarica la configurazione del prodotto P-3006."
+        ],
+        "expected_results": [
+          "Il sistema segnala il fallimento del salvataggio dovuto all'impossibilità di tracciare l'audit.",
+          "Il valore dell'intervallo minimo per P-3006 rimane 7 giorni (nessuna modifica applicata)."
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento non definito dal requisito (blocco salvataggio vs salvataggio con alert). Questo test assume fail-safe: senza audit non si salva; da confermare in refinement."
+      }
+    ]
+  }
+]

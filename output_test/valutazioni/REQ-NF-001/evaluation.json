@@ -1,0 +1,141 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-NF-001",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 78,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-001.TC01",
+        "detail": "Introduce nomi di ruoli specifici ('Marketing_Modifica') e dettagli di oggetti/parametri di configurazione ('Matrice offerte', 'Soglia_minima_importo', versioni, valori EUR) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.TC02",
+        "detail": "Introduce campi/dati di eccezione (ClienteID, Offerta, motivazione, validità) e ipotesi di stato workflow ('In attesa di approvazione') non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.TC03",
+        "detail": "Introduce stati e campi di approvazione (commento, stato 'Approvata', ID eccezione) non descritti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.TC04",
+        "detail": "Introduce canale API e dettagli tecnici non citati (endpoint 'POST /api/eccezioni', codici HTTP 403/401) e verifica su 'audit/log applicativo' come fonte dati."
+      },
+      {
+        "test_id": "REQ-NF-001.TC05",
+        "detail": "Introduce canale API e dettagli tecnici non citati (endpoint 'PUT /api/configurazioni/matrice-offerte', payload JSON, codici HTTP 403) e specifica un parametro di matrice non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.TC06",
+        "detail": "Assume integrazione con SIEM/log aggregator, presenza di header 'X-Correlation-ID', campi minimi di audit e possibile alerting: il requisito dice solo 'segnalati secondo le policy aziendali' senza questi dettagli."
+      },
+      {
+        "test_id": "REQ-NF-001.TC07",
+        "detail": "Introduce regola 'deny by default' e comportamento UI (redirect a pagina non autorizzato) non esplicitati nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte'",
+        "detail": "I test coprono esempi (matrice/eccezioni) ma non dimostrano esplicitamente la copertura di 'tutte' le funzionalità di configurazione del motore offerte oltre alla matrice (il requisito lo afferma come ambito)."
+      },
+      {
+        "source": "AC-1: 'Esiste una definizione dei ruoli autorizzati (almeno...)'",
+        "detail": "I TC verificano l'accesso per ruoli esemplificativi, ma non verificano l'esistenza/consultabilità della 'definizione dei ruoli autorizzati' come artefatto/configurazione (es. catalogo ruoli/mapping) separatamente dall'uso in runtime."
+      }
+    ],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 14,
+    "coherence_score": 56,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-001.US01.TC01",
+        "detail": "Introduce struttura UI ('Configurazioni critiche'), dettagli di matrice (righe/colonne, segmenti Gold, soglie) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC02",
+        "detail": "Introduce dati e campi di eccezione ('Sconto extra', motivo campagna), e stato workflow ipotetico ('In attesa di approvazione') non specificati."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC03",
+        "detail": "Introduce workflow e stato ('Approvata') e modalità di approvazione non descritti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC04",
+        "detail": "Assume canali/strumenti di evidenza specifici (audit log, SIEM, console centralizzata) e disponibilità di consultazione per il team di test, non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC05",
+        "detail": "Scenario 'sessione scaduta', timeout/invalidazione token e richiesta di re-autenticazione: non richiesto dal requisito (che parla di RBAC e segnalazione accessi non autorizzati)."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC06",
+        "detail": "Scenario 'permessi revocati durante la sessione' e ricalcolo permessi al momento dell'azione: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC07",
+        "detail": "Scenario di errore IAM/authorization (timeout/500) e comportamento fail-safe: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC04",
+        "detail": "Assume 'campi minimi di audit' (utente, risorsa, timestamp, esito) come obbligatori: il requisito non li definisce, rimanda a policy."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC05",
+        "detail": "Scenario di carico/attacco (100 tentativi in 2 minuti), perdita eventi, throttling/aggregazione: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC06",
+        "detail": "Scenario 'utente non autenticato' su URL/route specifica (esempio /dashboard/eccezioni/approvazione) e tracciamento 'anonymous': il requisito non menziona accessi anonimi né URL."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC07",
+        "detail": "Scenario di disallineamento IdP vs mapping applicativo: non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'autenticazione/autorizzazione per tutte le funzionalità relative alla configurazione del motore di offerte'",
+        "detail": "Come nel set direct, i TC si focalizzano su matrice ed eccezioni e non dimostrano esplicitamente la copertura dell'intero perimetro 'tutte le funzionalità' di configurazione del motore offerte."
+      },
+      {
+        "source": "AC-1: 'Esiste una definizione dei ruoli autorizzati (almeno...)'",
+        "detail": "I TC presuppongono l'esistenza di un 'catalogo ruoli aziendale' ma non verificano direttamente la presenza della definizione/mappatura dei ruoli autorizzati come requisito (artefatto o configurazione)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-NF-001.US02.TC01",
+        "detail": "Sovrapposto a REQ-NF-001.US02.TC02 e REQ-NF-001.US02.TC03: stesso pattern 'utente non autorizzato -> accesso negato -> evidenza di segnalazione', cambia solo la funzione target."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC02",
+        "detail": "Sovrapposto a REQ-NF-001.US02.TC01 e REQ-NF-001.US02.TC03: stesso scenario base con variazione della funzione."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC03",
+        "detail": "Sovrapposto a REQ-NF-001.US02.TC01 e REQ-NF-001.US02.TC02: stesso scenario base con variazione della funzione."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct introduce meno informazioni non tracciabili (7 added_info) rispetto all'indirect_persona (11 added_info) ed evita scenari extra-requisito (session timeout, revoca permessi in-sessione, fault IAM, stress logging) che aumentano le assunzioni. Inoltre l'indirect_persona presenta ridondanze (3) su casi ripetitivi di diniego+log. Per questo il direct ottiene un punteggio di coerenza superiore (78 vs 56)."
+  }
+}

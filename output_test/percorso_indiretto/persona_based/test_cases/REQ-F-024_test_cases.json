@@ -1,0 +1,736 @@
+[
+  {
+    "story_id": "REQ-F-024.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-024.US01.TC01",
+        "title": "Conflitto riprodotto: nessuna offerta proposta verso canali cliente e operatore",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile",
+          "Configurate almeno 1 regola manuale (Regola A) e 1 raccomandazione automatizzata/esterna (Regola B) tali da generare un conflitto deterministico per lo stesso cliente/prodotto/campagna",
+          "Canali di downstream (cliente e operatore) disponibili per ricezione proposte oppure endpoint/mock di integrazione attivi per verificarne l’assenza"
+        ],
+        "test_data": [
+          "Regola manuale A: ID=MAN-A-1001 (configurata per generare proposta su Prodotto=P-200, Campagna=C-300)",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001 (configurata per entrare in conflitto con MAN-A-1001 sullo stesso Prodotto=P-200, Campagna=C-300)",
+          "Cliente: ID=CL-778899",
+          "Prodotto: ID=P-200",
+          "Campagna: ID=C-300"
+        ],
+        "steps": [
+          "Avviare una valutazione offerte per Cliente ID=CL-778899 con contesto Prodotto ID=P-200 e Campagna ID=C-300",
+          "Verificare le uscite/risposte del Motore verso il canale cliente (o relativo endpoint/event bus)",
+          "Verificare le uscite/risposte del Motore verso il canale operatore (o relativo endpoint/event bus)"
+        ],
+        "expected_results": [
+          "Il Motore rileva il conflitto e non genera alcuna proposta/offerta verso il canale cliente",
+          "Il Motore rileva il conflitto e non genera alcuna proposta/offerta verso il canale operatore",
+          "Non risultano eventi/messaggi di proposta emessi dal Motore verso i canali per la valutazione eseguita (assenza verificabile su queue/topic/log tecnico di integrazione/mock)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non specifica i dettagli di integrazione verso i canali; la verifica dell’assenza di proposte va effettuata tramite i punti di osservabilità disponibili (es. topic/queue, API downstream, mock)."
+      },
+      {
+        "test_id": "REQ-F-024.US01.TC02",
+        "title": "Conflitto rilevato: registrazione log interno con dettagli minimi richiesti",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile",
+          "Meccanismo di logging interno attivo e consultabile da strumenti tecnici autorizzati (es. dashboard/log aggregator)",
+          "Configurate Regola manuale A e Raccomandazione/Regola esterna B in conflitto deterministico per lo stesso cliente/prodotto/campagna"
+        ],
+        "test_data": [
+          "Regola manuale A: ID=MAN-A-1001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001",
+          "Cliente: ID=CL-778899",
+          "Prodotto: ID=P-200",
+          "Campagna: ID=C-300"
+        ],
+        "steps": [
+          "Avviare una valutazione offerte per Cliente ID=CL-778899 con contesto Prodotto ID=P-200 e Campagna ID=C-300",
+          "Accedere allo strumento di consultazione log interno (tecnico) e filtrare per Cliente ID=CL-778899 e finestra temporale della prova",
+          "Individuare l’evento di log relativo al conflitto generato dalla valutazione"
+        ],
+        "expected_results": [
+          "È presente almeno un evento di log che indica un conflitto tra regole",
+          "L’evento di log contiene l’identificativo della regola manuale coinvolta (MAN-A-1001)",
+          "L’evento di log contiene l’identificativo della raccomandazione/regola esterna coinvolta (EXT-B-9001)",
+          "L’evento di log contiene un timestamp valorizzato e coerente con l’orario di esecuzione della prova",
+          "L’evento di log contiene identificativi delle entità coinvolte (almeno Cliente=CL-778899 e, se disponibili nel contesto, Prodotto=P-200 e Campagna=C-300)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il formato/tecnologia dei log non è specificato: la verifica si basa sulla presenza dei campi minimi richiesti, indipendentemente dal layout (JSON, testo strutturato, ecc.)."
+      },
+      {
+        "test_id": "REQ-F-024.US01.TC03",
+        "title": "Conflitto rilevato: nessun segnale verso UI che generi errori/alert (comportamento silente)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile",
+          "Disponibile un punto di osservabilità dei messaggi/eventi destinati alla UI (es. endpoint, topic/queue, mock UI-gateway)",
+          "Configurate Regola manuale A e Raccomandazione/Regola esterna B in conflitto deterministico"
+        ],
+        "test_data": [
+          "Regola manuale A: ID=MAN-A-1001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001",
+          "Cliente: ID=CL-778899"
+        ],
+        "steps": [
+          "Avviare una valutazione offerte per Cliente ID=CL-778899 in condizioni di conflitto",
+          "Monitorare i messaggi/eventi emessi dal Motore verso i componenti UI (cliente e operatore) durante la valutazione"
+        ],
+        "expected_results": [
+          "Non vengono emessi messaggi/eventi classificabili come errore/alert/notifica relativi al conflitto verso i componenti UI",
+          "L’assenza di offerte non è accompagnata da payload che impongano la visualizzazione di un messaggio di errore/alert"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito richiede silenzio lato UI; la modalità tecnica di invio segnali UI non è specificata. Il test verifica l’assenza di emissioni di tipo errore/alert (o campi equivalenti) sui canali di integrazione verso UI."
+      },
+      {
+        "test_id": "REQ-F-024.US01.TC04",
+        "title": "Edge case: conflitto rilevato dopo prima generazione proposta -> proposta soppressa e log registrato",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte configurato in modo da generare una proposta preliminare e successivamente rilevare un conflitto nella stessa valutazione (o in step successivo del processo)",
+          "Meccanismo di logging interno consultabile",
+          "Punto di osservabilità verso i canali (cliente/operatore) per verificare l’eventuale soppressione"
+        ],
+        "test_data": [
+          "Regola manuale A: ID=MAN-A-2002",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-8002",
+          "Cliente: ID=CL-112233",
+          "Prodotto: ID=P-201",
+          "Campagna: ID=C-301"
+        ],
+        "steps": [
+          "Avviare una valutazione offerte per Cliente ID=CL-112233 con contesto Prodotto ID=P-201 e Campagna ID=C-301",
+          "Raccogliere le evidenze tecniche che indichino la generazione preliminare di una proposta (se osservabile internamente)",
+          "Verificare le uscite finali del Motore verso canale cliente e canale operatore",
+          "Consultare i log interni filtrando per Cliente ID=CL-112233 e finestra temporale della prova"
+        ],
+        "expected_results": [
+          "L’output finale del Motore verso canale cliente non contiene alcuna proposta/offerta",
+          "L’output finale del Motore verso canale operatore non contiene alcuna proposta/offerta",
+          "È presente un evento di log di conflitto relativo alla valutazione, con almeno ID regola manuale, ID regola esterna, timestamp e ID entità coinvolte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La 'prima generazione proposta' potrebbe non essere osservabile esternamente; in tal caso la verifica si concentra su (1) assenza di proposta in output finale e (2) presenza log di conflitto."
+      },
+      {
+        "test_id": "REQ-F-024.US01.TC05",
+        "title": "Negative: servizio di logging non disponibile -> nessuna offerta proposta e nessun messaggio UI",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile",
+          "Configurate Regola manuale A e Regola esterna B in conflitto deterministico",
+          "Indotto un guasto del sottosistema di logging (es. endpoint log collector non raggiungibile, storage pieno, permessi negati) in modo controllato",
+          "Punto di osservabilità verso canali cliente/operatore e verso messaggi UI"
+        ],
+        "test_data": [
+          "Regola manuale A: ID=MAN-A-3003",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-7003",
+          "Cliente: ID=CL-445566"
+        ],
+        "steps": [
+          "Simulare l’indisponibilità del sottosistema di logging secondo la modalità prevista dall’ambiente (es. disabilitare il servizio, bloccare rete, invalidare credenziali)",
+          "Avviare una valutazione offerte per Cliente ID=CL-445566 in condizioni di conflitto",
+          "Verificare le uscite del Motore verso canale cliente e canale operatore",
+          "Verificare i messaggi/eventi verso i componenti UI (cliente e operatore)"
+        ],
+        "expected_results": [
+          "Il Motore non genera alcuna proposta/offerta verso il canale cliente nonostante l’errore di logging",
+          "Il Motore non genera alcuna proposta/offerta verso il canale operatore nonostante l’errore di logging",
+          "Non vengono emessi messaggi/eventi verso UI che comportino la visualizzazione di errori/alert relativi al conflitto o al problema di logging"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non impone un comportamento specifico di recovery del logging; il test valida che il blocco offerte e il silenzio UI restino garantiti anche in caso di failure del logging."
+      },
+      {
+        "test_id": "REQ-F-024.US01.TC06",
+        "title": "Edge case: conflitti multipli nella stessa valutazione -> nessuna offerta e log coerenti per ricostruzione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Motore di Offerte deployato e raggiungibile",
+          "Meccanismo di logging interno consultabile",
+          "Configurate almeno 2 coppie di conflitto deterministico nella stessa valutazione (es. MAN-A-4001 vs EXT-B-6001 e MAN-A-4002 vs EXT-B-6002) applicabili allo stesso cliente/contesto"
+        ],
+        "test_data": [
+          "Coppia conflitto 1: MAN-A-4001 vs EXT-B-6001",
+          "Coppia conflitto 2: MAN-A-4002 vs EXT-B-6002",
+          "Cliente: ID=CL-990011",
+          "Prodotto: ID=P-202",
+          "Campagna: ID=C-302"
+        ],
+        "steps": [
+          "Avviare una valutazione offerte per Cliente ID=CL-990011 con contesto Prodotto ID=P-202 e Campagna ID=C-302",
+          "Verificare le uscite del Motore verso canale cliente e canale operatore",
+          "Consultare i log interni filtrando per Cliente ID=CL-990011 e finestra temporale della prova",
+          "Raccogliere i record di log relativi ai conflitti della valutazione"
+        ],
+        "expected_results": [
+          "Il Motore non genera alcuna proposta/offerta verso i canali (cliente e operatore)",
+          "Sono presenti uno o più eventi di log tali da ricostruire i conflitti rilevati (almeno una traccia per ciascuna coppia di conflitto o un singolo evento che elenchi entrambe le coppie)",
+          "Per ogni conflitto tracciato sono presenti: ID regola manuale, ID regola esterna, timestamp, ID entità coinvolte (almeno il cliente)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito ammette 'uno o più eventi' purché coerenti; il test accetta entrambe le implementazioni (eventi separati o evento aggregato) se la ricostruzione è possibile."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-024.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-024.US02.TC01",
+        "title": "Canale digitale: in conflitto non vengono visualizzate offerte al cliente",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Canale digitale (web/app) configurato per richiedere offerte al Motore",
+          "Configurate Regola manuale A e Raccomandazione/Regola esterna B in conflitto deterministico per il cliente di test",
+          "Cliente esistente e abilitato all’accesso al canale digitale"
+        ],
+        "test_data": [
+          "Cliente: ID=CL-778899 (utenza digitale associata)",
+          "Regola manuale A: ID=MAN-A-1001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001"
+        ],
+        "steps": [
+          "Accedere al canale digitale come cliente associato a ID=CL-778899",
+          "Navigare a un punto del journey in cui vengono richieste/mostrate offerte (es. home offerte o sezione promozioni)",
+          "Attendere il completamento del caricamento dei contenuti"
+        ],
+        "expected_results": [
+          "Non è visualizzata alcuna offerta/proposta proveniente dal Motore per il cliente",
+          "La pagina non mostra notifiche/messaggi di errore/alert riconducibili al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il requisito non specifica i touchpoint esatti; il test va eseguito su almeno un punto del canale digitale che invoca il Motore per offerte."
+      },
+      {
+        "test_id": "REQ-F-024.US02.TC02",
+        "title": "Front-end commerciale (canale fisico): in conflitto il cliente non riceve alcuna proposta",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Front-end commerciale disponibile e integrato con il Motore di Offerte",
+          "Configurate Regola manuale A e Raccomandazione/Regola esterna B in conflitto deterministico per il cliente di test",
+          "Operatore abilitato ad avviare una richiesta offerte per il cliente (senza necessità di accesso ai log)"
+        ],
+        "test_data": [
+          "Cliente: ID=CL-778899",
+          "Regola manuale A: ID=MAN-A-1001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001"
+        ],
+        "steps": [
+          "Nel front-end commerciale, selezionare/identificare il cliente ID=CL-778899",
+          "Avviare la richiesta di offerte/proposte per il cliente",
+          "Osservare l’area UI in cui normalmente verrebbero mostrate le proposte da presentare al cliente"
+        ],
+        "expected_results": [
+          "Non è visualizzata alcuna offerta/proposta da presentare al cliente",
+          "Non sono mostrati messaggi di errore/alert relativi al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La rappresentazione dell’assenza offerte può essere un messaggio neutro (es. 'nessuna offerta disponibile') purché non sia un alert/errore riconducibile al conflitto."
+      },
+      {
+        "test_id": "REQ-F-024.US02.TC03",
+        "title": "Edge case digitale: pagina già aperta -> al refresh/nuova richiesta nessuna offerta e nessun alert",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Canale digitale disponibile",
+          "Configurate condizioni di conflitto deterministico per il cliente di test"
+        ],
+        "test_data": [
+          "Cliente: ID=CL-556677 (utenza digitale associata)",
+          "Regola manuale A: ID=MAN-A-5001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-5002"
+        ],
+        "steps": [
+          "Accedere al canale digitale come cliente associato a ID=CL-556677",
+          "Aprire la pagina/sezione che mostra offerte e lasciarla aperta",
+          "Eseguire un refresh della pagina o un’azione che forzi una nuova richiesta di offerte (es. ricarica contenuti)",
+          "Attendere il completamento del caricamento"
+        ],
+        "expected_results": [
+          "Dopo refresh/nuova richiesta non sono visualizzate offerte/proposte",
+          "Dopo refresh/nuova richiesta non sono visualizzati messaggi di errore/alert relativi al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il test verifica il comportamento su richiesta successiva; non richiede che in precedenza fossero presenti offerte."
+      },
+      {
+        "test_id": "REQ-F-024.US02.TC04",
+        "title": "Edge case digitale: flusso pre-checkout -> in conflitto nessuna proposta e flusso prosegue senza messaggi",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Canale digitale con flusso pre-checkout che normalmente richiede offerte al Motore",
+          "Configurate condizioni di conflitto deterministico per il cliente di test"
+        ],
+        "test_data": [
+          "Cliente: ID=CL-667788",
+          "Regola manuale A: ID=MAN-A-5101",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-5102"
+        ],
+        "steps": [
+          "Accedere al canale digitale come cliente associato a ID=CL-667788",
+          "Avviare il flusso che porta al pre-checkout (o step equivalente con offerte)",
+          "Raggiungere lo step in cui normalmente verrebbero mostrate proposte/offerte",
+          "Proseguire al passo successivo del flusso"
+        ],
+        "expected_results": [
+          "Nello step pre-checkout non sono visualizzate offerte/proposte",
+          "Non sono visualizzati messaggi di errore/alert relativi al conflitto",
+          "Il flusso consente di proseguire senza blocchi attribuibili al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il requisito non specifica il journey; usare uno step reale dell’applicazione dove le offerte vengono normalmente proposte."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-024.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-024.US03.TC01",
+        "title": "Front-end commerciale: in conflitto l’operatore non visualizza alcuna proposta",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Front-end commerciale disponibile e integrato con il Motore di Offerte",
+          "Operatore con credenziali valide per accedere al front-end commerciale",
+          "Configurate Regola manuale A e Raccomandazione/Regola esterna B in conflitto deterministico per il cliente di test"
+        ],
+        "test_data": [
+          "Operatore: USER=OP-100 (ruolo operativo standard)",
+          "Cliente: ID=CL-778899",
+          "Regola manuale A: ID=MAN-A-1001",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-9001"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-100",
+          "Ricercare e selezionare il cliente ID=CL-778899",
+          "Richiedere/aggiornare le offerte per il cliente",
+          "Osservare la sezione UI delle offerte/proposte"
+        ],
+        "expected_results": [
+          "Non è visualizzata alcuna offerta/proposta generata dal Motore per il cliente",
+          "Non è mostrata alcuna notifica/messaggio di errore/alert relativo al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "È accettabile un testo neutro tipo 'nessuna offerta disponibile' purché non sia un alert/errore sul conflitto."
+      },
+      {
+        "test_id": "REQ-F-024.US03.TC02",
+        "title": "Edge case operatore: lista offerte già caricata -> a seguito di aggiornamento in conflitto lista vuota e nessun alert",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Front-end commerciale disponibile e integrato con il Motore di Offerte",
+          "Operatore con credenziali valide",
+          "Cliente e contesto tali da permettere un primo caricamento offerte (non in conflitto) e un successivo aggiornamento in conflitto (tramite cambio configurazione o contesto)"
+        ],
+        "test_data": [
+          "Operatore: USER=OP-101",
+          "Cliente: ID=CL-121212",
+          "Configurazione iniziale senza conflitto: MAN-A-6101 e EXT-B-6102 non confliggenti",
+          "Configurazione successiva con conflitto: MAN-A-6101 vs EXT-B-6103 (conflitto attivo)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-101",
+          "Selezionare il cliente ID=CL-121212",
+          "Caricare la lista offerte in configurazione iniziale (senza conflitto)",
+          "Attivare la configurazione/condizione di conflitto prevista per il test",
+          "Eseguire un aggiornamento/nuova richiesta di offerte dalla UI"
+        ],
+        "expected_results": [
+          "Dopo l’aggiornamento in conflitto, la UI non mostra alcuna offerta/proposta",
+          "Dopo l’aggiornamento in conflitto, la UI non mostra notifiche/messaggi di errore/alert relativi al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La user story non definisce come indurre il passaggio da non-conflitto a conflitto; può avvenire tramite cambio di contesto cliente/prodotto/campagna o tramite feature/configurazione in test."
+      },
+      {
+        "test_id": "REQ-F-024.US03.TC03",
+        "title": "Edge case operatore: conflitto su specifiche entità durante sessione -> nessuna proposta e nessun messaggio sul conflitto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test disponibile",
+          "Front-end commerciale disponibile e integrato con il Motore di Offerte",
+          "Operatore con credenziali valide",
+          "Configurate condizioni di conflitto deterministico legate a specifiche entità (es. Prodotto/Campagna)"
+        ],
+        "test_data": [
+          "Operatore: USER=OP-102",
+          "Cliente: ID=CL-343434",
+          "Prodotto: ID=P-777",
+          "Campagna: ID=C-888",
+          "Regola manuale A: ID=MAN-A-7201",
+          "Raccomandazione/Regola esterna B: ID=EXT-B-7202"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-102",
+          "Selezionare il cliente ID=CL-343434",
+          "Impostare/selecionare il contesto Prodotto ID=P-777 e Campagna ID=C-888 (o equivalente in UI)",
+          "Richiedere le offerte/proposte"
+        ],
+        "expected_results": [
+          "Non è visualizzata alcuna offerta/proposta per il contesto in conflitto",
+          "Non sono mostrati messaggi di errore/alert relativi al conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non definisce la UI per selezione entità; adattare i passi al front-end commerciale reale mantenendo le verifiche su assenza proposte e assenza alert."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-024.US04",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-024.US04.TC01",
+        "title": "Compliance autorizzato: accesso alla dashboard e consultazione dei log di conflitto",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Compliance con ruolo autorizzato alla consultazione log conflitti",
+          "Esistono log di conflitto generati dal Motore (almeno un record)"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: USER=COMP-ADMIN-01",
+          "Record log conflitto atteso (esistente): Cliente=CL-778899, MAN-A-1001 vs EXT-B-9001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente COMP-ADMIN-01",
+          "Navigare alla sezione di consultazione log",
+          "Filtrare/ricercare i log di tipo conflitto (o filtrare per Cliente=CL-778899)",
+          "Aprire il dettaglio di un record di conflitto"
+        ],
+        "expected_results": [
+          "L’utente Compliance autorizzato accede alla sezione log senza errori di autorizzazione",
+          "La dashboard mostra i record relativi ai conflitti tra regole manuali e raccomandazioni esterne",
+          "Il dettaglio del record è consultabile"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica i filtri; il test accetta qualunque modalità di individuazione dei record purché i log di conflitto siano consultabili da ruoli autorizzati."
+      },
+      {
+        "test_id": "REQ-F-024.US04.TC02",
+        "title": "Compliance autorizzato: dettaglio log contiene dati per ricostruire il conflitto (coerenza con logging Motore)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Compliance con ruolo autorizzato",
+          "Esiste almeno un record di log conflitto generato dal Motore e consultabile in dashboard"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: USER=COMP-ADMIN-01",
+          "Record log conflitto: MAN-A-1001 vs EXT-B-9001, Cliente=CL-778899, Prodotto=P-200, Campagna=C-300"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente COMP-ADMIN-01",
+          "Ricercare e aprire il dettaglio del record di conflitto relativo a Cliente=CL-778899",
+          "Verificare i campi presenti nel dettaglio del record"
+        ],
+        "expected_results": [
+          "Il record mostra l’identificativo della regola manuale coinvolta (es. MAN-A-1001)",
+          "Il record mostra l’identificativo della raccomandazione/regola esterna coinvolta (es. EXT-B-9001)",
+          "Il record mostra un timestamp valorizzato",
+          "Il record mostra gli identificativi delle entità coinvolte (almeno Cliente=CL-778899 e, se disponibili, Prodotto=P-200 e Campagna=C-300)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il dettaglio richiesto deve essere coerente con quanto registrato dal Motore; se la dashboard normalizza/trasforma i campi, la coerenza va verificata a livello di contenuto."
+      },
+      {
+        "test_id": "REQ-F-024.US04.TC03",
+        "title": "Compliance non autorizzato: accesso negato ai log di conflitto",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Compliance privo dei permessi per consultare log conflitti"
+        ],
+        "test_data": [
+          "Utente Compliance non autorizzato: USER=COMP-READ-00 (senza permesso 'VIEW_CONFLICT_LOGS')"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente COMP-READ-00",
+          "Tentare di navigare alla sezione log conflitti oppure aprire direttamente l’URL della sezione log conflitti"
+        ],
+        "expected_results": [
+          "L’accesso ai log conflitti è negato (es. pagina 'Accesso negato' o funzionalità non visibile)",
+          "Non è possibile consultare né scaricare i record di log conflitto"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica la modalità di negazione; qualunque meccanismo è accettabile purché impedisca la consultazione dei log di conflitto ai non autorizzati."
+      },
+      {
+        "test_id": "REQ-F-024.US04.TC04",
+        "title": "Edge case: log incompleti/corrotti in dashboard -> gestione senza presentare dati errati come certi",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Compliance autorizzato",
+          "Sono presenti uno o più record di log conflitto incompleti/corrotti (es. campo regola esterna mancante, JSON non parseabile) caricati nel sistema di logging o in un dataset di test"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: USER=COMP-ADMIN-01",
+          "Record corrotto 1: timestamp valido, MAN-A-9999 presente, EXT-B mancante",
+          "Record corrotto 2: payload non leggibile/parse error"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente COMP-ADMIN-01",
+          "Ricercare e aprire un record di log conflitto incompleto/corrotto",
+          "Osservare come la dashboard presenta il record e gli eventuali indicatori di anomalia"
+        ],
+        "expected_results": [
+          "La dashboard consente la consultazione senza crash/blocco della UI",
+          "I campi mancanti/non leggibili sono chiaramente indicati come non disponibili/non leggibili (o equivalenti) e non presentati come valori certi",
+          "La consultazione dei log in dashboard non genera alcun impatto sui canali cliente/operatore (nessuna emissione di notifiche verso tali canali riconducibile alla consultazione log)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L’AC originale non specifica la gestione di record corrotti; questo test deriva dagli edge case della user story e verifica robustezza della consultazione senza introdurre comportamenti verso i canali cliente/operatore."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-024.US05",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-024.US05.TC01",
+        "title": "Marketing autorizzato: consultazione dei log di conflitto in dashboard",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Marketing con ruolo autorizzato alla consultazione log conflitti",
+          "Esistono log di conflitto generati dal Motore (almeno un record)"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: USER=MKT-OPS-01 (con permesso 'VIEW_CONFLICT_LOGS')",
+          "Record log conflitto atteso (esistente): Cliente=CL-778899, MAN-A-1001 vs EXT-B-9001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente MKT-OPS-01",
+          "Navigare alla sezione di consultazione log",
+          "Ricercare i log di tipo conflitto (o filtrare per Cliente=CL-778899)",
+          "Aprire il dettaglio di un record di conflitto"
+        ],
+        "expected_results": [
+          "L’utente Marketing autorizzato può consultare i log relativi ai conflitti",
+          "Il dettaglio del record è consultabile"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione esplicita della user story: Marketing può essere autorizzato in base ai ruoli; il test è valido solo se il ruolo è configurato come autorizzato."
+      },
+      {
+        "test_id": "REQ-F-024.US05.TC02",
+        "title": "Marketing autorizzato: il record log contiene dettagli per ricostruire il conflitto",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Marketing autorizzato",
+          "Esiste almeno un record di log conflitto generato dal Motore e consultabile in dashboard"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: USER=MKT-OPS-01",
+          "Record log conflitto: MAN-A-1001 vs EXT-B-9001, Cliente=CL-778899, Prodotto=P-200, Campagna=C-300"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente MKT-OPS-01",
+          "Ricercare e aprire il dettaglio del record di conflitto relativo a Cliente=CL-778899",
+          "Verificare i campi presenti nel dettaglio del record"
+        ],
+        "expected_results": [
+          "Il record mostra regola manuale (A) e regola esterna (B) con i rispettivi identificativi",
+          "Il record mostra un timestamp valorizzato",
+          "Il record mostra gli identificativi delle entità coinvolte (almeno il cliente; prodotto/campagna se disponibili)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il test valida la disponibilità dei dettagli minimi richiesti per ricostruire il conflitto tramite dashboard."
+      },
+      {
+        "test_id": "REQ-F-024.US05.TC03",
+        "title": "Marketing non autorizzato: accesso negato ai log di conflitto",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Marketing privo dei permessi per consultare log conflitti"
+        ],
+        "test_data": [
+          "Utente Marketing non autorizzato: USER=MKT-READ-00 (senza permesso 'VIEW_CONFLICT_LOGS')"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente MKT-READ-00",
+          "Tentare di navigare alla sezione log conflitti oppure aprire direttamente l’URL della sezione log conflitti"
+        ],
+        "expected_results": [
+          "L’accesso ai log conflitti è negato (funzionalità non visibile o accesso bloccato)",
+          "Non è possibile consultare i record di log conflitto"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Valida il vincolo 'solo ruoli autorizzati' per la consultazione log."
+      },
+      {
+        "test_id": "REQ-F-024.US05.TC04",
+        "title": "Edge case: elevato volume di log -> consultazione possibile per individuare conflitti",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Dashboard/log viewer disponibile in ambiente di test",
+          "Esiste un utente Marketing autorizzato",
+          "Dataset di log di conflitto ad alto volume disponibile (es. >= 100.000 record) o simulazione equivalente in test"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: USER=MKT-OPS-01",
+          "Dataset: 100.000+ record di log conflitto su finestra 30 giorni, inclusi record per Cliente=CL-778899"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente MKT-OPS-01",
+          "Aprire la sezione log conflitti",
+          "Applicare un criterio di ricerca/filtraggio disponibile (es. per cliente, data/ora, campagna o regola) per individuare un sottoinsieme di record",
+          "Aprire il dettaglio di un record identificato"
+        ],
+        "expected_results": [
+          "La dashboard consente di individuare e visualizzare record di log conflitto anche in presenza di alto volume (es. tramite paginazione/ricerca)",
+          "Il record selezionato è apribile e consultabile",
+          "La consultazione non richiede interazioni con i canali cliente/operatore per reperire le informazioni (tutte le informazioni necessarie sono disponibili in dashboard/log)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce KPI prestazionali; il test verifica la possibilità funzionale di consultazione/individuazione dei conflitti con strumenti di ricerca/paginazione disponibili."
+      }
+    ]
+  }
+]

@@ -1,0 +1,171 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-001",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 73,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-001.TC01",
+        "detail": "Assume dettagli tecnici non presenti nel requisito: HTTP 2xx, ACK/stato consegna, endpoint di lettura dal canale digitale, uso di credenziali/chiavi e strumenti tipo Postman/Newman."
+      },
+      {
+        "test_id": "REQ-UI-001.TC02",
+        "detail": "Assume dettagli tecnici non presenti nel requisito: HTTP 2xx, ACK/stato consegna, endpoint di lettura dal canale fisico, uso di credenziali/chiavi."
+      },
+      {
+        "test_id": "REQ-UI-001.TC03",
+        "detail": "Introduce autenticazione/login o selezione cliente e una specifica 'sezione offerte' nel mockup: il requisito richiede solo che le offerte siano visualizzabili nel mockup App/Web."
+      },
+      {
+        "test_id": "REQ-UI-001.TC04",
+        "detail": "Introduce funzionalità di ricerca/aggancio cliente nel front-end e una 'sezione offerte': non esplicitate dal requisito (che parla solo di disponibilità della presentazione offerte sulle interfacce)."
+      },
+      {
+        "test_id": "REQ-UI-001.TC05",
+        "detail": "Definisce regole UI non richieste dal requisito (non mostrare 'null/undefined', placeholder 'pulito') e assume esplicitamente che la motivazione possa essere assente/null nel payload."
+      },
+      {
+        "test_id": "REQ-UI-001.TC06",
+        "detail": "Introduce gestione errori di trasmissione (timeout/503), tracciabilità dell'errore e assenza dell'offerta in lettura dopo fallimento: la gestione errori non è richiesta dagli AC."
+      },
+      {
+        "test_id": "REQ-UI-001.TC07",
+        "detail": "Introduce comportamento atteso per payload incompleto (scarto/placeholder/messaggi) e regole di validazione dati del canale: non definite nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "Il requisito vincola le 'informazioni minime' a quanto concordato con il team marketing; i test non verificano l'esistenza/allineamento a tale concordato (si limitano a usare esempi di campi)."
+      },
+      {
+        "source": "Descrizione requisito",
+        "detail": "La descrizione cita esplicitamente i profili OSP, OFE e figure di sala nel canale fisico; i test non coprono la disponibilità della presentazione offerte per ciascuna di queste figure (anche solo come verifica per profilo/utenza)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-001.TC03",
+          "REQ-UI-001.TC04"
+        ],
+        "detail": "Scenari molto simili: verifica visualizzazione in mockup con gli stessi campi minimi (prodotto/sconto/motivazione) su due canali diversi; parzialmente ridondanti pur coprendo canali distinti."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 15,
+    "coherence_score": 47,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-001.US01.TC01",
+        "detail": "Introduce requisiti di autenticazione e profilo 'Cliente digitale' non citati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC02",
+        "detail": "Introduce requisiti di autenticazione e profilo 'Cliente digitale' non citati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC03",
+        "detail": "Introduce comportamento UI 'nessuna offerta disponibile' e messaggistica/stati: non richiesti dagli AC (che parlano di visualizzazione corretta in demo/mockup, non di empty state)."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC04",
+        "detail": "Introduce gestione fault lato canale (messaggi errore, possibilità di riprovare/uscire senza blocchi): non richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC05",
+        "detail": "Introduce regole di fallback per payload incompleto e divieto di placeholder tecnici/non concordati: non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC06",
+        "detail": "Introduce un requisito di autorizzazione/accesso (utente non autenticato) non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC01",
+        "detail": "Introduce autenticazione 'Operatore' e modalità di aggancio cliente (es. CF) non citate dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC02",
+        "detail": "Introduce comportamento UI 'nessuna offerta disponibile' e assenza residui di altri clienti: non richiesti dagli AC."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC03",
+        "detail": "Introduce gestione fault e requisito di 'proseguire l'operatività' nel front-end: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC04",
+        "detail": "Introduce regole di comportamento per dati incompleti e divieto di placeholder tecnici: non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC05",
+        "detail": "Introduce un requisito di autorizzazione/accesso (utente non autenticato) non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC01",
+        "detail": "Introduce log/monitoring come precondizione e concetti di 'event store/coda/eventi pubblicati' non citati dal requisito (che resta su 'meccanismi concordati' in generale)."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC03",
+        "detail": "Introduce una 'classificazione tipologie offerta secondo accordi Marketing' e regole su valori fittizi (es. 'N/A') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC04",
+        "detail": "Introduce requisiti di tracciabilità operativa (log/metriche) e gestione errori lato Motore: non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC05",
+        "detail": "Introduce un requisito implicito sul comportamento del Motore rispetto a payload incompleto (conformità/non conformità) oltre la semplice 'visualizzazione rende disponibili info minime' richiesta dagli AC."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-2",
+        "detail": "L'AC richiede esplicitamente che in esercitazioni/demo le offerte generate dal Motore siano visualizzabili correttamente sia in mockup App/Web sia in mockup front-end per OSP/OFE/figure di sala. Solo US03.TC02 copre chiaramente la demo end-to-end; gli altri TC etichettano AC-2 ma verificano soprattutto empty state/errore/autorizzazione, non la 'visualizzazione corretta' dell'offerta generata."
+      },
+      {
+        "source": "Descrizione requisito",
+        "detail": "La descrizione cita esplicitamente OSP, OFE e figure di sala; i test parlano genericamente di 'Operatore' e non verificano la disponibilità della presentazione offerte per tali figure."
+      },
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "Manca una verifica tracciabile al 'come concordato con il team marketing' (evidenza di conformità al set di informazioni minime concordate), oltre all'uso di esempi di campi."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-001.US01.TC01",
+          "REQ-UI-001.US01.TC02"
+        ],
+        "detail": "Stesso scenario su due canali digitali distinti (App vs Web) con passi/attesi quasi identici."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-001.US02.TC01",
+          "REQ-UI-001.US03.TC02"
+        ],
+        "detail": "Entrambi verificano visualizzazione corretta sul front-end commerciale con campi minimi; US03.TC02 lo include in un E2E demo, sovrapponendosi parzialmente."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct risulta piu coerente: copre tutti gli AC senza introdurre eccessivi scenari fuori requisito e con meno informazioni aggiunte (7 vs 15) e meno lacune sostanziali rispetto alla richiesta di demo/mockup. Il set indirect_persona introduce molte assunzioni non tracciabili (autenticazione/autorizzazione, empty state, requisiti di resilienza/operativita, logging/monitoring) e presenta anche una mancanza di aderenza ad AC-2 per diversi TC che lo tracciano ma non verificano la 'visualizzazione corretta' di un'offerta generata in demo."
+  }
+}

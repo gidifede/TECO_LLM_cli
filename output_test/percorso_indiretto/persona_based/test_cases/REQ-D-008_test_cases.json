@@ -1,0 +1,370 @@
+[
+  {
+    "story_id": "REQ-D-008.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-008.US01.TC01",
+        "title": "Avvio export log da dashboard con selezione formato supportato (CSV/Excel, JSON, XML) - utente autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente appartenente al Team Compliance con autorizzazione attiva all'export log",
+          "L'utente è autenticato in dashboard",
+          "Sono presenti log nel sistema (almeno 1 record) con campi evento e timestamp"
+        ],
+        "test_data": [
+          "Utente: compliance_export (ruolo Team Compliance, permesso export abilitato)",
+          "Formati attesi disponibili: CSV e/o Excel (XLSX), JSON, XML"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione/funzionalità 'Export log'",
+          "Verificare la presenza delle opzioni di formato CSV e/o Excel, JSON e XML",
+          "Selezionare il formato CSV (o Excel se CSV non disponibile)",
+          "Avviare l'esportazione",
+          "Selezionare il formato JSON",
+          "Avviare l'esportazione",
+          "Selezionare il formato XML",
+          "Avviare l'esportazione"
+        ],
+        "expected_results": [
+          "La funzionalità 'Export log' è accessibile all'utente autorizzato",
+          "Sono selezionabili almeno i formati CSV/Excel, JSON e XML",
+          "Per ciascun formato selezionato, il sistema avvia l'esportazione e rende disponibile lo scaricamento di un file (download riuscito o file reso disponibile nell'area download/esportazioni)",
+          "I file generati non risultano vuoti se esistono log nel sistema (contengono almeno 1 record)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito indica 'CSV/excel' come minimo: il test accetta che sia disponibile almeno uno tra CSV o XLSX. Se entrambi sono disponibili, l'esecuzione può essere estesa verificando entrambi."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC02",
+        "title": "Accesso/uso export log negato a utente Team Compliance senza autorizzazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente appartenente al Team Compliance senza autorizzazione all'export log (permesso export disabilitato)",
+          "L'utente è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente: compliance_noexport (ruolo Team Compliance, permesso export disabilitato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_noexport",
+          "Tentare di navigare alla sezione/funzionalità 'Export log'",
+          "Se la sezione è visibile, tentare di avviare un export selezionando un formato qualsiasi"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'uso della funzionalità di export (sezione non visibile o accesso negato)",
+          "Se l'utente riesce a visualizzare la pagina, l'azione di export risulta non disponibile o viene bloccata con messaggio di accesso negato",
+          "Non viene generato alcun file di export"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità specifica (pagina non visibile vs 403 vs pulsante disabilitato) dipende dall'implementazione di autorizzazione della dashboard."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC03",
+        "title": "Validazione contenuto e standard del file esportato in JSON (campi minimi e utente quando presente)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "Sono presenti almeno 2 log: uno con campo utente valorizzato e uno senza campo utente"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Log A: evento='LOGIN_SUCCESS', timestamp='2026-02-20T10:15:30Z', utente='m.rossi'",
+          "Log B: evento='SYSTEM_MAINTENANCE', timestamp='2026-02-20T11:00:00Z', utente assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione 'Export log'",
+          "Selezionare il formato JSON",
+          "Avviare l'esportazione e scaricare il file JSON",
+          "Aprire il file con un validatore JSON o parser JSON",
+          "Individuare nel file un record corrispondente a Log A",
+          "Individuare nel file un record corrispondente a Log B"
+        ],
+        "expected_results": [
+          "Il file scaricato è JSON valido (parsing senza errori)",
+          "Ogni record esportato include almeno i campi 'evento' e 'timestamp'",
+          "Per Log A, il campo 'utente' è presente e valorizzato con 'm.rossi'",
+          "Per Log B, il campo 'utente' risulta omesso oppure presente ma vuoto/null, coerentemente con la disponibilità del dato nei log",
+          "Il campo 'timestamp' rispetta un formato coerente e parseabile (es. ISO-8601) e non è vuoto"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il formato esatto del timestamp non è specificato negli AC originali; il test verifica che sia non vuoto e parseabile. Adeguare la regola di validazione se esiste uno standard interno."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC04",
+        "title": "Validazione contenuto e standard del file esportato in XML (ben formato, campi minimi e utente quando presente)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "Sono presenti almeno 2 log: uno con campo utente valorizzato e uno senza campo utente"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Log A: evento='PASSWORD_CHANGE', timestamp='2026-02-20T12:10:00Z', utente='l.bianchi'",
+          "Log B: evento='SERVICE_RESTART', timestamp='2026-02-20T12:30:00Z', utente assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione 'Export log'",
+          "Selezionare il formato XML",
+          "Avviare l'esportazione e scaricare il file XML",
+          "Aprire il file con un validatore XML (well-formed) o parser XML",
+          "Individuare nel file un record corrispondente a Log A",
+          "Individuare nel file un record corrispondente a Log B"
+        ],
+        "expected_results": [
+          "Il file scaricato è XML ben formato (parsing senza errori)",
+          "Ogni record esportato include almeno i campi 'evento' e 'timestamp' (come elementi o attributi)",
+          "Per Log A, il campo 'utente' è presente e valorizzato con 'l.bianchi'",
+          "Per Log B, il campo 'utente' risulta omesso oppure presente ma vuoto, coerentemente con la disponibilità del dato nei log",
+          "Il campo 'timestamp' non è vuoto"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non è fornito uno schema XSD: la verifica è limitata a well-formed XML e presenza campi minimi."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC05",
+        "title": "Validazione contenuto e leggibilità del file esportato in CSV/Excel (colonne minime e utente quando presente)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "Sono presenti almeno 2 log: uno con campo utente valorizzato e uno senza campo utente"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Formato da testare: CSV (oppure XLSX se CSV non disponibile)",
+          "Log A: evento='EXPORT_LOG', timestamp='2026-02-20T13:00:00Z', utente='compliance_export'",
+          "Log B: evento='SYSTEM_EVENT', timestamp='2026-02-20T13:05:00Z', utente assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione 'Export log'",
+          "Selezionare il formato CSV (o Excel se CSV non disponibile)",
+          "Avviare l'esportazione e scaricare il file",
+          "Aprire il file con uno strumento compatibile (es. Microsoft Excel o LibreOffice Calc)",
+          "Verificare l'intestazione/colonne presenti",
+          "Individuare nel file una riga corrispondente a Log A",
+          "Individuare nel file una riga corrispondente a Log B"
+        ],
+        "expected_results": [
+          "Il file è apribile senza errori dallo strumento di analisi selezionato",
+          "Sono presenti almeno le colonne: 'evento', 'timestamp', 'utente' (se il formato prevede colonne fisse) oppure 'utente' risulta gestito coerentemente con l'assenza del dato (colonna presente con cella vuota o colonna assente se prevista struttura dinamica)",
+          "Per Log A, la colonna 'utente' contiene 'compliance_export'",
+          "Per Log B, il valore 'utente' risulta vuoto (o non valorizzato) senza impedire l'apertura/lettura del file",
+          "Il campo 'timestamp' è valorizzato e non vuoto nelle righe esportate"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Gli AC richiedono colonne minime; se l'implementazione omette la colonna 'utente' quando sempre assente, adeguare l'asserzione alla regola di prodotto. Il test resta valido per verificare che non venga forzato un utente inesistente."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC06",
+        "title": "Scaricamento file di esempio per ciascun formato supportato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Formati: CSV/Excel, JSON, XML"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione 'Export log'",
+          "Richiedere lo scaricamento/export del file di esempio per il formato CSV/Excel",
+          "Scaricare il file di esempio",
+          "Richiedere lo scaricamento/export del file di esempio per il formato JSON",
+          "Scaricare il file di esempio",
+          "Richiedere lo scaricamento/export del file di esempio per il formato XML",
+          "Scaricare il file di esempio"
+        ],
+        "expected_results": [
+          "Per ciascun formato, il sistema consente di scaricare/esportare un file di esempio",
+          "Ogni file di esempio è coerente con il formato richiesto (estensione e struttura del contenuto compatibili con CSV/Excel, JSON, XML)",
+          "Il download dei file di esempio termina con successo (file non corrotto/apribile)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Gli AC originali non specificano il contenuto minimo dei file di esempio; il test verifica disponibilità e coerenza di formato."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC07",
+        "title": "Rifiuto controllato di un formato non supportato (manomissione richiesta)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "È possibile intercettare/manipolare la richiesta di export (es. tramite strumenti browser devtools/proxy) oppure invocare l'endpoint di export direttamente"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Formato non supportato: 'YAML' (o 'TXT')"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Avviare la procedura di export log fino alla generazione della richiesta di export",
+          "Manipolare il parametro 'formato' impostandolo a 'YAML' (o altro non supportato)",
+          "Inviare la richiesta di export"
+        ],
+        "expected_results": [
+          "Il sistema rifiuta la richiesta con errore controllato (es. 400 Bad Request o messaggio funzionale equivalente)",
+          "Non viene generato né scaricato alcun file di export",
+          "L'errore non espone dettagli sensibili (es. stack trace) nell'interfaccia utente o nella risposta"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce codici errore; la verifica accetta una gestione controllata lato UI o API purché non venga prodotto un file e l'errore sia gestito."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC08",
+        "title": "Gestione caratteri speciali nell'export: CSV con escaping corretto e JSON/XML validi",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "Sono presenti log contenenti caratteri speciali nei campi (virgole, newline, caratteri non ASCII, virgolette)"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Log con caratteri speciali: evento='UPDATE_NOTE, \"riga1\\nriga2\" – café', timestamp='2026-02-20T14:00:00Z', utente='é.çalışkan'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Eseguire un export in formato CSV/Excel e scaricare il file",
+          "Aprire il file CSV/Excel con Excel/Calc e visualizzare la riga del log con caratteri speciali",
+          "Eseguire un export in formato JSON e scaricare il file",
+          "Validare il JSON con un parser",
+          "Eseguire un export in formato XML e scaricare il file",
+          "Validare l'XML con un parser"
+        ],
+        "expected_results": [
+          "Nel CSV/Excel, i campi con virgole/virgolette/newline risultano correttamente gestiti (una riga logica per record; contenuto non spezzato in colonne errate; virgolette escapate secondo regole CSV o corretta rappresentazione in XLSX)",
+          "Il file JSON resta valido e preserva correttamente i caratteri speciali (parsing senza errori; stringhe correttamente escape-ate)",
+          "Il file XML resta ben formato e preserva correttamente i caratteri speciali (parsing senza errori; caratteri riservati XML correttamente escapati)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La verifica della corretta gestione CSV dipende dal dialetto adottato (separatore, quoting). Adeguare le asserzioni al formato effettivo prodotto."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC09",
+        "title": "Export con dataset molto grande: completamento o errore/timeout gestito senza file corrotto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Compliance con autorizzazione all'export log",
+          "L'utente è autenticato in dashboard",
+          "Nel sistema è disponibile un dataset di log molto grande (es. >= 500.000 record) oppure un ambiente di test con generazione massiva log",
+          "Sono noti eventuali limiti di timeout o dimensione massima file (se configurati)"
+        ],
+        "test_data": [
+          "Utente: compliance_export",
+          "Volume log: 500.000 record (o valore massimo supportato in ambiente)",
+          "Formato: JSON (ripetibile anche per CSV/XML se necessario)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_export",
+          "Navigare alla sezione 'Export log'",
+          "Selezionare il formato JSON",
+          "Avviare l'esportazione sul dataset grande",
+          "Attendere l'esito dell'operazione (completamento o errore/timeout)",
+          "Se viene prodotto un file, scaricarlo",
+          "Se viene mostrato un errore, verificare che non sia disponibile un file parziale"
+        ],
+        "expected_results": [
+          "Il sistema completa l'export e produce un file scaricabile valido, oppure segnala un errore/timeout in modo gestito (messaggio chiaro e assenza di crash UI)",
+          "Se viene scaricato un file, il file non risulta corrotto rispetto allo standard del formato (es. JSON parseabile)",
+          "In caso di errore/timeout, non viene reso disponibile un file parziale/corrotto come risultato dell'operazione fallita"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Gli AC non definiscono SLA o limiti dimensionali; il test verifica la gestione controllata e l'assenza di file corrotti. Se esistono limiti ufficiali, aggiungere asserzioni su tempi e dimensioni."
+      },
+      {
+        "test_id": "REQ-D-008.US01.TC10",
+        "title": "Tentativo di scaricare file di esempio senza autorizzazione export: accesso negato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente Team Compliance senza autorizzazione all'export log",
+          "L'utente è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente: compliance_noexport",
+          "Formato esempio richiesto: JSON"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente compliance_noexport",
+          "Tentare di accedere alla funzionalità 'Export log' o al comando 'Scarica esempio' (se visibile)",
+          "Tentare di scaricare un file di esempio per il formato JSON"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'accesso o l'esecuzione dello scaricamento del file di esempio per mancanza autorizzazione",
+          "Non viene scaricato alcun file di esempio"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: la stessa autorizzazione che governa l'export governa anche lo scaricamento dei file di esempio; se esistono permessi separati, aggiornare il test in base alla matrice autorizzativa."
+      }
+    ]
+  }
+]

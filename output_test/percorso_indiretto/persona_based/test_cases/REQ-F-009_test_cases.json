@@ -1,0 +1,607 @@
+[
+  {
+    "story_id": "REQ-F-009.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-009.US01.TC01",
+        "title": "Generazione NBO con cluster e propensity disponibili (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e raggiungibile (API/servizio interno) e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10001' nel dominio",
+          "Per 'C-10001' è disponibile un cluster valido (es. 'CL-RETAIL-01')",
+          "Per 'C-10001' è disponibile un modello/valore di propensity valido per almeno 2 prodotti (es. modello 'PROP-MDL-CC-01' con score numerici)",
+          "Esiste una mappatura valida tra cluster/modello e catalogo prodotti proponibili"
+        ],
+        "test_data": [
+          "Cliente: C-10001",
+          "Cluster: CL-RETAIL-01",
+          "Modello propensity: PROP-MDL-CC-01",
+          "Propensity score: Prodotto 'CC_GOLD'=0,82; Prodotto 'PRESTITO_PERSONALE'=0,64; Prodotto 'ASSICURAZIONE_VITA'=0,12"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-10001'",
+          "Recuperare l'output della generazione (lista prodotti proposti con eventuali metadati di ranking)"
+        ],
+        "expected_results": [
+          "Il sistema restituisce una lista di prodotti proposti non vuota",
+          "La lista è generata utilizzando le informazioni di cluster e propensity disponibili (evidenza tramite metadati di esecuzione o attributi di risposta, se previsti dal contratto)",
+          "L'ordine o la selezione dei prodotti è coerente con i propensity score forniti (es. 'CC_GOLD' presente e con priorità superiore rispetto a 'ASSICURAZIONE_VITA', a parità di ulteriori regole non note)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "I dettagli di ranking (es. ordinamento deterministico) non sono specificati: il test verifica almeno che la selezione derivi da cluster/propensity e che sia coerente in modo osservabile con gli score di esempio."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC02",
+        "title": "Assenza cluster e/o propensity: non applica logica NBO cluster/propensity e registra assenza dati",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10002' nel dominio",
+          "Per 'C-10002' NON è disponibile il cluster e/o NON è disponibile il modello/valore di propensity (simulare una o entrambe le assenze)",
+          "Il log decisionale è disponibile e scrivibile"
+        ],
+        "test_data": [
+          "Cliente: C-10002",
+          "Cluster: assente",
+          "Propensity: assente"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-10002'",
+          "Recuperare l'esito della generazione (lista prodotti o esito di fallback)",
+          "Recuperare dal log decisionale l'evento relativo alla generazione NBO per 'C-10002'"
+        ],
+        "expected_results": [
+          "Il sistema NON applica la logica NBO basata su cluster/propensity per 'C-10002'",
+          "L'esito è coerente con la regola di fallback configurata (es. nessuna proposta oppure proposta generata con logica alternativa)",
+          "Nel log decisionale è presente una registrazione che indica l'assenza dei dati necessari (cluster e/o propensity) per 'C-10002', includendo almeno: identificativo cliente, timestamp, motivo 'dati mancanti'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La regola di fallback non è definita nelle US: il test valida la non-applicazione della logica cluster/propensity e la tracciatura dell'assenza dati, accettando come PASS uno tra gli esiti di fallback previsti dalla configurazione."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC03",
+        "title": "Tracciabilità nel log: per ogni proposta NBO registra cluster e riferimento modello/parametro di propensity",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10003' nel dominio",
+          "Per 'C-10003' sono disponibili cluster valido e propensity valido",
+          "Il log decisionale è disponibile e scrivibile",
+          "È possibile correlare una generazione NBO a record di log (es. tramite request_id/correlation_id o timestamp+cliente)"
+        ],
+        "test_data": [
+          "Cliente: C-10003",
+          "Cluster: CL-RETAIL-02",
+          "Modello propensity: PROP-MDL-PL-02",
+          "Propensity score: Prodotto 'PRESTITO_PERSONALE'=0,77; Prodotto 'CONTO_PREMIUM'=0,55"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-10003'",
+          "Annotare l'identificativo di correlazione della generazione (se presente) oppure timestamp e cliente",
+          "Recuperare dal log decisionale i record associati alla generazione NBO di 'C-10003'",
+          "Per ciascun prodotto proposto, individuare la voce di log corrispondente"
+        ],
+        "expected_results": [
+          "Per ogni prodotto proposto esiste almeno una voce di log decisionale associata alla proposta",
+          "Ogni voce di log contiene il riferimento al cluster utilizzato (es. 'CL-RETAIL-02')",
+          "Ogni voce di log contiene il riferimento al modello/parametro di propensity utilizzato (es. 'PROP-MDL-PL-02' e/o identificativo del parametro/score)",
+          "Le informazioni di cluster e modello/propensity nel log sono coerenti con i dati disponibili per il cliente al momento della generazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Non sono specificati i campi del log: il test richiede almeno identificativi univoci consultabili (cluster_id, model_id/parameter_id) e una correlazione alla proposta/prodotto."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC04",
+        "title": "Cluster non riconosciuto/non mappato: nessuna proposta NBO e anomalia tracciata",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10004' nel dominio",
+          "Per 'C-10004' è disponibile un cluster formalmente valido ma non mappato su alcuna proposta (es. 'CL-UNKNOWN-99')",
+          "Per 'C-10004' è disponibile propensity valido",
+          "Il log decisionale è disponibile e scrivibile"
+        ],
+        "test_data": [
+          "Cliente: C-10004",
+          "Cluster: CL-UNKNOWN-99 (non mappato)",
+          "Modello propensity: PROP-MDL-CC-01",
+          "Propensity score: 'CC_GOLD'=0,80"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-10004'",
+          "Recuperare l'esito della generazione (lista prodotti o esito di fallback)",
+          "Recuperare dal log decisionale l'evento relativo alla generazione NBO per 'C-10004'"
+        ],
+        "expected_results": [
+          "Il sistema non produce proposte NBO basate su cluster/propensity per il cluster non mappato (lista NBO vuota oppure esito di fallback configurato)",
+          "Nel log decisionale è presente una registrazione di anomalia che indica 'cluster non riconosciuto/non mappato' con riferimento a 'CL-UNKNOWN-99'",
+          "L'esito restituito è coerente e deterministico rispetto alla policy di fallback configurata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La gestione di fallback non è definita: il test accetta come PASS un esito coerente con la configurazione, purché l'anomalia sia tracciata."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC05",
+        "title": "Propensity non valida (null/fuori range/formato inatteso): non applica logica NBO e registra errore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10005' nel dominio",
+          "Per 'C-10005' è disponibile un cluster valido",
+          "Per 'C-10005' la propensity è non valida (simulare uno scenario: score null, score fuori range, payload con formato inatteso)",
+          "Il log decisionale è disponibile e scrivibile"
+        ],
+        "test_data": [
+          "Cliente: C-10005",
+          "Cluster: CL-RETAIL-01",
+          "Modello propensity: PROP-MDL-CC-01",
+          "Propensity score non valido: 'CC_GOLD'=null (variante A) oppure 'CC_GOLD'=1,7 (variante B) oppure score='alto' (variante C)"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-10005'",
+          "Recuperare l'esito della generazione (lista prodotti o esito di fallback)",
+          "Recuperare dal log decisionale l'evento relativo alla generazione NBO per 'C-10005'"
+        ],
+        "expected_results": [
+          "Il sistema non applica la logica NBO basata su propensity per i dati non validi",
+          "L'esito è coerente con la regola di fallback configurata (es. nessuna proposta oppure proposta con logica alternativa)",
+          "Nel log decisionale è presente una registrazione di errore che indica la non validità della propensity (tipo errore e campo coinvolto), associata a 'C-10005'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Range e formato non sono definiti: il test usa varianti tipiche (null, >1, stringa) e verifica che il sistema non usi dati non validi e tracci l'errore."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC06",
+        "title": "Log decisionale non disponibile: resilienza e coerenza dell'esito",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e la funzionalità NBO è abilitata",
+          "Esiste un cliente 'C-10006' con cluster e propensity validi",
+          "Simulare indisponibilità del log decisionale (es. errore 5xx del servizio log, timeout, coda non raggiungibile)",
+          "Sono note le policy di resilienza configurate (es. retry, circuit breaker, scrittura su canale alternativo)"
+        ],
+        "test_data": [
+          "Cliente: C-10006",
+          "Cluster: CL-RETAIL-03",
+          "Modello propensity: PROP-MDL-INV-01",
+          "Propensity score: 'FONDO_INVESTIMENTO'=0,71"
+        ],
+        "steps": [
+          "Forzare l'indisponibilità del componente di log decisionale",
+          "Invocare la generazione NBO per il cliente 'C-10006'",
+          "Recuperare l'esito della generazione (lista prodotti o esito di errore)",
+          "Verificare la presenza di registrazioni alternative dell'evento (se previste) oppure la gestione dell'errore secondo policy (es. evento tecnico, retry)"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'indisponibilità del log secondo le policy di resilienza configurate (es. retry e/o fallback tecnico) senza produrre esiti incoerenti",
+          "L'esito della generazione NBO è coerente (o produce proposte, o non le produce) e non risulta parzialmente corrotto",
+          "Se sono previsti meccanismi alternativi di tracciatura, l'evento di mancata scrittura sul log decisionale è registrato su tali meccanismi; in caso contrario, è generato un errore tecnico tracciabile (es. log applicativo) con correlation id"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Le policy di resilienza e gli eventuali canali alternativi non sono definiti: il test va parametrizzato in base all'architettura (retry/coda/log applicativo) mantenendo l'obiettivo di coerenza dell'esito e tracciabilità dell'errore tecnico."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-009.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-009.US02.TC01",
+        "title": "Regola Marketing attiva consente riproposizione di prodotto già posseduto e il motore lo include",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di configurazione Marketing è disponibile",
+          "Esiste un utente 'mkt_user_01' con permessi per configurare regole Marketing",
+          "Esiste un cliente 'C-20001' con prodotto posseduto 'CC_GOLD' registrato nella fonte di verità del possesso",
+          "È configurabile una regola Marketing esplicita per includere 'CC_GOLD' anche se posseduto, applicabile a 'C-20001' (es. per cluster/target/campagna)",
+          "Il Motore di Offerte è operativo e può leggere/applicare le regole Marketing"
+        ],
+        "test_data": [
+          "Utente Marketing: mkt_user_01",
+          "Cliente: C-20001",
+          "Prodotto posseduto: CC_GOLD",
+          "Regola Marketing: MKT-RULE-100 (include CC_GOLD se posseduto; condizione: cluster=CL-RETAIL-01; stato=ATTIVA)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'mkt_user_01'",
+          "Creare o attivare la regola 'MKT-RULE-100' che consente la riproposizione di 'CC_GOLD' per il target applicabile",
+          "Salvare e pubblicare la regola",
+          "Invocare la generazione NBO per il cliente 'C-20001'",
+          "Recuperare la lista prodotti proposta"
+        ],
+        "expected_results": [
+          "La regola 'MKT-RULE-100' risulta in stato ATTIVA nella dashboard",
+          "Il Motore di Offerte include 'CC_GOLD' tra le proposte NBO per 'C-20001' nonostante il prodotto risulti già posseduto",
+          "Le altre regole standard del motore restano applicate (nessun impatto non previsto su prodotti non coinvolti dalla regola)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La US non specifica i dettagli UI di creazione regole: i passi fanno riferimento a 'creare/attivare/salvare/pubblicare' come operazioni minime attese in una dashboard di configurazione."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC02",
+        "title": "Assenza regola Marketing: prodotto già posseduto resta escluso dalle proposte NBO",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente 'C-20002' con prodotto posseduto 'PRESTITO_PERSONALE' registrato nella fonte di verità del possesso",
+          "Non esistono regole Marketing attive che consentano la riproposizione di 'PRESTITO_PERSONALE' per 'C-20002'",
+          "Il Motore di Offerte è operativo"
+        ],
+        "test_data": [
+          "Cliente: C-20002",
+          "Prodotto posseduto: PRESTITO_PERSONALE",
+          "Regole Marketing: nessuna regola include PRESTITO_PERSONALE per questo cliente"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-20002'",
+          "Recuperare la lista prodotti proposta"
+        ],
+        "expected_results": [
+          "Il prodotto 'PRESTITO_PERSONALE' non è presente nella lista delle proposte NBO per 'C-20002'",
+          "Il sistema applica la regola standard di esclusione dei prodotti posseduti in assenza di eccezioni Marketing"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il canale 'dashboard' è indicato dalla US per la configurazione; la generazione NBO può essere invocata via servizi interni. Il test resta tracciato a AC-2 (esclusione salvo regola esplicita)."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC03",
+        "title": "Tracciabilità eccezione: log decisionale contiene riferimento alla regola Marketing che abilita prodotto posseduto",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente 'C-20003' con prodotto posseduto 'CONTO_PREMIUM' nella fonte di verità del possesso",
+          "Esiste una regola Marketing attiva 'MKT-RULE-200' applicabile a 'C-20003' che consente la riproposizione di 'CONTO_PREMIUM'",
+          "Il Motore di Offerte è operativo e il log decisionale è disponibile e consultabile",
+          "È possibile correlare la proposta NBO a record di log (correlation id o chiavi equivalenti)"
+        ],
+        "test_data": [
+          "Cliente: C-20003",
+          "Prodotto posseduto: CONTO_PREMIUM",
+          "Regola Marketing: MKT-RULE-200 (include CONTO_PREMIUM se posseduto; stato=ATTIVA)"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-20003'",
+          "Verificare che 'CONTO_PREMIUM' sia presente tra le proposte",
+          "Recuperare dal log decisionale la voce relativa alla proposta di 'CONTO_PREMIUM' per 'C-20003'"
+        ],
+        "expected_results": [
+          "Nel log decisionale è presente una voce associata alla proposta del prodotto posseduto 'CONTO_PREMIUM'",
+          "La voce di log contiene un riferimento univoco alla regola Marketing che ha abilitato l'eccezione (es. 'MKT-RULE-200')",
+          "La voce di log consente di distinguere l'eccezione Marketing dalla regola standard di esclusione"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "I campi del log non sono definiti: il test richiede almeno rule_id Marketing e un indicatore di 'eccezione applicata'."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC04",
+        "title": "Regola Marketing attiva ma non applicabile al cliente: prodotto posseduto resta escluso e non-applicazione tracciata",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente 'C-20004' con prodotto posseduto 'CC_GOLD'",
+          "Esiste una regola Marketing attiva 'MKT-RULE-300' che consente riproposizione di 'CC_GOLD' ma NON è applicabile a 'C-20004' (es. target diverso o cluster non corrispondente)",
+          "Il Motore di Offerte è operativo e il log decisionale è disponibile"
+        ],
+        "test_data": [
+          "Cliente: C-20004 (cluster=CL-RETAIL-02)",
+          "Prodotto posseduto: CC_GOLD",
+          "Regola Marketing: MKT-RULE-300 (condizione: cluster=CL-RETAIL-01; stato=ATTIVA)"
+        ],
+        "steps": [
+          "Invocare la generazione NBO per il cliente 'C-20004'",
+          "Recuperare la lista prodotti proposta",
+          "Recuperare dal log decisionale l'evento relativo alla valutazione della regola 'MKT-RULE-300' per 'C-20004'"
+        ],
+        "expected_results": [
+          "Il prodotto posseduto 'CC_GOLD' non è presente tra le proposte NBO per 'C-20004'",
+          "Nel log decisionale è tracciata la non-applicazione della regola 'MKT-RULE-300' (es. motivo: condizioni target non soddisfatte)",
+          "La regola standard di esclusione dei prodotti posseduti risulta applicata"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La US richiede tracciabilità della non-applicazione come edge case; i dettagli del 'motivo' dipendono dal modello regole."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC05",
+        "title": "Conflitto tra regole Marketing (include vs esclude stesso prodotto posseduto): applica precedenza e traccia conflitto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un cliente 'C-20005' con prodotto posseduto 'ASSICURAZIONE_VITA'",
+          "Esistono due regole Marketing attive e applicabili a 'C-20005' in conflitto sullo stesso prodotto: 'MKT-RULE-401' include e 'MKT-RULE-402' esclude",
+          "È definita e configurata una logica di precedenza tra regole (es. priorità numerica, data di attivazione, tipo regola)",
+          "Il Motore di Offerte è operativo e il log decisionale è disponibile"
+        ],
+        "test_data": [
+          "Cliente: C-20005",
+          "Prodotto posseduto: ASSICURAZIONE_VITA",
+          "Regola include: MKT-RULE-401 (priorità=10)",
+          "Regola esclude: MKT-RULE-402 (priorità=20)"
+        ],
+        "steps": [
+          "Configurare o rendere attive le regole 'MKT-RULE-401' e 'MKT-RULE-402' con le priorità previste",
+          "Invocare la generazione NBO per il cliente 'C-20005'",
+          "Recuperare la lista prodotti proposta",
+          "Recuperare dal log decisionale le voci relative alla valutazione delle regole Marketing per 'ASSICURAZIONE_VITA'"
+        ],
+        "expected_results": [
+          "Il sistema applica una sola decisione coerente con la precedenza configurata (inclusione o esclusione del prodotto posseduto)",
+          "Nel log decisionale è tracciata la regola vincente (es. rule_id e criterio di precedenza) e l'avvenuto rilevamento del conflitto",
+          "La decisione finale è ripetibile a parità di configurazione regole e dati cliente"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La precedenza non è definita nelle US: il test è parametrico e va eseguito con la logica di prioritizzazione effettivamente implementata/configurata."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC06",
+        "title": "Dato possesso incoerente/obsoleto: applica fonte di verità e registra anomalia",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un cliente 'C-20006'",
+          "È disponibile una 'fonte di verità' del possesso prodotti (es. sistema core) consultata dal Motore di Offerte",
+          "Esiste una discrepanza tra una fonte secondaria e la fonte di verità sul possesso del prodotto 'CONTO_PREMIUM' per 'C-20006' (es. secondaria=posseduto, fonte di verità=non posseduto, o viceversa)",
+          "Il log decisionale è disponibile"
+        ],
+        "test_data": [
+          "Cliente: C-20006",
+          "Prodotto: CONTO_PREMIUM",
+          "Fonte secondaria possesso: posseduto=true (dato obsoleto)",
+          "Fonte di verità possesso: posseduto=false"
+        ],
+        "steps": [
+          "Configurare/simulare la discrepanza tra fonte secondaria e fonte di verità per 'C-20006' e 'CONTO_PREMIUM'",
+          "Invocare la generazione NBO per il cliente 'C-20006'",
+          "Recuperare la lista prodotti proposta",
+          "Recuperare dal log decisionale l'evento relativo alla valutazione del possesso prodotto"
+        ],
+        "expected_results": [
+          "Il Motore applica la regola di esclusione/inclusione dei prodotti posseduti in base alla fonte di verità del possesso",
+          "La presenza o assenza di 'CONTO_PREMIUM' nelle proposte è coerente con lo stato nella fonte di verità",
+          "Nel log decisionale è registrata un'anomalia o nota diagnostica relativa alla discrepanza dei dati di possesso (quando rilevabile)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La US menziona la 'fonte di verità' ma non la identifica: il test richiede di conoscere quale sistema/servizio sia autorevole per il possesso prodotti."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-009.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-009.US03.TC01",
+        "title": "Compliance: visualizza in dashboard il riferimento a regola/modello per una proposta NBO",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard di consultazione log decisionale è disponibile",
+          "Esiste un utente 'cmp_user_01' con ruolo Compliance e permessi di lettura log",
+          "Esiste almeno una proposta NBO già generata per il cliente 'C-30001' con record nel log decisionale",
+          "Nel log è presente un identificativo proposta o chiave di ricerca equivalente (es. proposal_id, customer_id+timestamp)"
+        ],
+        "test_data": [
+          "Utente Compliance: cmp_user_01",
+          "Cliente: C-30001",
+          "Identificativo proposta: PROP-90001 (se previsto)",
+          "Record log atteso: contiene almeno rule_id o model_id"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'cmp_user_01'",
+          "Navigare alla sezione 'Log decisioni NBO'",
+          "Ricercare il record relativo alla proposta 'PROP-90001' (o tramite cliente 'C-30001' e timestamp noto)",
+          "Aprire il dettaglio del record di log"
+        ],
+        "expected_results": [
+          "Il record di log della proposta è visibile all'utente Compliance",
+          "Nel dettaglio del record è visualizzato il riferimento alla regola o al modello che ha generato la proposta (identificativo univoco)",
+          "Il riferimento visualizzato è consistente e non vuoto"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Campi e layout dashboard non sono specificati: il test verifica la presenza e visualizzazione di un identificativo univoco di regola/modello."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC02",
+        "title": "Compliance: per proposta generata con cluster/propensity, il log mostra cluster e modello/parametro di propensity",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard log decisionale è disponibile",
+          "Esiste un utente 'cmp_user_01' con ruolo Compliance",
+          "Esiste una proposta NBO 'PROP-90002' generata utilizzando cluster e propensity (con record di log completo)",
+          "Il record di log contiene campi o sezioni per cluster e modello/parametro propensity"
+        ],
+        "test_data": [
+          "Utente Compliance: cmp_user_01",
+          "Proposta: PROP-90002",
+          "Cluster atteso: CL-RETAIL-02",
+          "Modello/parametro propensity atteso: PROP-MDL-PL-02"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'cmp_user_01'",
+          "Ricercare la proposta 'PROP-90002' nei log",
+          "Aprire il dettaglio del record di log"
+        ],
+        "expected_results": [
+          "Nel dettaglio del log sono presenti e valorizzati i riferimenti al cluster utilizzato (es. 'CL-RETAIL-02')",
+          "Nel dettaglio del log sono presenti e valorizzati i riferimenti al modello/parametro di propensity utilizzato (es. 'PROP-MDL-PL-02')",
+          "Le informazioni visualizzate consentono di identificare univocamente cluster e modello/parametro"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito di filtraggio non è negli AC originali; questo test si limita alla presenza/visualizzazione dei riferimenti cluster/propensity per audit."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC03",
+        "title": "Compliance: per proposta con prodotto posseduto in eccezione, il log mostra riferimento regola Marketing",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard log decisionale è disponibile",
+          "Esiste un utente 'cmp_user_01' con ruolo Compliance",
+          "Esiste una proposta NBO 'PROP-90003' che include un prodotto già posseduto grazie a una regola Marketing (record di log presente)",
+          "Nel log è presente il riferimento alla regola Marketing applicata (rule_id)"
+        ],
+        "test_data": [
+          "Utente Compliance: cmp_user_01",
+          "Proposta: PROP-90003",
+          "Prodotto posseduto incluso: CC_GOLD",
+          "Regola Marketing attesa: MKT-RULE-200"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'cmp_user_01'",
+          "Ricercare la proposta 'PROP-90003' nei log",
+          "Aprire il dettaglio del record di log"
+        ],
+        "expected_results": [
+          "Nel dettaglio del log è presente un riferimento univoco alla regola Marketing che ha abilitato l'eccezione (es. 'MKT-RULE-200')",
+          "È possibile distinguere che il prodotto era posseduto e che l'inclusione è avvenuta per eccezione Marketing (es. flag/causale nel log)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il formato del log non è definito: il test richiede almeno rule_id Marketing e un indicatore di eccezione."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC04",
+        "title": "Log incompleto: assenza riferimento regola/modello evidenziata come non auditabile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard log decisionale è disponibile",
+          "Esiste un utente 'cmp_user_01' con ruolo Compliance",
+          "Esiste almeno un record di log relativo a una proposta NBO 'PROP-90004' privo del riferimento regola/modello (dato incompleto o corrotto)"
+        ],
+        "test_data": [
+          "Utente Compliance: cmp_user_01",
+          "Proposta: PROP-90004",
+          "Record log: rule_id/model_id assente o null"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'cmp_user_01'",
+          "Ricercare la proposta 'PROP-90004' nei log",
+          "Aprire il dettaglio del record di log"
+        ],
+        "expected_results": [
+          "Il sistema evidenzia chiaramente l'assenza del riferimento regola/modello (es. campo vuoto con messaggio 'informazione non disponibile')",
+          "Il record/proposta risulta identificabile come 'non auditabile' o equivalente stato diagnostico",
+          "Non vengono mostrati valori fittizi o fuorvianti al posto del riferimento mancante"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La dicitura esatta ('non auditabile') non è specificata: il test verifica che l'assenza sia resa esplicita e non ambigua."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC05",
+        "title": "Accesso non autorizzato ai dettagli log: utente non-Compliance non vede i dettagli di tracciabilità",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard log decisionale è disponibile",
+          "Esiste un utente 'std_user_01' senza ruolo Compliance",
+          "Esiste un record di log per una proposta NBO 'PROP-90005' con dettagli di tracciabilità completi"
+        ],
+        "test_data": [
+          "Utente non autorizzato: std_user_01",
+          "Proposta: PROP-90005"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'std_user_01'",
+          "Tentare di accedere alla sezione 'Log decisioni NBO' oppure di aprire il dettaglio della proposta 'PROP-90005'"
+        ],
+        "expected_results": [
+          "L'utente 'std_user_01' non può accedere ai dettagli di tracciabilità del log (es. accesso negato, sezione non visibile, oppure dettaglio oscurato)",
+          "Se viene mostrata una vista limitata, non contiene riferimenti a regole/modelli (rule_id/model_id/cluster/propensity) non consentiti",
+          "L'evento di accesso non autorizzato è gestito in modo sicuro (nessuna esposizione di dati sensibili nei messaggi)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Gli AC originali non menzionano i permessi, ma la US richiede autorizzazioni per accesso ai log; questo test valida che la consultazione dei riferimenti di tracciabilità sia protetta."
+      }
+    ]
+  }
+]

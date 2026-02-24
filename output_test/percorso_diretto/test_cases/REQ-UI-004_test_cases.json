@@ -1,0 +1,199 @@
+[
+  {
+    "test_id": "REQ-UI-004.TC01",
+    "title": "Visualizzazione marcatura grafica per offerta con sconto significativo",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente operatore autenticato e abilitato alla visualizzazione della lista offerte",
+      "Esiste almeno un'offerta pubblicata con attributo 'sconto significativo' valorizzato secondo le regole di business/configurazione di sistema",
+      "La pagina/lista che mostra le card offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Offerta A: id=OFF-1001, titolo='Piano Business', sconto=30%, flagScontoSignificativo=true, scadenzaTraGiorni=30"
+    ],
+    "steps": [
+      "Accedere all'applicazione come operatore",
+      "Navigare alla sezione che elenca le offerte in formato card",
+      "Individuare la card dell'offerta 'OFF-1001'",
+      "Osservare gli elementi grafici di evidenziazione presenti sulla card (colore e/o icona)"
+    ],
+    "expected_results": [
+      "La card dell'offerta 'OFF-1001' presenta una marcatura grafica evidente rispetto alle offerte senza evidenziazione (colore e/o icona)",
+      "La marcatura grafica è visibile senza azioni aggiuntive (es. senza hover o apertura dettaglio)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (operatore) e il canale (web) sono stati inferiti dal requisito. Il concetto di 'sconto significativo' non è quantificato nel requisito: il test assume l'esistenza di un flag/criterio già calcolato o configurato (flagScontoSignificativo=true)."
+  },
+  {
+    "test_id": "REQ-UI-004.TC02",
+    "title": "Visualizzazione marcatura grafica per offerta con scadenza imminente",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente operatore autenticato e abilitato alla visualizzazione della lista offerte",
+      "Esiste almeno un'offerta pubblicata con scadenza imminente valorizzata secondo le regole di business/configurazione di sistema",
+      "La pagina/lista che mostra le card offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Offerta B: id=OFF-2002, titolo='Promo Energia', sconto=5%, flagScontoSignificativo=false, scadenzaTraGiorni=1, flagScadenzaImminente=true"
+    ],
+    "steps": [
+      "Accedere all'applicazione come operatore",
+      "Navigare alla sezione che elenca le offerte in formato card",
+      "Individuare la card dell'offerta 'OFF-2002'",
+      "Osservare gli elementi grafici di evidenziazione presenti sulla card (colore e/o icona)"
+    ],
+    "expected_results": [
+      "La card dell'offerta 'OFF-2002' presenta una marcatura grafica evidente rispetto alle offerte senza evidenziazione (colore e/o icona)",
+      "La marcatura grafica comunica una condizione di urgenza/scadenza (presenza di icona e/o colore dedicato)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (operatore) e il canale (web) sono stati inferiti dal requisito. La definizione di 'scadenza imminente' non è specificata: il test assume l'esistenza di un flag/criterio già calcolato o configurato (flagScadenzaImminente=true)."
+  },
+  {
+    "test_id": "REQ-UI-004.TC03",
+    "title": "Presenza e corretto rendering delle icone specifiche 'offerta top' e 'scadenza imminente' sulle card",
+    "type": "UI",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente operatore autenticato e abilitato alla visualizzazione della lista offerte",
+      "Sono disponibili nel sistema offerte con attributi che attivano i segnali 'offerta top' e 'scadenza imminente'",
+      "La pagina/lista che mostra le card offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Offerta C: id=OFF-3003, titolo='Top Mobile', flagOffertaTop=true, flagScadenzaImminente=false",
+      "Offerta D: id=OFF-4004, titolo='Ultimi Giorni Fibra', flagOffertaTop=false, flagScadenzaImminente=true"
+    ],
+    "steps": [
+      "Accedere all'applicazione come operatore",
+      "Navigare alla sezione che elenca le offerte in formato card",
+      "Individuare la card dell'offerta 'OFF-3003'",
+      "Verificare la presenza dell'icona associata al segnale 'offerta top'",
+      "Individuare la card dell'offerta 'OFF-4004'",
+      "Verificare la presenza dell'icona associata al segnale 'scadenza imminente'"
+    ],
+    "expected_results": [
+      "Sulla card 'OFF-3003' è visualizzata un'icona specifica per il segnale 'offerta top' (non generica e distinguibile da altre icone)",
+      "Sulla card 'OFF-4004' è visualizzata un'icona specifica per il segnale 'scadenza imminente' (non generica e distinguibile da altre icone)",
+      "Le icone risultano correttamente renderizzate (non mancanti, non sovrapposte in modo illeggibile, non sostituite da placeholder/icone di fallback)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (operatore) e il canale (web) sono stati inferiti dal requisito. Il requisito non definisce la libreria/asset delle icone: il test verifica presenza e distinguibilità visiva, non lo specifico file/ID asset."
+  },
+  {
+    "test_id": "REQ-UI-004.TC04",
+    "title": "Assenza di marcature grafiche su offerte senza sconto significativo e senza urgenza",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente operatore autenticato e abilitato alla visualizzazione della lista offerte",
+      "Esiste almeno un'offerta pubblicata che non soddisfa condizioni di sconto significativo né di scadenza/urgenza",
+      "La pagina/lista che mostra le card offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Offerta E: id=OFF-5005, titolo='Standard Casa', sconto=5%, flagScontoSignificativo=false, scadenzaTraGiorni=60, flagScadenzaImminente=false, flagOffertaTop=false"
+    ],
+    "steps": [
+      "Accedere all'applicazione come operatore",
+      "Navigare alla sezione che elenca le offerte in formato card",
+      "Individuare la card dell'offerta 'OFF-5005'",
+      "Osservare gli elementi grafici di evidenziazione presenti sulla card (colore e/o icona)"
+    ],
+    "expected_results": [
+      "La card dell'offerta 'OFF-5005' non mostra marcature grafiche dedicate a sconto significativo o urgenza (assenza di colori/icone di evidenziazione previsti per tali segnali)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (operatore) e il canale (web) sono stati inferiti dal requisito. Il requisito non specifica se possano esistere altre marcature per motivi diversi: il test si limita a verificare l'assenza dei segnali relativi a sconto/urgenza."
+  },
+  {
+    "test_id": "REQ-UI-004.TC05",
+    "title": "Gestione combinata: offerta con sconto significativo e scadenza imminente mostra segnali coerenti e non confliggenti",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente operatore autenticato e abilitato alla visualizzazione della lista offerte",
+      "Esiste almeno un'offerta pubblicata che soddisfa contemporaneamente le condizioni di sconto significativo e scadenza imminente",
+      "La pagina/lista che mostra le card offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Offerta F: id=OFF-6006, titolo='Super Promo', sconto=40%, flagScontoSignificativo=true, scadenzaTraGiorni=1, flagScadenzaImminente=true, flagOffertaTop=false"
+    ],
+    "steps": [
+      "Accedere all'applicazione come operatore",
+      "Navigare alla sezione che elenca le offerte in formato card",
+      "Individuare la card dell'offerta 'OFF-6006'",
+      "Osservare la marcatura grafica (colori e icone) applicata alla card"
+    ],
+    "expected_results": [
+      "La card dell'offerta 'OFF-6006' presenta marcature grafiche visibili che indicano la necessità di attenzione speciale",
+      "Le eventuali icone/colori non risultano sovrapposti in modo da compromettere la leggibilità delle informazioni principali della card (titolo, prezzo/valore, CTA se presenti)",
+      "Non sono presenti indicatori visivi contraddittori (es. stato che suggerisce normalità quando sono attivi sconto significativo e urgenza)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (operatore) e il canale (web) sono stati inferiti dal requisito. Il requisito non definisce regole di priorità tra segnali: il test verifica coerenza e non conflitto visivo, senza imporre una gerarchia specifica."
+  },
+  {
+    "test_id": "REQ-UI-004.TC06",
+    "title": "Test di usabilità: riconoscimento corretto dei segnali visivi e decisione operativa su un set di offerte miste",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con dati realistici e stabili (nessun refresh automatico che alteri l'ordine delle card durante la sessione)",
+      "Disponibilità di un campione di almeno 5 operatori (o tester rappresentativi) con istruzioni standardizzate",
+      "La pagina/lista che mostra le card offerte è raggiungibile",
+      "Sono presenti offerte con e senza segnali: sconto significativo, offerta top, scadenza imminente"
+    ],
+    "test_data": [
+      "Set offerte: OFF-7001(flagOffertaTop=true), OFF-7002(flagScadenzaImminente=true), OFF-7003(flagScontoSignificativo=true), OFF-7004(nessun flag), OFF-7005(nessun flag)",
+      "Questionario/compito: 'Seleziona entro 30 secondi le offerte che richiedono attenzione speciale e indica il motivo (top/sconto/urgenza)'",
+      "Criterio di successo (assunzione operativa per rendere verificabile AC-3): almeno 80% dei partecipanti identifica correttamente tutte le offerte con evidenza e non seleziona offerte senza evidenza"
+    ],
+    "steps": [
+      "Preparare la lista offerte con il set dati indicato e verificare che tutte le card siano visibili nella stessa vista o con scroll minimo",
+      "Far accedere ciascun partecipante come operatore",
+      "Mostrare la lista offerte e avviare il timer di 30 secondi",
+      "Chiedere al partecipante di selezionare le offerte che richiedono attenzione speciale basandosi solo su colori e icone e di indicare il motivo per ciascuna selezione",
+      "Registrare selezioni, motivazioni e tempo impiegato",
+      "Calcolare il tasso di riconoscimento corretto e il tasso di falsi positivi sul campione"
+    ],
+    "expected_results": [
+      "Gli operatori identificano correttamente le offerte con segnali visivi (top/sconto/urgenza) e associano il motivo corretto alla maggior parte dei casi",
+      "Il tasso di successo del campione soddisfa il criterio definito (>=80% di partecipanti senza errori di classificazione sul set proposto)",
+      "Le offerte senza segnali visivi non vengono selezionate come 'attenzione speciale' (falsi positivi entro la soglia definita dal criterio di successo)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è dichiarativo e non definisce metriche: per renderlo verificabile è stata introdotta un'assunzione di soglia (>=80%) e un compito temporizzato. Gli attori (operatori) e il canale (web) sono stati inferiti dal requisito."
+  }
+]

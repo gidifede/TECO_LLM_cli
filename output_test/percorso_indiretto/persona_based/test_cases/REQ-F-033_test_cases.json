@@ -1,0 +1,699 @@
+[
+  {
+    "story_id": "REQ-F-033.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-033.US01.TC01",
+        "title": "Accesso Team Marketing autorizzato e visualizzazione offerte attive/storicizzate",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' esistente e abilitato all'accesso alla dashboard di reporting aziendale",
+          "Nel reporting aziendale sono presenti dati alimentati dal Motore di Offerte con almeno: 1 offerta attiva e 1 offerta storicizzata"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01 (ruolo Team Marketing)",
+          "Offerta attiva presente: OFF-ATT-1001",
+          "Offerta storicizzata presente: OFF-STO-2001"
+        ],
+        "steps": [
+          "Aprire la dashboard di reporting aziendale",
+          "Eseguire il login con l'utente marketing_user_01",
+          "Accedere alla sezione dello strumento di analisi dati e reportistica delle offerte",
+          "Visualizzare il riepilogo delle offerte integrate disponibili"
+        ],
+        "expected_results": [
+          "L'accesso allo strumento di analisi dati e reportistica avviene con successo",
+          "È mostrato il tipo e il numero di offerte integrate disponibili",
+          "Le offerte sono distinguibili tra 'attive' e 'storicizzate'",
+          "Le offerte OFF-ATT-1001 e OFF-STO-2001 risultano presenti nelle rispettive categorie"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'AC originale non specifica UI/struttura del riepilogo: si verifica la disponibilità e distinguibilità dei dati nel reporting come esito dell'alimentazione dal Motore."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC02",
+        "title": "Insight vendite per periodo su singola offerta",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale sono presenti dati di vendite per OFF-ATT-1001 su almeno due periodi (es. mesi consecutivi)"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Offerta: OFF-ATT-1001",
+          "Periodo temporale: 2025-01-01 .. 2025-02-28"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-ATT-1001",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-02-28",
+          "Aprire la vista/area 'Andamenti di vendita' (o equivalente)"
+        ],
+        "expected_results": [
+          "Il sistema mostra gli insight di andamento vendite per l'offerta selezionata nel periodo impostato",
+          "I dati visualizzati risultano aggregati per periodo temporale (con granularità coerente con lo strumento) e non sono vuoti se esistono dati nel reporting"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La granularità temporale e le formule non sono definite: si verifica la presenza di una serie temporale coerente con i dati alimentati."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC03",
+        "title": "Insight vendite per periodo su aggregazione di offerte",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale sono presenti dati di vendite per almeno due offerte aggregabili (es. OFF-ATT-1001 e OFF-ATT-1002)"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Aggregazione: 'Bundle Promo Q1' (include OFF-ATT-1001, OFF-ATT-1002)",
+          "Periodo temporale: 2025-01-01 .. 2025-03-31"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'aggregazione 'Bundle Promo Q1'",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-03-31",
+          "Aprire la vista/area 'Andamenti di vendita' (o equivalente)"
+        ],
+        "expected_results": [
+          "Il sistema mostra gli insight di andamento vendite per l'aggregazione selezionata nel periodo impostato",
+          "I dati visualizzati rappresentano l'aggregazione delle offerte incluse (non una singola offerta)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificate le regole di aggregazione: si assume esista una selezione di aggregazioni predefinite o costruibili in UI."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC04",
+        "title": "Visualizzazione KPI di conversione per fase del funnel",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale sono presenti dati per KPI di conversione per fasi del funnel per OFF-ATT-1001 nel periodo selezionato"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Offerta: OFF-ATT-1001",
+          "Periodo temporale: 2025-02-01 .. 2025-02-29"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-ATT-1001",
+          "Impostare il periodo temporale 2025-02-01 .. 2025-02-29",
+          "Aprire la vista/area 'KPI' (o equivalente)"
+        ],
+        "expected_results": [
+          "Il sistema visualizza i KPI di conversione suddivisi per fase del funnel per l'offerta e periodo selezionati",
+          "Per ciascuna fase del funnel prevista dallo strumento è presente un valore (o indicazione esplicita di assenza dati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Le fasi del funnel e le formule KPI non sono definite nel requisito: si verifica la disponibilità e la segmentazione per fase come da dataset alimentato."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC05",
+        "title": "Visualizzazione andamento proposte accettate e rifiutate",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale sono presenti dati di proposte in stato accettata e rifiutata per OFF-ATT-1001 nel periodo selezionato"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Offerta: OFF-ATT-1001",
+          "Periodo temporale: 2025-01-01 .. 2025-01-31"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-ATT-1001",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-01-31",
+          "Aprire la vista/area 'Andamento proposte' (o equivalente)"
+        ],
+        "expected_results": [
+          "Il sistema visualizza l'andamento delle proposte accettate nel periodo selezionato",
+          "Il sistema visualizza l'andamento delle proposte rifiutate nel periodo selezionato",
+          "Le due serie (accettate/rifiutate) sono distinguibili"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica la forma della visualizzazione (grafico/tabella): la verifica è sulla presenza dei dati per stato proposta."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC06",
+        "title": "Applicazione filtri per canale/touchpoint, cluster, offerta e aggregazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale sono presenti dati con dimensioni: canale/touchpoint e cluster di clientela per il periodo selezionato",
+          "Esistono almeno 2 canali/touchpoint e 2 cluster di clientela valorizzati nei dati"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Periodo temporale: 2025-01-01 .. 2025-03-31",
+          "Filtro canale/touchpoint: 'WEB'",
+          "Filtro cluster: 'Affluent'",
+          "Filtro offerta: OFF-ATT-1001",
+          "Filtro aggregazione: 'Bundle Promo Q1'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-03-31",
+          "Applicare il filtro canale/touchpoint = 'WEB'",
+          "Applicare il filtro cluster di clientela = 'Affluent'",
+          "Applicare il filtro offerta = OFF-ATT-1001",
+          "Rimuovere il filtro offerta",
+          "Applicare il filtro aggregazione = 'Bundle Promo Q1'",
+          "Confermare/applicare i filtri"
+        ],
+        "expected_results": [
+          "I dati visualizzati (vendite/KPI/proposte) risultano filtrati coerentemente con canale/touchpoint = 'WEB'",
+          "I dati visualizzati risultano filtrati coerentemente con cluster = 'Affluent'",
+          "Quando è selezionata la singola offerta OFF-ATT-1001, i dati mostrano solo l'ambito di OFF-ATT-1001",
+          "Quando è selezionata l'aggregazione 'Bundle Promo Q1', i dati mostrano l'ambito dell'aggregazione e non una singola offerta"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce i valori possibili dei filtri: i valori di esempio devono essere allineati ai dizionari presenti nel reporting."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC07",
+        "title": "Edge case: filtri combinati restituiscono dataset vuoto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale esistono combinazioni di filtri che non producono risultati (es. cluster senza dati su uno specifico canale nel periodo)"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Periodo temporale: 2025-01-01 .. 2025-01-31",
+          "Filtro canale/touchpoint: 'APP'",
+          "Filtro cluster: 'Dormant'",
+          "Filtro aggregazione: 'Bundle Promo Q1'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-01-31",
+          "Applicare il filtro canale/touchpoint = 'APP'",
+          "Applicare il filtro cluster = 'Dormant'",
+          "Applicare il filtro aggregazione = 'Bundle Promo Q1'",
+          "Confermare/applicare i filtri"
+        ],
+        "expected_results": [
+          "Il sistema mostra esplicitamente assenza dati per i filtri selezionati (es. messaggio 'Nessun dato disponibile')",
+          "Il sistema non presenta errori applicativi (nessun crash/stack trace)",
+          "Non vengono mostrati valori fuorvianti (es. dati di default non filtrati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case esplicito della user story: dataset vuoto con filtri combinati."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC08",
+        "title": "Edge case: periodo temporale non coperto da storicizzazione disponibile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autorizzato",
+          "Nel reporting aziendale non sono presenti dati storicizzati per un intervallo noto (es. precedente alla data di avvio storicizzazione)"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_01",
+          "Offerta: OFF-STO-2001",
+          "Periodo temporale: 2019-01-01 .. 2019-12-31"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-STO-2001",
+          "Impostare il periodo temporale 2019-01-01 .. 2019-12-31",
+          "Aprire la vista 'Andamenti di vendita' (o equivalente)"
+        ],
+        "expected_results": [
+          "Il sistema segnala che non ci sono dati disponibili per l'intervallo richiesto",
+          "Il sistema non mostra serie temporali con valori non giustificati (es. zeri non dichiarati come 'assenza dati')"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola di storicizzazione è demandata alla progettazione: il test valida il comportamento atteso in assenza di copertura storica."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC09",
+        "title": "Autorizzazioni: utente Team Marketing con permessi limitati vede solo dati aggregati",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Team Marketing' e profilo autorizzativo limitato (solo aggregati)",
+          "La matrice autorizzativa nel reporting aziendale è configurata per impedire accesso ai dettagli per tale utente"
+        ],
+        "test_data": [
+          "Credenziali utente: marketing_user_limited_01 (Team Marketing, permessi: solo aggregati)",
+          "Offerta: OFF-ATT-1001",
+          "Aggregazione: 'Bundle Promo Q1'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come marketing_user_limited_01",
+          "Aprire la sezione di analisi offerte",
+          "Tentare di selezionare la singola offerta OFF-ATT-1001",
+          "Aprire le viste di dettaglio disponibili (vendite/KPI/proposte)",
+          "Selezionare l'aggregazione 'Bundle Promo Q1'"
+        ],
+        "expected_results": [
+          "L'accesso a funzionalità o livelli di dettaglio non autorizzati è impedito (es. componenti disabilitati o messaggio di accesso negato)",
+          "Non è possibile visualizzare dati di dettaglio della singola offerta OFF-ATT-1001 se non autorizzato",
+          "La consultazione dei dati aggregati per 'Bundle Promo Q1' è consentita se prevista dai permessi",
+          "Non è possibile aggirare la limitazione tramite la UI (es. deep link a vista di dettaglio) ottenendo dati non autorizzati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case cita esplicitamente l'impossibilità di aggirare via UI; funzionalità di export non è richiesta e non viene testata."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC10",
+        "title": "Negativo: ruolo non autorizzato tenta accesso allo strumento di analisi offerte",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo non autorizzato allo strumento (es. 'Operatore')",
+          "La matrice autorizzativa nel reporting aziendale è configurata per negare accesso allo strumento a tale ruolo"
+        ],
+        "test_data": [
+          "Credenziali utente: ops_user_01 (ruolo non autorizzato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come ops_user_01",
+          "Tentare di aprire la sezione di analisi dati e reportistica delle offerte (tramite menu o URL diretto)"
+        ],
+        "expected_results": [
+          "L'accesso alla sezione è negato coerentemente con le regole di autorizzazione (es. 403/Accesso negato o pagina di errore autorizzativa)",
+          "Non vengono mostrati dati delle offerte (attive o storicizzate)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica il meccanismo tecnico (HTTP code/UI message): è accettabile qualunque comportamento che impedisca l'accesso e non esponga dati."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-033.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-033.US02.TC01",
+        "title": "Accesso Team Compliance autorizzato e consultazione offerte attive/storicizzate per audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' esistente e abilitato all'accesso alla dashboard di reporting aziendale",
+          "Nel reporting aziendale sono presenti dati alimentati dal Motore di Offerte con offerte attive e storicizzate"
+        ],
+        "test_data": [
+          "Credenziali utente: compliance_user_01 (ruolo Team Compliance)",
+          "Offerta attiva presente: OFF-ATT-1001",
+          "Offerta storicizzata presente: OFF-STO-2001"
+        ],
+        "steps": [
+          "Aprire la dashboard di reporting aziendale",
+          "Eseguire il login con l'utente compliance_user_01",
+          "Accedere alla sezione di analisi/reporting offerte"
+        ],
+        "expected_results": [
+          "L'accesso allo strumento avviene con successo",
+          "Sono consultabili i dati relativi alle offerte integrate disponibili",
+          "Le offerte sono distinguibili tra attive e storicizzate"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story cita audit/log; il requisito non definisce log specifici, quindi il test si limita alla consultazione dei dati di performance nel reporting."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC02",
+        "title": "Consultazione insight completi (vendite, KPI funnel, proposte accettate/rifiutate) nei limiti autorizzativi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Team Compliance' autorizzato alla consultazione insight",
+          "Nel reporting aziendale sono presenti dati per: vendite per periodo, KPI funnel, proposte accettate/rifiutate per OFF-ATT-1001"
+        ],
+        "test_data": [
+          "Credenziali utente: compliance_user_01",
+          "Offerta: OFF-ATT-1001",
+          "Periodo temporale: 2025-01-01 .. 2025-03-31"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come compliance_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-ATT-1001",
+          "Impostare il periodo temporale 2025-01-01 .. 2025-03-31",
+          "Aprire la vista 'Andamenti di vendita'",
+          "Aprire la vista 'KPI'",
+          "Aprire la vista 'Andamento proposte'"
+        ],
+        "expected_results": [
+          "Sono consultabili gli insight di andamento vendite per periodo temporale per l'offerta selezionata",
+          "Sono consultabili i KPI di conversione per fase del funnel per l'offerta selezionata",
+          "È consultabile l'andamento delle proposte accettate e rifiutate per l'offerta selezionata",
+          "Eventuali limitazioni di visibilità sono applicate coerentemente ai permessi (assenza di sezioni/dettagli non autorizzati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono definite formule KPI/fasi funnel: il test verifica la presenza delle viste e dei dati alimentati, non la correttezza delle formule."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC03",
+        "title": "Applicazione filtri per audit nei limiti delle autorizzazioni",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Team Compliance' autorizzato all'uso dei filtri previsti",
+          "Nel reporting aziendale sono presenti dati con dimensioni canale/touchpoint e cluster nel periodo selezionato"
+        ],
+        "test_data": [
+          "Credenziali utente: compliance_user_01",
+          "Periodo temporale: 2024-10-01 .. 2024-12-31",
+          "Filtro canale/touchpoint: 'FILIALE'",
+          "Filtro cluster: 'Retail'",
+          "Filtro aggregazione: 'Bundle Promo Q4'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come compliance_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Impostare il periodo temporale 2024-10-01 .. 2024-12-31",
+          "Applicare il filtro canale/touchpoint = 'FILIALE'",
+          "Applicare il filtro cluster di clientela = 'Retail'",
+          "Applicare il filtro aggregazione = 'Bundle Promo Q4'",
+          "Confermare/applicare i filtri"
+        ],
+        "expected_results": [
+          "I dati mostrati risultano filtrati per canale/touchpoint 'FILIALE'",
+          "I dati mostrati risultano filtrati per cluster 'Retail'",
+          "I dati mostrati risultano filtrati per l'aggregazione 'Bundle Promo Q4'",
+          "Se alcuni filtri non sono autorizzati per il ruolo/profilo, il sistema ne impedisce l'uso (es. filtro non visibile o selezione bloccata)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La matrice autorizzativa dei filtri non è definita: il test verifica enforcement, non specifiche di quali filtri siano abilitati."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC04",
+        "title": "Negativo: utente Compliance non autorizzato - accesso negato (ed eventuale tracciamento se previsto)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Team Compliance' ma non autorizzato allo strumento o a specifiche aree (profilo disabilitato o permessi mancanti)",
+          "Se previsto dal reporting aziendale, è attivo un meccanismo di tracciamento accessi (audit log) per tentativi falliti"
+        ],
+        "test_data": [
+          "Credenziali utente: compliance_user_denied_01 (Team Compliance, non autorizzato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come compliance_user_denied_01",
+          "Tentare di aprire la sezione di analisi/reporting offerte (tramite menu o URL diretto)"
+        ],
+        "expected_results": [
+          "L'accesso è negato coerentemente con le regole di autorizzazione",
+          "Non vengono mostrati dati delle offerte",
+          "Se il reporting aziendale prevede audit log, il tentativo di accesso negato risulta tracciato secondo policy (presenza di un record consultabile dagli amministratori/policy)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il tracciamento è citato come edge case 'se previsto': la verifica del log è condizionata alla disponibilità della funzionalità nel reporting aziendale."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC05",
+        "title": "Edge case: dati incompleti per finestra temporale (alimentazione non avvenuta) segnalati senza valori fuorvianti",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente 'Team Compliance' autorizzato",
+          "Per un intervallo temporale noto, nel reporting aziendale mancano dati (es. job di alimentazione non eseguito o parziale)"
+        ],
+        "test_data": [
+          "Credenziali utente: compliance_user_01",
+          "Offerta: OFF-ATT-1001",
+          "Periodo temporale: 2025-04-01 .. 2025-04-30 (intervallo con dati incompleti)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di reporting aziendale come compliance_user_01",
+          "Aprire la sezione di analisi offerte",
+          "Selezionare l'offerta OFF-ATT-1001",
+          "Impostare il periodo temporale 2025-04-01 .. 2025-04-30",
+          "Consultare le viste vendite/KPI/proposte"
+        ],
+        "expected_results": [
+          "Il sistema segnala indisponibilità/assenza dati per l'intervallo richiesto (o per le metriche impattate)",
+          "Il sistema non mostra valori calcolati su dati mancanti come se fossero completi",
+          "Il sistema non presenta errori applicativi"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'AC originale rimanda a regole di frequenza/storicizzazione: questo test valida la gestione dell'assenza dati quando l'alimentazione non copre l'intervallo."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-033.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-033.US03.TC01",
+        "title": "Integrazione: export dal Motore di Offerte rende disponibili nel reporting dati su offerte attive e storicizzate",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sono disponibili ambiente Motore di Offerte e ambiente reporting aziendale con integrazione configurata",
+          "Esiste un set di offerte nel Motore con stato 'attiva' e 'storicizzata'",
+          "Sono disponibili credenziali/permessi di esecuzione per il processo di alimentazione (job/batch/API) secondo progettazione"
+        ],
+        "test_data": [
+          "Offerta nel Motore (attiva): OFF-ATT-1001",
+          "Offerta nel Motore (storicizzata): OFF-STO-2001",
+          "Esecuzione alimentazione: run_id = RUN-20260223-001"
+        ],
+        "steps": [
+          "Preparare nel Motore di Offerte le offerte OFF-ATT-1001 (attiva) e OFF-STO-2001 (storicizzata) con dati coerenti per l'export",
+          "Avviare l'alimentazione dati dal Motore di Offerte verso il reporting aziendale secondo il meccanismo previsto (job/batch/API)",
+          "Attendere il completamento dell'alimentazione per run_id RUN-20260223-001",
+          "Accedere al reporting aziendale e interrogare/visualizzare il dataset delle offerte integrate disponibili"
+        ],
+        "expected_results": [
+          "L'alimentazione termina con esito di successo per run_id RUN-20260223-001",
+          "Nel reporting aziendale risultano disponibili i dati per visualizzare tipo e numero di offerte integrate disponibili",
+          "Nel reporting aziendale le offerte OFF-ATT-1001 e OFF-STO-2001 risultano presenti e distinguibili per stato (attiva vs storicizzata)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "I dettagli tecnici (formato/protocollo) non sono nel requisito: i passi vanno adattati al meccanismo di integrazione definito in progettazione."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC02",
+        "title": "Integrazione: export rende disponibili dati per vendite per periodo, KPI funnel e proposte accettate/rifiutate",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Integrazione Motore di Offerte -> reporting aziendale configurata",
+          "Nel Motore di Offerte sono disponibili eventi/dati necessari a derivare: vendite per periodo, KPI per fasi funnel, stati proposta accettata/rifiutata",
+          "Il reporting aziendale dispone di modelli/dataset per esporre tali misure"
+        ],
+        "test_data": [
+          "Offerta nel Motore: OFF-ATT-1001",
+          "Periodo dati sorgente: 2025-01-01 .. 2025-01-31",
+          "Esempi stati proposta nel sorgente: 10 accettate, 3 rifiutate (per il periodo)",
+          "Esecuzione alimentazione: run_id = RUN-20260223-002"
+        ],
+        "steps": [
+          "Preparare nel Motore di Offerte i dati sorgente per OFF-ATT-1001 includendo vendite, fasi funnel e stati proposta nel periodo 2025-01-01 .. 2025-01-31",
+          "Avviare l'alimentazione dati verso il reporting aziendale (run_id RUN-20260223-002)",
+          "Attendere il completamento dell'alimentazione",
+          "Nel reporting aziendale, selezionare OFF-ATT-1001 e il periodo 2025-01-01 .. 2025-01-31",
+          "Consultare nel reporting le viste vendite per periodo, KPI funnel e andamento proposte"
+        ],
+        "expected_results": [
+          "L'alimentazione termina con esito di successo per run_id RUN-20260223-002",
+          "Nel reporting aziendale sono disponibili dati per l'andamento vendite per periodo per OFF-ATT-1001 nel periodo selezionato",
+          "Nel reporting aziendale sono disponibili dati per KPI di conversione per fase del funnel per OFF-ATT-1001 nel periodo selezionato",
+          "Nel reporting aziendale sono disponibili dati per andamento proposte accettate e rifiutate per OFF-ATT-1001 nel periodo selezionato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il test non valida le formule dei KPI (non definite) ma la disponibilità dei dati necessari alla visualizzazione/calcolo nel reporting."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC03",
+        "title": "E2E: alimentazione secondo frequenza definita e disponibilità dati nel reporting dopo l'esecuzione pianificata",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "È definita e configurata in ambiente di test una regola di frequenza di alimentazione (es. giornaliera alle 02:00) e una regola di storicizzazione (es. snapshot giornaliero)",
+          "Scheduler/Orchestratore del processo di alimentazione è attivo",
+          "Sono disponibili dati nel Motore di Offerte per almeno 2 giorni consecutivi"
+        ],
+        "test_data": [
+          "Frequenza configurata (esempio): giornaliera alle 02:00",
+          "Regola di storicizzazione configurata (esempio): snapshot giornaliero per offerta",
+          "Finestre di osservazione: Giorno 1 e Giorno 2 (due run pianificate)"
+        ],
+        "steps": [
+          "Verificare la configurazione della frequenza e della storicizzazione in ambiente di test (secondo quanto definito in progettazione)",
+          "Attendere l'esecuzione pianificata del processo di alimentazione del Giorno 1",
+          "Verificare nel reporting aziendale la disponibilità dei dati del Giorno 1",
+          "Attendere l'esecuzione pianificata del processo di alimentazione del Giorno 2",
+          "Verificare nel reporting aziendale la disponibilità dei dati del Giorno 2",
+          "Confrontare nel reporting la presenza di storicizzazione tra Giorno 1 e Giorno 2 (es. due snapshot/periodi distinti)"
+        ],
+        "expected_results": [
+          "Il processo di alimentazione viene eseguito secondo la frequenza configurata",
+          "Dopo ciascuna esecuzione pianificata, i dati risultano disponibili nel reporting aziendale",
+          "La storicizzazione consente di distinguere i dati del Giorno 1 da quelli del Giorno 2 secondo la regola configurata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "L'AC-1 rimanda a regole da definire: questo test è eseguibile solo quando frequenza e storicizzazione sono specificate e configurate."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC04",
+        "title": "Negativo: reporting aziendale non raggiungibile durante export - fallimento gestito (logging/retry secondo progettazione)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Integrazione configurata tra Motore di Offerte e reporting aziendale",
+          "È possibile simulare indisponibilità del reporting (es. endpoint down, rete bloccata) in ambiente di test",
+          "Sono definiti in progettazione i meccanismi di gestione errore (es. retry e logging) oppure almeno la registrazione dell'esito"
+        ],
+        "test_data": [
+          "Esecuzione alimentazione: run_id = RUN-20260223-003",
+          "Simulazione errore: endpoint reporting non raggiungibile (timeout)"
+        ],
+        "steps": [
+          "Impostare il reporting aziendale come non raggiungibile per il Motore di Offerte (simulazione timeout)",
+          "Avviare l'alimentazione dati dal Motore di Offerte verso il reporting (run_id RUN-20260223-003)",
+          "Attendere l'esito del processo di alimentazione",
+          "Ripristinare la raggiungibilità del reporting aziendale",
+          "Verificare gli artefatti di esecuzione del Motore (log/monitoring/esito run) relativi a RUN-20260223-003"
+        ],
+        "expected_results": [
+          "Il processo di export segnala fallimento o stato non-successo per RUN-20260223-003",
+          "L'errore di raggiungibilità è registrato nei log/monitoring del Motore secondo quanto previsto",
+          "Non risultano dati parziali incoerenti nel reporting aziendale per la run fallita (nessuna pubblicazione incompleta rilevabile)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Retry/backoff e criteri di consistenza non sono definiti nel requisito: la verifica va adattata alle scelte progettuali disponibili."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC05",
+        "title": "Edge case: cambio regole di frequenza/storicizzazione e adeguamento export senza compromettere dati storici",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Sono definite e versionate in ambiente di test due configurazioni di regole: Regola A e Regola B (frequenza/storicizzazione)",
+          "Esistono dati già storicizzati nel reporting secondo Regola A",
+          "È possibile cambiare la configurazione del Motore di Offerte per applicare Regola B"
+        ],
+        "test_data": [
+          "Regola A (esempio): snapshot giornaliero",
+          "Regola B (esempio): snapshot settimanale",
+          "Esecuzione alimentazione con Regola A: run_id = RUN-20260223-004A",
+          "Esecuzione alimentazione con Regola B: run_id = RUN-20260223-004B"
+        ],
+        "steps": [
+          "Eseguire un'alimentazione con Regola A (RUN-20260223-004A) e verificare la presenza dei dati storicizzati nel reporting",
+          "Modificare la configurazione del Motore di Offerte per applicare Regola B",
+          "Eseguire un'alimentazione con Regola B (RUN-20260223-004B)",
+          "Verificare nel reporting aziendale che i dati storici creati con Regola A siano ancora disponibili e non alterati",
+          "Verificare che i nuovi dati siano storicizzati secondo Regola B"
+        ],
+        "expected_results": [
+          "Dopo il cambio configurazione, l'alimentazione avviene secondo la nuova regola (Regola B)",
+          "I dati storici preesistenti (Regola A) restano consultabili e non vengono sovrascritti/invalidati",
+          "I dati generati dopo il cambio risultano coerenti con la storicizzazione prevista dalla Regola B"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica strategie di migrazione/compatibilità: il test verifica l'assenza di regressioni sui dati storici e l'applicazione della nuova regola."
+      }
+    ]
+  }
+]

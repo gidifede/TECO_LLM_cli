@@ -1,0 +1,633 @@
+[
+  {
+    "story_id": "REQ-F-015.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-015.US01.TC01",
+        "title": "Notifica di avvenuta attivazione inviata al cliente su canali digitali a sottoscrizione completata (esito provisioning OK)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una sottoscrizione di offerta completata con successo associata a un cliente (ID cliente valorizzato)",
+          "Il sistema verticale di vendita ha completato provisioning/attivazione con esito positivo ed espone stato 'Attivo' per i prodotti (ed eventuale Connect)",
+          "Il canale digitale (App e/o Web) è disponibile e l'utente ha un profilo abilitato a ricevere notifiche (almeno un meccanismo tra push/inbox/email previsto dal prodotto)",
+          "Il cliente è autenticato sul canale digitale per consultare eventuale inbox/centro notifiche (se previsto)"
+        ],
+        "test_data": [
+          "ID cliente: CL-10004567",
+          "ID sottoscrizione: SUB-2026-000123",
+          "Offerta: OFF-PLUS-01 (2 prodotti)",
+          "Stato verticale esposto: Attivo (timestamp aggiornamento: 2026-02-23 10:15:00)"
+        ],
+        "steps": [
+          "Simulare/registrare il completamento con successo della sottoscrizione per ID sottoscrizione SUB-2026-000123",
+          "Verificare che il verticale di vendita esponga stato 'Attivo' per i prodotti sottoscritti",
+          "Accedere al canale digitale (App o Web) come cliente CL-10004567",
+          "Aprire la sezione notifiche/inbox (se presente) o verificare la ricezione della notifica sul canale previsto"
+        ],
+        "expected_results": [
+          "Il cliente riceve una notifica di avvenuta attivazione sui canali digitali (App/Web) in seguito alla sottoscrizione completata",
+          "La notifica è associata alla sottoscrizione SUB-2026-000123 (riferimento identificabile: ID ordine/sottoscrizione o offerta)",
+          "Non vengono generate notifiche di attivazione sul canale fisico (UP) come canale di notifica"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "Il requisito non specifica il tipo di notifica (push/inbox/email) né il testo; il test verifica la presenza di una notifica digitale associabile alla sottoscrizione."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC02",
+        "title": "Consultazione stato attivazione da canale digitale: stato aggiornato coerente con il verticale (Attivo)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una sottoscrizione completata con successo associata a un cliente",
+          "Il verticale di vendita espone lo stato aggiornato 'Attivo' per i prodotti sottoscritti",
+          "Il cliente è autenticato sul canale digitale (App/Web)"
+        ],
+        "test_data": [
+          "ID cliente: CL-10004567",
+          "ID sottoscrizione: SUB-2026-000124",
+          "Offerta: OFF-PLUS-02",
+          "Stato verticale esposto: Attivo"
+        ],
+        "steps": [
+          "Accedere al canale digitale (App o Web) come cliente CL-10004567",
+          "Navigare al punto di consultazione dello stato dell'offerta/prodotti sottoscritti",
+          "Selezionare la sottoscrizione SUB-2026-000124"
+        ],
+        "expected_results": [
+          "Il sistema mostra lo stato di attivazione aggiornato per la sottoscrizione selezionata",
+          "Lo stato mostrato corrisponde allo stato esposto dal verticale di vendita (Attivo)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "Il requisito non specifica la sezione UI di consultazione; si assume esista un punto di consultazione sul canale digitale."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC03",
+        "title": "Provisioning in corso: il cliente vede stato 'in lavorazione' e non riceve notifica di avvenuta attivazione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una sottoscrizione completata con successo associata a un cliente",
+          "Il verticale di vendita espone stato 'In lavorazione' (provisioning non concluso) per la sottoscrizione",
+          "Il cliente è autenticato sul canale digitale (App/Web)"
+        ],
+        "test_data": [
+          "ID cliente: CL-10007890",
+          "ID sottoscrizione: SUB-2026-000200",
+          "Stato verticale esposto: In lavorazione"
+        ],
+        "steps": [
+          "Accedere al canale digitale (App o Web) come cliente CL-10007890",
+          "Navigare alla consultazione dello stato dell'offerta/prodotti",
+          "Selezionare la sottoscrizione SUB-2026-000200",
+          "Verificare la presenza di notifiche di avvenuta attivazione relative a SUB-2026-000200"
+        ],
+        "expected_results": [
+          "Lo stato mostrato per la sottoscrizione SUB-2026-000200 è 'In lavorazione' (o equivalente) e non 'Attivo'",
+          "Non è presente alcuna notifica di 'avvenuta attivazione' per SUB-2026-000200 finché lo stato non diventa 'Attivo'"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "La user story esplicita lo stato 'in lavorazione' come edge case; la terminologia esatta può variare (es. 'In corso')."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC04",
+        "title": "Errore di provisioning/attivazione: il cliente vede stato di errore e non riceve notifica di avvenuta attivazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una sottoscrizione completata con successo associata a un cliente",
+          "Il verticale di vendita espone stato 'Errore'/'Mancata attivazione' per la sottoscrizione",
+          "Il cliente è autenticato sul canale digitale (App/Web)"
+        ],
+        "test_data": [
+          "ID cliente: CL-10001234",
+          "ID sottoscrizione: SUB-2026-000201",
+          "Stato verticale esposto: Errore attivazione"
+        ],
+        "steps": [
+          "Accedere al canale digitale (App o Web) come cliente CL-10001234",
+          "Navigare alla consultazione dello stato dell'offerta/prodotti",
+          "Selezionare la sottoscrizione SUB-2026-000201",
+          "Verificare la presenza di notifiche di avvenuta attivazione relative a SUB-2026-000201"
+        ],
+        "expected_results": [
+          "Lo stato mostrato per la sottoscrizione SUB-2026-000201 indica un errore/mancata attivazione (non 'Attivo')",
+          "Non è presente alcuna notifica di 'avvenuta attivazione' per SUB-2026-000201"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "Il requisito non definisce il dettaglio del messaggio di errore; il test verifica che lo stato non sia 'Attivo' e sia chiaramente riconducibile a una mancata attivazione."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC05",
+        "title": "Canale digitale non disponibile al momento dell'invio: notifica non consegnata ma stato consultabile",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una sottoscrizione completata con successo associata a un cliente",
+          "Il verticale di vendita espone stato 'Attivo' per la sottoscrizione",
+          "Il servizio di notifica digitale (push/inbox/email previsto) è non disponibile (timeout/errore) al momento dell'invio",
+          "Il canale digitale (App/Web) è disponibile per la consultazione dello stato"
+        ],
+        "test_data": [
+          "ID cliente: CL-10009999",
+          "ID sottoscrizione: SUB-2026-000202",
+          "Simulazione indisponibilità servizio notifica: HTTP 503 o timeout > 10s"
+        ],
+        "steps": [
+          "Simulare/registrare il completamento con successo della sottoscrizione SUB-2026-000202",
+          "Forzare l'indisponibilità del servizio di notifica digitale durante il tentativo di invio",
+          "Accedere al canale digitale (App o Web) come cliente CL-10009999",
+          "Navigare alla consultazione dello stato dell'offerta/prodotti",
+          "Selezionare la sottoscrizione SUB-2026-000202",
+          "Verificare la presenza di notifiche di avvenuta attivazione relative a SUB-2026-000202"
+        ],
+        "expected_results": [
+          "La notifica di avvenuta attivazione non risulta consegnata sul canale digitale a causa dell'indisponibilità del servizio di notifica",
+          "Lo stato della sottoscrizione SUB-2026-000202 è comunque consultabile e risulta 'Attivo' (coerente con il verticale)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "Il requisito non specifica meccanismi di retry o persistenza notifica; il test valida il comportamento minimo indicato dall'edge case: notifica non consegnata e stato consultabile."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC06",
+        "title": "Autorizzazione: il cliente non autenticato non può consultare lo stato della propria sottoscrizione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una sottoscrizione completata con successo associata a un cliente",
+          "Endpoint/pagina di consultazione stato disponibile su canale digitale (App/Web)",
+          "Sessione utente non autenticata"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000203",
+          "Cliente associato: CL-10004567"
+        ],
+        "steps": [
+          "Aprire il canale digitale (App o Web) senza effettuare login",
+          "Tentare di accedere alla sezione di consultazione stato e selezionare la sottoscrizione SUB-2026-000203"
+        ],
+        "expected_results": [
+          "Il sistema richiede autenticazione prima di mostrare lo stato della sottoscrizione",
+          "Non vengono mostrati dettagli di stato della sottoscrizione a utente non autenticato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital (App/Web)"
+        ],
+        "notes": "Le regole di autorizzazione non sono esplicitate nel requisito; si assume protezione dei dati personali e accesso autenticato per consultazione stato."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-015.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-015.US02.TC01",
+        "title": "Riscontro/notifica di avvenuta attivazione mostrata all'operatore su front-end commerciale a sottoscrizione completata (esito provisioning OK)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato alla consultazione posizioni cliente",
+          "Esiste una sottoscrizione di offerta completata con successo per un cliente",
+          "Il verticale di vendita ha completato provisioning/attivazione con esito positivo ed espone stato 'Attivo'"
+        ],
+        "test_data": [
+          "ID operatore: OP-000345",
+          "Ruolo: Operatore sportello",
+          "ID cliente: CL-10004567",
+          "ID sottoscrizione: SUB-2026-000300",
+          "Stato verticale esposto: Attivo"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-000345",
+          "Simulare/registrare il completamento con successo della sottoscrizione SUB-2026-000300 per il cliente CL-10004567",
+          "Aprire la schermata/area del front-end commerciale dove viene mostrato il riscontro post-sottoscrizione"
+        ],
+        "expected_results": [
+          "Il front-end commerciale mostra un riscontro/notifica di avvenuta attivazione per la sottoscrizione SUB-2026-000300",
+          "Il riscontro è associabile al cliente CL-10004567 e alla sottoscrizione SUB-2026-000300"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "Il requisito non specifica il meccanismo di notifica (toast/inbox/aggiornamento schermata); il test verifica la presenza di un riscontro visibile nel canale operatore."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC02",
+        "title": "Consultazione posizione cliente: stato attivazione aggiornato e coerente con il verticale (Attivo)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato",
+          "Il verticale di vendita espone stato aggiornato 'Attivo' per i prodotti/offerta del cliente"
+        ],
+        "test_data": [
+          "ID operatore: OP-000345",
+          "ID cliente: CL-10004567",
+          "ID sottoscrizione: SUB-2026-000301",
+          "Stato verticale esposto: Attivo"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-000345",
+          "Ricercare il cliente CL-10004567",
+          "Aprire la posizione del cliente relativa ai prodotti/offerta sottoscritti",
+          "Selezionare la sottoscrizione SUB-2026-000301"
+        ],
+        "expected_results": [
+          "Il sistema mostra lo stato di attivazione aggiornato per la sottoscrizione SUB-2026-000301",
+          "Lo stato mostrato corrisponde allo stato esposto dal verticale di vendita (Attivo)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC03",
+        "title": "Provisioning in corso: l'operatore vede stato non definitivo e non conferma attivazione completata",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato",
+          "Il verticale di vendita espone stato 'In lavorazione' per la sottoscrizione"
+        ],
+        "test_data": [
+          "ID operatore: OP-000777",
+          "ID cliente: CL-10007890",
+          "ID sottoscrizione: SUB-2026-000302",
+          "Stato verticale esposto: In lavorazione"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-000777",
+          "Ricercare il cliente CL-10007890",
+          "Aprire la posizione cliente e selezionare SUB-2026-000302"
+        ],
+        "expected_results": [
+          "Lo stato mostrato per SUB-2026-000302 risulta 'In lavorazione' (o equivalente) e non 'Attivo'",
+          "Il front-end commerciale non mostra un riscontro di 'avvenuta attivazione' come completata per SUB-2026-000302"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "La user story indica che l'operatore non deve confermare l'attivazione come completata quando lo stato non è definitivo."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC04",
+        "title": "Errore provisioning/attivazione: l'operatore vede stato di errore/mancata attivazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato",
+          "Il verticale di vendita espone stato 'Errore'/'Mancata attivazione' per la sottoscrizione"
+        ],
+        "test_data": [
+          "ID operatore: OP-000777",
+          "ID cliente: CL-10001234",
+          "ID sottoscrizione: SUB-2026-000303",
+          "Stato verticale esposto: Errore attivazione"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-000777",
+          "Ricercare il cliente CL-10001234",
+          "Aprire la posizione cliente e selezionare SUB-2026-000303"
+        ],
+        "expected_results": [
+          "Lo stato mostrato per SUB-2026-000303 indica un errore/mancata attivazione (non 'Attivo')",
+          "Il front-end commerciale non mostra un riscontro di 'avvenuta attivazione' per SUB-2026-000303"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC05",
+        "title": "Integrazione stato non raggiungibile: l'operatore visualizza indisponibilità temporanea dello stato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato",
+          "Il servizio/integrazione verso il verticale di vendita per recupero stato è non raggiungibile (timeout/errore)"
+        ],
+        "test_data": [
+          "ID operatore: OP-000888",
+          "ID cliente: CL-10005555",
+          "ID sottoscrizione: SUB-2026-000304",
+          "Simulazione errore integrazione stato: timeout > 10s o HTTP 504"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP-000888",
+          "Ricercare il cliente CL-10005555",
+          "Aprire la posizione cliente e selezionare SUB-2026-000304",
+          "Attendere il caricamento dello stato di attivazione"
+        ],
+        "expected_results": [
+          "Il sistema non mostra uno stato 'Attivo' o 'Errore' non verificato, ma segnala indisponibilità temporanea dello stato (messaggio/placeholder coerente)",
+          "Non vengono mostrati dati di stato potenzialmente obsoleti come se fossero aggiornati"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "Il requisito non definisce il comportamento di fallback; il test verifica almeno la gestione dell'indisponibilità senza mostrare uno stato fuorviante."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC06",
+        "title": "Autorizzazione: operatore senza permessi non può consultare la posizione cliente e lo stato di attivazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato nel front-end commerciale con ruolo privo di permessi di consultazione posizione cliente (es. ruolo limitato)",
+          "Esiste una sottoscrizione associata al cliente target"
+        ],
+        "test_data": [
+          "ID utente: OP-000999",
+          "Ruolo: Operatore limitato (senza permesso consultazione posizione)",
+          "ID cliente: CL-10004567"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come utente OP-000999",
+          "Tentare di ricercare il cliente CL-10004567",
+          "Tentare di aprire la posizione cliente relativa ai prodotti/offerta sottoscritti"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'accesso alla posizione cliente (accesso negato o funzionalità non disponibile)",
+          "Lo stato di attivazione non è visualizzabile dall'utente privo di permessi"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (sportello/sala)"
+        ],
+        "notes": "Le regole di autorizzazione non sono esplicitate nel requisito; si assume segregazione dei permessi per accesso ai dati cliente."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-015.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-015.US03.TC01",
+        "title": "Avvio provisioning prodotti al completamento sottoscrizione (evento ricevuto dal verticale)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un evento/messaggio di 'sottoscrizione completata con successo' disponibile per il verticale di vendita",
+          "Il verticale di vendita è operativo e configurato per avviare il provisioning alla ricezione dell'evento",
+          "Sono presenti prodotti acquisiti nella sottoscrizione"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000400",
+          "ID cliente: CL-10004567",
+          "Prodotti acquisiti: PROD-A, PROD-B",
+          "Evento sottoscrizione: SubscriptionCompleted(success=true)"
+        ],
+        "steps": [
+          "Inviare al verticale di vendita l'evento SubscriptionCompleted(success=true) per SUB-2026-000400 con lista prodotti PROD-A, PROD-B",
+          "Monitorare l'avvio del processo di provisioning sul verticale (job/process instance/queue)",
+          "Recuperare l'evidenza dell'avvio provisioning per i prodotti della sottoscrizione"
+        ],
+        "expected_results": [
+          "Il verticale di vendita avvia il processo di provisioning per i prodotti acquisiti (almeno una istanza di processo/ordine tecnico per SUB-2026-000400)",
+          "Il provisioning avviato è riferito ai prodotti PROD-A e PROD-B della sottoscrizione SUB-2026-000400"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica tecnologia/event bus; il test verifica l'effetto osservabile: avvio provisioning sul verticale dopo sottoscrizione completata."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC02",
+        "title": "Invio informazioni a Framework Connect al completamento sottoscrizione (cashback/points)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un evento/messaggio di 'sottoscrizione completata con successo' disponibile per il verticale di vendita",
+          "L'interfaccia verso Framework Connect è disponibile e raggiungibile",
+          "Il verticale di vendita è configurato per inviare a Connect le informazioni necessarie per cashback/points"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000401",
+          "ID cliente: CL-10004567",
+          "Offerta: OFF-PLUS-01",
+          "Dati loyalty minimi attesi: identificativo cliente, identificativo offerta/sottoscrizione, timestamp sottoscrizione"
+        ],
+        "steps": [
+          "Inviare al verticale di vendita l'evento SubscriptionCompleted(success=true) per SUB-2026-000401",
+          "Intercettare/verificare la chiamata o il messaggio inviato dal verticale verso Framework Connect",
+          "Verificare l'esito della consegna a Connect (ack/response di successo)"
+        ],
+        "expected_results": [
+          "Il verticale di vendita invia a Framework Connect le informazioni necessarie per la registrazione di cashback/points per SUB-2026-000401",
+          "Framework Connect riceve la richiesta/messaggio e risponde con esito positivo (ack/HTTP 2xx o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce payload e protocollo; il test valida la trasmissione di un set minimo di informazioni identificative e l'esito positivo di ricezione."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC03",
+        "title": "Esito provisioning positivo: stato di corretta attivazione reso disponibile e consultabile dai canali (cliente/operatore)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sottoscrizione completata con successo",
+          "Provisioning/attivazione sul verticale termina con esito positivo",
+          "I canali (App/Web e front-end commerciale) consumano lo stato esposto dal verticale per la consultazione"
+        ],
+        "test_data": [
+          "ID cliente: CL-10004567",
+          "ID sottoscrizione: SUB-2026-000402",
+          "Prodotti: PROD-A, PROD-B",
+          "Stato verticale finale: Attivo"
+        ],
+        "steps": [
+          "Completare una sottoscrizione con successo per SUB-2026-000402",
+          "Attendere il completamento del provisioning sul verticale con esito positivo",
+          "Accedere al canale digitale come cliente CL-10004567 e consultare lo stato della sottoscrizione SUB-2026-000402",
+          "Accedere al front-end commerciale come operatore e consultare la posizione del cliente CL-10004567 per SUB-2026-000402"
+        ],
+        "expected_results": [
+          "Il verticale rende disponibile uno stato consultabile 'Attivo' per SUB-2026-000402",
+          "Il canale digitale mostra lo stato 'Attivo' per SUB-2026-000402",
+          "Il front-end commerciale mostra lo stato 'Attivo' per SUB-2026-000402"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Test E2E cross-canale per validare che lo stato prodotto dal verticale sia effettivamente consumabile da cliente e operatore."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC04",
+        "title": "Idempotenza: evento di sottoscrizione duplicato non genera provisioning/attivazioni duplicate",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il verticale di vendita implementa gestione idempotente degli eventi di sottoscrizione",
+          "Esiste una sottoscrizione completata con successo SUB-2026-000403"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000403",
+          "Evento SubscriptionCompleted duplicato: stesso ID sottoscrizione inviato 2 volte a distanza di 1 minuto"
+        ],
+        "steps": [
+          "Inviare al verticale l'evento SubscriptionCompleted(success=true) per SUB-2026-000403",
+          "Verificare l'avvio del provisioning per SUB-2026-000403",
+          "Inviare nuovamente lo stesso evento SubscriptionCompleted(success=true) per SUB-2026-000403",
+          "Verificare sul verticale il numero di istanze di provisioning/ordini tecnici creati per SUB-2026-000403"
+        ],
+        "expected_results": [
+          "Il provisioning per SUB-2026-000403 viene avviato una sola volta (nessuna duplicazione di istanze/ordini tecnici)",
+          "Lo stato finale consultabile non presenta duplicazioni o attivazioni multiple per gli stessi prodotti"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC05",
+        "title": "Invio a Connect fallito: prodotti possono risultare attivi ma anomalia loyalty gestita senza bloccare la sottoscrizione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sottoscrizione completata con successo",
+          "Il verticale di vendita completa provisioning prodotti con esito positivo",
+          "Framework Connect non accetta la richiesta (errore applicativo o HTTP 5xx) oppure non è raggiungibile"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000404",
+          "Simulazione errore Connect: HTTP 500 o timeout > 10s",
+          "Stato provisioning prodotti: Attivo"
+        ],
+        "steps": [
+          "Inviare al verticale l'evento SubscriptionCompleted(success=true) per SUB-2026-000404",
+          "Consentire il completamento del provisioning prodotti sul verticale con esito positivo",
+          "Forzare il fallimento dell'invio verso Framework Connect per SUB-2026-000404",
+          "Recuperare lo stato esposto dal verticale per SUB-2026-000404"
+        ],
+        "expected_results": [
+          "Il provisioning prodotti risulta completato e i prodotti risultano 'Attivi'",
+          "Framework Connect non riceve con successo le informazioni (errore/assenza ack) e l'anomalia è tracciata dal verticale (es. stato/flag di errore invio Connect o meccanismo di retry/coda attiva)",
+          "Lo stato esposto riflette la situazione non uniforme (attivazione prodotti OK con anomalia relativa a Connect) oppure indica chiaramente una condizione di anomalia senza dichiarare 'tutto attivo' in modo fuorviante"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito menziona che lo stato deve evidenziare anomalia o prevedere retry; non essendo specificato il modello dati, il test accetta una delle due evidenze verificabili: flag di anomalia nello stato oppure prova di retry/coda."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC06",
+        "title": "Provisioning parziale: stato consultabile gestisce prodotti attivi e non attivi nella stessa sottoscrizione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sottoscrizione completata con successo con almeno 2 prodotti",
+          "Il verticale di vendita può produrre esiti differenziati per prodotto (uno attivo, uno in errore o in lavorazione)"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000405",
+          "Prodotto PROD-A: Attivo",
+          "Prodotto PROD-B: Errore attivazione"
+        ],
+        "steps": [
+          "Inviare al verticale l'evento SubscriptionCompleted(success=true) per SUB-2026-000405 con prodotti PROD-A e PROD-B",
+          "Simulare/ottenere un esito di provisioning parziale (PROD-A Attivo, PROD-B Errore)",
+          "Recuperare lo stato esposto dal verticale per SUB-2026-000405"
+        ],
+        "expected_results": [
+          "Lo stato esposto dal verticale per SUB-2026-000405 rappresenta la non uniformità dell'esito (non mostra un unico stato 'Attivo' per l'intera sottoscrizione se un prodotto è in errore)",
+          "È possibile distinguere almeno un prodotto attivo e uno non attivo/in errore nello stato consultabile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce la granularità dello stato; il test verifica almeno la possibilità di rappresentare esiti non uniformi senza appiattire a 'Attivo'."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC07",
+        "title": "Connect non disponibile: gestione retry/coda di invio senza bloccare l'avvio provisioning prodotti",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sottoscrizione completata con successo",
+          "Framework Connect non disponibile (servizio down o non raggiungibile)",
+          "Il verticale di vendita supporta meccanismo di retry e/o coda di invio verso Connect"
+        ],
+        "test_data": [
+          "ID sottoscrizione: SUB-2026-000406",
+          "Simulazione indisponibilità Connect: DNS fail/timeout > 10s",
+          "Prodotti: PROD-A"
+        ],
+        "steps": [
+          "Inviare al verticale l'evento SubscriptionCompleted(success=true) per SUB-2026-000406",
+          "Forzare l'indisponibilità di Framework Connect durante il tentativo di invio",
+          "Verificare che il verticale avvii comunque il provisioning prodotti per SUB-2026-000406",
+          "Verificare la presenza di un elemento in coda o di un tentativo di retry pianificato per l'invio a Connect relativo a SUB-2026-000406"
+        ],
+        "expected_results": [
+          "Il provisioning prodotti viene avviato nonostante Connect non sia disponibile",
+          "L'invio a Connect non va perso: è presente evidenza di retry e/o messaggio in coda per SUB-2026-000406"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito indica gestione retry e/o coda; il test verifica almeno una delle due evidenze operative (retry o coda)."
+      }
+    ]
+  }
+]

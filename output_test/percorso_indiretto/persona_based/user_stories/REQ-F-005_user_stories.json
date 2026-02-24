@@ -1,0 +1,93 @@
+[
+  {
+    "story_id": "REQ-F-005.US01",
+    "title": "Esperienza digitale self-service per consultazione e acquisto offerte",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "consultare e acquistare offerte in autonomia sul canale digitale con un flusso dedicato",
+    "benefit": "completare il processo end-to-end senza assistenza, con un’esperienza coerente e chiara",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio consultare e acquistare offerte in modalità self-service su App/Web tramite un flusso dedicato\nIn modo che possa completare autonomamente tutte le operazioni di consultazione e acquisto",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo ai canali digitali (App/Web) ALLORA posso seguire un flusso di consultazione e acquisto self-service distinto dal canale fisico",
+      "QUANDO avvio il processo di acquisto su App/Web ALLORA posso completare end-to-end le operazioni senza intervento dell’operatore",
+      "QUANDO vengono eseguiti test end-to-end sul canale digitale ALLORA risulta verificato che il cliente digitale compie il processo autonomamente tramite le interfacce/modalità operative del canale digitale"
+    ],
+    "business_rules": [
+      "Il canale digitale deve utilizzare interfacce/modalità operative dedicate e distinte dal canale fisico (non riuso indistinto del flusso operatore)."
+    ],
+    "edge_cases": [
+      "QUANDO un’offerta non è disponibile sul canale digitale (per configurazione canale o vincoli di vendibilità) ALLORA non deve essere presentata/resa acquistabile sul canale digitale",
+      "QUANDO le interfacce/endpoint digitali non sono disponibili ALLORA il cliente non può completare il self-service e deve ricevere un errore/gestione di indisponibilità coerente col canale"
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia i touchpoint digitali specifici del funnel; si assume che il flusso digitale includa consultazione e acquisto sui canali App e Web come indicato in descrizione.",
+      "I vincoli di vendibilità per touchpoint sono definiti altrove (REQ-F-002/REQ-F-027) e vengono applicati anche al canale digitale."
+    ],
+    "notes": "AC condivisi con REQ-F-005.US02: distinzione dei flussi e verifica end-to-end per canale."
+  },
+  {
+    "story_id": "REQ-F-005.US02",
+    "title": "Esperienza fisica guidata: l’operatore riceve e propone offerte tramite interfaccia dedicata",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "ricevere dal motore le proposte e proporle al cliente tramite un flusso e un’interfaccia dedicati al canale fisico",
+    "benefit": "gestire una vendita assistita coerente con il contesto di sportello/sala",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio ricevere le proposte dal motore e proporle al cliente tramite un flusso e un’interfaccia dedicati al canale fisico\nIn modo che possa guidare il cliente in un’esperienza assistita coerente con l’operatività in ufficio postale",
+    "channels": [
+      "Front-end commerciale (UP)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO opero nel canale fisico (UP) ALLORA utilizzo un flusso e un’interfaccia distinti da quelli digitali per consultare e proporre offerte",
+      "QUANDO il motore rende disponibili proposte per un cliente ALLORA posso riceverle e proporle tramite l’interfaccia operatore",
+      "QUANDO vengono eseguiti test end-to-end sul canale fisico ALLORA risulta verificato che l’operatore in ufficio riceve e propone offerte tramite l’interfaccia operatore",
+      "QUANDO il sistema espone modalità operative/endpoint per i due canali ALLORA l’operatore utilizza quelli previsti per il canale fisico e non quelli del self-service digitale"
+    ],
+    "business_rules": [
+      "Il canale fisico deve utilizzare interfacce/modalità operative dedicate e distinte dal canale digitale (separazione dei comportamenti per canale)."
+    ],
+    "edge_cases": [
+      "QUANDO le interfacce/endpoint del canale fisico non sono disponibili ALLORA l’operatore non può recuperare/proporre offerte e deve ricevere una gestione di errore coerente per l’operatività di sportello",
+      "QUANDO un’offerta non è disponibile per il canale UP (per configurazione canale o vincoli di vendibilità) ALLORA non deve essere resa proponibile tramite interfaccia operatore"
+    ],
+    "assumptions": [
+      "Il requisito non specifica dettagli UI/UX dell’interfaccia operatore; si assume solo l’esistenza di una modalità operativa distinta per il canale fisico.",
+      "I vincoli di vendibilità per touchpoint sono definiti altrove (REQ-F-002/REQ-F-027) e vengono applicati anche al canale fisico."
+    ],
+    "notes": "AC condivisi con REQ-F-005.US01: distinzione dei flussi e verifica end-to-end per canale."
+  },
+  {
+    "story_id": "REQ-F-005.US03",
+    "title": "Configurazione disponibilità offerta per canale con vincoli di vendibilità per touchpoint",
+    "persona": "Team Marketing",
+    "goal": "associare un’offerta a specifici canali (UP, Web, App o combinazioni) con default su tutti i touchpoint e nel rispetto dei vincoli regolamentari di vendibilità",
+    "benefit": "abilitare promo differenziate per touchpoint (solo digitale o solo UP) in modo conforme",
+    "user_story": "Come Team Marketing\nVoglio associare ogni offerta a specifici canali (UP, Web, App o combinazioni) rispettando i vincoli di vendibilità per touchpoint\nIn modo che possa attivare promozioni speciali solo su digitale o solo in UP in modo conforme",
+    "channels": [
+      "Dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO configuro una nuova offerta (o modifico un’offerta esistente) ALLORA posso indicare la disponibilità per i canali UP, Web, App o una combinazione di essi",
+      "QUANDO non seleziono esplicitamente i canali di disponibilità ALLORA la disponibilità predefinita dell’offerta è impostata su tutti e tre i touchpoint (UP, Web, App)",
+      "QUANDO tento di abilitare un touchpoint per un’offerta che in REQ-F-002 risulta marcata come \"non vendibile\" su quel touchpoint ALLORA il sistema deve impedire il salvataggio della configurazione (o rendere non selezionabile quel touchpoint)",
+      "QUANDO viene applicata una configurazione di disponibilità per canale ALLORA i canali/endpoint/interfacce di ciascun touchpoint devono esporre solo le offerte abilitate per quel touchpoint"
+    ],
+    "business_rules": [
+      "Default canali offerta: UP + Web + App, salvo configurazione esplicita.",
+      "Vincolo: il Team Marketing non può abilitare un touchpoint se l’offerta/prodotto è \"non vendibile\" su quel touchpoint secondo REQ-F-002 (e riferimento REQ-F-027)."
+    ],
+    "edge_cases": [
+      "QUANDO REQ-F-002/REQ-F-027 non sono disponibili o non restituiscono l’informazione di vendibilità per touchpoint ALLORA la configurazione canale non può essere validata (gestione errore/blocco) oppure deve essere impedito il salvataggio fino a esito verificabile",
+      "QUANDO un’offerta è configurata su un sottoinsieme di canali ALLORA sui canali esclusi non deve risultare disponibile né acquistabile/proponibile"
+    ],
+    "assumptions": [
+      "Il requisito non specifica se il blocco avviene in fase di selezione (touchpoint disabilitato) o in fase di salvataggio (errore di validazione); si assume che almeno una delle due modalità sia implementata in modo testabile.",
+      "Il requisito rimanda a REQ-F-002 e REQ-F-027 per i vincoli regolamentari di vendibilità: tali regole sono una dipendenza esterna per la completa definizione dei controlli."
+    ],
+    "notes": "Dipendenze esterne: REQ-F-002 e REQ-F-027 per la definizione dei vincoli di vendibilità per touchpoint. L’ultimo AC (esposizione coerente per touchpoint) impatta anche i flussi di REQ-F-005.US01/US02, ma è riportato qui perché deriva dalla configurazione Marketing."
+  }
+]

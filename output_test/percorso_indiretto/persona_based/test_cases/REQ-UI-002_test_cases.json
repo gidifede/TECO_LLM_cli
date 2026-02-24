@@ -1,0 +1,322 @@
+[
+  {
+    "story_id": "REQ-UI-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-002.US01.TC01",
+        "title": "Visualizzazione predefinita della lista offerte in layout a card",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale con ruolo abilitato alla visualizzazione offerte",
+          "Sono presenti almeno 2 offerte disponibili per l'operatore"
+        ],
+        "test_data": [
+          "Operatore: OP001 (ruolo: Operatore sportello/sala)",
+          "Offerte disponibili: OFF-1001, OFF-1002 (con dati completi e distinti)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore",
+          "Navigare alla schermata delle offerte"
+        ],
+        "expected_results": [
+          "La schermata delle offerte viene mostrata con layout a card come impostazione predefinita (senza necessità di selezionare manualmente il layout)",
+          "Sono visibili almeno 2 card, una per ciascuna offerta disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC02",
+        "title": "Ogni offerta è rappresentata da una card separata e chiaramente distinguibile",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "Sono presenti almeno 3 offerte disponibili"
+        ],
+        "test_data": [
+          "Offerte disponibili: OFF-2001, OFF-2002, OFF-2003"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Osservare la lista offerte renderizzata in layout a card"
+        ],
+        "expected_results": [
+          "Per ciascuna offerta disponibile è presente una singola card corrispondente",
+          "Le card risultano visivamente separate tra loro (es. spaziatura/bordi/riquadri) e non appaiono fuse o sovrapposte",
+          "Non sono presenti elementi UI che facciano apparire più offerte come un'unica card"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC03",
+        "title": "Presenza e funzionamento del controllo di espansione/contrazione dei dettagli su una card",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "È presente almeno 1 offerta con dettagli aggiuntivi visualizzabili in espansione"
+        ],
+        "test_data": [
+          "Offerta: OFF-3001 (contiene sezione dettagli non visibile a card contratta)"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Individuare la card dell'offerta OFF-3001",
+          "Verificare la presenza del controllo di espansione/contrazione nella card",
+          "Attivare il controllo di espansione",
+          "Attivare il controllo di contrazione"
+        ],
+        "expected_results": [
+          "La card OFF-3001 contiene un controllo dedicato per espandere/contrarre le informazioni di dettaglio",
+          "Dopo l'espansione, le informazioni di dettaglio dell'offerta risultano visibili nella card (o in un'area collegata alla card)",
+          "Dopo la contrazione, le informazioni di dettaglio tornano non visibili e la card ritorna allo stato compatto"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC04",
+        "title": "Presenza e selezione di un'offerta tramite controllo dedicato sulla card con evidenza visiva",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "Sono presenti almeno 2 offerte disponibili e selezionabili"
+        ],
+        "test_data": [
+          "Offerte disponibili: OFF-4001, OFF-4002"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Individuare la card dell'offerta OFF-4001",
+          "Verificare la presenza del controllo di selezione nella card",
+          "Attivare il controllo di selezione sulla card OFF-4001"
+        ],
+        "expected_results": [
+          "La card OFF-4001 contiene un controllo dedicato per selezionare l'offerta",
+          "Dopo l'attivazione del controllo, la card OFF-4001 mostra un'evidenza visiva di selezione (es. stato selezionato/outline/check), coerente con lo standard UI applicativo",
+          "La selezione risulta applicata alla sola offerta OFF-4001 (nessuna selezione involontaria su altre card)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Assunzione: la selezione produce un'evidenza visiva sulla card; il requisito non specifica il tipo di controllo né lo stile dello stato selezionato."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC05",
+        "title": "Autorizzazione: accesso alla schermata offerte consentito solo a operatore abilitato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esistono due utenti: uno con ruolo Operatore abilitato, uno senza abilitazione alla schermata offerte",
+          "Il front-end commerciale applica controlli di autorizzazione per la sezione offerte"
+        ],
+        "test_data": [
+          "Utente abilitato: OP_OK (ruolo: Operatore sportello/sala)",
+          "Utente non abilitato: OP_NO (ruolo: profilo non autorizzato alla sezione offerte)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come utente OP_NO",
+          "Tentare di navigare alla schermata delle offerte"
+        ],
+        "expected_results": [
+          "L'utente OP_NO non può accedere alla schermata delle offerte",
+          "Il sistema mostra un messaggio/indicazione di accesso non autorizzato oppure impedisce la navigazione alla sezione",
+          "Non viene visualizzata alcuna lista offerte in layout a card"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito originale non esplicita i ruoli; il test valida un controllo minimo di autorizzazione coerente con l'accesso 'come operatore'."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC06",
+        "title": "Edge case: assenza offerte disponibili mostra stato informativo senza card vuote",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "Per l'operatore non sono presenti offerte disponibili (dataset vuoto o filtri che portano a 0 risultati)"
+        ],
+        "test_data": [
+          "Risultato ricerca/lista offerte: 0 offerte"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte con dataset vuoto (0 offerte)"
+        ],
+        "expected_results": [
+          "Non viene mostrata alcuna card vuota o placeholder che simuli offerte inesistenti",
+          "Viene mostrato uno stato informativo di assenza offerte (es. messaggio 'Nessuna offerta disponibile')"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC07",
+        "title": "Edge case: presenza di una sola offerta mostra una singola card con controlli di espansione e selezione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "È presente esattamente 1 offerta disponibile"
+        ],
+        "test_data": [
+          "Offerta disponibile unica: OFF-7001"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Verificare la quantità di card visualizzate",
+          "Individuare i controlli presenti sulla card OFF-7001",
+          "Attivare il controllo di espansione",
+          "Attivare il controllo di selezione"
+        ],
+        "expected_results": [
+          "È visualizzata una sola card corrispondente all'offerta OFF-7001",
+          "La card contiene il controllo di espansione/contrazione",
+          "La card contiene il controllo di selezione",
+          "L'espansione mostra i dettagli e la selezione produce evidenza visiva di selezione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Assunzione: la selezione produce un'evidenza visiva sulla card."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC08",
+        "title": "Edge case: gestione overflow testo in card senza impedire espansione e selezione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "È presente almeno 1 offerta con descrizione molto lunga (overflow)"
+        ],
+        "test_data": [
+          "Offerta: OFF-8001 (descrizione: testo > 500 caratteri; titolo lungo > 80 caratteri)"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Individuare la card OFF-8001 con contenuto testuale lungo",
+          "Verificare che la card gestisca l'overflow del testo (es. troncamento o scroll)",
+          "Attivare il controllo di espansione sulla card OFF-8001",
+          "Attivare il controllo di selezione sulla card OFF-8001"
+        ],
+        "expected_results": [
+          "Il contenuto testuale in overflow è gestito dalla UI (es. testo troncato con ellissi o area scrollabile) senza rotture del layout (es. sovrapposizioni illeggibili)",
+          "Il controllo di espansione rimane visibile e attivabile nonostante l'overflow",
+          "Il controllo di selezione rimane visibile e attivabile nonostante l'overflow",
+          "Dopo l'espansione i dettagli risultano consultabili; dopo la selezione è visibile lo stato selezionato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non impone una specifica modalità di overflow (troncamento vs scroll); il test verifica l'assenza di impatti funzionali su espansione/selezione."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC09",
+        "title": "Negativo: errore tecnico UI durante la selezione mostra messaggio e non conferma la selezione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato nel front-end commerciale",
+          "È presente almeno 1 offerta selezionabile",
+          "È possibile simulare/forzare un errore tecnico lato UI al momento della selezione (es. mock, feature flag, interruzione chiamata, errore client)"
+        ],
+        "test_data": [
+          "Offerta: OFF-9001",
+          "Simulazione errore: eccezione UI o fallimento operazione di selezione (es. risposta errore 500 o timeout sulla chiamata associata alla selezione, se presente)"
+        ],
+        "steps": [
+          "Accedere alla schermata delle offerte",
+          "Individuare la card OFF-9001",
+          "Attivare la condizione di errore tecnico UI per l'azione di selezione",
+          "Attivare il controllo di selezione sulla card OFF-9001"
+        ],
+        "expected_results": [
+          "La UI mostra un messaggio di errore comprensibile per l'operatore (es. 'Operazione non disponibile, riprovare')",
+          "La card OFF-9001 non risulta in stato selezionato (nessuna evidenza visiva di selezione persistente)",
+          "L'operatore può rimanere sulla schermata offerte senza blocchi dell'interfaccia"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Dipendenza esterna: modalità di simulazione dell'errore tecnico UI da definire (mock/stub/strumento di test)."
+      },
+      {
+        "test_id": "REQ-UI-002.US01.TC10",
+        "title": "Test utente: identificazione e selezione rapida di un'offerta dalla vista a card secondo soglia definita",
+        "type": "E2E",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un protocollo di test utente con soglia di successo definita (es. tempo massimo e/o tasso di successo)",
+          "Campione di operatori rappresentativi disponibile (numero e criteri di selezione definiti)",
+          "Ambiente front-end commerciale pronto per sessioni di usability test con dataset di offerte pre-caricato"
+        ],
+        "test_data": [
+          "Dataset: 10 offerte (OFF-U001..OFF-U010) con nomi e caratteristiche distinguibili",
+          "Task: 'Seleziona l'offerta OFF-U007 partendo dalla schermata offerte'",
+          "Soglia (da definire nel protocollo): es. tempo medio <= 20s e tasso di successo >= 90%"
+        ],
+        "steps": [
+          "Avviare la sessione di test utente secondo protocollo definito",
+          "Far accedere l'operatore alla schermata delle offerte in layout a card",
+          "Assegnare il task di identificare e selezionare una specifica offerta (es. OFF-U007)",
+          "Misurare il tempo di completamento e registrare esito (successo/insuccesso) per ciascun partecipante",
+          "Calcolare le metriche aggregate secondo protocollo (tempo medio/mediano e tasso di successo)"
+        ],
+        "expected_results": [
+          "La vista a card consente ai partecipanti di completare il task di identificazione e selezione dell'offerta",
+          "Le metriche misurate rispettano la soglia definita nel protocollo di test utente (es. tempo medio <= soglia e tasso di successo >= soglia)",
+          "I risultati del test sono tracciati e archiviati (es. report con metriche, campione, dataset e condizioni di esecuzione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "AC-3 richiede 'rapidamente' ma non fornisce una metrica: il test è eseguibile solo dopo formalizzazione della soglia (tempo/tasso di successo) nel protocollo di usability test."
+      }
+    ]
+  }
+]

@@ -1,0 +1,219 @@
+[
+  {
+    "story_id": "REQ-V-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-002.US01.TC01",
+        "title": "Conformità a guida di stile su schermate proposta/offerta (palette, tipografia, componenti)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile con front-end commerciale raggiungibile da postazione operatore",
+          "Utente operatore abilitato ad accedere alle schermate di proposta/offerta",
+          "Guida di stile aziendale ufficiale (palette colori, tipografia, componenti UI) disponibile come riferimento verificabile (es. design system/versione pubblicata)"
+        ],
+        "test_data": [
+          "Utente: OP_POSTE_001 (ruolo: Operatore sportello/sala)",
+          "Schermate target: 'Proposta', 'Offerta' (e relative varianti previste dalla release)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP_POSTE_001",
+          "Aprire la schermata 'Proposta'",
+          "Verificare palette colori applicata ai principali elementi (sfondi, testi, stati, CTA) rispetto alla guida di stile",
+          "Verificare tipografia (font family, pesi, dimensioni, gerarchie) rispetto alla guida di stile",
+          "Verificare che i componenti UI principali (card, bottoni, input, badge, alert) corrispondano ai componenti previsti dal design system (stile, spaziature, stati)",
+          "Aprire la schermata 'Offerta'",
+          "Ripetere le verifiche su palette colori, tipografia e componenti UI anche sulla schermata 'Offerta'"
+        ],
+        "expected_results": [
+          "La schermata 'Proposta' rispetta la palette colori ufficiale (nessun colore fuori specifica per elementi verificati)",
+          "La schermata 'Proposta' rispetta la tipografia ufficiale (font e gerarchie coerenti per elementi verificati)",
+          "I componenti UI verificati in 'Proposta' risultano conformi al design system (stile e stati coerenti)",
+          "La schermata 'Offerta' rispetta la palette colori ufficiale (nessun colore fuori specifica per elementi verificati)",
+          "La schermata 'Offerta' rispetta la tipografia ufficiale (font e gerarchie coerenti per elementi verificati)",
+          "I componenti UI verificati in 'Offerta' risultano conformi al design system (stile e stati coerenti)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Verifica UI basata su confronto con guida di stile ufficiale. La story non specifica strumenti/metriche (es. token CSS); la conformità è verificata tramite ispezione UI e/o confronto con design system pubblicato."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC02",
+        "title": "Visualizzazione icona promozionale/urgenza su card quando la promozione è applicabile",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile con front-end commerciale raggiungibile da postazione operatore",
+          "Utente operatore abilitato ad accedere alle schermate di proposta/offerta",
+          "Esiste almeno un'offerta configurata con promozione/urgenza 'applicabile' secondo regole esterne al requisito (dipendenza)",
+          "Set di icone promozionali/urgenze approvate disponibile come riferimento verificabile (es. libreria icone/versione)"
+        ],
+        "test_data": [
+          "Utente: OP_POSTE_001 (ruolo: Operatore sportello/sala)",
+          "Offerta con promozione applicabile: OFF_PROMO_001 (esempio)",
+          "Icona attesa (da set approvato): ICON_PROMO_APPROVATA_01 (esempio)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP_POSTE_001",
+          "Navigare alla schermata in cui sono visualizzate le card offerta/proposta",
+          "Individuare la card relativa a OFF_PROMO_001",
+          "Verificare la presenza dell'icona promozionale/urgenza sulla card",
+          "Verificare che l'icona mostrata corrisponda a un'icona del set approvato (nome/asset/versione)",
+          "Verificare che l'icona sia visibile e distinguibile all'interno della card (non sovrapposta, non tagliata, contrasto sufficiente rispetto allo sfondo secondo linee guida)"
+        ],
+        "expected_results": [
+          "La card di OFF_PROMO_001 mostra un'icona promozionale/urgenza",
+          "L'icona visualizzata appartiene al set di icone promozionali/urgenze approvate e rispetta le linee guida di utilizzo (stile coerente)",
+          "L'icona è chiaramente visibile nella card (non tagliata, non sovrapposta ad altri elementi, leggibile)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La condizione 'quando appropriate/applicabile' dipende da regole non incluse nel requisito; il test richiede un'offerta già predisposta come 'promozione applicabile' (dipendenza da configurazione/dati)."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC03",
+        "title": "Assenza icona promozionale su card quando la promozione/urgenza non è applicabile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile con front-end commerciale raggiungibile da postazione operatore",
+          "Utente operatore abilitato ad accedere alle schermate di proposta/offerta",
+          "Esiste almeno un'offerta configurata senza promozione/urgenza (non applicabile) secondo regole esterne al requisito (dipendenza)"
+        ],
+        "test_data": [
+          "Utente: OP_POSTE_001 (ruolo: Operatore sportello/sala)",
+          "Offerta senza promozione/urgenza: OFF_STD_001 (esempio)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP_POSTE_001",
+          "Navigare alla schermata in cui sono visualizzate le card offerta/proposta",
+          "Individuare la card relativa a OFF_STD_001",
+          "Verificare l'assenza di icone promozionali/urgenze sulla card"
+        ],
+        "expected_results": [
+          "La card di OFF_STD_001 non mostra alcuna icona promozionale/urgenza"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Copre l'edge case 'Offerta senza promozione/urgenza'. La definizione di non-applicabilità dipende da regole esterne non fornite."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC04",
+        "title": "Blocco rilascio: evidence di review grafica presente per release candidata",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una release candidata al rilascio (build/tag/versione) identificabile",
+          "Processo di release prevede un artefatto tracciabile di review grafica (es. ticket approvato, checklist firmata, record in tool ALM/CI)",
+          "Accesso disponibile ai sistemi di tracciamento (es. Jira/ALM/Repository/CI) per verificare l'evidenza"
+        ],
+        "test_data": [
+          "Release candidata: REL_2026.02.1 (esempio)",
+          "Artefatto atteso: Ticket REVIEW_UI_123 (esempio) con esito 'APPROVATO' e riferimento alle schermate operatore"
+        ],
+        "steps": [
+          "Identificare la release candidata REL_2026.02.1 e i relativi riferimenti di tracciabilità (tag, build, change list)",
+          "Accedere al sistema di tracciamento dove viene registrata la review grafica",
+          "Ricercare l'artefatto di review grafica associato alla release (es. ticket/checklist) per le schermate di proposta/offerta del canale operatore",
+          "Verificare che l'artefatto riporti esito 'APPROVATO' e sia riferito alla release candidata",
+          "Verificare che l'artefatto includa esplicitamente la validazione di aderenza al brand e uso appropriato delle icone promozionali/urgenze"
+        ],
+        "expected_results": [
+          "Per la release candidata esiste un'evidenza tracciabile di review grafica associata alla release",
+          "L'evidenza riporta esito 'APPROVATO' e copre le schermate rilevanti per l'operatore (proposta/offerta)",
+          "L'evidenza include la validazione di conformità al brand e dell'uso appropriato delle icone promozionali/urgenze"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Test di processo/integrazione con tool di release management. La modalità di tracciamento (ticket/checklist) è un'assunzione derivata dalla story; adeguare i passi allo strumento effettivo in uso."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC05",
+        "title": "Blocco rilascio: icona non appartenente al set approvato rilevata in review grafica (non rilasciabile)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un meccanismo di review grafica formale con esito tracciabile che può risultare 'RESPINTO/BLOCCATO'",
+          "È disponibile una build candidata o un artefatto UI (mock/build) contenente almeno una card con icona promozionale non appartenente al set approvato (scenario controllato)",
+          "Set di icone promozionali/urgenze approvate disponibile come riferimento verificabile"
+        ],
+        "test_data": [
+          "Release candidata (scenario controllato): REL_2026.02.1-RC_BADICON (esempio)",
+          "Icona non approvata: ICON_PROMO_NON_APPROVATA_X (esempio)",
+          "Artefatto review atteso: Ticket REVIEW_UI_124 (esempio) con esito 'RESPINTO/BLOCCATO'"
+        ],
+        "steps": [
+          "Accedere alla build/artefatto UI REL_2026.02.1-RC_BADICON",
+          "Aprire una schermata con card che espone l'icona promozionale",
+          "Verificare che l'icona visualizzata corrisponda a ICON_PROMO_NON_APPROVATA_X (non presente nel set approvato)",
+          "Accedere al sistema di tracciamento della review grafica",
+          "Verificare che la review grafica associata alla release candidata riporti un esito di non conformità (es. 'RESPINTO/BLOCCATO') motivato dall'uso di icona non approvata",
+          "Verificare che, in presenza di esito 'RESPINTO/BLOCCATO', la release non risulti approvata per il rilascio secondo il processo (es. gate di qualità non superato)"
+        ],
+        "expected_results": [
+          "L'icona non appartiene al set approvato e viene identificata come non conforme",
+          "La review grafica associata alla release registra esito 'RESPINTO/BLOCCATO' (o equivalente) con motivazione tracciabile",
+          "La release candidata risulta non rilasciabile finché la non conformità non viene risolta e la review non viene approvata"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Copre l'edge case 'Icona non presente nel set approvato'. Il requisito non specifica il meccanismo tecnico di blocco; si assume un gate di processo basato su esito review."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC06",
+        "title": "Perimetro review grafica include componenti UI personalizzati/non standard presenti nelle schermate operatore",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una release candidata al rilascio identificabile",
+          "Nella release sono presenti uno o più componenti UI personalizzati/non standard nelle schermate di proposta/offerta (es. widget custom, card variante non standard) oppure un elenco componenti UI della release è disponibile",
+          "Processo di review grafica produce un artefatto tracciabile con elenco/ambito degli elementi revisionati"
+        ],
+        "test_data": [
+          "Release candidata: REL_2026.02.1 (esempio)",
+          "Componente custom atteso in perimetro: WIDGET_CUSTOM_RATE_01 (esempio)",
+          "Artefatto review: Ticket REVIEW_UI_123 (esempio) con sezione 'Ambito/Scope'"
+        ],
+        "steps": [
+          "Identificare nella release REL_2026.02.1 almeno un componente UI personalizzato/non standard presente nelle schermate proposta/offerta",
+          "Accedere all'artefatto tracciabile della review grafica associato alla release",
+          "Verificare nella sezione di ambito/scope che il componente personalizzato/non standard sia incluso tra gli elementi revisionati",
+          "Verificare che l'esito della review copra anche la conformità al brand del componente personalizzato/non standard"
+        ],
+        "expected_results": [
+          "I componenti UI personalizzati/non standard presenti nelle schermate operatore risultano inclusi nel perimetro della review grafica",
+          "L'artefatto di review contiene evidenza che anche tali componenti sono stati valutati rispetto alla conformità al brand"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Copre l'edge case relativo a componenti custom. Se non esistono componenti custom nella release, il test va eseguito sulla prima release che li introduce oppure va marcato N/A con evidenza."
+      }
+    ]
+  }
+]

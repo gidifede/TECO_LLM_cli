@@ -1,0 +1,135 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-005",
+  "direct": {
+    "tc_count": 12,
+    "coherence_score": 78,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-005.TC03",
+        "detail": "Introduce esempi di naming/struttura endpoint (es. /digital/offers, /digital/purchase) e vincoli di payload (es. 'operatoreId obbligatorio') non presenti nel requisito; il requisito richiede solo modalità/interfacce distinte, non specifiche API."
+      },
+      {
+        "test_id": "REQ-F-005.TC04",
+        "detail": "Assume campi/dati 'tipici operatore' (motivazioni, script, note) non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-005.TC05",
+        "detail": "Aggiunge una regola di segregazione accessi/RBAC (cliente non può accedere a endpoint operatore) non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-005.TC06",
+        "detail": "Aggiunge una regola di segregazione accessi/RBAC (operatore non può usare endpoint self-service) non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-005.TC07",
+        "detail": "Presuppone credenziali/password, metodo di pagamento configurato e stato ordine 'Confermato' o simili: dettagli di processo non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-005.TC08",
+        "detail": "Introduce requisiti di audit/log/eventi per registrare la proposta: il requisito richiede che l'operatore riceva e proponga offerte, non che esista una specifica evidenza (log/stato) né come debba essere tracciata."
+      },
+      {
+        "test_id": "REQ-F-005.TC12",
+        "detail": "Gestione errori/timeout del motore proposte (messaggi, no proposte parziali) non menzionata nel requisito; è un caso negativo ragionevole ma non tracciabile alla fonte fornita."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'I flussi, le interfacce e i comportamenti devono essere differenziati per rispondere ai bisogni di ciascun canale.'",
+        "detail": "I TC verificano la distinzione di flussi/interfacce in modo generico, ma non coprono esplicitamente la parte 'comportamenti differenziati' con esempi verificabili (oltre alla sola separazione endpoint/UI)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-005.TC01",
+          "REQ-F-005.TC02"
+        ],
+        "detail": "Entrambi sono test documentali su AC-1 (flussi distinti e user story). Coprono aspetti diversi ma parzialmente sovrapposti come verifica di 'documentazione' richiesta dall'AC-1."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 16,
+    "coherence_score": 65,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-005.US01.TC04",
+        "detail": "Introduce esplicitamente scenari di 'offerta non mostrata né acquistabile' come regola di presentazione UI; il requisito parla di associazione offerta-canale e disponibilità per touchpoint, ma non specifica modalità UI (non visibile vs disabilitata) né impone questo comportamento come criterio."
+      },
+      {
+        "test_id": "REQ-F-005.US01.TC05",
+        "detail": "Aggiunge gestione errori per indisponibilità endpoint digitali (messaggistica e blocco completamento) non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC05",
+        "detail": "Aggiunge gestione errori per indisponibilità endpoint canale fisico (messaggistica 'coerente con operatività di sportello') non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-005.US02.TC06",
+        "detail": "Introduce come regola 'offerta non disponibile per UP non proponibile' con dettagli di presentazione; il requisito parla di disponibilità per touchpoint ma non definisce come l'UP debba filtrare/mostrare l'offerta."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC01",
+        "detail": "Introduce un canale/artefatto 'Dashboard' per Marketing non menzionato nel requisito (che parla genericamente di 'utente Marketing deve poter associare offerta a canale')."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC02",
+        "detail": "Traccia il default 'tutti i touchpoint' ad AC-2, ma il default è nella description e non in AC-2; inoltre introduce la 'Dashboard' come mezzo specifico."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC04",
+        "detail": "Assume 'propagazione/sincronizzazione completata' dalla configurazione Marketing ai canali: meccanismo non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-005.US03.TC05",
+        "detail": "Assume comportamento specifico in caso di indisponibilità del servizio REQ-F-002/REQ-F-027 (blocco salvataggio): non definito nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: 'Sono documentati due flussi distinti (digitale e fisico) e le rispettive user story.'",
+        "detail": "Il set non contiene alcun test che verifichi esplicitamente la presenza di documentazione e/o user story come artefatti; usa AC-1 per test di esecuzione canali, ma non valida il requisito 'documentati'."
+      },
+      {
+        "source": "Descrizione requisito: 'I flussi, le interfacce e i comportamenti devono essere differenziati per rispondere ai bisogni di ciascun canale.'",
+        "detail": "La distinzione viene verificata soprattutto come 'percorso distinto' o 'endpoint distinti' senza coprire in modo esplicito esempi di comportamenti differenziati (oltre alla semplice non disponibilità offerta)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-005.US01.TC01",
+          "REQ-F-005.US01.TC02"
+        ],
+        "detail": "Stesso scenario replicato per Web e App (accesso flusso digitale distinto). È una duplicazione cross-touchpoint con passi/attesi quasi identici."
+      },
+      {
+        "test_ids": [
+          "REQ-F-005.US02.TC02",
+          "REQ-F-005.US02.TC03"
+        ],
+        "detail": "Entrambi coprono ricezione proposte dal motore e proposta al cliente su UP; differenza principale è il tag Integration vs E2E, ma lo scenario è molto simile."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set direct è più coerente perché valida esplicitamente AC-1 come requisito di documentazione (TC01-TC02), mentre l'indirect_persona lo 'copre' con test di esecuzione canali senza verificare l'artefatto richiesto (missing_info su AC-1). Inoltre l'indirect_persona introduce più assunzioni non tracciabili (es. 'Dashboard', propagazione configurazioni, gestione indisponibilità servizi) aumentando le added_info e riducendo il punteggio complessivo (65 vs 78)."
+  }
+}

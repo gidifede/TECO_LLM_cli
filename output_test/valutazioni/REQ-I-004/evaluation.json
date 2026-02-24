@@ -1,0 +1,174 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-004",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 77,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-004.TC01",
+        "detail": "Assume disponibilità di logging/tracing, correlation-id, endpoint/connection string per dimostrare la 'medesima fonte'; il requisito non specifica tali meccanismi di prova."
+      },
+      {
+        "test_id": "REQ-I-004.TC02",
+        "detail": "Introduce concetti operativi non citati (\"storico presentazioni\", messaggi/motivazioni di blocco) e un flusso specifico di presentazione offerta per verificare la frequenza."
+      },
+      {
+        "test_id": "REQ-I-004.TC03",
+        "detail": "Assume una politica di propagazione specifica ('immediata', no-cache/cache invalidabile) non definita nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.TC04",
+        "detail": "Fissa un valore di policy ('refresh massimo = 15 minuti') non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.TC05",
+        "detail": "Assume esistenza di API/query e possibilità di 'forzare/indicare' l'uso di una versione storica durante una valutazione; il requisito richiede solo meccanismi di versioning/timestamp per ricostruzione storica."
+      },
+      {
+        "test_id": "REQ-I-004.TC06",
+        "detail": "Introduce requisiti di comportamento in indisponibilità (errore controllato, assenza di fallback a regole locali) non esplicitati dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"La matrice deve essere la fonte di verità per le regole di business e le relative eccezioni.\"",
+        "detail": "I TC validano principalmente la regola di frequenza; non c'è una verifica esplicita e indipendente che anche 'altre configurazioni correlate' (non frequenza) e le 'eccezioni' siano centralizzate e uniformi cross-canale (se non in modo implicito)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-004.TC03",
+          "REQ-I-004.TC04"
+        ],
+        "detail": "Entrambi testano AC-3 (propagazione modifiche) con logica molto simile; differiscono solo per assunzione di policy (immediata vs finestra)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 45,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-004.US01.TC01",
+        "detail": "Introduce un componente architetturale ('Motore di Offerte') come intermediario obbligato; il requisito parla di canali che consultano la matrice, non di un motore centrale."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC01",
+        "detail": "Aggiunge una specifica eccezione 'ClienteSegmento=VIP -> 1 ogni 1 giorno' e dati di versione (42) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC02",
+        "detail": "Introduce la necessità di definire e concordare gli 'input rilevanti' tra canali; il requisito richiede coerenza di comportamento a parità di configurazione, non una tassonomia di input."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC03",
+        "detail": "Fissa un parametro di policy T=300 secondi come esempio e imposta una misurazione specifica; il requisito non definisce valori/tempi."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC04",
+        "detail": "Assume che versione/timestamp siano inclusi in output o audit log del Motore; il requisito richiede solo che esistano meccanismi di versioning/timestamp per ricostruzione storica."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC05",
+        "detail": "Richiede errore 'stesso tipo/codice' indipendente dal canale; il requisito non impone uniformità di codici/UX, solo uniformità di regole."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC06",
+        "detail": "Scenario 'configurazione senza versione/timestamp' e requisito di warning/errore: non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC07",
+        "detail": "Scenario di race condition/atomicità ('mixed version read') non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC01",
+        "detail": "Introduce 'ConsensiMarketing=TRUE' come condizione di scenario; non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC01",
+        "detail": "Introduce un 'front-end commerciale per operatore' e ruoli/operatore non citati nel requisito (che parla di canali, non di profili utente)."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC02",
+        "detail": "Introduce la regola 'Offerta visibile' (OFF-777 visibile TRUE/FALSE) come configurazione specifica; il requisito non dettaglia tali regole."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC03",
+        "detail": "Assume esistenza di requestId/correlationId e un endpoint interno di audit; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC04",
+        "detail": "Assume che durante la finestra di propagazione sia 'ammessa incoerenza temporanea' e definisce comportamento atteso nella finestra; il requisito non lo esplicita (dice solo 'immediatamente o prevedibilmente ... secondo policy')."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC01",
+        "detail": "Introduce OperatoreId e profili operatore; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC03",
+        "detail": "Fissa T=300 secondi come policy di propagazione (esempio) e la usa come vincolo di test; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC05",
+        "detail": "Introduce durata indisponibilità 'per 5 minuti' e requisiti di comportamento post-ripristino; non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC06",
+        "detail": "Test negativo che presuppone una policy temporale T come requisito contrattuale e usa App come riferimento per non conformità; il requisito non definisce valori e non parla di test di non-conformità oltre finestra con confronto canali."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: \"Tutti i canali leggono le regole dalla medesima fonte centralizzata...\"",
+        "detail": "Molti TC verificano coerenza di output/decisione più che la lettura dalla 'medesima fonte' (prove tecniche della sorgente). Inoltre, l'uso del 'Motore di Offerte' sposta la verifica su Motore→Matrice, lasciando non dimostrato che 'tutti i canali' consultino/basino le regole sulla stessa matrice (se i canali potrebbero avere logiche proprie)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-004.US01.TC02",
+          "REQ-I-004.US03.TC02",
+          "REQ-I-004.US02.TC01",
+          "REQ-I-004.US02.TC05"
+        ],
+        "detail": "Più TC ripetono lo stesso concetto di coerenza tra due canali a parità di condizioni (AC-2) con variazioni minime di scenario/dati."
+      },
+      {
+        "test_ids": [
+          "REQ-I-004.US01.TC03",
+          "REQ-I-004.US02.TC02",
+          "REQ-I-004.US03.TC03"
+        ],
+        "detail": "Più TC testano la propagazione entro una finestra T (AC-3) con struttura quasi identica, cambiando solo il canale osservato."
+      },
+      {
+        "test_ids": [
+          "REQ-I-004.US01.TC04",
+          "REQ-I-004.US02.TC03",
+          "REQ-I-004.US03.TC04"
+        ],
+        "detail": "Più TC testano la tracciabilità a versione/timestamp per audit (AC-4) con passi molto simili."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 17) e ha meno ridondanze (1 vs 3). Il set indirect_persona aggiunge molte assunzioni architetturali (es. 'Motore di Offerte', operatori, consensi marketing, parametri T) non presenti nel requisito e in parte sposta la verifica di AC-1 dalla lettura dei canali alla lettura del motore, riducendo la coerenza complessiva. Per questo il punteggio del direct (77) risulta superiore all'indirect_persona (45)."
+  }
+}

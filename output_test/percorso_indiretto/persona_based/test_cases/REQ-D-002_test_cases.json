@@ -1,0 +1,417 @@
+[
+  {
+    "story_id": "REQ-D-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-002.US01.TC01",
+        "title": "Creazione e salvataggio di una nuova variante testuale per una specifica offerta",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001' con descrizione base valorizzata",
+          "La sezione/pagina di gestione offerte e varianti è disponibile in dashboard"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Testo variante: \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\""
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Selezionare l'azione per creare una nuova variante di descrizione",
+          "Inserire il testo variante \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\"",
+          "Salvare la variante"
+        ],
+        "expected_results": [
+          "Il sistema conferma il salvataggio della variante",
+          "La variante risulta associata all'offerta 'OFF-1001' (non ad altre offerte)",
+          "La variante è presente nell'elenco varianti dell'offerta 'OFF-1001' ed è selezionabile/visualizzabile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC02",
+        "title": "Visualizzazione di più varianti salvate per la stessa offerta",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001'",
+          "Per l'offerta 'OFF-1001' esistono già almeno 2 varianti salvate"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Variante A (già esistente): \"Promo Primavera: attiva ora\"",
+          "Variante B (già esistente): \"Offerta riservata: vantaggi esclusivi\""
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Aprire la vista/elenco delle varianti dell'offerta"
+        ],
+        "expected_results": [
+          "Il sistema mostra nell'elenco almeno le due varianti esistenti per 'OFF-1001'",
+          "Ogni variante mostrata appartiene all'offerta 'OFF-1001' (nessuna variante di altre offerte è presente nell'elenco)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC03",
+        "title": "Associazione di una variante a uno o più cluster/segmenti e persistenza dell'associazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001'",
+          "Esiste una variante salvata 'VAR-2001' per l'offerta 'OFF-1001'",
+          "Esiste un elenco di cluster/segmenti validi contenente almeno: 'CL-RET-01' e 'CL-DIG-02'"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Variante: VAR-2001",
+          "Cluster validi da associare: CL-RET-01, CL-DIG-02"
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Aprire l'elenco varianti e selezionare la variante 'VAR-2001'",
+          "Aprire la configurazione associazione cluster/segmenti della variante",
+          "Selezionare i cluster 'CL-RET-01' e 'CL-DIG-02'",
+          "Salvare l'associazione"
+        ],
+        "expected_results": [
+          "Il sistema conferma il salvataggio dell'associazione variante↔cluster",
+          "La variante 'VAR-2001' risulta associata ai cluster 'CL-RET-01' e 'CL-DIG-02'",
+          "Riaprendo la configurazione della variante 'VAR-2001', i cluster 'CL-RET-01' e 'CL-DIG-02' risultano ancora selezionati (persistenza/riutilizzabilità)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC04",
+        "title": "Impossibilità di salvare una variante senza testo (campo obbligatorio)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001'"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Testo variante: \"\" (vuoto)"
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Selezionare l'azione per creare una nuova variante di descrizione",
+          "Lasciare il testo variante vuoto",
+          "Tentare di salvare la variante"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della variante",
+          "Il sistema mostra un messaggio di errore/validazione che indica che il testo della variante è obbligatorio",
+          "La variante non compare nell'elenco varianti dell'offerta 'OFF-1001'"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non esplicita la validazione 'testo obbligatorio'; il test deriva dagli edge case della user story ed è tracciato ad AC-1 perché impatta il salvataggio delle varianti."
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC05",
+        "title": "Impossibilità di salvare l'associazione con identificatore cluster/segmento non valido",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001'",
+          "Esiste una variante salvata 'VAR-2001' per l'offerta 'OFF-1001'",
+          "Il sistema valida gli identificatori cluster/segmento rispetto a un set riconosciuto"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Variante: VAR-2001",
+          "Cluster non valido: CL-XXX-999"
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Aprire l'elenco varianti e selezionare la variante 'VAR-2001'",
+          "Aprire la configurazione associazione cluster/segmenti della variante",
+          "Inserire/selezionare l'identificatore cluster 'CL-XXX-999'",
+          "Tentare di salvare l'associazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio dell'associazione",
+          "Il sistema mostra un messaggio di errore che indica che l'identificatore cluster/segmento non è valido o non riconosciuto",
+          "Nessuna associazione a 'CL-XXX-999' risulta salvata per la variante 'VAR-2001'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia le modalità di validazione dell'identificatore; si assume validazione server-side e/o tramite elenco selezionabile come indicato nelle assumptions."
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC06",
+        "title": "Modifica/rimozione di un'associazione cluster senza perdere le altre associazioni della variante",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "L'utente Team Marketing dispone di credenziali valide e permessi di accesso alla dashboard marketing",
+          "Esiste l'offerta 'OFF-1001'",
+          "Esiste una variante salvata 'VAR-2001' per l'offerta 'OFF-1001'",
+          "La variante 'VAR-2001' è già associata ai cluster 'CL-RET-01' e 'CL-DIG-02'"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Variante: VAR-2001",
+          "Cluster da rimuovere: CL-DIG-02",
+          "Cluster che deve restare associato: CL-RET-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard marketing come Team Marketing",
+          "Navigare alla sezione di gestione offerte",
+          "Selezionare l'offerta 'OFF-1001'",
+          "Aprire l'elenco varianti e selezionare la variante 'VAR-2001'",
+          "Aprire la configurazione associazione cluster/segmenti della variante",
+          "Deselezionare/rimuovere il cluster 'CL-DIG-02'",
+          "Salvare l'associazione aggiornata",
+          "Riaprire la configurazione associazione cluster/segmenti della variante"
+        ],
+        "expected_results": [
+          "Il sistema conferma il salvataggio dell'associazione aggiornata",
+          "La variante 'VAR-2001' risulta associata a 'CL-RET-01'",
+          "La variante 'VAR-2001' non risulta più associata a 'CL-DIG-02'",
+          "Le altre associazioni pre-esistenti (in questo test: 'CL-RET-01') non vengono perse a seguito della rimozione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non esplicita la gestione di aggiornamenti parziali; il test deriva dall'edge case della user story e valida la corretta persistenza delle associazioni previste da AC-2."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-002.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-002.US02.TC01",
+        "title": "Visualizzazione in App della variante descrizione associata al cluster del cliente",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste l'offerta 'OFF-1001' pubblicata e visibile su App",
+          "Esiste la variante 'VAR-2001' per l'offerta 'OFF-1001' con testo \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\"",
+          "La variante 'VAR-2001' è associata al cluster 'CL-RET-01'",
+          "Esiste un cliente 'CLI-9001' con profilo associato al cluster 'CL-RET-01'",
+          "Il meccanismo/servizio di determinazione cluster per il cliente è disponibile e restituisce 'CL-RET-01' per 'CLI-9001'"
+        ],
+        "test_data": [
+          "Cliente: CLI-9001",
+          "Cluster cliente: CL-RET-01",
+          "Offerta: OFF-1001",
+          "Testo variante attesa: \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\""
+        ],
+        "steps": [
+          "Accedere all'App come cliente 'CLI-9001'",
+          "Navigare alla sezione in cui è disponibile l'offerta 'OFF-1001'",
+          "Aprire la scheda/dettaglio dell'offerta 'OFF-1001'",
+          "Individuare il campo/area 'Descrizione' dell'offerta"
+        ],
+        "expected_results": [
+          "La descrizione mostrata in App corrisponde esattamente al testo della variante associata al cluster 'CL-RET-01'",
+          "La descrizione mostrata non è una variante diversa da quella associata al cluster del cliente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC02",
+        "title": "Visualizzazione in Web della variante descrizione associata al cluster del cliente",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste l'offerta 'OFF-1001' pubblicata e visibile su Web",
+          "Esiste la variante 'VAR-2001' per l'offerta 'OFF-1001' con testo \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\"",
+          "La variante 'VAR-2001' è associata al cluster 'CL-RET-01'",
+          "Esiste un cliente 'CLI-9001' con profilo associato al cluster 'CL-RET-01'",
+          "Il meccanismo/servizio di determinazione cluster per il cliente è disponibile e restituisce 'CL-RET-01' per 'CLI-9001'"
+        ],
+        "test_data": [
+          "Cliente: CLI-9001",
+          "Cluster cliente: CL-RET-01",
+          "Offerta: OFF-1001",
+          "Testo variante attesa: \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\""
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente 'CLI-9001'",
+          "Navigare alla sezione in cui è disponibile l'offerta 'OFF-1001'",
+          "Aprire la pagina/dettaglio dell'offerta 'OFF-1001'",
+          "Individuare il campo/area 'Descrizione' dell'offerta"
+        ],
+        "expected_results": [
+          "La descrizione mostrata in Web corrisponde esattamente al testo della variante associata al cluster 'CL-RET-01'",
+          "La descrizione mostrata non è una variante diversa da quella associata al cluster del cliente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC03",
+        "title": "Se esistono più varianti per la stessa offerta, viene mostrata solo quella associata al cluster del cliente",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste l'offerta 'OFF-1001' pubblicata e visibile su App e Web",
+          "Esistono due varianti per l'offerta 'OFF-1001': 'VAR-2001' e 'VAR-2002'",
+          "La variante 'VAR-2001' (testo: \"Solo per te: sconto 20%...\") è associata al cluster 'CL-RET-01'",
+          "La variante 'VAR-2002' (testo: \"Novità: vantaggi digitali dedicati\") è associata al cluster 'CL-DIG-02'",
+          "Esiste un cliente 'CLI-9001' associato al cluster 'CL-RET-01'",
+          "Il servizio di determinazione cluster è disponibile e restituisce 'CL-RET-01' per 'CLI-9001'"
+        ],
+        "test_data": [
+          "Cliente: CLI-9001",
+          "Cluster cliente: CL-RET-01",
+          "Offerta: OFF-1001",
+          "Testo variante non attesa: \"Novità: vantaggi digitali dedicati\"",
+          "Testo variante attesa: \"Solo per te: sconto 20% sui servizi Premium fino al 31/03\""
+        ],
+        "steps": [
+          "Accedere al canale App come cliente 'CLI-9001'",
+          "Aprire il dettaglio dell'offerta 'OFF-1001'",
+          "Verificare la descrizione mostrata",
+          "Accedere al canale Web come cliente 'CLI-9001'",
+          "Aprire il dettaglio dell'offerta 'OFF-1001'",
+          "Verificare la descrizione mostrata"
+        ],
+        "expected_results": [
+          "In App la descrizione corrisponde al testo della variante associata a 'CL-RET-01'",
+          "In App la descrizione non corrisponde al testo della variante associata a 'CL-DIG-02'",
+          "In Web la descrizione corrisponde al testo della variante associata a 'CL-RET-01'",
+          "In Web la descrizione non corrisponde al testo della variante associata a 'CL-DIG-02'"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Si assume comportamento uniforme tra App e Web per la selezione della variante; in caso di differenze implementative, separare i test per canale."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC04",
+        "title": "Servizio di determinazione cluster non disponibile: gestione errore e applicazione fallback (comportamento da definire)",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste l'offerta 'OFF-1001' pubblicata e visibile su App e Web",
+          "Esiste almeno una variante configurata per l'offerta 'OFF-1001'",
+          "Esiste un cliente 'CLI-9001'",
+          "Il servizio di determinazione cluster/segmento è simulabile in errore (timeout/HTTP 5xx) per il cliente 'CLI-9001'"
+        ],
+        "test_data": [
+          "Cliente: CLI-9001",
+          "Offerta: OFF-1001",
+          "Errore servizio cluster: timeout (es. > 5s) oppure HTTP 503"
+        ],
+        "steps": [
+          "Configurare il servizio di determinazione cluster per restituire errore (timeout o HTTP 503) per 'CLI-9001'",
+          "Accedere al canale Web come cliente 'CLI-9001'",
+          "Aprire il dettaglio dell'offerta 'OFF-1001'",
+          "Ripetere l'apertura del dettaglio dell'offerta 'OFF-1001' su App"
+        ],
+        "expected_results": [
+          "L'interfaccia gestisce l'errore senza bloccare la visualizzazione della pagina/scheda offerta",
+          "La descrizione mostrata segue la regola di fallback prevista (da definire) in assenza del cluster determinabile",
+          "Non viene mostrata una variante non coerente con il cluster del cliente (poiché il cluster non è determinabile)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La user story richiede un fallback ma il requisito non definisce quale (es. descrizione base dell'offerta). Il test verifica la gestione dell'errore e richiede la definizione esplicita del comportamento di fallback per renderlo pienamente verificabile."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC05",
+        "title": "Cliente senza cluster/segmento: applicazione fallback (comportamento da definire)",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Esiste l'offerta 'OFF-1001' pubblicata e visibile su App e Web",
+          "Esiste una descrizione base per l'offerta 'OFF-1001'",
+          "Esistono eventuali varianti configurate per l'offerta 'OFF-1001'",
+          "Esiste un cliente 'CLI-9002' senza cluster/segmento associato",
+          "Il sistema è in grado di restituire esplicitamente 'nessun cluster' per 'CLI-9002'"
+        ],
+        "test_data": [
+          "Cliente: CLI-9002",
+          "Cluster cliente: nessuno",
+          "Offerta: OFF-1001",
+          "Descrizione base (esempio): \"Attiva l'offerta Premium e scopri tutti i vantaggi\""
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente 'CLI-9002'",
+          "Aprire il dettaglio dell'offerta 'OFF-1001'",
+          "Verificare la descrizione mostrata"
+        ],
+        "expected_results": [
+          "La descrizione mostrata segue la regola di fallback prevista (da definire) quando il cliente non ha cluster/segmento",
+          "Non viene selezionata arbitrariamente una variante associata a cluster non posseduti dal cliente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il fallback per cliente senza cluster non è definito nel requisito; si assume l'uso della descrizione base come indicato nelle assumptions, ma va confermato."
+      }
+    ]
+  }
+]

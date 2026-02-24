@@ -1,0 +1,131 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-004",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 48,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-004.TC01",
+        "detail": "Introduce canale 'web', ruoli esemplificativi (Marketing Ops/Admin Regole) e assunzioni UI/persistenza non esplicitate (reload pagina) oltre a 'dashboard/interfaccia dedicata'."
+      },
+      {
+        "test_id": "REQ-F-004.TC03",
+        "detail": "Assume esistenza di 'log o storico esposizioni' con timestamp e regola applicata tramite consultazione di tale storico; il requisito non specifica logging/storico né la modalità di calcolo."
+      },
+      {
+        "test_id": "REQ-F-004.TC05",
+        "detail": "Dettagli tecnici non tracciabili: endpoint/consumer, storage/servizio, correlationId, assenza/semantica di eventi ('scartato per frequenza')."
+      },
+      {
+        "test_id": "REQ-F-004.TC06",
+        "detail": "Aggiunge un requisito di controllo accessi per utenti non autorizzati (negativo). Il requisito dice solo che team autorizzati possono modificare, ma non richiede esplicitamente il blocco per non autorizzati né le modalità."
+      },
+      {
+        "test_id": "REQ-F-004.TC07",
+        "detail": "Scenario di indisponibilità dello storico esposizioni e aspettative su gestione errori/fallback e logging: non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description (secondo paragrafo)",
+        "detail": "Manca copertura della funzionalità: flag su offerta per proporla (default NO) a clienti che già possiedono un prodotto in bundle e regola 'upgrade' per clienti che lo hanno acquistato negli ultimi X giorni."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-004.TC01",
+          "REQ-F-004.TC02"
+        ],
+        "detail": "Entrambi verificano configurazione/modifica via dashboard e persistenza del valore (varia solo il valore 7 vs 14)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 35,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-004.US01.TC01",
+        "detail": "Introduce credenziali utente, unità di misura visualizzata come vincolo UI e canale 'dashboard' (non definito come canale nel requisito)."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC02",
+        "detail": "Assume un canale tecnico con cui il Motore legge la configurazione (API/DB) e lo verifica esplicitamente: non specificato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC03",
+        "detail": "Dettaglia modalità di negazione accesso (pagina non raggiungibile/HTTP 403) non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC04",
+        "detail": "Aggiunge regole di validazione input (non numerico, negativo, intero) e messaggi di errore: non presenti negli AC/descrizione."
+      },
+      {
+        "test_id": "REQ-F-004.US01.TC05",
+        "detail": "Aggiunge scenario di indisponibilità del servizio di configurazione e comportamento atteso UI: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC01",
+        "detail": "Assume concetto di 'set di prodotti candidati' e che il prodotto debba risultare incluso 'salvo altre regole': non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC04",
+        "detail": "Richiede registrazione di un evento di presentazione e meccanismi di lettura (tabella/topic/API audit): il requisito non lo richiede esplicitamente."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC05",
+        "detail": "Introduce controllo/forzatura del tempo (clock fittizio) come requisito di test e dettagli E2E non citati."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC06",
+        "detail": "Scenario di configurazione non leggibile e vincolo 'non restituire risposta silenziosamente incoerente' con logging/metriche: non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-004.US02.TC07",
+        "detail": "Scenario di timestamp corrotto e aspettative di comportamento deterministico/logging: non nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description (secondo paragrafo)",
+        "detail": "Manca copertura della funzionalità: flag su offerta per proporla (default NO) a clienti che già possiedono un prodotto in bundle e regola 'upgrade' per clienti che lo hanno acquistato negli ultimi X giorni."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-004.US02.TC02",
+          "REQ-F-004.US02.TC05"
+        ],
+        "detail": "Entrambi verificano che una seconda richiesta entro 7 giorni non riproponga lo stesso prodotto (varia il livello: functional vs E2E)."
+      },
+      {
+        "test_ids": [
+          "REQ-F-004.US02.TC03",
+          "REQ-F-004.US02.TC05"
+        ],
+        "detail": "Sovrapposizione parziale sul comportamento temporale della ri-esposizione (>= intervallo vs < intervallo) nell'ambito di richieste successive."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (3/3) ma ignorano una parte rilevante della descrizione (flag bundle/upgrade, default NO e finestra X giorni), che resta mancante in entrambi. Il set direct introduce meno informazioni non tracciabili (5 vs 10) e meno ridondanze (1 vs 2), ottenendo un punteggio di coerenza piu alto (48 vs 35)."
+  }
+}

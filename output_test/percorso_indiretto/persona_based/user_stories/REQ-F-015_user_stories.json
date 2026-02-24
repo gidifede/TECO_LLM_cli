@@ -1,0 +1,92 @@
+[
+  {
+    "story_id": "REQ-F-015.US01",
+    "title": "Notifica e consultazione attivazione post-sottoscrizione per il cliente",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "ricevere la notifica di avvenuta attivazione dei prodotti sottoscritti e poter consultare lo stato di attivazione",
+    "benefit": "avere conferma che i prodotti e l’eventuale Framework Connect siano stati attivati correttamente",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio ricevere una notifica di avvenuta attivazione dopo la sottoscrizione e poter consultare lo stato\nIn modo che io abbia conferma che l’attivazione dei prodotti (e di Connect) sia andata a buon fine",
+    "channels": [
+      "digital (App/Web)",
+      "fisico (UP)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la sottoscrizione di un’offerta è completata con successo ALLORA il cliente riceve una notifica di avvenuta attivazione tramite canali digitali.",
+      "QUANDO il cliente consulta lo stato dell’offerta/prodotti sottoscritti ALLORA il sistema mostra lo stato di attivazione aggiornato."
+    ],
+    "business_rules": [
+      "La notifica al cliente avviene tramite canali digitali (App/Web) come indicato dal requisito.",
+      "La visibilità dello stato deve riflettere l’esito del provisioning/attivazione gestiti dai sistemi verticali di vendita (non dal Motore di Offerte)."
+    ],
+    "edge_cases": [
+      "Provisioning in corso: lo stato risulta 'in lavorazione' e non 'attivo'.",
+      "Errore di provisioning/attivazione: il cliente visualizza uno stato di errore (o mancata attivazione) e non riceve notifica di avvenuta attivazione.",
+      "Canale digitale non disponibile al momento della notifica: la notifica non viene consegnata e resta consultabile lo stato nel sistema."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il testo/formato della notifica né i canali digitali puntuali (push, inbox, email): si assume che almeno un canale digitale previsto dal prodotto sia utilizzato.",
+      "Il requisito non dettaglia dove il cliente consulti lo stato (App, Web, area Loyalty, pagina ordine): si assume esista un punto di consultazione sul canale utilizzato dal cliente."
+    ],
+    "notes": "AC condiviso con US02 (Operatore in ufficio postale (sportello/sala)) relativamente a notifica e consultazione dello stato. Il requisito indica che il provisioning e l’attivazione Connect sono responsabilità dei Verticali di vendita, non del Motore di Offerte."
+  },
+  {
+    "story_id": "REQ-F-015.US02",
+    "title": "Notifica e consultazione attivazione post-sottoscrizione per l’operatore",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "ricevere notifica/riscontro di avvenuta attivazione e consultare lo stato post-sottoscrizione",
+    "benefit": "confermare al cliente la corretta attivazione e gestire eventuali anomalie post-vendita",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio ricevere un riscontro di avvenuta attivazione e poter consultare lo stato dopo la sottoscrizione\nIn modo che io possa confermare al cliente che l’attivazione dei prodotti (e di Connect) sia corretta",
+    "channels": [
+      "front-end commerciale (sportello/sala)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la sottoscrizione di un’offerta è completata con successo ALLORA l’operatore riceve un riscontro/notifica di avvenuta attivazione nel canale operatore.",
+      "QUANDO l’operatore consulta la posizione del cliente relativa ai prodotti/offerta sottoscritti ALLORA il sistema mostra lo stato di attivazione aggiornato."
+    ],
+    "business_rules": [
+      "Lo stato di attivazione reso visibile all’operatore deve essere coerente con l’esito del provisioning/attivazione gestiti dai sistemi verticali di vendita (non dal Motore di Offerte)."
+    ],
+    "edge_cases": [
+      "Provisioning in corso: l’operatore vede stato non definitivo e non conferma l’attivazione come completata.",
+      "Errore di provisioning/attivazione: l’operatore vede uno stato di errore/mancata attivazione.",
+      "Dati di stato non disponibili (integrazione non raggiungibile): l’operatore visualizza indisponibilità temporanea dello stato."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il meccanismo di notifica per l’operatore (toast, inbox, aggiornamento schermata): si assume che il riscontro sia disponibile nel front-end commerciale.",
+      "Il requisito non specifica la granularità dello stato (attivo/non attivo/in corso/errore): si assume almeno la distinzione tra attivato e non attivato, con eventuale stato intermedio."
+    ],
+    "notes": "AC condiviso con US01 (Cliente (fisico o digitale)) relativamente a notifica e consultazione dello stato. La responsabilità di provisioning/attivazione è dei Verticali di vendita."
+  },
+  {
+    "story_id": "REQ-F-015.US03",
+    "title": "Avvio provisioning e attivazione Connect post-sottoscrizione",
+    "persona": "Persona: Verticali di vendita",
+    "goal": "garantire provisioning dei prodotti e inviare a Connect le informazioni necessarie a registrare cashback/points dopo una sottoscrizione completata",
+    "benefit": "assicurare l’attivazione corretta dei prodotti e l’abilitazione delle logiche di loyalty (cashback/points) previste",
+    "user_story": "Come Persona: Verticali di vendita\nVoglio avviare il provisioning dei prodotti e inviare al Framework Connect le informazioni necessarie dopo una sottoscrizione completata\nIn modo che i prodotti risultino attivi e Connect possa registrare correttamente cashback/points",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO una sottoscrizione di offerta è completata con successo ALLORA il verticale di vendita avvia il processo di provisioning per i prodotti acquisiti.",
+      "QUANDO la sottoscrizione è completata con successo ALLORA il verticale di vendita invia al Framework Connect le informazioni necessarie per la registrazione di cashback/points.",
+      "QUANDO il provisioning/attivazione termina con esito positivo ALLORA i sistemi rendono disponibile uno stato consultabile di corretta attivazione per cliente e operatore."
+    ],
+    "business_rules": [
+      "Il provisioning e l’attivazione del Framework Connect sono responsabilità dei sistemi verticali di vendita e non del Motore di Offerte.",
+      "Lo stato esposto/reso consultabile deve riflettere l’esito reale del provisioning (successo/fallimento/in corso)."
+    ],
+    "edge_cases": [
+      "Evento di sottoscrizione duplicato: il provisioning non deve generare attivazioni duplicate (idempotenza).",
+      "Invio a Connect fallito: il provisioning prodotto può risultare attivo ma la registrazione cashback/points non avviene; lo stato deve evidenziare l’anomalia o prevedere retry.",
+      "Provisioning parziale: alcuni prodotti attivi e altri no; lo stato deve gestire la non uniformità.",
+      "Connect non disponibile: gestione retry e/o coda di invio senza bloccare la sottoscrizione già completata."
+    ],
+    "assumptions": [
+      "Il requisito non specifica i dettagli di integrazione verso Connect (API, payload, SLA): si assume esista un’interfaccia disponibile e governata dai verticali di vendita.",
+      "Il requisito non specifica dove e come venga pubblicato lo stato consultabile: si assume che i verticali rendano disponibile lo stato ai canali che lo mostrano a cliente e operatore."
+    ],
+    "notes": "Questa US copre gli AC relativi a provisioning e invio informazioni a Connect. Le parti di notifica/consultazione stato sono implementate dai canali ma dipendono dalla disponibilità dello stato prodotto dai verticali."
+  }
+]

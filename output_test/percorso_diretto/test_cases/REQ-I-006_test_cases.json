@@ -1,0 +1,257 @@
+[
+  {
+    "test_id": "REQ-I-006.TC01",
+    "title": "Persistenza offerta nel Motore e calcolo validità: offerta valida restituita come 'in corso di validità'",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile via API/servizio di integrazione",
+      "Client di test abilitato a invocare le API del Motore",
+      "Database/strato di persistenza del Motore disponibile",
+      "Orario di sistema sincronizzato (NTP) tra Motore e sistemi chiamanti"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10001",
+      "Offerta: offerId=OFF-20001",
+      "Validità: startDateTime=2026-02-23T10:00:00Z, endDateTime=2026-02-28T10:00:00Z",
+      "Attributi presentazione: titolo='Sconto 10%', descrizione='Valido su tutti i prodotti', prioritàVisualizzazione=1, urlImmagine='https://cdn.example.com/offerte/off-20001.png'"
+    ],
+    "steps": [
+      "Creare o aggiornare nel Motore l'offerta OFF-20001 associandola al cliente CL-10001 con la finestra di validità indicata e gli attributi di presentazione",
+      "Invocare l'API del Motore per ottenere l'elenco delle offerte applicabili per il cliente CL-10001 alla data/ora corrente",
+      "Selezionare dall'elenco l'offerta OFF-20001",
+      "Invocare l'API del Motore di dettaglio offerta (se prevista) per OFF-20001 per recuperare tutti i dati necessari alla presentazione"
+    ],
+    "expected_results": [
+      "L'offerta OFF-20001 risulta persistita nel Motore e recuperabile tramite le API del Motore",
+      "L'elenco offerte per CL-10001 include OFF-20001 solo se la data/ora corrente è compresa tra startDateTime e endDateTime (inclusi)",
+      "Nel payload di OFF-20001 sono presenti i dati necessari alla presentazione (almeno: identificativo offerta, titolo, descrizione, finestra di validità, eventuale URL immagine/prioritàVisualizzazione se gestiti)",
+      "La validità restituita dal Motore è coerente con la finestra temporale configurata (nessun calcolo demandato al chiamante per determinare se l'offerta è valida)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "Gli attori/canali (clienti web/app e operatori UP) sono stati inferiti dalla descrizione; non sono specificate API/contratti, quindi i passi fanno riferimento genericamente a 'API del Motore' e vanno mappati agli endpoint reali."
+  },
+  {
+    "test_id": "REQ-I-006.TC02",
+    "title": "Calcolo validità: offerta scaduta non viene restituita tra le offerte 'in corso di validità'",
+    "type": "Edge Case",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile via API/servizio di integrazione",
+      "Orario di sistema sincronizzato (NTP) tra Motore e sistemi chiamanti"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10002",
+      "Offerta: offerId=OFF-20002",
+      "Validità: startDateTime=2026-02-01T00:00:00Z, endDateTime=2026-02-10T00:00:00Z (data passata rispetto all'esecuzione test)"
+    ],
+    "steps": [
+      "Creare o aggiornare nel Motore l'offerta OFF-20002 associandola al cliente CL-10002 con la finestra di validità indicata",
+      "Invocare l'API del Motore per ottenere l'elenco delle offerte applicabili e in corso di validità per il cliente CL-10002 alla data/ora corrente"
+    ],
+    "expected_results": [
+      "L'elenco delle offerte in corso di validità per CL-10002 non include OFF-20002",
+      "Il Motore non restituisce OFF-20002 come valida oltre endDateTime"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "Assunzione: l'API del Motore restituisce solo offerte 'in corso di validità' come indicato in descrizione; se esistono filtri/parametri per includere offerte scadute, il test va adattato per verificare esplicitamente il filtro 'solo valide'."
+  },
+  {
+    "test_id": "REQ-I-006.TC03",
+    "title": "Calcolo validità ai limiti: offerta visibile esattamente a startDateTime ed endDateTime",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile via API/servizio di integrazione",
+      "Possibilità di controllare il tempo di sistema del Motore o di eseguire test con clock controllato (time mocking) in ambiente di test"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10003",
+      "Offerta: offerId=OFF-20003",
+      "Validità: startDateTime=2026-02-23T12:00:00Z, endDateTime=2026-02-23T12:05:00Z"
+    ],
+    "steps": [
+      "Creare nel Motore l'offerta OFF-20003 associandola al cliente CL-10003 con la finestra di validità indicata",
+      "Impostare l'orario del Motore (o il clock di test) esattamente a 2026-02-23T12:00:00Z",
+      "Invocare l'API del Motore per ottenere le offerte in corso di validità per CL-10003",
+      "Impostare l'orario del Motore (o il clock di test) esattamente a 2026-02-23T12:05:00Z",
+      "Invocare nuovamente l'API del Motore per ottenere le offerte in corso di validità per CL-10003",
+      "Impostare l'orario del Motore (o il clock di test) a 2026-02-23T12:05:01Z",
+      "Invocare nuovamente l'API del Motore per ottenere le offerte in corso di validità per CL-10003"
+    ],
+    "expected_results": [
+      "A 2026-02-23T12:00:00Z l'offerta OFF-20003 è presente nell'elenco delle offerte in corso di validità",
+      "A 2026-02-23T12:05:00Z l'offerta OFF-20003 è presente nell'elenco delle offerte in corso di validità",
+      "A 2026-02-23T12:05:01Z l'offerta OFF-20003 non è presente nell'elenco delle offerte in corso di validità"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "Assunzione esplicitata per rendere verificabile l'AC: la validità è inclusiva ai limiti start/end. Se la regola è diversa, aggiornare expected results."
+  },
+  {
+    "test_id": "REQ-I-006.TC04",
+    "title": "Loyalty usa esclusivamente call di lettura: tentativo di scrittura/aggiornamento offerta dal canale Loyalty rifiutato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile via API/servizio di integrazione",
+      "Credenziali/identità tecnica del sistema Loyalty configurata con permessi di sola lettura sul Motore",
+      "Esiste un'offerta OFF-20004 associata al cliente CL-10004 nel Motore"
+    ],
+    "test_data": [
+      "Identità chiamante: clientId=LoyaltySystem (scope/ruolo=READ_ONLY)",
+      "Cliente: customerId=CL-10004",
+      "Offerta esistente: offerId=OFF-20004",
+      "Payload aggiornamento (non consentito): endDateTime=2026-03-31T23:59:59Z"
+    ],
+    "steps": [
+      "Autenticarsi verso il Motore utilizzando l'identità tecnica del sistema Loyalty",
+      "Invocare una call di lettura del Motore per recuperare lo stato/validità dell'offerta OFF-20004 per CL-10004",
+      "Invocare una call di creazione/aggiornamento offerta sul Motore per modificare la validità di OFF-20004 utilizzando la stessa identità Loyalty"
+    ],
+    "expected_results": [
+      "La call di lettura restituisce correttamente lo stato e la validità dell'offerta OFF-20004",
+      "La call di creazione/aggiornamento viene rifiutata dal Motore con errore di autorizzazione (es. HTTP 403 o codice equivalente di dominio)",
+      "Nessuna modifica alla validità/persistenza dell'offerta OFF-20004 risulta applicata nel Motore"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non specifica meccanismi di authN/authZ né codici errore; l'atteso '403 o equivalente' va allineato alle specifiche di integrazione reali."
+  },
+  {
+    "test_id": "REQ-I-006.TC05",
+    "title": "Propagazione aggiornamenti: modifica validità nel Motore riflessa su tutte le interfacce consumatrici (web/app/operatore)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore e interfacce consumatrici disponibili (front-end cliente web, app, interfaccia operatore UP) e configurate per leggere dal Motore",
+      "Le interfacce consumatrici non utilizzano cache non invalidabile in test (o è disponibile un meccanismo di refresh/invalidazione)",
+      "Esiste un cliente CL-10005 con offerta OFF-20005 inizialmente valida e visibile su tutte le interfacce"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10005",
+      "Offerta: offerId=OFF-20005",
+      "Validità iniziale: startDateTime=2026-02-20T00:00:00Z, endDateTime=2026-03-01T00:00:00Z",
+      "Aggiornamento: endDateTime=2026-02-23T11:00:00Z (riduzione validità per renderla scaduta dopo l'orario indicato)"
+    ],
+    "steps": [
+      "Verificare su interfaccia web cliente che OFF-20005 sia presente tra le offerte in corso di validità per CL-10005",
+      "Verificare su app cliente che OFF-20005 sia presente tra le offerte in corso di validità per CL-10005",
+      "Verificare su interfaccia operatore UP che OFF-20005 sia presente tra le offerte in corso di validità per CL-10005",
+      "Aggiornare nel Motore la validità di OFF-20005 impostando endDateTime al valore di aggiornamento",
+      "Attendere il tempo di propagazione previsto o forzare il refresh dati sulle interfacce (se previsto)",
+      "Verificare su interfaccia web cliente l'elenco offerte in corso di validità per CL-10005",
+      "Verificare su app cliente l'elenco offerte in corso di validità per CL-10005",
+      "Verificare su interfaccia operatore UP l'elenco offerte in corso di validità per CL-10005"
+    ],
+    "expected_results": [
+      "Prima dell'aggiornamento, OFF-20005 è visualizzata come in corso di validità su web, app e interfaccia operatore",
+      "Dopo l'aggiornamento nel Motore e oltre endDateTime aggiornato, OFF-20005 non è più visualizzata come in corso di validità su web, app e interfaccia operatore",
+      "Le interfacce mostrano dati coerenti tra loro (nessuna interfaccia continua a mostrare OFF-20005 come valida quando il Motore la considera scaduta)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "Dipendenza esterna: comportamento di caching/refresh delle interfacce non specificato nel requisito; il tempo di propagazione va parametrizzato secondo specifiche di integrazione."
+  },
+  {
+    "test_id": "REQ-I-006.TC06",
+    "title": "Dati per la presentazione: il Motore espone tutti i campi necessari alla visualizzazione dell'offerta alle interfacce consumatrici",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile via API/servizio di integrazione",
+      "Esiste un'offerta OFF-20006 associata al cliente CL-10006 con attributi di presentazione valorizzati"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10006",
+      "Offerta: offerId=OFF-20006",
+      "Attributi presentazione: titolo='Cashback 5%', descrizione='Su spesa minima 30 EUR', condizioni='Valido una volta per cliente', categoria='Grocery', urlImmagine='https://cdn.example.com/offerte/off-20006.jpg', prioritàVisualizzazione=5",
+      "Validità: startDateTime=2026-02-23T00:00:00Z, endDateTime=2026-03-15T23:59:59Z"
+    ],
+    "steps": [
+      "Invocare l'API del Motore per ottenere l'elenco delle offerte applicabili e in corso di validità per CL-10006",
+      "Recuperare il dettaglio dell'offerta OFF-20006 tramite l'API del Motore (o verificare i campi nel payload lista se non esiste un dettaglio)",
+      "Verificare la presenza e la valorizzazione dei campi di presentazione previsti dal contratto di integrazione"
+    ],
+    "expected_results": [
+      "Il payload restituito dal Motore per OFF-20006 include i campi necessari alla presentazione previsti dal contratto (almeno: identificativo, titolo, descrizione, validità; e gli ulteriori campi di presentazione se previsti)",
+      "I valori dei campi di presentazione restituiti corrispondono a quelli persistiti nel Motore (nessuna perdita/alterazione non prevista)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "AC-1 e parte di descrizione sono dichiarativi ('tutti i dati necessari'); per renderli verificabili è necessario un contratto/canonical model dei campi obbligatori. In assenza, il test va completato mappando l'elenco campi alle specifiche di integrazione."
+  },
+  {
+    "test_id": "REQ-I-006.TC07",
+    "title": "Resilienza integrazione: indisponibilità del Motore durante lettura offerte gestita dalle interfacce consumatrici",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con possibilità di simulare indisponibilità del Motore (stop servizio, fault injection, rete bloccata) per le interfacce consumatrici",
+      "Interfacce consumatrici configurate per leggere le offerte dal Motore"
+    ],
+    "test_data": [
+      "Cliente: customerId=CL-10007",
+      "Simulazione errore: Motore non raggiungibile (timeout 10s) oppure risposta errore (es. HTTP 503)"
+    ],
+    "steps": [
+      "Rendere il Motore non raggiungibile per le chiamate di lettura (timeout o errore 503)",
+      "Da interfaccia web cliente richiedere la schermata/elenco offerte per CL-10007",
+      "Da app cliente richiedere la schermata/elenco offerte per CL-10007",
+      "Da interfaccia operatore UP richiedere la schermata/elenco offerte per CL-10007",
+      "Ripristinare la raggiungibilità del Motore",
+      "Ripetere la richiesta elenco offerte da ciascuna interfaccia"
+    ],
+    "expected_results": [
+      "Quando il Motore è indisponibile, ciascuna interfaccia gestisce l'errore senza crash e mostra un messaggio/stato di errore coerente con le proprie linee guida (es. 'Servizio momentaneamente non disponibile')",
+      "Non vengono mostrati dati incoerenti come 'offerta valida' se la validità non può essere determinata dal Motore nel momento della richiesta",
+      "Dopo il ripristino del Motore, ciascuna interfaccia torna a visualizzare l'elenco offerte aggiornato leggendo dal Motore"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "operatore"
+    ],
+    "notes": "Il requisito non definisce requisiti di UX/errore; le verifiche su messaggistica vanno allineate alle specifiche UI. Il vincolo di non mostrare dati incoerenti è derivato dall'esigenza di correttezza della validità calcolata dal Motore."
+  }
+]

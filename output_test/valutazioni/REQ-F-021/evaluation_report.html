@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-021</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-021</h1>
+  <div class="subtitle">Questionario obbligatorio integrato nel percorso di checkout per alcuni prodotti</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:41</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-021</div>
+  <div class="req-field"><strong>Titolo:</strong> Questionario obbligatorio integrato nel percorso di checkout per alcuni prodotti</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Per i prodotti che richiedono un questionario aggiuntivo, la compilazione del questionario è obbligatoria e il questionario deve apparire integrato all&#x27;interno del percorso di checkout, immediatamente dopo la selezione del prodotto, in modo da garantire che i clienti forniscano le informazioni richieste prima del completamento della vendita.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Per i prodotti contrassegnati come &#x27;richiedono questionario&#x27;, il sistema presenta il questionario immediatamente dopo la selezione del prodotto e prima delle fasi finali del checkout.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il questionario è obbligatorio: il sistema impedisce il completamento della sottoscrizione senza la compilazione quando previsto.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Test di flusso verificano che il questionario sia integrato nel funnel e non come schermata separata non collegata al checkout.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#16a34a">81</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">44</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Il set direct risulta piu coerente (81 vs 44): copre tutti gli AC con meno informazioni aggiunte e introduce meno canali/attori non presenti nel requisito. Il set indirect_persona, pur coprendo gli AC, aggiunge numerose assunzioni (App, front-end commerciale, operatore, autenticazione, ripresa sessione, dettagli tecnici del servizio questionario), riducendo significativamente la tracciabilita al requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#dcfce7;color:#16a34a">
+          <div class="score-value">81</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-021.TC01</td><td>Introduce verifiche su URL/breadcrumb/stepper come indicatori di integrazione nel funnel: il requisito richiede integrazione nel checkout ma non specifica tali artefatti UI/tecnici.</td></tr>
+<tr><td class='mono'>REQ-F-021.TC02</td><td>Assume la presenza di messaggi di validazione che indicano i campi obbligatori/mancanti; il requisito dice solo che non si può completare senza compilazione, non che debbano esserci messaggi o dettaglio campi.</td></tr>
+<tr><td class='mono'>REQ-F-021.TC03</td><td>Assume esistenza di una &#x27;schermata di conferma di esito positivo&#x27; come risultato del checkout; il requisito non descrive la conferma.</td></tr>
+<tr><td class='mono'>REQ-F-021.TC05</td><td>Assume che il checkout abbia controlli di navigazione avanti/indietro (o stepper) e che il requisito AC-3 implichi tale comportamento; non esplicitato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.TC06</td><td>Introduce dipendenza da un servizio/endpoint del questionario, scenari di timeout/5xx e la regola &#x27;non viene creato alcun ordine&#x27;; non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-3</td><td>Il requisito richiede che test di flusso verifichino che il questionario non sia una schermata separata non collegata al checkout. I TC lo interpretano tramite indicatori (URL/breadcrumb/stepper) e navigazione avanti/indietro, ma non coprono esplicitamente un caso negativo in cui il questionario sia effettivamente &#x27;separato/non collegato&#x27; (es. apertura fuori funnel) per dimostrare il vincolo.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-021.TC01, REQ-F-021.TC03</td><td>Entrambi verificano che il questionario compaia dopo selezione prodotto e prima delle fasi finali; TC03 lo ripete in E2E.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">44</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-021.US01.TC01</td><td>Aggiunge il canale App oltre al web; il requisito non cita canali specifici né l&#x27;App.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC01</td><td>Assume utente autenticato/identificato e &#x27;abilitato al checkout&#x27;; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC01</td><td>Introduce un servizio/componente che restituisce il questionario; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC01</td><td>Introduce azioni di &#x27;salvataggio&#x27; del questionario; non richieste dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC02</td><td>Aggiunge il canale App e precondizioni di autenticazione/abilitazione; non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC02</td><td>Parla di &#x27;regole di completezza del questionario&#x27; oltre alla semplice obbligatorietà; non specificate nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC03</td><td>Aggiunge il canale App e la verifica di &#x27;stessa sessione/funnel&#x27; e navigazione indietro; il requisito chiede integrazione nel funnel ma non specifica sessione o back-navigation.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC04</td><td>Introduce un canale fisico/front-end commerciale (sportello/sala) e un operatore; non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC05</td><td>Come TC04, introduce canale front-end commerciale e operatore; non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC06</td><td>Estende la verifica a App/front-end commerciale; canali non citati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC07</td><td>Introduce requisito di ripresa sessione/ripristino carrello dopo refresh/riapertura app; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC08</td><td>Introduce fault injection, timeout &gt;30s, HTTP 500 e canali App/front-end commerciale; non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-3</td><td>Come nel set direct, non viene coperto esplicitamente un caso negativo che dimostri che il questionario non è una schermata separata non collegata; la verifica è indiretta (continuità/sessione/navigazione) e dipende da assunzioni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-021.US01.TC01, REQ-F-021.US01.TC03</td><td>Entrambi verificano presenza del questionario nel flusso; TC03 lo ripete in E2E aggiungendo controlli di continuità.</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC02, REQ-F-021.US01.TC05</td><td>Stesso scenario di blocco per questionario non compilato, duplicato su canale diverso introdotto dai TC (front-end commerciale) non richiesto dal requisito.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-021&quot;,
+  &quot;title&quot;: &quot;Questionario obbligatorio integrato nel percorso di checkout per alcuni prodotti&quot;,
+  &quot;description&quot;: &quot;Per i prodotti che richiedono un questionario aggiuntivo, la compilazione del questionario è obbligatoria e il questionario deve apparire integrato all&#x27;interno del percorso di checkout, immediatamente dopo la selezione del prodotto, in modo da garantire che i clienti forniscano le informazioni richieste prima del completamento della vendita.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Per i prodotti contrassegnati come &#x27;richiedono questionario&#x27;, il sistema presenta il questionario immediatamente dopo la selezione del prodotto e prima delle fasi finali del checkout.&quot;,
+    &quot;Il questionario è obbligatorio: il sistema impedisce il completamento della sottoscrizione senza la compilazione quando previsto.&quot;,
+    &quot;Test di flusso verificano che il questionario sia integrato nel funnel e non come schermata separata non collegata al checkout.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-021.TC01</td><td>Visualizzazione del questionario subito dopo la selezione di un prodotto che lo richiede (web)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-021.TC02</td><td>Blocco del completamento checkout se il questionario obbligatorio non è compilato (web)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-021.TC03</td><td>Completamento del checkout con questionario compilato per prodotto che lo richiede (E2E web)</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-021.TC04</td><td>Assenza del questionario nel checkout per prodotto non contrassegnato come &#x27;richiede questionario&#x27; (web)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-021.TC05</td><td>Integrazione del questionario nel funnel: navigazione avanti/indietro mantiene il contesto di checkout (web)</td><td>UI</td><td>MEDIUM</td><td>AC-3, AC-1</td></tr>
+<tr><td class='mono'>REQ-F-021.TC06</td><td>Gestione indisponibilità del servizio/dati questionario: il checkout non consente di completare la vendita senza questionario (web)</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-021.US01.TC01</td><td>Visualizzazione del questionario subito dopo la selezione di un prodotto che lo richiede (Web/App)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC02</td><td>Blocco completamento sottoscrizione se questionario obbligatorio non compilato (Web/App)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC03</td><td>Questionario integrato nel funnel di checkout (non schermata separata non collegata) (Web/App)</td><td>E2E</td><td>HIGH</td><td>AC-3, AC-1</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC04</td><td>Canale front-end commerciale: visualizzazione e compilazione questionario dopo selezione prodotto</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC05</td><td>Canale front-end commerciale: blocco completamento sottoscrizione se questionario non compilato</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC06</td><td>Prodotto senza flag &#x27;richiede questionario&#x27;: il questionario non viene mostrato e il checkout non è bloccato</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC07</td><td>Interruzione del flusso dopo apertura questionario: al rientro viene riproposto prima delle fasi finali</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-021.US01.TC08</td><td>Errore tecnico nel caricamento del questionario: blocco del processo e messaggio di errore coerente</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 5, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 12, 1, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,347 @@
+[
+  {
+    "story_id": "REQ-F-019.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-019.US01.TC01",
+        "title": "Visualizzazione CTA 'Aggiungi al carrello' nel pop-up di proposta bundle (Web)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' non autenticato o autenticato (non rilevante ai fini della sola visualizzazione del pop-up)",
+          "Sul canale Web è configurato un trigger che mostra il pop-up (o elemento equivalente) di proposta bundle per un prodotto principale",
+          "Il prodotto suggerito dal pop-up è disponibile e aggiungibile"
+        ],
+        "test_data": [
+          "Canale: Web",
+          "Prodotto principale che attiva il pop-up: 'Smartphone XYZ 128GB'",
+          "Prodotto suggerito nel pop-up: 'Cover protettiva XYZ' (disponibile)"
+        ],
+        "steps": [
+          "Aprire il sito Web e navigare alla pagina del prodotto principale che attiva la proposta bundle",
+          "Eseguire l'azione che fa comparire il pop-up di proposta bundle (o elemento equivalente)",
+          "Osservare i controlli disponibili nel pop-up"
+        ],
+        "expected_results": [
+          "Nel pop-up è presente un pulsante/controllo chiaramente identificabile per aggiungere immediatamente al carrello il prodotto suggerito",
+          "Il pulsante/controllo è abilitato e selezionabile (non in stato disabilitato) quando il prodotto suggerito è disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La story non specifica il tipo di componente (pop-up/tasca a comparsa/equivalente): il test considera valido qualsiasi contenitore UI che ospiti la CTA."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC02",
+        "title": "Visualizzazione CTA 'Aggiungi al carrello' nel pop-up di proposta bundle (App)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' con App installata e avviata",
+          "Sull'App è configurato un trigger che mostra il pop-up (o elemento equivalente) di proposta bundle per un prodotto principale",
+          "Il prodotto suggerito dal pop-up è disponibile e aggiungibile"
+        ],
+        "test_data": [
+          "Canale: App",
+          "Prodotto principale che attiva il pop-up: 'Smartphone XYZ 128GB'",
+          "Prodotto suggerito nel pop-up: 'Cover protettiva XYZ' (disponibile)"
+        ],
+        "steps": [
+          "Aprire l'App e navigare alla scheda del prodotto principale che attiva la proposta bundle",
+          "Eseguire l'azione che fa comparire il pop-up di proposta bundle (o elemento equivalente)",
+          "Osservare i controlli disponibili nel pop-up"
+        ],
+        "expected_results": [
+          "Nel pop-up è presente un pulsante/controllo chiaramente identificabile per aggiungere immediatamente al carrello il prodotto suggerito",
+          "Il pulsante/controllo è abilitato e selezionabile (non in stato disabilitato) quando il prodotto suggerito è disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La story non specifica differenze tra canali; questo test valida la presenza della CTA su App."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC03",
+        "title": "Aggiunta immediata al carrello tramite CTA nel pop-up bundle (E2E, Web)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' sul canale Web",
+          "Carrello esistente vuoto oppure con contenuto noto e verificabile",
+          "Il pop-up di proposta bundle è attivabile per il prodotto principale",
+          "Il prodotto suggerito è disponibile e aggiungibile",
+          "Servizio carrello disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: Web",
+          "Stato carrello iniziale: 0 articoli",
+          "Prodotto suggerito nel pop-up: 'Cover protettiva XYZ' (SKU: COV-XYZ-001, prezzo: 19,90 EUR, quantità attesa: 1)"
+        ],
+        "steps": [
+          "Aprire il sito Web e navigare alla pagina del prodotto principale che attiva la proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Cliccare il pulsante/controllo 'Aggiungi al carrello' relativo al prodotto suggerito",
+          "Aprire il carrello (pagina carrello o mini-carrello)",
+          "Verificare la presenza del prodotto suggerito nel carrello"
+        ],
+        "expected_results": [
+          "Dopo il click sulla CTA, l'interfaccia mostra un aggiornamento dello stato carrello (es. contatore articoli incrementato) senza errori visibili",
+          "Nel carrello è presente la riga articolo per lo SKU 'COV-XYZ-001' con quantità 1",
+          "Il carrello risulta in uno stato consistente (nessun duplicato inatteso, nessun articolo parzialmente creato, nessun errore applicativo)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Test E2E richiesto dall'AC originale: la verifica include UI (contatore/mini-cart) e contenuto carrello."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC04",
+        "title": "Aggiunta immediata al carrello tramite CTA nel pop-up bundle (E2E, App)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' sul canale App",
+          "Carrello esistente vuoto oppure con contenuto noto e verificabile",
+          "Il pop-up di proposta bundle è attivabile per il prodotto principale",
+          "Il prodotto suggerito è disponibile e aggiungibile",
+          "Servizio carrello disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: App",
+          "Stato carrello iniziale: 0 articoli",
+          "Prodotto suggerito nel pop-up: 'Cover protettiva XYZ' (SKU: COV-XYZ-001, prezzo: 19,90 EUR, quantità attesa: 1)"
+        ],
+        "steps": [
+          "Aprire l'App e navigare alla scheda del prodotto principale che attiva la proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Toccare il pulsante/controllo 'Aggiungi al carrello' relativo al prodotto suggerito",
+          "Aprire il carrello dall'App",
+          "Verificare la presenza del prodotto suggerito nel carrello"
+        ],
+        "expected_results": [
+          "Dopo il tap sulla CTA, l'interfaccia mostra un aggiornamento dello stato carrello (es. badge/contatore incrementato) senza errori visibili",
+          "Nel carrello è presente la riga articolo per lo SKU 'COV-XYZ-001' con quantità 1",
+          "Il carrello risulta in uno stato consistente (nessun duplicato inatteso, nessun articolo parzialmente creato, nessun errore applicativo)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Copertura E2E su App; se il carrello è sincronizzato cross-device, la verifica resta limitata al canale App perché non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC05",
+        "title": "Aggiunta al carrello con selezione varianti richiesta: flusso guidato e completamento aggiunta (Web)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' sul canale Web",
+          "Carrello in stato noto (es. vuoto)",
+          "Il pop-up di proposta bundle è attivabile",
+          "Il prodotto suggerito richiede la selezione di una variante/opzione prima dell'aggiunta",
+          "Servizio carrello disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: Web",
+          "Prodotto suggerito con varianti: 'T-shirt ABC' (SKU base: TSH-ABC)",
+          "Varianti disponibili: Taglia = [S, M, L], Colore = [Nero, Bianco]",
+          "Selezione valida: Taglia=M, Colore=Nero",
+          "Quantità attesa: 1"
+        ],
+        "steps": [
+          "Aprire il sito Web e navigare alla pagina del prodotto principale che attiva la proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Cliccare 'Aggiungi al carrello' per il prodotto suggerito con varianti",
+          "Nella UI di selezione varianti, selezionare Taglia 'M'",
+          "Nella UI di selezione varianti, selezionare Colore 'Nero'",
+          "Confermare l'aggiunta al carrello dalla UI del flusso varianti",
+          "Aprire il carrello",
+          "Verificare la riga articolo aggiunta con le varianti selezionate"
+        ],
+        "expected_results": [
+          "Alla pressione della CTA, il sistema presenta un flusso guidato per la selezione/conferma delle varianti senza uscire dal contesto di aggiunta (nessuna interruzione del processo)",
+          "Dopo la conferma, il carrello viene aggiornato senza errori visibili",
+          "Nel carrello è presente l'articolo 'TSH-ABC' con varianti Taglia=M e Colore=Nero e quantità 1"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La modalità UI della selezione varianti non è specificata; il test verifica che il sistema guidi la scelta e consenta di completare l'aggiunta senza interruzioni."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC06",
+        "title": "Aggiunta al carrello con selezione varianti richiesta: flusso guidato e completamento aggiunta (App)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' sul canale App",
+          "Carrello in stato noto (es. vuoto)",
+          "Il pop-up di proposta bundle è attivabile",
+          "Il prodotto suggerito richiede la selezione di una variante/opzione prima dell'aggiunta",
+          "Servizio carrello disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Canale: App",
+          "Prodotto suggerito con varianti: 'T-shirt ABC' (SKU base: TSH-ABC)",
+          "Varianti disponibili: Taglia = [S, M, L], Colore = [Nero, Bianco]",
+          "Selezione valida: Taglia=L, Colore=Bianco",
+          "Quantità attesa: 1"
+        ],
+        "steps": [
+          "Aprire l'App e navigare alla scheda del prodotto principale che attiva la proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Toccare 'Aggiungi al carrello' per il prodotto suggerito con varianti",
+          "Nella UI di selezione varianti, selezionare Taglia 'L'",
+          "Nella UI di selezione varianti, selezionare Colore 'Bianco'",
+          "Confermare l'aggiunta al carrello dalla UI del flusso varianti",
+          "Aprire il carrello",
+          "Verificare la riga articolo aggiunta con le varianti selezionate"
+        ],
+        "expected_results": [
+          "Alla pressione della CTA, il sistema presenta un flusso guidato per la selezione/conferma delle varianti senza interrompere il processo di aggiunta",
+          "Dopo la conferma, il carrello viene aggiornato senza errori visibili",
+          "Nel carrello è presente l'articolo 'TSH-ABC' con varianti Taglia=L e Colore=Bianco e quantità 1"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Copertura del flusso varianti su App; la UI può essere modale, bottom-sheet o schermata dedicata purché non interrompa il processo."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC07",
+        "title": "Errore gestito quando il servizio carrello non è disponibile durante l'aggiunta dal pop-up bundle",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' su Web o App",
+          "Il pop-up di proposta bundle è attivabile",
+          "Il prodotto suggerito è disponibile e aggiungibile",
+          "Il servizio carrello è non disponibile (es. simulare HTTP 503 o timeout) al momento della richiesta di aggiunta"
+        ],
+        "test_data": [
+          "Canali: Web e App",
+          "Prodotto suggerito: 'Cover protettiva XYZ' (SKU: COV-XYZ-001)",
+          "Simulazione fault: add-to-cart -> timeout 30s oppure risposta 503"
+        ],
+        "steps": [
+          "Aprire il canale (Web o App) e raggiungere il contesto che attiva il pop-up di proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Premere 'Aggiungi al carrello' per il prodotto suggerito durante la non disponibilità del servizio carrello",
+          "Aprire il carrello",
+          "Verificare lo stato del carrello rispetto allo stato iniziale"
+        ],
+        "expected_results": [
+          "Il sistema mostra un messaggio di errore gestito (non crash, non pagina bianca) relativo all'impossibilità di aggiungere al carrello",
+          "Il carrello non risulta aggiornato in modo incoerente: il prodotto suggerito non è presente se l'operazione è fallita",
+          "Non risultano duplicazioni o righe parziali dell'articolo nel carrello"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "Il testo esatto del messaggio non è specificato dal requisito; la verifica si concentra su gestione errore e consistenza del carrello."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC08",
+        "title": "Aggiunta fallisce in modo gestito quando il prodotto suggerito non è più disponibile al momento dell'azione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' su Web o App",
+          "Il pop-up di proposta bundle è attivabile e mostra un prodotto suggerito",
+          "Il prodotto suggerito diventa non aggiungibile al momento della pressione della CTA (es. esaurito o non vendibile)"
+        ],
+        "test_data": [
+          "Canali: Web e App",
+          "Prodotto suggerito: 'Cover protettiva XYZ' (SKU: COV-XYZ-001)",
+          "Condizione: stock passa a 0 o stato 'non vendibile' immediatamente prima della chiamata add-to-cart"
+        ],
+        "steps": [
+          "Aprire il canale (Web o App) e raggiungere il contesto che attiva il pop-up di proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Forzare la condizione di non disponibilità del prodotto suggerito (es. tramite ambiente di test o simulazione stock)",
+          "Premere 'Aggiungi al carrello' per il prodotto suggerito",
+          "Aprire il carrello",
+          "Verificare lo stato del carrello rispetto allo stato iniziale"
+        ],
+        "expected_results": [
+          "Il sistema comunica in modo gestito che il prodotto non è aggiungibile (senza errori non gestiti)",
+          "Il carrello non contiene il prodotto suggerito se l'operazione è fallita",
+          "Il carrello rimane in uno stato consistente (nessuna riga articolo parziale o duplicata)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "La modalità di segnalazione 'non disponibile' non è specificata; il test verifica l'esito (fallimento gestito) e la consistenza del carrello."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC09",
+        "title": "Varianti richieste: blocco conferma quando la selezione è incompleta o non valida",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente 'Cliente digitale' su Web o App",
+          "Carrello in stato noto (es. vuoto)",
+          "Il pop-up di proposta bundle è attivabile",
+          "Il prodotto suggerito richiede la selezione di una o più varianti/opzioni"
+        ],
+        "test_data": [
+          "Canali: Web e App",
+          "Prodotto suggerito con varianti: 'T-shirt ABC' (SKU base: TSH-ABC)",
+          "Varianti richieste: Taglia e Colore",
+          "Selezione non valida: Taglia non selezionata, Colore=Nero"
+        ],
+        "steps": [
+          "Aprire il canale (Web o App) e raggiungere il contesto che attiva il pop-up di proposta bundle",
+          "Attivare la visualizzazione del pop-up di proposta bundle (o elemento equivalente)",
+          "Attivare 'Aggiungi al carrello' per il prodotto suggerito con varianti",
+          "Nella UI varianti, selezionare solo il Colore 'Nero'",
+          "Tentare di confermare l'aggiunta al carrello senza selezionare la Taglia",
+          "Verificare che il flusso rimanga nella UI di selezione varianti",
+          "Aprire il carrello",
+          "Verificare che il prodotto non sia stato aggiunto"
+        ],
+        "expected_results": [
+          "Il sistema impedisce la conferma dell'aggiunta finché le varianti richieste non sono selezionate in modo valido",
+          "Il sistema mostra un'indicazione di validazione (es. evidenzia il campo Taglia come obbligatorio) senza uscire dal flusso di aggiunta",
+          "Il carrello non viene aggiornato: il prodotto non risulta presente"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "Web",
+          "App"
+        ],
+        "notes": "Il requisito non definisce la UI di validazione; si verifica che l'utente sia guidato e che l'aggiunta non avvenga con selezione incompleta."
+      }
+    ]
+  }
+]

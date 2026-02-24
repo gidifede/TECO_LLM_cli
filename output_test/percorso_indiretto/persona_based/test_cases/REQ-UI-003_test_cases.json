@@ -1,0 +1,263 @@
+[
+  {
+    "story_id": "REQ-UI-003.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-003.US01.TC01",
+        "title": "Visualizzazione card: nome prodotto e valore sconto sempre visibili senza azioni utente (canale digital)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste almeno un’offerta attiva associata al cliente con campi: nome prodotto e valore sconto valorizzati",
+          "Il canale 'digital' è disponibile e raggiungibile (web/app a seconda dell’implementazione)",
+          "L’utente Cliente è in grado di visualizzare una lista/griglia di offerte che includa almeno una card offerta"
+        ],
+        "test_data": [
+          "Offerta O-1001: Nome prodotto='Conto Premium', Valore sconto='10%'"
+        ],
+        "steps": [
+          "Accedere al canale digital come Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1001 senza interagire con la card (nessun click/tap/hover)",
+          "Osservare l’area visibile di default della card"
+        ],
+        "expected_results": [
+          "Nell’area visibile di default della card è mostrato il nome prodotto 'Conto Premium' in modo leggibile senza click/tap",
+          "Nell’area visibile di default della card è mostrato il valore dello sconto '10%' in modo leggibile senza click/tap"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il criterio 'in modo evidente' è verificato come: testo presente e leggibile nella porzione visibile di default senza richiedere interazioni utente."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC02",
+        "title": "Presenza controllo 'maggiori info' nella card offerta (canale digital)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste almeno un’offerta attiva associata al cliente visualizzabile in card",
+          "Il canale 'digital' è disponibile"
+        ],
+        "test_data": [
+          "Offerta O-1001: Nome prodotto='Conto Premium', Valore sconto='10%'"
+        ],
+        "steps": [
+          "Accedere al canale digital come Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1001",
+          "Verificare la presenza nella card di un controllo etichettato 'maggiori info' o equivalente"
+        ],
+        "expected_results": [
+          "La card contiene un controllo 'maggiori info' (o equivalente) visibile all’utente"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il requisito ammette un’etichetta equivalente a 'maggiori info' purché consenta l’accesso ai dettagli completi."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC03",
+        "title": "Apertura/espansione dettagli completi tramite 'maggiori info' e consultabilità contenuti (canale digital)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un’offerta attiva associata al cliente con dettagli completi disponibili (campi aggiuntivi non mostrati di default)",
+          "Il canale 'digital' è disponibile"
+        ],
+        "test_data": [
+          "Offerta O-1002: Nome prodotto='Carta Gold', Valore sconto='20 EUR', Dettagli completi includono 'Condizioni: valido fino al 31/12/2026' e 'Note: solo nuovi clienti'"
+        ],
+        "steps": [
+          "Accedere al canale digital come Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1002",
+          "Selezionare il controllo 'maggiori info' della card O-1002",
+          "Verificare che l’area dettagli sia visualizzata (espansione nella card o apertura vista/modale dedicata)",
+          "Scorrere/consultare i contenuti dell’area dettagli visualizzata"
+        ],
+        "expected_results": [
+          "Dopo la selezione di 'maggiori info' vengono mostrati dettagli completi aggiuntivi non visibili di default",
+          "I dettagli mostrati sono consultabili dall’utente (es. testo leggibile e navigabile/scorribile senza blocchi)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "La modalità 'espande o apre' è considerata conforme se, dopo l’azione, i dettagli completi risultano effettivamente fruibili."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC04",
+        "title": "Autorizzazione: utente non Cliente non può accedere alla vista card offerta cliente (canali digital e front-end commerciale)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un account con ruolo diverso da Cliente (es. operatore tecnico/backoffice) oppure una sessione non autenticata",
+          "La sezione card offerta è disponibile per il Cliente nei canali previsti"
+        ],
+        "test_data": [
+          "Utente non Cliente: 'ops_user_01' (ruolo: Operatore tecnico) oppure sessione anonima"
+        ],
+        "steps": [
+          "Accedere al canale digital con l’utente non Cliente (oppure senza autenticazione)",
+          "Tentare di navigare alla sezione che mostra le card offerta per il Cliente",
+          "Accedere al canale 'front-end commerciale' con l’utente non Cliente (se applicabile)",
+          "Tentare di navigare alla sezione che mostra le card offerta per il Cliente"
+        ],
+        "expected_results": [
+          "L’utente non Cliente non visualizza le card offerta riservate al Cliente e riceve un esito coerente con le regole di accesso (es. accesso negato, richiesta login o assenza della sezione)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "digital",
+          "front-end commerciale"
+        ],
+        "notes": "Le user story non specificano ruoli alternativi; questo test valida che la funzionalità sia accessibile nel contesto 'Cliente' e non esposta impropriamente. L’esito preciso (403, redirect login, sezione non visibile) dipende dall’implementazione."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC05",
+        "title": "Negativo: controllo 'maggiori info' assente o non cliccabile impedisce accesso ai dettagli (canale digital)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un’offerta attiva visualizzabile in card",
+          "È possibile simulare/forzare una condizione UI in cui il controllo 'maggiori info' risulti non disponibile o disabilitato (es. feature flag, configurazione, bug riproducibile in ambiente test)",
+          "Il canale 'digital' è disponibile"
+        ],
+        "test_data": [
+          "Offerta O-1003: Nome prodotto='Prestito Smart', Valore sconto='1,5% TAN' (dettagli completi esistenti)"
+        ],
+        "steps": [
+          "Accedere al canale digital come Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1003",
+          "Verificare che il controllo 'maggiori info' sia assente oppure presente ma disabilitato/non cliccabile",
+          "Tentare di selezionare il controllo (se presente)"
+        ],
+        "expected_results": [
+          "Non è possibile attivare l’apertura/espansione dei dettagli completi dalla card",
+          "I dettagli completi non risultano accessibili dalla card in questa condizione"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Test negativo per l’edge case 'controllo non disponibile/non cliccabile'. Richiede una modalità di simulazione in ambiente QA."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC06",
+        "title": "Negativo/integrazione: apertura dettagli fallisce per errore di caricamento e l’utente non può consultare i dettagli (canale digital)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un’offerta attiva con dettagli completi recuperati da un servizio/endpoint (se presente)",
+          "È possibile simulare un errore del servizio dettagli (es. timeout/500) in ambiente QA",
+          "Il canale 'digital' è disponibile"
+        ],
+        "test_data": [
+          "Offerta O-1004: Nome prodotto='Assicurazione Casa', Valore sconto='30 EUR'",
+          "Simulazione servizio dettagli: risposta HTTP 500 oppure timeout > 10s"
+        ],
+        "steps": [
+          "Accedere al canale digital come Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1004",
+          "Selezionare il controllo 'maggiori info'",
+          "Attendere l’esito del caricamento dei dettagli fino a timeout configurato"
+        ],
+        "expected_results": [
+          "I dettagli completi non vengono mostrati a causa dell’errore di caricamento",
+          "Il sistema mostra un messaggio di errore o uno stato di fallback che segnala l’impossibilità di recuperare i dettagli (senza bloccare l’interfaccia)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Le user story indicano l’edge case 'contenuto non caricato'. Il tipo Integration è usato perché tipicamente i dettagli dipendono da una chiamata a servizio; se i dettagli sono locali, adattare la simulazione all’errore UI."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC07",
+        "title": "Edge case UI: nome prodotto e valore sconto molto lunghi restano leggibili nella card di default (canale front-end commerciale)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un’offerta attiva con nome prodotto e valore sconto di lunghezza elevata",
+          "Il canale 'front-end commerciale' è disponibile e mostra card offerta al Cliente (fisico)"
+        ],
+        "test_data": [
+          "Offerta O-1005: Nome prodotto='Super Offerta Prodotto con Denominazione Estremamente Lunga Versione 2026 Plus', Valore sconto='Sconto riservato: 1234,56 EUR + 12 mesi gratuiti'"
+        ],
+        "steps": [
+          "Accedere al canale 'front-end commerciale' come Cliente (fisico) o in modalità operatore che mostra la vista Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Individuare la card dell’offerta O-1005 senza interagire con la card",
+          "Osservare la resa del nome prodotto e del valore sconto nell’area visibile di default"
+        ],
+        "expected_results": [
+          "Il nome prodotto risulta leggibile nell’area di default (eventuale troncamento non impedisce la comprensione del contenuto principale)",
+          "Il valore dello sconto risulta leggibile nell’area di default (eventuale troncamento non impedisce la comprensione del valore)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "L’AC richiede visibilità 'evidente'. In assenza di specifiche UI (tooltip, multilinea, ellissi), il test verifica che il troncamento non renda incomprensibili le informazioni essenziali; eventuali criteri di leggibilità (max caratteri, tooltip obbligatorio) non sono definiti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC08",
+        "title": "E2E: da visualizzazione card a consultazione dettagli completi tramite 'maggiori info' (canale front-end commerciale)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un’offerta attiva associata al cliente visualizzabile in card nel canale 'front-end commerciale'",
+          "I dettagli completi dell’offerta sono disponibili e contengono almeno un’informazione non visibile di default"
+        ],
+        "test_data": [
+          "Offerta O-1002: Nome prodotto='Carta Gold', Valore sconto='20 EUR', Dettagli: 'Condizioni: valido fino al 31/12/2026'"
+        ],
+        "steps": [
+          "Accedere al canale 'front-end commerciale' come Cliente (fisico) o in modalità che consenta la visualizzazione della card lato Cliente",
+          "Navigare alla sezione in cui vengono mostrate le card offerta",
+          "Verificare nella card O-1002 la presenza del nome prodotto e del valore sconto nell’area di default",
+          "Selezionare il controllo 'maggiori info' della card O-1002",
+          "Verificare la visualizzazione dei dettagli completi",
+          "Consultare il contenuto dei dettagli completi fino a individuare l’informazione 'Condizioni: valido fino al 31/12/2026'"
+        ],
+        "expected_results": [
+          "La card mostra nome prodotto e valore sconto senza richiedere interazioni",
+          "La selezione di 'maggiori info' apre/espande correttamente l’area dettagli",
+          "Nei dettagli è presente e consultabile l’informazione non visibile di default 'Condizioni: valido fino al 31/12/2026'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Flusso end-to-end sul canale fisico/commerciale per garantire copertura multi-canale."
+      }
+    ]
+  }
+]

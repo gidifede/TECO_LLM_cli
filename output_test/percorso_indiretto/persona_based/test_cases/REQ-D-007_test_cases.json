@@ -1,0 +1,646 @@
+[
+  {
+    "story_id": "REQ-D-007.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-007.US01.TC01",
+        "title": "Log persistente alla generazione di una proposta (con riferimento proposta, tipologia evento e timestamp)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "Esiste un flusso/servizio per generare una proposta (API o job) invocabile in test",
+          "È disponibile un meccanismo di consultazione log dal Motore (API/servizio interno) per verificare la persistenza"
+        ],
+        "test_data": [
+          "Richiesta generazione proposta: customer_id=CUST-10001, prodotto=PROD-A, canaleOrigine=SYSTEM, importo=1000.00, valuta=EUR",
+          "Atteso: proposal_id valorizzato alla creazione (es. PROP-900001)"
+        ],
+        "steps": [
+          "Invocare il flusso del Motore per la generazione di una proposta con i dati di test",
+          "Acquisire l'identificativo della proposta generata (proposal_id)",
+          "Richiedere al Motore la consultazione dei log filtrando per tipologia evento 'PROPOSTA_GENERATA' e riferimento proposal_id",
+          "Aprire il dettaglio del record di log trovato"
+        ],
+        "expected_results": [
+          "La proposta viene generata con successo e viene restituito un proposal_id",
+          "È presente almeno un record di log persistito con tipologia evento 'PROPOSTA_GENERATA' associato al proposal_id generato",
+          "Il record di log contiene un timestamp valorizzato (non nullo) e coerente con l'orario di esecuzione (tolleranza definita dall'ambiente di test)",
+          "Il record di log è recuperabile tramite consultazione dal Motore (non solo in memoria runtime)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "La tipologia evento 'PROPOSTA_GENERATA' è un'assunzione per rendere verificabile la 'tipologia di evento' richiesta; adeguare al naming reale. Il requisito non specifica l'interfaccia di consultazione: si assume esista un endpoint/servizio interno del Motore per query sui log."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC02",
+        "title": "Log persistente su modifica configurazione con identificativo utente autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "Esiste un utente autorizzato a modificare configurazioni: user_id=mkting.admin01",
+          "Esiste una configurazione modificabile (es. parametro o regola) identificata univocamente (config_key=PRICING_RULE_01)",
+          "È disponibile un meccanismo di consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Utente: user_id=mkting.admin01",
+          "Modifica configurazione: config_key=PRICING_RULE_01, campo=coefficienteSconto, valorePrecedente=0.10, valoreNuovo=0.12"
+        ],
+        "steps": [
+          "Autenticarsi/abilitare il contesto di esecuzione come utente autorizzato user_id=mkting.admin01",
+          "Eseguire una modifica di configurazione sul Motore per config_key=PRICING_RULE_01 impostando coefficienteSconto=0.12",
+          "Richiedere al Motore la consultazione dei log filtrando per tipologia evento 'CONFIG_MODIFICATA' e riferimento config_key=PRICING_RULE_01",
+          "Aprire il dettaglio del record di log più recente relativo alla modifica"
+        ],
+        "expected_results": [
+          "La modifica di configurazione viene completata con esito positivo",
+          "È presente un record di log persistito con tipologia evento 'CONFIG_MODIFICATA' associato alla configurazione modificata",
+          "Il record di log contiene un timestamp valorizzato (non nullo)",
+          "Il record di log contiene l'identificativo utente valorizzato e uguale a user_id=mkting.admin01"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "La tipologia evento 'CONFIG_MODIFICATA' e la presenza di un campo 'config_key' sono assunzioni per rendere verificabile la tracciabilità dell'evento; adeguare allo schema reale dei log."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC03",
+        "title": "Log persistente su accesso utente autorizzato con timestamp e identificativo utente",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "Esiste un utente autorizzato: user_id=compliance.viewer01 con credenziali valide",
+          "Esiste un servizio di autenticazione/accesso che genera evento di accesso tracciabile",
+          "È disponibile un meccanismo di consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Credenziali valide per user_id=compliance.viewer01"
+        ],
+        "steps": [
+          "Eseguire un accesso (login) al sistema/servizio del Motore con l'utente user_id=compliance.viewer01",
+          "Verificare che l'accesso abbia esito positivo",
+          "Richiedere al Motore la consultazione dei log filtrando per tipologia evento 'ACCESSO_UTENTE' e user_id=compliance.viewer01",
+          "Aprire il dettaglio del record di log più recente relativo all'accesso"
+        ],
+        "expected_results": [
+          "L'accesso dell'utente autorizzato viene completato con successo",
+          "È presente un record di log persistito relativo all'accesso dell'utente user_id=compliance.viewer01",
+          "Il record di log contiene un timestamp valorizzato (non nullo)",
+          "Il record di log contiene l'identificativo utente valorizzato e uguale a user_id=compliance.viewer01"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "La tipologia evento 'ACCESSO_UTENTE' è un'assunzione; adeguare al naming reale. Il requisito non specifica se siano loggati anche tentativi falliti: questo è coperto in altri test solo come 'se previsto'."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC04",
+        "title": "Consultazione ed esportazione dei log dall'area di persistenza tramite il Motore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e contenente almeno: 1 log proposta, 1 log modifica configurazione, 1 log accesso",
+          "È disponibile una funzionalità di esportazione log dal Motore (API/servizio) verso un formato esportabile (es. CSV/JSON) o stream equivalente"
+        ],
+        "test_data": [
+          "Filtro export: intervallo temporale=ultime 24 ore",
+          "Formato export: JSON (o formato supportato dall'ambiente)"
+        ],
+        "steps": [
+          "Richiedere al Motore la consultazione dei log per l'intervallo temporale delle ultime 24 ore",
+          "Verificare che il Motore restituisca un elenco di eventi",
+          "Richiedere al Motore l'esportazione dei log per lo stesso intervallo temporale e formato scelto",
+          "Scaricare/recuperare il file o payload esportato",
+          "Validare che l'export contenga record coerenti con quelli consultati"
+        ],
+        "expected_results": [
+          "La consultazione restituisce un elenco di log persistiti per l'intervallo richiesto",
+          "L'esportazione viene completata con successo e produce un output recuperabile (file/payload) non vuoto",
+          "L'output esportato include i log presenti nell'area di persistenza per l'intervallo richiesto (coerenza almeno per conteggio o per un sottoinsieme identificabile di record)",
+          "Il Motore accede ai log tramite l'area di persistenza (non dipendente da memoria volatile)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica formati e modalità di export: il test verifica l'esistenza di un meccanismo di export e la coerenza con la consultazione, adattando i dettagli all'implementazione."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC05",
+        "title": "Indisponibilità area di persistenza: gestione errore di scrittura log senza crash del Motore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "È possibile simulare l'indisponibilità della persistenza log (es. database down, permessi negati, storage non montato) in ambiente di test controllato",
+          "È disponibile osservabilità per verificare l'esito dell'operazione principale (generazione proposta o modifica configurazione) indipendentemente dal logging"
+        ],
+        "test_data": [
+          "Scenario: persistenza log non disponibile (es. connessione DB rifiutata)",
+          "Richiesta generazione proposta: customer_id=CUST-10002, prodotto=PROD-B, importo=500.00, valuta=EUR"
+        ],
+        "steps": [
+          "Indurre l'indisponibilità dell'area di persistenza log",
+          "Invocare il flusso del Motore per la generazione di una proposta con i dati di test",
+          "Rilevare l'esito della generazione proposta",
+          "Ripristinare la disponibilità dell'area di persistenza log",
+          "Consultare i log tecnici/di errore del Motore (se disponibili) relativi al fallimento di scrittura log"
+        ],
+        "expected_results": [
+          "Il Motore non va in crash e non presenta interruzioni non gestite durante l'operazione",
+          "L'operazione principale (generazione proposta) completa con un esito deterministico e gestito (successo o fallimento gestito secondo implementazione), senza eccezioni non gestite",
+          "È registrata un'evidenza di errore di logging (es. evento di errore interno/metriche/log tecnici) che indica la mancata scrittura in persistenza"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Edge case con comportamento di fallback 'da definire': il test valida almeno l'assenza di crash e la gestione dell'errore. Non verifica la perdita/recupero dei log perché non specificato (es. buffer, retry, DLQ)."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC06",
+        "title": "Evento senza utente applicabile: proposta generata automaticamente senza identificativo utente",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "È disponibile un flusso di generazione proposta automatica (senza contesto utente) o un modo per invocare la generazione senza user context",
+          "È disponibile un meccanismo di consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Richiesta generazione proposta automatica: customer_id=CUST-10003, prodotto=PROD-C, importo=200.00, valuta=EUR, contestoUtente=ASSENTE"
+        ],
+        "steps": [
+          "Invocare la generazione proposta in modalità automatica/senza contesto utente",
+          "Acquisire l'identificativo della proposta generata (proposal_id)",
+          "Consultare i log filtrando per tipologia evento 'PROPOSTA_GENERATA' e proposal_id",
+          "Aprire il dettaglio del record di log relativo"
+        ],
+        "expected_results": [
+          "È presente un record di log persistito associato alla proposta generata",
+          "Il record di log contiene tipologia evento e timestamp valorizzati",
+          "Il record di log non contiene un identificativo utente valorizzato oppure lo contiene in una forma neutra/assente prevista dall'implementazione (es. null/omesso)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La rappresentazione dell'assenza utente non è specificata: il test accetta 'campo assente' o 'null' o valore equivalente definito dall'implementazione."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC07",
+        "title": "Identificativo utente assente/non risolvibile su evento di accesso o modifica: log registra l'anomalia",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "È possibile generare un evento di accesso o modifica configurazione con user_id mancante/non risolvibile (es. token senza subject, utente cancellato, header mancante) in ambiente di test",
+          "È disponibile un meccanismo di consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Scenario A (accesso): richiesta di login con subject mancante o user_id non risolvibile (es. subject=UNKNOWN-999)",
+          "Scenario B (modifica config): richiesta modifica config_key=PRICING_RULE_02 con contesto utente mancante/non risolvibile"
+        ],
+        "steps": [
+          "Generare un evento di accesso con identificativo utente non risolvibile (Scenario A)",
+          "Consultare i log filtrando per tipologia evento 'ACCESSO_UTENTE' e timestamp dell'esecuzione",
+          "Verificare i campi relativi all'utente nel record di log dell'evento",
+          "Generare un evento di modifica configurazione con identificativo utente non risolvibile (Scenario B)",
+          "Consultare i log filtrando per tipologia evento 'CONFIG_MODIFICATA' e config_key=PRICING_RULE_02",
+          "Verificare i campi relativi all'utente nel record di log dell'evento"
+        ],
+        "expected_results": [
+          "Per ciascun evento generato, esiste un record di log persistito con tipologia evento e timestamp valorizzati",
+          "Per ciascun record, l'utente risulta non valorizzato oppure valorizzato con un indicatore di anomalia previsto dall'implementazione (es. 'UNKNOWN', 'UNRESOLVED')",
+          "È presente un'evidenza dell'anomalia associata al record (es. flag/campo/nota di errore) secondo l'implementazione disponibile"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La 'modalità di rappresentazione da definire' viene verificata in modo tollerante: il test richiede la presenza di un indicatore di anomalia, senza imporre un formato specifico."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC08",
+        "title": "Gestione eventi duplicati (retry): logging coerente senza inconsistenze",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "È possibile simulare un retry o inviare due volte la stessa richiesta con lo stesso idempotency key/correlation id (se supportato) oppure in rapida successione",
+          "È disponibile un meccanismo di consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Richiesta generazione proposta con correlation_id=CORR-777001, customer_id=CUST-10004, prodotto=PROD-A, importo=750.00, valuta=EUR",
+          "Invio duplicato della stessa richiesta (stesso correlation_id)"
+        ],
+        "steps": [
+          "Inviare la richiesta di generazione proposta con correlation_id=CORR-777001",
+          "Inviare nuovamente la stessa richiesta (duplicata) con correlation_id=CORR-777001",
+          "Consultare i log filtrando per correlation_id=CORR-777001 e tipologia evento 'PROPOSTA_GENERATA'",
+          "Analizzare il numero e il contenuto dei record ottenuti"
+        ],
+        "expected_results": [
+          "Il Motore gestisce la duplicazione in modo deterministico (es. deduplica o registrazione esplicita del duplicato) senza errori non gestiti",
+          "I record di log risultano coerenti: non contengono dati contraddittori rispetto all'evento (es. riferimenti proposta incoerenti) e non generano inconsistenze evidenti",
+          "Se la deduplica è implementata, è presente un solo record di log per l'evento; se non lo è, i record multipli sono distinguibili e coerenti (es. stesso correlation_id e indicazione di retry/duplicato se prevista)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il criterio di deduplica 'da definire' viene testato come coerenza generale e assenza di inconsistenze, accettando sia deduplica sia tracciamento duplicati purché coerente."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-007.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-007.US02.TC01",
+        "title": "Dashboard Marketing: modifica configurazione genera log persistente con user_id Marketing",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Marketing autorizzato esistente: user_id=marketing.user01 con credenziali valide e permessi di modifica configurazione",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "Configurazione modificabile presente: config_key=CAMPAIGN_MATRIX_01",
+          "La dashboard espone (direttamente o indirettamente) un modo per eseguire la modifica configurazione"
+        ],
+        "test_data": [
+          "Credenziali: marketing.user01 / password valida",
+          "Modifica: config_key=CAMPAIGN_MATRIX_01, campo=segmentoTarget, valoreNuovo='Retail_Premium'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=marketing.user01",
+          "Navigare alla sezione di configurazione del Motore relativa a config_key=CAMPAIGN_MATRIX_01",
+          "Impostare il campo segmentoTarget al valore 'Retail_Premium'",
+          "Salvare/applicare la modifica",
+          "Consultare i log (tramite funzionalità del Motore o vista log in dashboard) filtrando per config_key=CAMPAIGN_MATRIX_01 e intervallo temporale recente",
+          "Aprire il dettaglio del log relativo alla modifica"
+        ],
+        "expected_results": [
+          "La modifica di configurazione risulta applicata con successo dalla dashboard",
+          "È presente un record di log persistito relativo alla modifica effettuata",
+          "Il record di log contiene timestamp valorizzato e identificativo utente uguale a user_id=marketing.user01",
+          "Il record di log è consultabile/esportabile dal Motore (anche se l'azione è partita da dashboard)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non dettaglia la UI della dashboard: i passi sono generici ma atomici. Se la consultazione log non è in dashboard, usare API/servizio del Motore per verifica."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC02",
+        "title": "Dashboard Marketing: esportazione log modifiche configurazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Marketing autorizzato esistente: user_id=marketing.user01",
+          "Area di persistenza log disponibile e contenente log di modifiche configurazione",
+          "È disponibile una funzionalità di esportazione log tramite Motore (invocabile da dashboard o via API)"
+        ],
+        "test_data": [
+          "Filtro export: solo eventi di modifica configurazione, intervallo temporale=ultimi 7 giorni",
+          "Formato export: CSV (o formato supportato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=marketing.user01",
+          "Aprire la sezione consultazione log modifiche configurazione",
+          "Impostare filtro su intervallo temporale ultimi 7 giorni",
+          "Richiedere l'esportazione dei risultati nel formato previsto",
+          "Recuperare il file/payload esportato",
+          "Verificare che l'export contenga eventi di modifica configurazione con identificativo utente"
+        ],
+        "expected_results": [
+          "L'esportazione viene completata con successo e produce un output recuperabile non vuoto",
+          "L'output esportato contiene eventi di modifica configurazione",
+          "Per ciascun evento esportato, sono presenti almeno timestamp e identificativo utente (ove applicabile) secondo lo schema disponibile"
+        ],
+        "traced_criteria": [
+          "AC-4",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica i campi minimi in export; il test verifica almeno timestamp e user_id per eventi utente, coerentemente con le business rules."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC03",
+        "title": "Utente Marketing senza permessi: modifica configurazione negata (verifica autorizzazioni)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Marketing esistente senza permessi di modifica configurazione: user_id=marketing.viewer01",
+          "Configurazione target esistente: config_key=CAMPAIGN_MATRIX_02",
+          "Policy autorizzativa attiva sul Motore per la modifica configurazioni"
+        ],
+        "test_data": [
+          "Credenziali: marketing.viewer01 / password valida",
+          "Tentativo modifica: config_key=CAMPAIGN_MATRIX_02, campo=segmentoTarget, valoreNuovo='Retail_Standard'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=marketing.viewer01",
+          "Navigare alla sezione di configurazione relativa a config_key=CAMPAIGN_MATRIX_02",
+          "Tentare di modificare il campo segmentoTarget al valore 'Retail_Standard'",
+          "Tentare di salvare/applicare la modifica",
+          "Verificare lo stato della configurazione dopo il tentativo"
+        ],
+        "expected_results": [
+          "Il sistema nega l'operazione di modifica configurazione per permessi insufficienti (messaggio/errore autorizzativo)",
+          "La configurazione non risulta modificata (nessun cambio persistito)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case della user story cita la registrazione del tentativo nei log 'se previsto dal sistema di accesso': non è tracciabile sugli AC originali e quindi non viene reso vincolante in expected results."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC04",
+        "title": "Rollback/annullamento modifica configurazione: tracciamento coerente della sequenza eventi",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Marketing autorizzato: user_id=marketing.user02",
+          "Area di persistenza log disponibile e scrivibile dal Motore",
+          "Esiste una funzionalità di annullamento/rollback modifica configurazione (manuale o automatica) in ambiente di test",
+          "Configurazione target esistente: config_key=CAMPAIGN_MATRIX_03",
+          "È disponibile consultazione log dal Motore"
+        ],
+        "test_data": [
+          "Modifica 1: config_key=CAMPAIGN_MATRIX_03, campo=segmentoTarget, valoreNuovo='SME_Gold'",
+          "Rollback: ripristino al valore precedente (es. 'SME_Silver')"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=marketing.user02",
+          "Applicare la modifica 1 su config_key=CAMPAIGN_MATRIX_03",
+          "Eseguire l'azione di annullamento/rollback della modifica",
+          "Consultare i log filtrando per config_key=CAMPAIGN_MATRIX_03 e intervallo temporale del test",
+          "Ordinare i log per timestamp crescente",
+          "Verificare la presenza e l'ordine degli eventi relativi a modifica e rollback"
+        ],
+        "expected_results": [
+          "La modifica iniziale e il rollback risultano eseguiti (configurazione finale ripristinata al valore precedente)",
+          "I log mostrano una sequenza coerente di eventi che consente di ricostruire: modifica effettuata e successivo rollback (tipologie evento e/o descrizioni coerenti con l'implementazione)",
+          "Gli eventi di log relativi ad azioni utente riportano l'identificativo utente (user_id=marketing.user02) ove applicabile"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il dettaglio di come rappresentare il rollback è 'da definire': il test verifica coerenza temporale e ricostruibilità della sequenza, senza imporre una specifica tipologia evento."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-007.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-007.US03.TC01",
+        "title": "Dashboard Compliance: consultazione log proposte generate a fini di audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Compliance autorizzato esistente: user_id=compliance.auditor01 con credenziali valide e permessi di consultazione log",
+          "Area di persistenza log disponibile e contenente almeno un evento di proposta generata",
+          "È disponibile una funzionalità di consultazione log tramite dashboard o tramite Motore"
+        ],
+        "test_data": [
+          "Credenziali: compliance.auditor01 / password valida",
+          "Filtro consultazione: tipologia=PROPOSTA_GENERATA, intervallo temporale=ultime 24 ore"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.auditor01",
+          "Aprire la sezione consultazione log",
+          "Impostare filtro tipologia evento 'PROPOSTA_GENERATA' e intervallo ultime 24 ore",
+          "Eseguire la ricerca/consultazione",
+          "Aprire il dettaglio di un record di log restituito"
+        ],
+        "expected_results": [
+          "La consultazione restituisce eventi di proposta generata presenti in persistenza per l'intervallo richiesto",
+          "Nel dettaglio del record sono presenti almeno tipologia evento e timestamp valorizzati",
+          "Il record risulta consultabile dal Motore (tramite dashboard che lo interroga)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica filtri: si assume almeno la possibilità di consultare un dataset e, se presenti filtri, di usarli. Adeguare i passi alla UI reale."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC02",
+        "title": "Dashboard Compliance: consultazione log modifiche configurazione con evidenza utente",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Compliance autorizzato: user_id=compliance.auditor01",
+          "Area di persistenza log disponibile e contenente almeno un evento di modifica configurazione",
+          "È disponibile una funzionalità di consultazione log"
+        ],
+        "test_data": [
+          "Filtro consultazione: tipologia=CONFIG_MODIFICATA, intervallo temporale=ultimi 30 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.auditor01",
+          "Aprire la sezione consultazione log",
+          "Impostare filtro tipologia evento 'CONFIG_MODIFICATA' e intervallo ultimi 30 giorni",
+          "Eseguire la consultazione",
+          "Aprire il dettaglio di un record di log di modifica configurazione"
+        ],
+        "expected_results": [
+          "La consultazione restituisce eventi di modifica configurazione presenti in persistenza per l'intervallo richiesto",
+          "Nel dettaglio del record sono presenti timestamp e identificativo dell'utente che ha eseguito la modifica (user_id valorizzato)",
+          "Il record risulta consultabile dal Motore (tramite dashboard che lo interroga)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La forma dell''evidenza dell'evento' non è specificata: il test richiede almeno la presenza di un record identificabile come modifica e del relativo user_id."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC03",
+        "title": "Dashboard Compliance: consultazione log accessi utenti autorizzati con timestamp e user_id",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Compliance autorizzato: user_id=compliance.auditor01",
+          "Area di persistenza log disponibile e contenente eventi di accesso utenti autorizzati",
+          "È disponibile una funzionalità di consultazione log"
+        ],
+        "test_data": [
+          "Filtro consultazione: tipologia=ACCESSO_UTENTE, intervallo temporale=ultimi 7 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.auditor01",
+          "Aprire la sezione consultazione log",
+          "Impostare filtro tipologia evento 'ACCESSO_UTENTE' e intervallo ultimi 7 giorni",
+          "Eseguire la consultazione",
+          "Aprire il dettaglio di un record di log di accesso"
+        ],
+        "expected_results": [
+          "La consultazione restituisce eventi di accesso presenti in persistenza per l'intervallo richiesto",
+          "Nel dettaglio del record sono presenti timestamp e identificativo utente valorizzati",
+          "Il record risulta consultabile dal Motore (tramite dashboard che lo interroga)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non menziona i tentativi di accesso negati; questo test copre gli accessi di utenti autorizzati come da AC-3."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC04",
+        "title": "Dashboard Compliance: esportazione log a fini di audit (proposte, configurazioni, accessi)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Compliance autorizzato: user_id=compliance.auditor02 con permessi di consultazione ed export log",
+          "Area di persistenza log disponibile e contenente log per almeno le tre tipologie (proposte, configurazioni, accessi)",
+          "È disponibile una funzionalità di export log (da dashboard o tramite Motore)"
+        ],
+        "test_data": [
+          "Filtro export: intervallo temporale=ultimi 30 giorni, tipologie=ALL",
+          "Formato export: JSON (o formato supportato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.auditor02",
+          "Aprire la sezione consultazione log",
+          "Impostare filtro su intervallo ultimi 30 giorni e tutte le tipologie disponibili",
+          "Eseguire la consultazione e annotare il numero di record restituiti",
+          "Richiedere l'esportazione dei log con gli stessi filtri",
+          "Recuperare l'output esportato",
+          "Verificare che l'output contenga record per le tipologie disponibili e coerenti con i filtri"
+        ],
+        "expected_results": [
+          "L'esportazione viene completata con successo e produce un output recuperabile",
+          "L'output esportato rispetta i filtri impostati (intervallo temporale e tipologie)",
+          "L'output include informazioni minime per audit: tipologia evento e timestamp per i record; per eventi utente include identificativo utente ove applicabile",
+          "I log esportati provengono dall'area di persistenza consultabile/esportabile dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-4",
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica il formato dell'export; il test valida la disponibilità dell'export e la presenza dei campi minimi coerenti con le business rules."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC05",
+        "title": "Compliance senza autorizzazioni: consultazione/esportazione log negata",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e collegata al Motore",
+          "Utente esistente senza permessi di consultazione/esportazione log: user_id=compliance.intern01",
+          "Policy autorizzativa attiva sul Motore per accesso ai log"
+        ],
+        "test_data": [
+          "Credenziali: compliance.intern01 / password valida"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.intern01",
+          "Tentare di aprire la sezione consultazione log",
+          "Se la sezione è visibile, tentare di eseguire una consultazione log",
+          "Tentare di richiedere l'esportazione log (se disponibile)"
+        ],
+        "expected_results": [
+          "L'utente senza autorizzazioni non può consultare i log (accesso negato o sezione non disponibile)",
+          "L'utente senza autorizzazioni non può esportare i log (operazione negata)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Le regole di accesso sono 'da definire': il test verifica che esista una protezione autorizzativa per consultazione/esportazione. L'eventuale logging degli accessi negati non è richiesto dagli AC originali."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC06",
+        "title": "Finestra di log incompleti per indisponibilità persistenza: identificabilità del periodo impattato",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte attivo e raggiungibile",
+          "Dashboard disponibile e collegata al Motore",
+          "Utente Compliance autorizzato: user_id=compliance.auditor03",
+          "È possibile simulare un periodo di indisponibilità della persistenza log in ambiente di test",
+          "Esiste un meccanismo (anche minimale) per identificare gap/incompletezza (es. eventi di errore, metriche, flag di health, report di integrità) accessibile al Motore o alla dashboard"
+        ],
+        "test_data": [
+          "Periodo indisponibilità simulato: 5 minuti",
+          "Generazione eventi durante il periodo: 2 proposte generate e 1 accesso utente autorizzato"
+        ],
+        "steps": [
+          "Accedere alla dashboard come user_id=compliance.auditor03",
+          "Indurre l'indisponibilità dell'area di persistenza log per 5 minuti",
+          "Durante l'indisponibilità, generare gli eventi previsti (proposte/accesso) tramite i flussi disponibili",
+          "Ripristinare la disponibilità della persistenza log",
+          "Consultare dal Motore/dashboards eventuali indicatori di incompletezza o evidenze di errore di logging nel periodo",
+          "Consultare i log per l'intervallo temporale che include il periodo di indisponibilità"
+        ],
+        "expected_results": [
+          "Il sistema fornisce un'evidenza che consente di identificare il periodo impattato da indisponibilità (gap) secondo i meccanismi disponibili nell'implementazione",
+          "La consultazione dei log per l'intervallo mostra assenza parziale o completa degli eventi durante il periodo impattato, coerentemente con l'indisponibilità simulata",
+          "Non si verificano crash o comportamenti non gestiti durante la simulazione"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il meccanismo per identificare finestre impattate è 'da definire': il test verifica la presenza di una qualche evidenza (indicatori/flag/eventi di errore) senza imporre una soluzione specifica."
+      }
+    ]
+  }
+]

@@ -1,0 +1,295 @@
+[
+  {
+    "test_id": "REQ-D-008.TC01",
+    "title": "Export log consentito a utente autorizzato con selezione formato CSV",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Auditor' (o equivalente) autorizzato all'export dei log",
+      "L'utente 'Auditor' è autenticato nel sistema",
+      "Nel sistema sono presenti log esportabili con almeno 3 record, inclusi record con e senza campo 'utente'"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Intervallo log: ultime 24 ore",
+      "Formato export: CSV"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Impostare il filtro temporale su 'ultime 24 ore'",
+      "Selezionare l'azione 'Esporta'",
+      "Selezionare il formato 'CSV'",
+      "Confermare l'esportazione",
+      "Scaricare il file generato"
+    ],
+    "expected_results": [
+      "L'azione 'Esporta' è disponibile e utilizzabile dall'utente autorizzato",
+      "Il sistema genera un file scaricabile in formato .csv",
+      "Il file CSV contiene una riga di intestazione con colonne che includono almeno 'evento' e 'timestamp' e una colonna per 'utente' (o equivalente) quando previsto",
+      "Ogni record esportato contiene i valori di 'evento' e 'timestamp'; il campo 'utente' è valorizzato quando presente nel log e vuoto/null quando non presente",
+      "Il file è apribile con un software compatibile (es. Excel/LibreOffice) senza errori di parsing"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori/ruoli specifici e la UI di export non sono esplicitati nel requisito: si assume esistenza di una sezione log con azione 'Esporta'. La dicitura 'CSV/excel' è interpretata come export in CSV (compatibile con Excel)."
+  },
+  {
+    "test_id": "REQ-D-008.TC02",
+    "title": "Export log consentito a utente autorizzato con selezione formato Excel",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Auditor' (o equivalente) autorizzato all'export dei log",
+      "L'utente 'Auditor' è autenticato nel sistema",
+      "Nel sistema sono presenti log esportabili con almeno 1 record"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Intervallo log: ultime 24 ore",
+      "Formato export: Excel (XLSX)"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Impostare il filtro temporale su 'ultime 24 ore'",
+      "Selezionare l'azione 'Esporta'",
+      "Selezionare il formato 'Excel'",
+      "Confermare l'esportazione",
+      "Scaricare il file generato"
+    ],
+    "expected_results": [
+      "Il sistema genera un file scaricabile in formato .xlsx",
+      "Il file Excel contiene un foglio con intestazioni che includono almeno 'evento' e 'timestamp' e una colonna per 'utente' (o equivalente) quando previsto",
+      "I valori esportati risultano leggibili in un visualizzatore Excel senza messaggi di corruzione del file"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica l'estensione/formato 'excel': si assume XLSX come standard de-facto."
+  },
+  {
+    "test_id": "REQ-D-008.TC03",
+    "title": "Export log consentito a utente autorizzato in formato JSON con validazione JSON",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Auditor' (o equivalente) autorizzato all'export dei log",
+      "L'utente 'Auditor' è autenticato nel sistema",
+      "Nel sistema sono presenti log esportabili con almeno 2 record"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Intervallo log: ultime 24 ore",
+      "Formato export: JSON"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Impostare il filtro temporale su 'ultime 24 ore'",
+      "Selezionare l'azione 'Esporta'",
+      "Selezionare il formato 'JSON'",
+      "Confermare l'esportazione",
+      "Scaricare il file generato",
+      "Validare il file con un parser JSON standard"
+    ],
+    "expected_results": [
+      "Il sistema genera un file scaricabile in formato .json",
+      "Il contenuto del file è JSON valido (il parser JSON non produce errori)",
+      "Ogni elemento esportato include almeno i campi 'evento' e 'timestamp'",
+      "Il campo 'utente' è presente e valorizzato quando disponibile nel log; in caso contrario è assente o null in modo coerente e parsabile"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce lo schema JSON (array vs oggetti annidati): il test verifica validità sintattica e presenza dei campi minimi richiesti."
+  },
+  {
+    "test_id": "REQ-D-008.TC04",
+    "title": "Export log consentito a utente autorizzato in formato XML con validazione XML well-formed",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Auditor' (o equivalente) autorizzato all'export dei log",
+      "L'utente 'Auditor' è autenticato nel sistema",
+      "Nel sistema sono presenti log esportabili con almeno 2 record"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Intervallo log: ultime 24 ore",
+      "Formato export: XML"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Impostare il filtro temporale su 'ultime 24 ore'",
+      "Selezionare l'azione 'Esporta'",
+      "Selezionare il formato 'XML'",
+      "Confermare l'esportazione",
+      "Scaricare il file generato",
+      "Validare il file con un parser XML standard per verificare che sia well-formed"
+    ],
+    "expected_results": [
+      "Il sistema genera un file scaricabile in formato .xml",
+      "Il contenuto del file è XML ben formato (il parser XML non produce errori di well-formedness)",
+      "Ogni record esportato include elementi/attributi che rappresentano almeno 'evento' e 'timestamp'",
+      "L'informazione 'utente' è presente quando disponibile nel log; in caso contrario è omessa o vuota in modo coerente e parsabile"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Non è specificato un XSD o uno schema XML: il test verifica well-formedness e presenza dei campi minimi richiesti."
+  },
+  {
+    "test_id": "REQ-D-008.TC05",
+    "title": "Export log non disponibile a utente non autorizzato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Viewer' (o equivalente) NON autorizzato all'export dei log",
+      "L'utente 'Viewer' è autenticato nel sistema",
+      "Nel sistema sono presenti log consultabili"
+    ],
+    "test_data": [
+      "Utente non autorizzato: viewer1"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log come utente non autorizzato",
+      "Verificare la presenza dell'azione 'Esporta' nella UI",
+      "Tentare di richiamare direttamente l'endpoint/funzionalità di export (se disponibile) per generare un file in formato CSV"
+    ],
+    "expected_results": [
+      "L'azione 'Esporta' non è visibile oppure risulta disabilitata per l'utente non autorizzato",
+      "Il tentativo di export via chiamata diretta viene rifiutato con errore di autorizzazione (es. HTTP 403 o messaggio equivalente)",
+      "Nessun file di export viene generato o reso scaricabile all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i codici di errore: si accetta un qualsiasi meccanismo coerente di blocco (UI e/o backend) purché impedisca l'export."
+  },
+  {
+    "test_id": "REQ-D-008.TC06",
+    "title": "Scaricamento di un file di esempio per ciascun formato supportato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato all'export dei log",
+      "L'utente autorizzato è autenticato nel sistema",
+      "La funzionalità 'file di esempio' è disponibile nella UI (o in area documentazione/export) come previsto dal requisito"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1"
+    ],
+    "steps": [
+      "Accedere alla sezione di export dei log",
+      "Selezionare l'opzione per scaricare un file di esempio in formato CSV",
+      "Scaricare il file di esempio CSV",
+      "Selezionare l'opzione per scaricare un file di esempio in formato Excel",
+      "Scaricare il file di esempio Excel",
+      "Selezionare l'opzione per scaricare un file di esempio in formato JSON",
+      "Scaricare il file di esempio JSON",
+      "Selezionare l'opzione per scaricare un file di esempio in formato XML",
+      "Scaricare il file di esempio XML"
+    ],
+    "expected_results": [
+      "Il sistema consente di scaricare un file di esempio per il formato CSV",
+      "Il sistema consente di scaricare un file di esempio per il formato Excel",
+      "Il sistema consente di scaricare un file di esempio per il formato JSON",
+      "Il sistema consente di scaricare un file di esempio per il formato XML",
+      "I file di esempio scaricati risultano apribili/parsabili dai rispettivi strumenti (CSV/Excel) e parser (JSON/XML) senza errori"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica dove sia esposta la funzione 'file di esempio' (UI, API, documentazione): i passi assumono una sezione di export con opzioni dedicate."
+  },
+  {
+    "test_id": "REQ-D-008.TC07",
+    "title": "Validazione contenuto minimo richiesto: presenza evento e timestamp e gestione 'utente quando presente'",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente autorizzato all'export dei log",
+      "L'utente autorizzato è autenticato nel sistema",
+      "Sono presenti almeno 2 log: uno con campo 'utente' valorizzato e uno senza informazione utente"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Formato export: JSON"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Filtrare i log in modo da includere esattamente i 2 record preparati (con e senza utente)",
+      "Esportare in formato JSON",
+      "Aprire il file esportato e individuare i due record"
+    ],
+    "expected_results": [
+      "Entrambi i record includono 'evento' valorizzato",
+      "Entrambi i record includono 'timestamp' valorizzato in modo consistente e parsabile",
+      "Nel record che dispone dell'informazione utente, il campo 'utente' è presente e valorizzato",
+      "Nel record privo di informazione utente, il campo 'utente' è assente oppure valorizzato a null/vuoto senza compromettere la validità del JSON"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce il formato del timestamp (ISO-8601, epoch, timezone). Il test verifica presenza e parsabilità, non la specifica rappresentazione."
+  },
+  {
+    "test_id": "REQ-D-008.TC08",
+    "title": "Gestione errore: tentativo di export quando il servizio di generazione file non è disponibile",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente autorizzato all'export dei log",
+      "L'utente autorizzato è autenticato nel sistema",
+      "Il componente/servizio responsabile della generazione/export file è indisponibile (es. simulazione timeout/500 tramite configurazione ambiente di test o mock)",
+      "Nel sistema sono presenti log esportabili"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor1",
+      "Formato export: CSV",
+      "Simulazione errore: timeout del servizio export"
+    ],
+    "steps": [
+      "Accedere alla sezione di consultazione log",
+      "Selezionare l'azione 'Esporta'",
+      "Selezionare il formato 'CSV'",
+      "Confermare l'esportazione"
+    ],
+    "expected_results": [
+      "Il sistema mostra un errore esplicito di export non riuscito (messaggio o notifica) senza generare un file corrotto",
+      "Il sistema non rende disponibile alcun file scaricabile relativo al tentativo fallito",
+      "L'applicazione rimane utilizzabile (nessun blocco della UI) dopo l'errore"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non descrive la gestione errori né i messaggi: il test verifica almeno l'assenza di file generati e un feedback d'errore all'utente. La dipendenza dal servizio di export è inferita dalla natura della funzionalità."
+  }
+]

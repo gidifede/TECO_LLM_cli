@@ -1,0 +1,131 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-NF-002",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 67,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-002.TC01",
+        "detail": "Specifica canali 'Web' e 'App' come esempi concreti e introduce un utente test e un'offerta 'OFF-1001': il requisito parla genericamente di canali e proposizione prodotti/offerte, ma non definisce canali specifici né utenti/ID offerta."
+      },
+      {
+        "test_id": "REQ-NF-002.TC01",
+        "detail": "Introduce 'Correlation-ID/request-id' e ricerca log per correlation-id: il requisito richiede logging con timestamp e descrizione, ma non menziona correlazione o campi di tracciamento."
+      },
+      {
+        "test_id": "REQ-NF-002.TC01",
+        "detail": "Atteso 'nessun 5xx/servizio indisponibile': il requisito richiede assenza di blocco/sospensione, ma non definisce codici HTTP o semantica 5xx."
+      },
+      {
+        "test_id": "REQ-NF-002.TC02",
+        "detail": "Introduce 'severità' e codici '409/timeout' come trigger e come aspetti del formato log: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-002.TC03",
+        "detail": "Introduce ripetizione dopo '30 secondi' e un set di offerte attese 'OFF-1001, OFF-1002': tempi e dataset non sono nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-002.TC04",
+        "detail": "Assume esistenza di endpoint/UI amministrativa per modificare regole e dettagli di concorrenza ('entro 100 ms', parametri 'priorità'=10/20): il requisito cita race condition come esempio ma non introduce canali/admin API né parametri/tempi."
+      },
+      {
+        "test_id": "REQ-NF-002.TC05",
+        "detail": "Scenario 'errore del componente di logging/monitoring' e 'fallback (buffer locale/console)': il requisito non tratta indisponibilità del logging né meccanismi di fallback."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito",
+        "detail": "La descrizione specifica esplicitamente 'monitoring e logging per successivo intervento umano'; i test verificano il logging tecnico, ma non coprono la parte di monitoring/gestione per intervento umano (es. allerta/monitoring), che è citata come modalità di gestione dell'anomalia."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-002.TC03",
+          "REQ-NF-002.TC05"
+        ],
+        "detail": "Entrambi validano principalmente 'nessun blocco/sospensione del servizio durante anomalie' (AC-3) in presenza di un incidente; TC05 varia la causa (logging down) ma resta molto sovrapposto rispetto all'obiettivo del requisito, che non menziona il failure del logging."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 6,
+    "coherence_score": 60,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-002.US01.TC01",
+        "detail": "Introduce 'Motore di Offerte' come componente specifico: nel requisito si parla di servizio/comportamento, non di un motore nominato."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC01",
+        "detail": "Precondizione 'Clock sincronizzato (NTP)' per verifiche timestamp: il requisito richiede timestamp nei log ma non impone NTP o requisiti infrastrutturali."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC01",
+        "detail": "Assume disponibilità di audit/telemetria o campo 'regolaApplicata' per determinare la regola usata: non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC02",
+        "detail": "Richiede esplicitamente tracciabilità 1:1 '3 eventi -> 3 log' e 'senza aggregazioni': il requisito dice 'un log tecnico dettagliato per ogni evento', ma non specifica vincoli su aggregazione/deduplica o su conteggio esatto in presenza di sistemi di logging."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC03",
+        "detail": "Introduce numeri/soglie (20 richieste, 5 minuti, almeno 5 offerte): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC04",
+        "detail": "Introduce 'alta frequenza' con parametro 10 eventi/minuto e pretende conteggio log=20: il requisito non parla di frequenza, rate, né di assenza di deduplicazione."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC06",
+        "detail": "Scenario 'log sink non disponibile' e 'crash/stop funzionale' come outcome specifici: il requisito non tratta indisponibilità del logging."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito",
+        "detail": "Manca copertura esplicita della parte 'nessun blocco della riproposizione dei prodotti' come concetto distinto: i test parlano di proposizione/offerte e continuità, ma non validano specificamente che la 'riproposizione' (ripetuta nel tempo o su richieste successive) non venga bloccata come conseguenza dell'errore, se non in modo indiretto (US01.TC03)."
+      },
+      {
+        "source": "Descrizione requisito",
+        "detail": "La descrizione cita 'monitoring ... per successivo intervento umano': i test verificano logging, ma non coprono il monitoring."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-002.US01.TC03",
+          "REQ-NF-002.US01.TC04"
+        ],
+        "detail": "Entrambi stressano 'nessun blocco durante incidente/anomalie' (AC-3) con invio di molte richieste durante un periodo; cambia la frequenza delle anomalie ma lo scenario è sostanzialmente lo stesso."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-002.US01.TC05",
+          "REQ-NF-002.US01.TC01"
+        ],
+        "detail": "Entrambi coprono race/inconsistenza e verificano applicazione di una regola locale + logging; US01.TC05 è una variazione più specifica (update durante valutazione) ma resta sovrapposta agli obiettivi AC-1/AC-2."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (3/3). Il set direct introduce meno assunzioni non richieste dal requisito (7 added_info vs 7, ma nel set indirect_persona alcune aggiunte sono più prescrittive e potenzialmente non tracciabili, come conteggi 1:1 e frequenze/volumi) e presenta meno ridondanze (1 vs 2) e meno informazioni mancanti (1 vs 2). Di conseguenza ottiene un punteggio di coerenza superiore (67 vs 60)."
+  }
+}

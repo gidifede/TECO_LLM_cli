@@ -1,0 +1,204 @@
+[
+  {
+    "story_id": "REQ-F-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-001.US01.TC01",
+        "title": "NBO abilitato: l'output offerte usa NBO come obiettivo primario",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test disponibile con Motore di Offerte deployato",
+          "Funzionalità NBO abilitabile tramite configurazione/feature flag",
+          "Regole configurate caricate e attive nel configuratore",
+          "Endpoint/servizio del Motore di Offerte disponibile per richiesta di proposta offerte"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Cliente: customer_id=12345, segmento='Retail'",
+          "Raccomandazioni esterne (input): ['OFFERTA_A', 'OFFERTA_B', 'OFFERTA_C']",
+          "Regole configurate: consentite ['OFFERTA_A','OFFERTA_B'], esclusa 'OFFERTA_C' per segmento='Retail'"
+        ],
+        "steps": [
+          "Impostare la configurazione del Motore di Offerte con feature flag NBO su ON",
+          "Verificare che le regole configurate siano caricate e attive",
+          "Inviare al Motore di Offerte una richiesta di proposta offerte per customer_id=12345 includendo le raccomandazioni esterne indicate",
+          "Acquisire l'output restituito dal Motore di Offerte"
+        ],
+        "expected_results": [
+          "La richiesta viene elaborata con esito positivo (risposta applicativa di successo)",
+          "L'output contiene esclusivamente offerte considerate rilevanti secondo NBO e coerenti con input e regole configurate",
+          "Nell'output non compare 'OFFERTA_C' poiché esclusa da regola configurata per segmento='Retail'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La verifica di 'obiettivo primario' è resa verificabile controllando che, con NBO=ON, l'output rispetti la logica NBO (filtraggio per rilevanza su raccomandazioni+regole). Se il sistema espone un campo/metadata (es. 'strategyApplied=NBO'), aggiungere asserzione in automazione; non è specificato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC02",
+        "title": "Filtraggio output: solo offerte coerenti con raccomandazioni esterne e regole configurate",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Funzionalità NBO abilitata",
+          "Regole configurate caricate e attive"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Cliente: customer_id=67890, segmento='SME'",
+          "Raccomandazioni esterne (input): ['OFFERTA_X','OFFERTA_Y','OFFERTA_Z']",
+          "Regole configurate: consentite ['OFFERTA_X','OFFERTA_Z'], 'OFFERTA_Y' non ammessa per segmento='SME'"
+        ],
+        "steps": [
+          "Impostare la configurazione del Motore di Offerte con NBO su ON",
+          "Inviare una richiesta di proposta offerte per customer_id=67890 con le raccomandazioni esterne indicate",
+          "Acquisire l'output restituito dal Motore di Offerte"
+        ],
+        "expected_results": [
+          "La risposta contiene 'OFFERTA_X' e 'OFFERTA_Z' se presenti tra le raccomandazioni e consentite dalle regole",
+          "La risposta non contiene 'OFFERTA_Y' perché non ammessa dalle regole configurate per segmento='SME'",
+          "Non vengono incluse offerte non presenti nell'input di raccomandazioni esterne (salvo eventuali meccanismi di fallback non specificati dal requisito)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica un eventuale arricchimento dell'output con offerte non raccomandate; questo test assume che l'output sia un sottoinsieme filtrato delle raccomandazioni esterne coerente con le regole."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC03",
+        "title": "Conflitto tra raccomandazioni esterne e regole: prevalgono le regole vincolanti (offerta esclusa)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Funzionalità NBO abilitata",
+          "Regole configurate caricate e attive con almeno una regola di esclusione vincolante"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Cliente: customer_id=24680, segmento='Retail'",
+          "Raccomandazioni esterne (input): ['OFFERTA_K']",
+          "Regole configurate: 'OFFERTA_K' esclusa per segmento='Retail' (regola vincolante)"
+        ],
+        "steps": [
+          "Impostare NBO su ON",
+          "Inviare una richiesta di proposta offerte per customer_id=24680 con raccomandazioni esterne ['OFFERTA_K']",
+          "Acquisire l'output restituito dal Motore di Offerte"
+        ],
+        "expected_results": [
+          "La risposta è di successo e non contiene 'OFFERTA_K'",
+          "L'output è coerente con la regola configurata di esclusione anche se l'offerta è stata raccomandata esternamente"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La precedenza 'regole vincolanti prevalgono' non è esplicitata negli AC originali; è un'interpretazione necessaria per rendere testabile l'edge case indicato. Se la precedenza reale è diversa, aggiornare attesi e dati."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC04",
+        "title": "Input raccomandazioni esterne assente o vuoto: gestione controllata senza output incoerente",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Funzionalità NBO abilitata",
+          "Regole configurate caricate e attive"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Cliente: customer_id=13579, segmento='Retail'",
+          "Raccomandazioni esterne: assenti (campo non inviato) oppure lista vuota []"
+        ],
+        "steps": [
+          "Impostare NBO su ON",
+          "Inviare una richiesta di proposta offerte per customer_id=13579 senza includere il campo raccomandazioni esterne",
+          "Acquisire la risposta",
+          "Inviare una seconda richiesta per customer_id=13579 includendo raccomandazioni esterne come lista vuota []",
+          "Acquisire la risposta"
+        ],
+        "expected_results": [
+          "Il sistema gestisce entrambe le richieste in modo controllato senza restituire offerte incoerenti rispetto agli input",
+          "Per ciascuna richiesta, il sistema restituisce uno dei seguenti esiti (coerente con lo standard di integrazione): (a) risposta di successo con lista offerte vuota, oppure (b) risposta di errore di validazione per input mancante/vuoto",
+          "Non vengono proposte offerte non giustificate dall'input (in assenza di una regola di fallback esplicitata e verificabile)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il comportamento atteso in assenza di raccomandazioni esterne è esplicitamente indicato come 'da definire' nell'edge case; il test accetta due esiti alternativi (vuoto vs errore) purché siano standardizzati e non producano output incoerente. Necessaria definizione nei criteri di integrazione."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC05",
+        "title": "Regole configurate non disponibili/non caricate: errore gestito secondo standard di integrazione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Funzionalità NBO abilitata",
+          "Dipendenza verso configuratore/regole configurate simulabile (es. servizio down, timeout o regole non caricate)"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Cliente: customer_id=11223, segmento='Retail'",
+          "Raccomandazioni esterne (input): ['OFFERTA_A','OFFERTA_B']",
+          "Configuratore regole: indisponibile (HTTP 503) oppure timeout > 10s (valore da allineare allo standard)"
+        ],
+        "steps": [
+          "Impostare NBO su ON",
+          "Simulare indisponibilità del servizio/configuratore regole (es. forzare HTTP 503 o timeout)",
+          "Inviare una richiesta di proposta offerte per customer_id=11223 con raccomandazioni esterne ['OFFERTA_A','OFFERTA_B']",
+          "Acquisire la risposta del Motore di Offerte e i log/trace di integrazione se disponibili"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte non restituisce un output di offerte potenzialmente incoerente in assenza delle regole",
+          "Il Motore di Offerte restituisce un errore di integrazione standardizzato (codice/struttura errore coerenti con lo standard di integrazione adottato) oppure una risposta di fallback esplicitamente prevista dallo standard",
+          "L'errore è tracciato nei log/trace con indicazione della dipendenza fallita (configuratore/regole)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Lo 'standard di integrazione' non è fornito; verificare codice HTTP, error code applicativo, e schema payload secondo specifiche di integrazione. Il test non assume un fallback specifico non documentato."
+      },
+      {
+        "test_id": "REQ-F-001.US01.TC06",
+        "title": "Scenario utente: il motore non propone offerte manifestamente non pertinenti (verifica su scenari con attesi espliciti)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Funzionalità NBO abilitata",
+          "Regole configurate caricate e attive",
+          "Disponibili scenari di prova forniti dall'utente con definizione oggettiva (lista offerte attese e lista offerte da escludere) oppure equivalenti regole verificabili"
+        ],
+        "test_data": [
+          "Feature flag NBO: ON",
+          "Scenario di prova S1 (fornito dall'utente): customer_id=90001 con input raccomandazioni esterne e attesi espliciti",
+          "Attesi scenario S1: offerte attese=['OFFERTA_P'], offerte da escludere=['OFFERTA_NON_PERTINENTE_1','OFFERTA_NON_PERTINENTE_2']"
+        ],
+        "steps": [
+          "Caricare/recuperare lo scenario di prova S1 fornito dall'utente (input e attesi)",
+          "Inviare al Motore di Offerte la richiesta di proposta offerte usando esattamente gli input dello scenario S1",
+          "Acquisire l'output restituito dal Motore di Offerte",
+          "Confrontare l'output con gli attesi dello scenario S1"
+        ],
+        "expected_results": [
+          "L'output non contiene nessuna delle offerte indicate come 'da escludere' nello scenario S1",
+          "L'output contiene le offerte attese dallo scenario S1 (almeno 'OFFERTA_P')",
+          "Eventuali offerte aggiuntive sono assenti, oppure (se ammesse dallo scenario) risultano comunque non classificate come 'manifestamente non pertinenti' secondo gli attesi forniti"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "L'AC 'manifestamente non pertinente' è parzialmente non verificabile senza attesi oggettivi; questo test assume che gli scenari utente includano una lista di offerte da escludere e/o attese. Se gli scenari non includono attesi, il test non è automatizzabile e va integrato con definizioni misurabili."
+      }
+    ]
+  }
+]

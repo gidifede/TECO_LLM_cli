@@ -1,0 +1,68 @@
+[
+  {
+    "story_id": "REQ-UI-006.US01",
+    "title": "Visualizzare proponibilità/sottoscrivibilità e condizioni mancanti per il cliente",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "visualizzare lo stato di proponibilità/sottoscrivibilità di un prodotto, le condizioni mancanti e le azioni necessarie per sanarle",
+    "benefit": "capire cosa manca per poter sottoscrivere e come procedere senza ambiguità",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio visualizzare lo stato di proponibilità/sottoscrivibilità di un prodotto con le condizioni mancanti e le azioni necessarie per sanarle\nIn modo che possa capire cosa devo fare per completare la sottoscrizione",
+    "channels": [
+      "App",
+      "Web",
+      "UP"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO consulto un prodotto/offerta associato al mio profilo ALLORA l’interfaccia mi mostra lo stato di proponibilità/sottoscrivibilità del prodotto.",
+      "QUANDO un prodotto non è sottoscrivibile ALLORA l’interfaccia mi mostra in modo chiaro l’elenco delle condizioni mancanti per la sottoscrivibilità.",
+      "QUANDO sono presenti condizioni mancanti ALLORA l’interfaccia indica le azioni necessarie per sanare ciascuna condizione (es. aggiornamento documenti)."
+    ],
+    "business_rules": [
+      "Le condizioni mancanti e le azioni di sanatoria mostrate devono essere coerenti con le regole di sottoscrivibilità determinate dal sistema per il cliente e il prodotto.",
+      "Il cliente visualizza solo informazioni pertinenti al proprio profilo e al prodotto consultato."
+    ],
+    "edge_cases": [
+      "Condizioni mancanti non determinabili (es. servizio di verifica non disponibile): l’interfaccia deve indicare che lo stato/condizioni non sono temporaneamente disponibili.",
+      "Nessuna condizione mancante: l’interfaccia non deve mostrare azioni di sanatoria.",
+      "Elenco condizioni molto lungo: l’interfaccia deve comunque renderlo consultabile (es. con espansione/scroll), senza perdere chiarezza."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il dettaglio dei canali per l’“interfaccia cliente”; si assume applicabile almeno ai canali digitali (App/Web) e, per il cliente fisico, tramite consultazione assistita in UP."
+    ],
+    "notes": "AC condivisi con REQ-UI-006.US02 (persona: Operatore in ufficio postale (sportello/sala)): visualizzazione condizioni mancanti e indicazione azioni di sanatoria. Il requisito non richiede esplicitamente che il cliente possa eseguire la sanatoria in autonomia: la sanatoria operativa è prevista a sportello."
+  },
+  {
+    "story_id": "REQ-UI-006.US02",
+    "title": "Visualizzare condizioni mancanti ed eseguire sanatoria a sportello quando prevista",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare lo stato di sottoscrivibilità, le condizioni mancanti e avviare/eseguire azioni di sanatoria a sportello dove previsto",
+    "benefit": "sbloccare la sottoscrizione del prodotto riducendo tempi e errori operativi",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare lo stato di sottoscrivibilità con le condizioni mancanti e poter eseguire a sportello le azioni di sanatoria dove previsto\nIn modo che possa rendere il prodotto sottoscrivibile e completare la vendita con il cliente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO seleziono un cliente e un prodotto/offerta ALLORA l’interfaccia operatore mostra lo stato di proponibilità/sottoscrivibilità del prodotto per quel cliente.",
+      "QUANDO un prodotto non è sottoscrivibile ALLORA l’interfaccia operatore mostra in modo chiaro le condizioni mancanti per la sottoscrivibilità.",
+      "QUANDO sono presenti condizioni mancanti ALLORA l’interfaccia operatore indica le azioni necessarie per sanare ciascuna condizione e, se previsto, rende disponibile il workflow di sanatoria a sportello.",
+      "QUANDO eseguo un’azione di sanatoria tramite workflow a sportello ALLORA l’azione intrapresa viene tracciata nei log con riferimento a cliente, condizione e azione effettuata."
+    ],
+    "business_rules": [
+      "Il workflow di sanatoria a sportello è disponibile solo per le condizioni per cui è previsto (abilitazione per tipologia di condizione/prodotto e/o permessi operatore).",
+      "L’operatore può visualizzare e agire solo per clienti e prodotti gestibili nel contesto UP secondo le autorizzazioni del canale.",
+      "Ogni azione di sanatoria eseguita deve generare una traccia nei log."
+    ],
+    "edge_cases": [
+      "Workflow di sanatoria non disponibile per una condizione: l’interfaccia deve mostrare l’azione necessaria come informazione, senza consentire l’esecuzione a sportello.",
+      "Errore durante la sanatoria (es. aggiornamento documenti fallito): l’interfaccia deve mostrare esito negativo e non marcare la condizione come sanata; l’evento di errore deve essere tracciato nei log.",
+      "Azioni ripetute sulla stessa condizione: il sistema deve gestire idempotenza o segnalare che la condizione risulta già sanata (se applicabile) e tracciare l’esito.",
+      "Permessi insufficienti dell’operatore per una sanatoria: l’interfaccia deve impedire l’azione e registrare il tentativo/negazione nei log (se previsto dalle policy di logging)."
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia struttura e contenuto minimo dei log; si assume che includano almeno identificativi di cliente, prodotto, condizione, azione, esito e timestamp.",
+      "Il requisito non specifica quali condizioni siano sanabili a sportello; si assume esista una configurazione/regola che determini la sanabilità e abiliti/disabiliti il workflow."
+    ],
+    "notes": "AC condivisi con REQ-UI-006.US01 (persona: Cliente (fisico o digitale)): visualizzazione condizioni mancanti e indicazione azioni di sanatoria. Questo requisito è focalizzato su UI e workflow: le regole che determinano condizioni mancanti e sottoscrivibilità sono assunte come già fornite da sistemi/servizi a monte."
+  }
+]

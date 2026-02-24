@@ -1,0 +1,166 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-033",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 60,
+    "ac_coverage": {
+      "total_ac": 1,
+      "covered_ac": 1,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-033.TC01",
+        "detail": "Introduce 'run manuale/forzato', 'API', e una 'tabella di audit' come meccanismi/artefatti specifici non esplicitati dal requisito (che parla solo di esportazione verso lo strumento secondo regole da definire)."
+      },
+      {
+        "test_id": "REQ-F-033.TC02",
+        "detail": "Assume una frequenza specifica (es. 15 minuti) e introduce una 'tolleranza operativa' e la regola 'assenza di run duplicati anomali', non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.TC03",
+        "detail": "Assume una specifica implementazione di storicizzazione nel reporting (snapshot/versioning/tabella storico) non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.TC04",
+        "detail": "Introduce requisiti di comportamento in errore (fallimento controllato, assenza di import parziale, logging dettagliato) non richiesti dall'AC-1."
+      },
+      {
+        "test_id": "REQ-F-033.TC05",
+        "detail": "Introduce regole di validazione su 'campi obbligatori' (ID, stato, canale, periodo) e gestione scarti, non definite nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"l'accesso alle funzionalità ... soggette alle regole di autorizzazione definite per ciascuno dei ruoli utente\"",
+        "detail": "Nessun test copre le regole di autorizzazione/ruoli per l'accesso alle funzionalità di analisi e reporting."
+      },
+      {
+        "source": "Descrizione requisito: \"visualizzazione ... tipo e numero di offerte (attive e storicizzate)\" e \"insight ... vendite per periodo, KPI funnel, accettate/rifiutate\" e \"filtrabile per canale/touchpoint, cluster, singole offerte o aggregazioni\"",
+        "detail": "Nessun test copre le funzionalità di analisi/reportistica lato strumento (visualizzazioni/filtri/insight); i TC si limitano all'alimentazione/integration."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-033.TC01",
+          "REQ-F-033.TC03"
+        ],
+        "detail": "Entrambi verificano disponibilità dati nel reporting post-export e distinzione attiva/storicizzata; TC03 aggiunge la dimensione temporale ma parte dello scenario è sovrapposto."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 15,
+    "coherence_score": 13,
+    "ac_coverage": {
+      "total_ac": 1,
+      "covered_ac": 1,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-033.US01.TC01",
+        "detail": "Introduce il ruolo/persona 'Team Marketing' e una specifica UI ('dashboard', sezioni) non definiti dal requisito; il requisito parla genericamente di ruoli utente e strumento nel reporting."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC02",
+        "detail": "Assume esistenza di viste UI specifiche ('Andamenti di vendita') e comportamenti di aggregazione temporale non specificati; inoltre l'AC-1 riguarda alimentazione secondo regole, non la UI."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC03",
+        "detail": "Introduce concetti di 'aggregazione' nominata ('Bundle Promo Q1') e selezione UI di aggregazioni predefinite/costruibili, non definiti nel requisito (che cita solo possibilità di filtrare per aggregazioni)."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC04",
+        "detail": "Introduce dettagli di presentazione KPI ('per ciascuna fase prevista dallo strumento', indicazione assenza dati) non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC07",
+        "detail": "Introduce messaggistica UI specifica ('Nessun dato disponibile') e requisiti di robustezza UI (no crash/stack trace) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC08",
+        "detail": "Assume un comportamento specifico in assenza di dati storici (come distinguere zeri vs assenza dati), non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC09",
+        "detail": "Introduce una regola autorizzativa specifica ('vede solo dati aggregati') e il caso di 'deep link' per bypass UI, non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US01.TC10",
+        "detail": "Introduce un ruolo 'Operatore' e dettagli tecnici di risposta (403) non menzionati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC01",
+        "detail": "Introduce il ruolo/persona 'Team Compliance' non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC03",
+        "detail": "Introduce l'idea che alcuni filtri possano essere non autorizzati e quindi 'non visibili/bloccati', dettaglio non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC04",
+        "detail": "Introduce audit log per tentativi falliti 'se previsto', non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US02.TC05",
+        "detail": "Introduce regole di presentazione/qualità dati in caso di alimentazione incompleta (segnalazione, no valori fuorvianti), non richieste dall'AC-1."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC01",
+        "detail": "Introduce run_id e artefatti di esecuzione specifici (RUN-...), non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC03",
+        "detail": "Assume esempi specifici di frequenza (02:00) e storicizzazione (snapshot giornaliero) che il requisito dichiara esplicitamente 'da definire'."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC04",
+        "detail": "Introduce meccanismi di retry/backoff e logging/monitoring come aspettative, non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-033.US03.TC05",
+        "detail": "Introduce scenario di change management/versioning delle regole (Regola A/B) e requisiti di non regressione/migrazione dati storici, non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criterion AC-1: \"I dati vengono alimentati ... secondo le regole di frequenza e storicizzazione che saranno definite\"",
+        "detail": "Molti TC sono focalizzati su UI/consultazione; la verifica dell'alimentazione 'secondo regole di frequenza e storicizzazione' è coperta in modo diretto solo da US03.TC03 e parzialmente dagli integration, ma senza una verifica concreta delle regole (che infatti non sono specificate)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-033.US01.TC01",
+          "REQ-F-033.US02.TC01"
+        ],
+        "detail": "Entrambi testano accesso autorizzato e consultazione offerte attive/storicizzate con variazione solo del ruolo."
+      },
+      {
+        "test_ids": [
+          "REQ-F-033.US01.TC02",
+          "REQ-F-033.US02.TC02"
+        ],
+        "detail": "Entrambi verificano consultazione insight (vendite/KPI/proposte) per una singola offerta e periodo; differisce solo il ruolo."
+      },
+      {
+        "test_ids": [
+          "REQ-F-033.US01.TC10",
+          "REQ-F-033.US02.TC04"
+        ],
+        "detail": "Entrambi testano accesso negato per utente non autorizzato (varia solo la persona/ruolo)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono formalmente l'unico AC (AC-1). Tuttavia il set direct rimane piu aderente al requisito perche concentra i test sull'alimentazione dati Motore->Reporting (cuore dell'AC-1), pur con alcune assunzioni tecniche. Il set indirect_persona introduce molte informazioni non tracciabili (ruoli specifici Marketing/Compliance/Operatore, dettagli UI, run_id, regole A/B, deep link, messaggistica) e presenta piu ridondanze, ottenendo un punteggio di coerenza inferiore (13 vs 60)."
+  }
+}

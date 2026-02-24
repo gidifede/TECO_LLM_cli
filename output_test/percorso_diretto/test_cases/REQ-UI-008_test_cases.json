@@ -1,0 +1,272 @@
+[
+  {
+    "test_id": "REQ-UI-008.TC01",
+    "title": "Web - Visualizzazione contenuti minimi obbligatori nel pop-up proposta (nome, immagine, prezzo scontato, sconto)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente web disponibile e raggiungibile",
+      "Esiste almeno una proposta che genera il pop-up con un prodotto suggerito configurato a catalogo",
+      "Per il prodotto suggerito esistono: nome valorizzato, immagine disponibile, prezzo base e prezzo scontato calcolabile, valore sconto suggerito calcolabile/fornito"
+    ],
+    "test_data": [
+      "Prodotto suggerito: \"Cuffie Bluetooth ZX-200\"",
+      "URL/asset immagine prodotto: \"https://cdn.example.com/products/zx200.jpg\"",
+      "Prezzo base: 79,90 EUR",
+      "Prezzo scontato atteso: 59,90 EUR",
+      "Valore sconto suggerito atteso: 20,00 EUR"
+    ],
+    "steps": [
+      "Aprire l'applicazione web",
+      "Navigare fino al punto del flusso in cui viene mostrato il pop-up di proposta",
+      "Attendere la visualizzazione del pop-up",
+      "Verificare la presenza del nome del prodotto nel pop-up",
+      "Verificare la presenza dell'immagine del prodotto nel pop-up",
+      "Verificare la presenza del prezzo scontato nel pop-up",
+      "Verificare la presenza dell'indicazione del valore dello sconto suggerito nel pop-up"
+    ],
+    "expected_results": [
+      "Il pop-up è visualizzato correttamente in web",
+      "Nel pop-up è presente il nome prodotto e corrisponde a \"Cuffie Bluetooth ZX-200\"",
+      "Nel pop-up è presente un elemento immagine prodotto visibile (non placeholder/rotto) e punta all'asset atteso \"https://cdn.example.com/products/zx200.jpg\" o equivalente risolto dal CDN",
+      "Nel pop-up è presente il prezzo scontato e il valore mostrato è \"59,90 EUR\"",
+      "Nel pop-up è presente l'indicazione del valore dello sconto suggerito e il valore mostrato è \"20,00 EUR\"",
+      "Nome, immagine, prezzo scontato e sconto risultano chiaramente visibili all'interno del pop-up (non tagliati/overlap, non fuori area visibile)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori non sono esplicitati nel requisito: si assume un utente finale che visualizza un pop-up di proposta. AC-3 è dichiarativo: è stato reso verificabile tramite controlli su presenza e corrispondenza dei valori attesi."
+  },
+  {
+    "test_id": "REQ-UI-008.TC02",
+    "title": "APP - Visualizzazione contenuti minimi obbligatori nel pop-up proposta (nome, immagine, prezzo scontato, sconto)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "App installata e avviabile su dispositivo/simulatore",
+      "Esiste almeno una proposta che genera il pop-up con un prodotto suggerito configurato a catalogo",
+      "Per il prodotto suggerito esistono: nome valorizzato, immagine disponibile, prezzo base e prezzo scontato calcolabile, valore sconto suggerito calcolabile/fornito"
+    ],
+    "test_data": [
+      "Prodotto suggerito: \"Cuffie Bluetooth ZX-200\"",
+      "Asset immagine prodotto: \"zx200.jpg\" (risorsa remota o bundle, a seconda dell'implementazione)",
+      "Prezzo base: 79,90 EUR",
+      "Prezzo scontato atteso: 59,90 EUR",
+      "Valore sconto suggerito atteso: 20,00 EUR"
+    ],
+    "steps": [
+      "Aprire l'app",
+      "Navigare fino al punto del flusso in cui viene mostrato il pop-up di proposta",
+      "Attendere la visualizzazione del pop-up",
+      "Verificare la presenza del nome del prodotto nel pop-up",
+      "Verificare la presenza dell'immagine del prodotto nel pop-up",
+      "Verificare la presenza del prezzo scontato nel pop-up",
+      "Verificare la presenza dell'indicazione del valore dello sconto suggerito nel pop-up"
+    ],
+    "expected_results": [
+      "Il pop-up è visualizzato correttamente in app",
+      "Nel pop-up è presente il nome prodotto e corrisponde a \"Cuffie Bluetooth ZX-200\"",
+      "Nel pop-up è presente l'immagine prodotto visibile (non placeholder/rotto)",
+      "Nel pop-up è presente il prezzo scontato e il valore mostrato è \"59,90 EUR\"",
+      "Nel pop-up è presente l'indicazione del valore dello sconto suggerito e il valore mostrato è \"20,00 EUR\"",
+      "Nome, immagine, prezzo scontato e sconto risultano chiaramente visibili all'interno del pop-up (non tagliati/overlap, non fuori area visibile)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Gli attori non sono esplicitati nel requisito: si assume un utente finale che visualizza un pop-up di proposta. AC-3 è dichiarativo: è stato reso verificabile tramite controlli su presenza e corrispondenza dei valori attesi."
+  },
+  {
+    "test_id": "REQ-UI-008.TC03",
+    "title": "Web+APP - Leggibilità testi e prezzi nel pop-up conforme a dimensioni e contrasto (linee guida grafiche)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Disponibili le linee guida grafiche/Design System con soglie verificabili (es. dimensione minima font e contrasto minimo)",
+      "Ambiente web disponibile e app disponibile",
+      "Esiste almeno una proposta che genera il pop-up con un prodotto suggerito"
+    ],
+    "test_data": [
+      "Soglia dimensione minima font per testi nel pop-up: 14 px (o valore definito dalle linee guida)",
+      "Soglia contrasto minimo testo/sfondo: 4.5:1 per testo normale (o valore definito dalle linee guida)",
+      "Prodotto suggerito: \"Cuffie Bluetooth ZX-200\" con prezzi 59,90 EUR e sconto 20,00 EUR"
+    ],
+    "steps": [
+      "Aprire l'applicazione web e visualizzare il pop-up di proposta",
+      "Rilevare dimensione font e colore (foreground) per: nome prodotto, prezzo scontato, valore sconto",
+      "Rilevare colore di sfondo delle aree che contengono: nome prodotto, prezzo scontato, valore sconto",
+      "Calcolare/verificare il rapporto di contrasto tra testo e sfondo per ciascun elemento testuale",
+      "Verificare che i testi non siano troncati e che i prezzi siano completamente visibili",
+      "Aprire l'app e visualizzare il pop-up di proposta",
+      "Ripetere le verifiche di dimensione font, contrasto e assenza di troncamenti per gli stessi elementi"
+    ],
+    "expected_results": [
+      "In web, la dimensione font di nome prodotto, prezzo scontato e valore sconto è >= soglia definita dalle linee guida",
+      "In web, il contrasto tra testo e sfondo per nome prodotto, prezzo scontato e valore sconto è >= soglia definita dalle linee guida",
+      "In web, nome prodotto e prezzi/sconto sono leggibili: non troncati, non sovrapposti ad altri elementi, non fuori dal pop-up",
+      "In app, la dimensione font di nome prodotto, prezzo scontato e valore sconto è >= soglia definita dalle linee guida",
+      "In app, il contrasto tra testo e sfondo per nome prodotto, prezzo scontato e valore sconto è >= soglia definita dalle linee guida",
+      "In app, nome prodotto e prezzi/sconto sono leggibili: non troncati, non sovrapposti ad altri elementi, non fuori dal pop-up"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "AC-2 richiede conformità a linee guida (dimensioni, contrasto) ma il requisito non specifica valori soglia: nel test sono stati inseriti come dati di test parametrici da sostituire con i valori ufficiali del Design System."
+  },
+  {
+    "test_id": "REQ-UI-008.TC04",
+    "title": "Negativo - Web - Mancanza nome prodotto: il pop-up non deve risultare conforme (contenuto obbligatorio assente)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente web disponibile e raggiungibile",
+      "Disponibile una proposta che genera il pop-up con un prodotto suggerito con nome non valorizzato (null/vuoto) oppure risposta backend senza campo nome",
+      "Gli altri campi (immagine, prezzo scontato, sconto) sono disponibili per isolare il difetto"
+    ],
+    "test_data": [
+      "Nome prodotto: \"\" (stringa vuota) oppure null",
+      "Immagine prodotto: valida",
+      "Prezzo scontato: 59,90 EUR",
+      "Valore sconto suggerito: 20,00 EUR"
+    ],
+    "steps": [
+      "Aprire l'applicazione web",
+      "Navigare fino al punto del flusso in cui viene mostrato il pop-up di proposta per il prodotto con nome mancante",
+      "Attendere la visualizzazione del pop-up",
+      "Verificare se il nome prodotto è visualizzato"
+    ],
+    "expected_results": [
+      "Il nome prodotto non è presente o risulta vuoto nel pop-up",
+      "Il pop-up risulta non conforme al contenuto minimo obbligatorio (mancanza informazione richiesta)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce il comportamento di fallback/errore (es. blocco visualizzazione, placeholder, messaggio): il test valida la non conformità rispetto all'obbligatorietà del contenuto. Dipendenza esterna: possibilità di pilotare dati incompleti via backend/mock."
+  },
+  {
+    "test_id": "REQ-UI-008.TC05",
+    "title": "Negativo - APP - Immagine prodotto non disponibile: il pop-up non deve risultare conforme (contenuto obbligatorio assente)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "App installata e avviabile su dispositivo/simulatore",
+      "Disponibile una proposta che genera il pop-up con un prodotto suggerito con immagine non disponibile (URL 404/timeout o asset mancante)",
+      "Nome prodotto, prezzo scontato e sconto sono disponibili per isolare il difetto"
+    ],
+    "test_data": [
+      "Nome prodotto: \"Cuffie Bluetooth ZX-200\"",
+      "URL immagine prodotto: \"https://cdn.example.com/products/immagine-mancante.jpg\" (risponde 404) oppure timeout",
+      "Prezzo scontato: 59,90 EUR",
+      "Valore sconto suggerito: 20,00 EUR"
+    ],
+    "steps": [
+      "Aprire l'app",
+      "Navigare fino al punto del flusso in cui viene mostrato il pop-up di proposta per il prodotto con immagine non disponibile",
+      "Attendere la visualizzazione del pop-up",
+      "Verificare se l'immagine del prodotto è visualizzata correttamente"
+    ],
+    "expected_results": [
+      "L'immagine del prodotto non è visualizzata correttamente (asset mancante/errore di caricamento)",
+      "Il pop-up risulta non conforme al contenuto minimo obbligatorio (mancanza informazione richiesta)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito non specifica gestione errore immagine (placeholder, retry, messaggio). Il test verifica la non conformità rispetto all'obbligatorietà. Dipendenza esterna: disponibilità CDN/servizio immagini o possibilità di simulare 404/timeout."
+  },
+  {
+    "test_id": "REQ-UI-008.TC06",
+    "title": "Negativo - Prezzo scontato o valore sconto non valorizzati: il pop-up non deve risultare conforme (web e app)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente web disponibile e app disponibile",
+      "Disponibile una proposta che genera il pop-up con dati prezzo/sconto mancanti o non calcolati (es. campi null/vuoti) mantenendo nome e immagine disponibili"
+    ],
+    "test_data": [
+      "Nome prodotto: \"Cuffie Bluetooth ZX-200\"",
+      "Immagine prodotto: valida",
+      "Prezzo scontato: null (oppure stringa vuota)",
+      "Valore sconto suggerito: null (oppure stringa vuota)"
+    ],
+    "steps": [
+      "In web, visualizzare il pop-up di proposta per il prodotto con prezzo scontato e/o sconto mancanti",
+      "Verificare la presenza del prezzo scontato nel pop-up",
+      "Verificare la presenza dell'indicazione del valore dello sconto suggerito nel pop-up",
+      "In app, visualizzare lo stesso pop-up di proposta",
+      "Ripetere le verifiche su prezzo scontato e valore sconto"
+    ],
+    "expected_results": [
+      "In web, il prezzo scontato e/o il valore sconto non sono presenti o risultano vuoti",
+      "In web, il pop-up risulta non conforme al contenuto minimo obbligatorio",
+      "In app, il prezzo scontato e/o il valore sconto non sono presenti o risultano vuoti",
+      "In app, il pop-up risulta non conforme al contenuto minimo obbligatorio"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non definisce comportamento di fallback/errore per campi economici mancanti. Dipendenza esterna: capacità di generare proposte con campi null tramite backend/mock."
+  },
+  {
+    "test_id": "REQ-UI-008.TC07",
+    "title": "Edge case - Nome prodotto lungo: contenuti obbligatori restano visibili e leggibili nel pop-up (web e app)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente web disponibile e app disponibile",
+      "Disponibile una proposta che genera il pop-up con un prodotto suggerito avente nome molto lungo",
+      "Immagine, prezzo scontato e sconto disponibili"
+    ],
+    "test_data": [
+      "Nome prodotto lungo: \"Cuffie Bluetooth ZX-200 Edizione Speciale con Cancellazione del Rumore Avanzata e Custodia di Ricarica\" (>= 90 caratteri)",
+      "Prezzo scontato: 59,90 EUR",
+      "Valore sconto suggerito: 20,00 EUR"
+    ],
+    "steps": [
+      "In web, visualizzare il pop-up di proposta con nome prodotto lungo",
+      "Verificare che il nome prodotto sia leggibile (eventuale a capo o ellissi) e non copra altri elementi",
+      "Verificare che immagine, prezzo scontato e valore sconto siano presenti e visibili",
+      "In app, visualizzare il pop-up di proposta con lo stesso nome prodotto lungo",
+      "Ripetere le verifiche di leggibilità e presenza degli altri elementi"
+    ],
+    "expected_results": [
+      "In web, il nome prodotto è leggibile e non rende il pop-up illeggibile (nessun overlap con immagine/prezzi, nessun elemento fuori area)",
+      "In web, immagine, prezzo scontato e valore sconto rimangono visibili e leggibili",
+      "In app, il nome prodotto è leggibile e non rende il pop-up illeggibile (nessun overlap con immagine/prezzi, nessun elemento fuori area)",
+      "In app, immagine, prezzo scontato e valore sconto rimangono visibili e leggibili"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica regole di troncamento/andata a capo: il test verifica l'obiettivo di leggibilità e visibilità dei contenuti obbligatori."
+  }
+]

@@ -15,8 +15,8 @@ TECO_LLM_cli è una CLI Python che permette di **misurare empiricamente lo scost
 Per farlo, la pipeline genera test cases seguendo **due percorsi paralleli** a partire dallo stesso requisito:
 
 ```
-Percorso indiretto (via user stories):
-  Requisito → LLM → User Stories → LLM → Test Cases (indiretti)
+Percorso indiretto (via user stories persona-based):
+  Requisito → LLM → User Stories (persona-based) → LLM → Test Cases (indiretti)
 
 Percorso diretto:
   Requisito → LLM → Test Cases (diretti)
@@ -55,7 +55,7 @@ La pipeline elabora ogni requisito individualmente (ADR-002) in quattro step:
 
 1. **Validazione sintattica** — Verifica che il requisito abbia i campi obbligatori (code, description, title, acceptance_criteria). Se mancano, il requisito viene skippato.
 
-2. **Step 1 — Requisito → User Stories** — Il requisito viene inviato al LLM con un prompt di sistema che istruisce il modello a generare user stories Agile. Il modello può rifiutare requisiti immaturi (AC assenti, descrizione vaga, contraddizioni). La decomposizione segue la regola di ADR-001: una user story per ogni acceptance criterion.
+2. **Step 1 — Requisito → User Stories** — Il requisito viene inviato al LLM con un prompt di sistema che istruisce il modello a generare user stories Agile persona-based. Il modello può rifiutare requisiti immaturi (AC assenti, descrizione vaga, contraddizioni). Le personas vengono estratte dai requisiti di categoria PERSONAS e fornite come contesto.
 
 3. **Step 2 — User Stories → Test Cases (indiretti)** — Le user stories generate vengono inviate al LLM per produrre test cases funzionali completi.
 
@@ -69,8 +69,7 @@ I prompt sono organizzati in `teco_cli/prompts/` con struttura gerarchica per fa
 
 | File | Funzione |
 |------|----------|
-| `user_stories/ac_based.md` | Requisito → User stories (decomposizione per acceptance criterion) |
-| `user_stories/persona_based.md` | Requisito → User stories (decomposizione alternativa per persona) |
+| `user_stories/persona_based.md` | Requisito → User stories (decomposizione per persona) |
 | `test_cases/from_user_stories.md` | User stories → Test cases (percorso indiretto) |
 | `test_cases/from_requirements.md` | Requisito → Test cases (percorso diretto) |
 | `evaluation/coherence.md` | Valutazione coerenza tra test cases indiretti e diretti |
@@ -92,9 +91,6 @@ REQ-F-001.TC01             → test case 1 diretto (senza user stories)
 ```
 output/
 ├── percorso_indiretto/
-│   ├── ac_based/
-│   │   ├── user_stories/          User stories AC-based (step 1)
-│   │   └── test_cases/            Test cases da US AC-based (step 2, indiretti)
 │   └── persona_based/
 │       ├── user_stories/          User stories persona-based (step 1)
 │       └── test_cases/            Test cases da US persona-based (step 2, indiretti)
@@ -114,7 +110,7 @@ output/
 | Componente | Tecnologia |
 |------------|------------|
 | Linguaggio | Python 3.10+ |
-| LLM | Azure OpenAI (gpt-4.1 default) |
+| LLM | Azure OpenAI (gpt-5.2 default) |
 | Dipendenze | openai >= 1.30.0, python-dotenv >= 1.0.0 |
 
 ## Configurazione
@@ -125,7 +121,7 @@ Creare un file `.env` con le credenziali Azure OpenAI:
 AZURE_OPENAI_API_KEY=...
 AZURE_OPENAI_ENDPOINT=https://....openai.azure.com
 AZURE_OPENAI_API_VERSION=2024-12-01-preview
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.2
 ```
 
 Il file `.env` viene cercato in questo ordine:

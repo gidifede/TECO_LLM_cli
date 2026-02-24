@@ -1,0 +1,41 @@
+[
+  {
+    "story_id": "REQ-F-007.US01",
+    "title": "Gestione descrizioni offerte: editing, creazione e varianti in dashboard Marketing",
+    "persona": "Team Marketing",
+    "goal": "modificare le bozze generate automaticamente, creare descrizioni da zero e gestire/assegnare varianti con controllo versione per tipologia offerta o cluster",
+    "benefit": "garantire testi commercialmente efficaci e coerenti per target diversi, mantenendo tracciabilità delle versioni",
+    "user_story": "Come Team Marketing\nVoglio modificare le bozze generate automaticamente, creare descrizioni da zero e gestire/assegnare varianti con controllo versione tramite una dashboard\nIn modo che possa adattare i contenuti alle tipologie di offerta o ai cluster di clientela mantenendo tracciabilità e governance dei testi",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il sistema produce un suggerimento di offerta ALLORA il sistema genera automaticamente una bozza di descrizione associata a quel suggerimento.",
+      "QUANDO accedo alla dashboard di editing e seleziono una bozza ALLORA posso aprirla e modificarne il contenuto.",
+      "QUANDO creo una descrizione da zero nella dashboard ALLORA posso salvarla come nuova variante associata al contesto dell’offerta.",
+      "QUANDO visualizzo le descrizioni di un suggerimento/offerta in dashboard ALLORA vedo l’elenco di versioni/varianti disponibili con indicazione della versione (controllo versioni).",
+      "QUANDO assegno una variante ALLORA posso associarla a una tipologia di offerta e/o a un cluster di clientela.",
+      "QUANDO salvo una modifica a una descrizione esistente ALLORA il sistema mantiene lo storico/versionamento in modo da distinguere la versione precedente da quella aggiornata."
+    ],
+    "business_rules": [
+      "Solo utenti appartenenti al ruolo Team Marketing (o autorizzati) possono accedere alla dashboard di editing e svolgere operazioni di modifica/creazione/salvataggio varianti.",
+      "Ogni suggerimento deve avere una bozza generata automaticamente dal sistema e tracciata come tale.",
+      "Le varianti devono essere assegnabili almeno per: tipologia di offerta e cluster di clientela (come da requisito).",
+      "Il controllo versione deve consentire la tracciabilità delle modifiche (esistenza di versioni distinte)."
+    ],
+    "edge_cases": [
+      "QUANDO un utente non autorizzato tenta di accedere alla dashboard o di modificare/creare descrizioni ALLORA l’operazione viene negata e viene mostrato un messaggio di autorizzazione insufficiente.",
+      "QUANDO la generazione automatica della bozza fallisce per un suggerimento ALLORA la dashboard segnala l’assenza della bozza e impedisce l’editing della bozza non esistente (resta possibile la creazione da zero se prevista dai permessi).",
+      "QUANDO provo a salvare una descrizione vuota o con soli spazi ALLORA il sistema blocca il salvataggio e richiede un contenuto valido.",
+      "QUANDO provo ad assegnare una variante senza specificare alcuna tipologia di offerta o cluster (se obbligatori) ALLORA il sistema richiede i campi minimi necessari per l’assegnazione.",
+      "QUANDO esistono più varianti assegnate allo stesso cluster/tipologia in modo conflittuale ALLORA la dashboard segnala il conflitto e richiede una risoluzione (es. scelta della variante attiva)."
+    ],
+    "assumptions": [
+      "Si assume che ogni \"suggerimento\" (citato negli AC) sia un’entità consultabile in dashboard e che la bozza di descrizione sia associata in modo univoco a tale suggerimento.",
+      "Si assume che il requisito di \"controllo delle versioni\" implichi almeno la conservazione di versioni distinte e consultabili; non sono specificati dettagli su audit (autore, timestamp, diff).",
+      "Si assume che \"cluster di clientela\" e \"tipologie di offerta\" siano tassonomie già disponibili/fornite al sistema (non definite in questo requisito)."
+    ],
+    "notes": "Il requisito coinvolge esplicitamente la sola persona 'Team Marketing' (dashboard). Dipendenza esterna: REQ-F-006 è citato come integrazione ma non fornito; gli AC sono stati implementati limitandosi a quanto esplicitato in REQ-F-007. Alcuni aspetti restano da dettagliare in refinement: regole di conflitto tra varianti, campi minimi obbligatori per assegnazione, e granularità del versioning/audit."
+  }
+]

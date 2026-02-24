@@ -1,0 +1,64 @@
+[
+  {
+    "story_id": "REQ-F-013.US01",
+    "title": "Configurare priorità e ordering delle offerte per touchpoint",
+    "persona": "Team Marketing",
+    "goal": "definire e gestire una priorità configurabile per offerte singole e bundle, associandola ai touchpoint previsti",
+    "benefit": "controllare l’ordinamento di presentazione delle offerte in coerenza con le strategie commerciali per canale/touchpoint",
+    "user_story": "Come Team Marketing\nVoglio definire una priorità configurabile per offerte singole e bundle e associarla ai touchpoint\nIn modo che le offerte siano presentate in un ordine coerente con la strategia commerciale per ciascun touchpoint",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing accede alla funzionalità di configurazione offerte/bundle ALLORA può impostare una priorità per una singola offerta o per un bundle.",
+      "QUANDO un utente del Team Marketing configura una priorità ALLORA può associarla ad almeno un touchpoint previsto dal sistema.",
+      "QUANDO esistono priorità configurate per un touchpoint ALLORA l’ordinamento delle offerte per quel touchpoint tiene conto delle priorità configurate.",
+      "QUANDO viene calcolato l’ordine risultante delle offerte per un touchpoint ALLORA il sistema registra nei log di proposta le informazioni necessarie a ricostruire l’ordine determinato (per audit)."
+    ],
+    "business_rules": [
+      "Solo utenti autorizzati del Team Marketing possono creare/modificare le priorità e le associazioni ai touchpoint.",
+      "La priorità deve essere configurabile sia per prodotto singolo sia per bundle.",
+      "L’associazione priorità↔touchpoint deve essere gestita a livello di configurazione marketing."
+    ],
+    "edge_cases": [
+      "Priorità non configurata per un’offerta/bundle su uno specifico touchpoint: l’ordinamento segue le regole automatiche/di default previste dal sistema.",
+      "Conflitto di configurazione (es. due regole marketing applicabili alla stessa offerta e touchpoint): il sistema deve applicare una regola di risoluzione deterministica e tracciarla nei log.",
+      "Utente non autorizzato tenta di accedere/modificare la configurazione: accesso negato e operazione tracciata secondo le policy di sicurezza."
+    ],
+    "assumptions": [
+      "I touchpoint a cui associare le priorità sono definiti nel requisito REQ-F-005 e saranno disponibili come elenco selezionabile in dashboard.",
+      "Il requisito non specifica il formato della priorità (es. intero, ranking, pesi): si assume un valore ordinabile che consenta un confronto deterministico."
+    ],
+    "notes": "AC condivisi con REQ-F-013.US02: tracciamento dell’ordine nei log per audit (replicato per persona Motore di Offerte). Dipendenza esterna: definizione puntuale dei touchpoint in REQ-F-005."
+  },
+  {
+    "story_id": "REQ-F-013.US02",
+    "title": "Ordinare automaticamente le offerte con modelli di propensity e tracciare l’ordine",
+    "persona": "Motore di Offerte",
+    "goal": "integrare modelli di propensity per ordinare automaticamente le offerte e registrare l’ordine risultante nei log di proposta",
+    "benefit": "massimizzare la rilevanza delle offerte presentate al cliente e garantire auditabilità delle decisioni di ordering",
+    "user_story": "Come Motore di Offerte\nVoglio ordinare automaticamente le offerte usando modelli di propensity e tracciare l’ordine risultante nei log di proposta\nIn modo che le offerte siano presentate in base alla probabilità di interesse del cliente e l’ordinamento sia auditabile",
+    "channels": [],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte deve produrre una lista di offerte per un cliente e un touchpoint ALLORA può applicare un ordinamento automatico basato su un modello di propensity.",
+      "QUANDO viene applicato l’ordinamento basato su propensity ALLORA l’output contiene un ordine deterministico delle offerte risultante dal modello (eventualmente combinato con la priorità configurata per touchpoint).",
+      "QUANDO viene determinato l’ordine finale di presentazione ALLORA il Motore di Offerte registra nei log di proposta l’ordine risultante e le informazioni necessarie a ricostruirlo per audit."
+    ],
+    "business_rules": [
+      "L’ordinamento automatico deve essere basato su modelli di propensity integrabili dal sistema.",
+      "Il log di proposta deve consentire audit dell’ordinamento risultante."
+    ],
+    "edge_cases": [
+      "Modello di propensity non disponibile/errore in chiamata: il Motore di Offerte applica un ordinamento di fallback deterministico e lo indica nei log.",
+      "Propensity non calcolabile per alcune offerte: tali offerte vengono comunque ordinate con regole di fallback e la condizione è tracciata nei log.",
+      "Parità di score di propensity tra offerte: applicazione di una regola di tie-break deterministica e tracciata nei log."
+    ],
+    "assumptions": [
+      "Il requisito non specifica come combinare priorità marketing e propensity: si assume che l’ordinamento finale possa tener conto di entrambi con una logica deterministica (da definire in refinement).",
+      "Il requisito non specifica quali campi debbano essere presenti nel log: si assume che includa almeno identificativi offerte, touchpoint, posizione/ordine finale e indicazione della logica applicata (propensity/priorità/fallback)."
+    ],
+    "notes": "AC condiviso con REQ-F-013.US01: tracciamento dell’ordine nei log per audit (replicato per persona Team Marketing). Il requisito non dettaglia interfacce/contratti dei modelli di propensity: dipendenza esterna da definire."
+  }
+]

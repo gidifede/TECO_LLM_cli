@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-013</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-013</h1>
+  <div class="subtitle">Presentazione offerte: priorità configurabile e ordering con propensity</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:35</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-013</div>
+  <div class="req-field"><strong>Titolo:</strong> Presentazione offerte: priorità configurabile e ordering con propensity</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> medium</div>
+  <div class="req-desc">Le offerte devono essere presentate secondo una priorità configurabile dall&#x27;utente marketing per prodotto singolo o bundle, oltre ad essere associabili a specifici touchpoint (REQ-F-005). 
+
+Il sistema deve poter integrare modelli di propensity per ordinare automaticamente le offerte in base alla probabilità di interesse del cliente.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È possibile definire priorità configurabili per offerte/bundle e per touchpoint.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il sistema supporta l&#x27;ordering automatico basato su modelli di propensity.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>L&#x27;ordine risultante è tracciato nei log di proposta per eventuale audit.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">75</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">20</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Il set direct mantiene copertura completa degli AC (3/3) con un numero più contenuto di assunzioni extra-requisito; le principali aggiunte riguardano esempi di touchpoint/canali e dettagli tecnici di integrazione/logging (7 added_info) e una sola mancanza non-AC legata al riferimento a REQ-F-005. Il set indirect_persona, pur coprendo gli AC, introduce molte più informazioni non tracciabili (dashboard, componenti/endpoint, autorizzazioni, conflitti, determinismo, tie-break, logica di combinazione) con 15 added_info, più ridondanze e una lacuna interpretativa su AC-1 (priorità &#x27;per touchpoint&#x27; come entità). Di conseguenza il punteggio di coerenza è superiore per direct (75 vs 20).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">75</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-013.TC01</td><td>Assume l&#x27;esistenza di una specifica &#x27;interfaccia di configurazione marketing&#x27; via web/backoffice, non descritta nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.TC01</td><td>Introduce un touchpoint specifico &#x27;WEB_PORTALE&#x27; e il canale &#x27;web&#x27; non presenti nel requisito (che parla solo di touchpoint in generale).</td></tr>
+<tr><td class='mono'>REQ-F-013.TC02</td><td>Introduce un touchpoint specifico &#x27;APP_MOBILE&#x27; e il canale &#x27;app&#x27; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.TC03</td><td>Assume una modalità di integrazione sincrona del modello di propensity durante la generazione proposta e la possibilità di mocking/stubbing, non specificate nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.TC04</td><td>Definisce una strategia di fallback quando il propensity è indisponibile (ordinamento per priorità configurata) e dettagli tecnici (timeout 10s/HTTP 503) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.TC05</td><td>Assume campi/concetti specifici nei log (proposal_id/correlation_id) e requisiti di contenuto (driver ordering) non dettagliati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.TC06</td><td>Introduce una regola di gestione degli score mancanti (posizionamento deterministico, es. in coda) non definita dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &quot;...associabili a specifici touchpoint (REQ-F-005)&quot;</td><td>I test non validano esplicitamente il vincolo/integrazione con quanto definito in REQ-F-005 (es. uso dell&#x27;elenco touchpoint o regole di associazione previste da quel requisito); usano touchpoint di esempio senza tracciabilità a REQ-F-005.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-013.TC04, REQ-F-013.TC06</td><td>Entrambi coprono scenari di eccezione/assenza dati dal propensity e richiedono comportamento deterministico + tracciamento nei log; differiscono per causa (errore vs score mancanti) ma risultano parzialmente sovrapposti.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">20</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">13</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">15</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-013.US01.TC01</td><td>Introduce canale/strumento &#x27;dashboard&#x27; e flusso UI specifico non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC01</td><td>Assume un elenco touchpoint specifico (TP-WEB, TP-APP) e che sia &#x27;disponibile in dashboard&#x27;, dettagli non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC02</td><td>Assume esplicitamente la possibilità di associare la stessa priorità a più touchpoint tramite selezione multipla; non indicato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC03</td><td>Introduce una convenzione di ordinamento della priorità (numero più alto = posizione più alta o viceversa) che il requisito non definisce.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC03</td><td>Assume l&#x27;esistenza di un &#x27;endpoint/servizio&#x27; e di un &#x27;Motore di Offerte&#x27; come componente, non citati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC04</td><td>Introduce un &#x27;ordering di default&#x27; in assenza di priorità configurata; il requisito non richiede un comportamento specifico per tale assenza.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC05</td><td>Introduce il concetto di &#x27;conflitto di configurazione&#x27; (due regole applicabili) e una relativa risoluzione deterministica; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC06</td><td>Introduce requisiti di autorizzazione/ruoli (Viewer) e audit di sicurezza per accessi non autorizzati; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC07</td><td>Assume meccanismi di correlazione log (request-id/correlation-id) e contenuti minimi addizionali nei log non specificati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC01</td><td>Richiede esplicitamente determinismo dell&#x27;ordinamento propensity a parità di input; il requisito parla di ordinare in base alla probabilità ma non impone determinismo tra invocazioni.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC02</td><td>Introduce una &#x27;logica di combinazione&#x27; priorità+propensity da refinement; il requisito non descrive come combinare i due meccanismi.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC03</td><td>Introduce fallback deterministico quando il modello è indisponibile e dettagli tecnici (timeout/HTTP 5xx); non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC04</td><td>Introduce regole di fallback per score null/mancanti non definite dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC05</td><td>Introduce regole di tie-break per parità di score e relativa tracciatura; non richieste dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC06</td><td>Assume contenuti minimi dei log (riferimento cliente/sessione/proposta, indicazione logica applicata) oltre al semplice &#x27;ordine risultante tracciato&#x27;, che è l&#x27;unico vincolo esplicito del requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-1: &quot;...priorità configurabili per offerte/bundle e per touchpoint.&quot;</td><td>Non c&#x27;è un TC che verifichi esplicitamente la configurazione della priorità &#x27;per touchpoint&#x27; come entità autonoma (es. priorità del touchpoint o priorità a livello touchpoint indipendente dall&#x27;offerta). I TC testano soprattutto priorità di offerta/bundle associate a touchpoint.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-013.US02.TC03, REQ-F-013.US02.TC04</td><td>Entrambi testano fallback deterministico e tracciamento log in caso di problemi con propensity (indisponibilità vs score mancanti) con struttura molto simile.</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC04, REQ-F-013.US02.TC05</td><td>Entrambi richiedono regole deterministiche aggiuntive (fallback/tie-break) e tracciamento; scenari diversi ma fortemente sovrapposti come obiettivo non richiesto.</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC07, REQ-F-013.US02.TC06</td><td>Entrambi verificano la presenza di informazioni di audit nei log di proposta per ricostruire l&#x27;ordine, con expected results molto simili.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-013&quot;,
+  &quot;title&quot;: &quot;Presentazione offerte: priorità configurabile e ordering con propensity&quot;,
+  &quot;description&quot;: &quot;Le offerte devono essere presentate secondo una priorità configurabile dall&#x27;utente marketing per prodotto singolo o bundle, oltre ad essere associabili a specifici touchpoint (REQ-F-005). \n\nIl sistema deve poter integrare modelli di propensity per ordinare automaticamente le offerte in base alla probabilità di interesse del cliente.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;medium&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È possibile definire priorità configurabili per offerte/bundle e per touchpoint.&quot;,
+    &quot;Il sistema supporta l&#x27;ordering automatico basato su modelli di propensity.&quot;,
+    &quot;L&#x27;ordine risultante è tracciato nei log di proposta per eventuale audit.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-013.TC01</td><td>Configurazione priorità per offerta singola su touchpoint specifico (salvataggio e persistenza)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.TC02</td><td>Configurazione priorità per bundle su touchpoint specifico (distinzione offerta singola vs bundle)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.TC03</td><td>Ordinamento automatico con propensity: ranking coerente con score restituiti dal modello</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-013.TC04</td><td>Fallback in caso di servizio propensity non disponibile (timeout/errore)</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.TC05</td><td>Tracciamento nei log di proposta dell&#x27;ordine risultante e dei driver (priorità/propensity) per audit</td><td>Functional</td><td>HIGH</td><td>AC-3, AC-2, AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.TC06</td><td>Edge case: score di propensity assenti/parziali per alcune offerte candidate</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 13 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-013.US01.TC01</td><td>Creazione priorità per offerta singola e associazione a un touchpoint (dashboard)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC02</td><td>Creazione priorità per bundle e associazione a più touchpoint (dashboard)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC03</td><td>Ordinamento offerte per touchpoint tiene conto delle priorità configurate</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC04</td><td>Assenza di priorità configurata per touchpoint: applicazione ordering di default deterministico</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC05</td><td>Conflitto di configurazione marketing per stessa offerta e touchpoint: risoluzione deterministica e tracciamento nei log</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC06</td><td>Accesso negato a utente non autorizzato alla configurazione priorità (dashboard) con tracciamento sicurezza</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-013.US01.TC07</td><td>Registrazione nei log di proposta delle informazioni per ricostruire l&#x27;ordine determinato da priorità per touchpoint</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC01</td><td>Ordering automatico basato su modello di propensity per cliente e touchpoint</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC02</td><td>Combinazione deterministica tra priorità marketing per touchpoint e propensity (se configurata)</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC03</td><td>Modello di propensity non disponibile: applicazione fallback deterministico e tracciamento nei log</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC04</td><td>Propensity non calcolabile per alcune offerte: ordinamento con fallback per le offerte impattate e tracciamento</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC05</td><td>Parità di score di propensity: applicazione tie-break deterministico e tracciamento</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-013.US02.TC06</td><td>Log di proposta contiene ordine finale e informazioni minime di audit per ordering da propensity</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 7, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 15, 1, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

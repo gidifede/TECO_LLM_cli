@@ -101,26 +101,6 @@ def _ask_text(prompt: str) -> str:
         print(f"  {_C.RED}Input non valido, riprova.{_C.RESET}")
 
 
-def _ask_us_strategy() -> str | None:
-    """Chiede la strategia di decomposizione user stories.
-
-    Restituisce ``"ac"``, ``"persona"``, ``"both"`` oppure ``None`` se
-    l'utente sceglie *Indietro*.
-    """
-    choice = _ask_choice(
-        "Come generare le user stories?",
-        [
-            "Per criterio di accettazione",
-            "Per persona",
-            "Entrambe le strategie",
-            "Indietro",
-        ],
-    )
-    if choice == 3:
-        return None
-    return ("ac", "persona", "both")[choice]
-
-
 # ---------------------------------------------------------------------------
 # CLI args
 # ---------------------------------------------------------------------------
@@ -484,10 +464,10 @@ def _generate_tc(
     _vlog(f"Prompt di sistema: {len(system_prompt_tc)} char", log_level)
 
     tc_scope = _ask_choice(
-        "Quali user stories elaborare?",
+        "Per quali requisiti generare i test cases?",
         [
-            f"Tutte ({len(all_user_stories)})",
-            "Una specifica",
+            f"Tutti ({len(us_by_req)} requisiti, {len(all_user_stories)} user stories)",
+            "Un requisito specifico",
             "Indietro",
         ],
     )
@@ -496,40 +476,41 @@ def _generate_tc(
         return None
 
     if tc_scope == 1:
-        # Mostra US disponibili
-        print(f"\n{_C.DIM}User stories disponibili:{_C.RESET}")
-        for idx, us in enumerate(all_user_stories, 1):
-            us_id = us.get("story_id", us.get("id", f"US-{idx}"))
-            us_title = us.get("title", us.get("name", "N/A"))
-            print(f"  {idx}. {us_id} - {us_title}")
+        # Mostra requisiti disponibili
+        print(f"\n{_C.DIM}Requisiti con user stories disponibili:{_C.RESET}")
+        for idx, (req_code, req_us) in enumerate(us_by_req.items(), 1):
+            print(f"  {idx}. {req_code} ({len(req_us)} user stories)")
 
-        us_code = _ask_text(
-            "\nInserisci l'ID della user story (es. REQ-F-001.US01)"
+        selected_req_code = _ask_text(
+            "\nInserisci il codice del requisito (es. REQ-F-001)"
         )
-        tc_stories = [
-            us for us in all_user_stories
-            if us.get("story_id") == us_code or us.get("id") == us_code
-        ]
-        if not tc_stories:
-            print(f"\n  {_C.RED}User story '{us_code}' non trovata.{_C.RESET}", file=sys.stderr)
+        if selected_req_code not in us_by_req:
+            print(
+                f"\n  {_C.RED}Requisito '{selected_req_code}' non trovato "
+                f"tra le user stories caricate.{_C.RESET}",
+                file=sys.stderr,
+            )
             return None
 
-        print(f"\n[pipeline] Generazione test cases per 1 user story...")
-        # Deriva il codice requisito dallo story_id (es. REQ-F-001.US01 → REQ-F-001)
-        us_req_code = us_code.rsplit(".US", 1)[0] if ".US" in us_code else us_code
+        req_us = us_by_req[selected_req_code]
+        print(
+            f"\n[pipeline] Generazione test cases per {selected_req_code} "
+            f"({len(req_us)} user stories)..."
+        )
+        _vlog(f"{selected_req_code}: {len(req_us)} user stories in input", log_level)
         tc_result = process_us_to_tc(
-            user_stories=tc_stories,
+            user_stories=req_us,
             system_prompt=system_prompt_tc,
             config=config,
             temperature=args.temperature,
             max_tokens=args.max_tokens,
             verbose=verbose,
-            requirement_ac=(ac_by_req or {}).get(us_req_code),
+            requirement_ac=(ac_by_req or {}).get(selected_req_code),
         )
-        _handle_tc_result(tc_result, tc_dir, errors, all_test_cases, us_code, log_level)
+        _handle_tc_result(tc_result, tc_dir, errors, all_test_cases, selected_req_code, log_level)
 
     else:
-        # Tutte le US: iteriamo per-requisito
+        # Tutti i requisiti
         tc_total = len(us_by_req)
         for tc_i, (req_code, req_us) in enumerate(us_by_req.items(), 1):
             print(
@@ -612,44 +593,53 @@ def _clean_output(out_path: Path) -> None:
     print(f"\n  {_C.GREEN}Pulizia completata: {file_count} file rimossi.{_C.RESET}")
 
 
-def _evaluate_coherence(
+def _find_eligible_requirements(
+    requirements: list[dict],
+    out_path: Path,
+) -> list[str]:
+    """Restituisce i codici dei requisiti eleggibili per la valutazione.
+
+    Un requisito è eleggibile se ha TC sia nella catena direct sia nella
+    catena indirect_persona.
+    """
+    eligible: list[str] = []
+    for req in requirements:
+        code = req.get("code", "")
+        if not code:
+            continue
+        has_all = True
+        for key, chain in TC_CHAINS.items():
+            tc_dir = out_path / chain.tc_dir
+            if not tc_dir.is_dir():
+                has_all = False
+                break
+            if key == "direct":
+                if not (tc_dir / f"{code}_test_cases.json").is_file():
+                    has_all = False
+                    break
+            else:
+                main = (tc_dir / f"{code}_test_cases.json").is_file()
+                per_us = bool(list(tc_dir.glob(f"{code}.US*_test_cases.json")))
+                if not main and not per_us:
+                    has_all = False
+                    break
+        if has_all:
+            eligible.append(code)
+    return eligible
+
+
+def _evaluate_single_requirement(
+    req_code: str,
+    requirement: dict,
+    out_path: Path,
+    system_prompt_eval: str,
     args: argparse.Namespace,
     config: AzureOpenAIConfig,
-    out_path: Path,
-    prompts_path: Path,
     log_level: str = _LOG_VERBOSE,
-) -> None:
-    """Valuta la coerenza tra test cases (2-3 catene) e requisito originale."""
+) -> bool:
+    """Valuta la coerenza per un singolo requisito. Restituisce True se ok."""
 
-    # Carica prompt di valutazione
-    eval_prompt_file = prompts_path / PromptFiles.EVAL_COHERENCE
-    if not eval_prompt_file.is_file():
-        print(
-            f"  {_C.RED}Prompt di valutazione non trovato: {eval_prompt_file}{_C.RESET}",
-            file=sys.stderr,
-        )
-        return
-    system_prompt_eval = eval_prompt_file.read_text(encoding="utf-8")
-
-    # Chiedi file requirements
-    req_path = _ask_requirements_file(Path(args.requirements))
-    if req_path is None:
-        return
-    requirements: list[dict] = json.loads(req_path.read_text(encoding="utf-8"))
-    print(f"Requisiti caricati: {len(requirements)}")
-
-    # Chiedi codice requisito
-    req_code = _ask_text(
-        "\nInserisci il codice del requisito da valutare (es. REQ-F-001)"
-    )
-    requirement = next(
-        (r for r in requirements if r.get("code") == req_code), None
-    )
-    if requirement is None:
-        print(f"\n  {_C.RED}Requisito '{req_code}' non trovato nel file.{_C.RESET}", file=sys.stderr)
-        return
-
-    # --- 4a. Rilevamento catene disponibili ---
+    # --- Rilevamento catene disponibili ---
     available_chains: dict[str, list[Path]] = {}
     for key, chain in TC_CHAINS.items():
         tc_dir = out_path / chain.tc_dir
@@ -658,12 +648,10 @@ def _evaluate_coherence(
         _vlog(f"Scansione {chain.label}: directory {tc_dir}", log_level)
         files: list[Path] = []
         if key == "direct":
-            # TC diretti: {REQ}_test_cases.json
             main_file = tc_dir / f"{req_code}_test_cases.json"
             if main_file.is_file():
                 files.append(main_file)
         else:
-            # TC indiretti: {REQ}_test_cases.json + {REQ}.US*_test_cases.json
             main_file = tc_dir / f"{req_code}_test_cases.json"
             if main_file.is_file():
                 files.append(main_file)
@@ -680,7 +668,7 @@ def _evaluate_coherence(
             if key not in available_chains
         ]
         print(f"\n  {_C.RED}Catene TC trovate per {req_code}: "
-              f"{len(available_chains)}/3{_C.RESET}", file=sys.stderr)
+              f"{len(available_chains)}/2{_C.RESET}", file=sys.stderr)
         if present:
             for lbl in present:
                 print(f"    {_C.GREEN}+{_C.RESET} {lbl}")
@@ -691,46 +679,14 @@ def _evaluate_coherence(
             f"Genera prima i set mancanti per {req_code}.{_C.RESET}",
             file=sys.stderr,
         )
-        return
+        return False
 
-    # --- 4b. Scelta utente ---
-    selected_keys: list[str]
-    if len(available_chains) == 2:
-        # Solo 2 catene: procede direttamente
-        selected_keys = list(available_chains.keys())
-        labels_str = " vs ".join(TC_CHAINS[k].label for k in selected_keys)
-        print(f"\n  {_C.DIM}2 catene rilevate: {labels_str}{_C.RESET}")
-    else:
-        # 3 catene: menu di scelta
-        chain_keys = list(available_chains.keys())
-        # Genera combinazioni a 2
-        pairs: list[tuple[str, str]] = []
-        for i in range(len(chain_keys)):
-            for j in range(i + 1, len(chain_keys)):
-                pairs.append((chain_keys[i], chain_keys[j]))
+    # --- Procede con le 2 catene disponibili ---
+    selected_keys = list(available_chains.keys())
+    labels_str = " vs ".join(TC_CHAINS[k].label for k in selected_keys)
+    print(f"\n  {_C.DIM}2 catene rilevate: {labels_str}{_C.RESET}")
 
-        options = [
-            f"Tutti e 3 ({', '.join(TC_CHAINS[k].label for k in chain_keys)})"
-        ]
-        for a, b in pairs:
-            options.append(f"{TC_CHAINS[a].label} vs {TC_CHAINS[b].label}")
-        options.append("Indietro")
-
-        choice = _ask_choice(
-            f"3 catene TC rilevate per {req_code}. Quali confrontare?",
-            options,
-        )
-
-        if choice == len(options) - 1:
-            return
-
-        if choice == 0:
-            selected_keys = chain_keys
-        else:
-            pair = pairs[choice - 1]
-            selected_keys = list(pair)
-
-    # --- 4c. Caricamento TC unificato ---
+    # --- Caricamento TC unificato ---
     tc_sets: dict[str, list[dict]] = {}
     chain_metadata: dict[str, dict] = {}
     file_details: dict[str, list[tuple[str, int]]] = {}
@@ -749,14 +705,12 @@ def _evaluate_coherence(
                 data = [data]
             count_before = len(tc_list)
             if key == "direct":
-                # Formato flat
                 for tc in data:
                     tid = tc.get("test_id", "")
                     if tid not in seen:
                         seen.add(tid)
                         tc_list.append(tc)
             else:
-                # Formato annidato (possibile wrapper test_cases)
                 for item in data:
                     if isinstance(item, dict) and "test_cases" in item:
                         tcs = item["test_cases"]
@@ -777,7 +731,7 @@ def _evaluate_coherence(
             log_level,
         )
 
-    # --- 4d. Riepilogo file ---
+    # --- Riepilogo file ---
     print(f"\n{_C.CYAN}{'─'*50}")
     print(f"  File che verranno inviati al modello per la valutazione:")
     print(f"{'─'*50}{_C.RESET}")
@@ -797,7 +751,7 @@ def _evaluate_coherence(
     print(f"\n  Totale test cases inviati: {_C.WHITE}{total_tc}{_C.RESET}")
     print(f"{_C.CYAN}{'─'*50}{_C.RESET}")
 
-    # --- 4e. Chiamata valutazione ---
+    # --- Chiamata valutazione ---
     verbose = log_level == _LOG_VERBOSE
     _vlog(
         f"Payload totale: "
@@ -830,7 +784,7 @@ def _evaluate_coherence(
             encoding="utf-8",
         )
         print(f"  {_C.DIM}Dettaglio salvato in: {rej_file}{_C.RESET}")
-        return
+        return False
 
     if result["status"] == "error":
         print(f"\n  {_C.RED}ERRORE: {result['error']}{_C.RESET}", file=sys.stderr)
@@ -838,7 +792,7 @@ def _evaluate_coherence(
             raw_file = eval_dir / "evaluation_RAW.txt"
             raw_file.write_text(result["raw_text"], encoding="utf-8")
             print(f"  {_C.DIM}Risposta grezza salvata in: {raw_file}{_C.RESET}")
-        return
+        return False
 
     # Salva il risultato JSON
     evaluation = result["evaluation"]
@@ -848,7 +802,7 @@ def _evaluate_coherence(
     )
     _vlog(f"File scritto: {eval_file} ({eval_file.stat().st_size} bytes)", log_level)
 
-    # --- 4f. Generazione HTML ---
+    # --- Generazione HTML ---
     from .report_html import generate_evaluation_html
 
     html_content = generate_evaluation_html(
@@ -862,7 +816,7 @@ def _evaluate_coherence(
     html_file.write_text(html_content, encoding="utf-8")
     _vlog(f"File scritto: {html_file} ({html_file.stat().st_size} bytes)", log_level)
 
-    # --- 4g. Report console ---
+    # --- Report console ---
     print(f"\n{_C.CYAN}{'='*50}")
     print(f"  Valutazione coerenza — {req_code}")
     print(f"{'='*50}{_C.RESET}")
@@ -928,6 +882,125 @@ def _evaluate_coherence(
     print(f"    {_C.DIM}- evaluation.json (dati grezzi){_C.RESET}")
     print(f"    {_C.DIM}- evaluation_report.html (report visuale){_C.RESET}")
     print(f"{_C.CYAN}{'='*50}{_C.RESET}")
+    return True
+
+
+def _evaluate_coherence(
+    args: argparse.Namespace,
+    config: AzureOpenAIConfig,
+    out_path: Path,
+    prompts_path: Path,
+    log_level: str = _LOG_VERBOSE,
+) -> None:
+    """Valuta la coerenza tra test cases (2 catene) e requisito originale."""
+
+    # Carica prompt di valutazione
+    eval_prompt_file = prompts_path / PromptFiles.EVAL_COHERENCE
+    if not eval_prompt_file.is_file():
+        print(
+            f"  {_C.RED}Prompt di valutazione non trovato: {eval_prompt_file}{_C.RESET}",
+            file=sys.stderr,
+        )
+        return
+    system_prompt_eval = eval_prompt_file.read_text(encoding="utf-8")
+
+    # Chiedi file requirements
+    req_path = _ask_requirements_file(Path(args.requirements))
+    if req_path is None:
+        return
+    requirements: list[dict] = json.loads(req_path.read_text(encoding="utf-8"))
+    print(f"Requisiti caricati: {len(requirements)}")
+
+    # Calcola eleggibili
+    eligible = _find_eligible_requirements(requirements, out_path)
+
+    eval_choice = _ask_choice(
+        "Cosa valutare?",
+        [
+            f"Tutti gli eleggibili ({len(eligible)} requisiti)",
+            "Un requisito specifico",
+            "Indietro",
+        ],
+    )
+
+    if eval_choice == 2:
+        return
+
+    if eval_choice == 0:
+        # --- Tutti gli eleggibili ---
+        if not eligible:
+            print(
+                f"\n  {_C.YELLOW}Nessun requisito eleggibile trovato. "
+                f"Servono TC sia diretti che indiretti per lo stesso requisito.{_C.RESET}",
+                file=sys.stderr,
+            )
+            return
+
+        print(f"\n{_C.CYAN}Requisiti eleggibili:{_C.RESET}")
+        for code in eligible:
+            print(f"  {_C.WHITE}-{_C.RESET} {code}")
+
+        ok_count = 0
+        fail_count = 0
+        for i, req_code in enumerate(eligible, 1):
+            print(f"\n{_C.CYAN}{'='*50}")
+            print(f"  [{i}/{len(eligible)}] Valutazione {req_code}")
+            print(f"{'='*50}{_C.RESET}")
+            requirement = next(
+                (r for r in requirements if r.get("code") == req_code), None
+            )
+            if requirement is None:
+                print(
+                    f"  {_C.RED}Requisito '{req_code}' non trovato nel file.{_C.RESET}",
+                    file=sys.stderr,
+                )
+                fail_count += 1
+                continue
+            success = _evaluate_single_requirement(
+                req_code=req_code,
+                requirement=requirement,
+                out_path=out_path,
+                system_prompt_eval=system_prompt_eval,
+                args=args,
+                config=config,
+                log_level=log_level,
+            )
+            if success:
+                ok_count += 1
+            else:
+                fail_count += 1
+
+        print(f"\n{_C.CYAN}{'='*50}")
+        print(f"  Riepilogo valutazione batch")
+        print(f"{'='*50}{_C.RESET}")
+        print(f"  Requisiti valutati:  {_C.GREEN}{ok_count}{_C.RESET}")
+        if fail_count:
+            print(f"  Falliti/rejected:    {_C.RED}{fail_count}{_C.RESET}")
+        print(f"  Totale:              {ok_count + fail_count}/{len(eligible)}")
+
+    else:
+        # --- Requisito specifico ---
+        req_code = _ask_text(
+            "\nInserisci il codice del requisito da valutare (es. REQ-F-001)"
+        )
+        requirement = next(
+            (r for r in requirements if r.get("code") == req_code), None
+        )
+        if requirement is None:
+            print(
+                f"\n  {_C.RED}Requisito '{req_code}' non trovato nel file.{_C.RESET}",
+                file=sys.stderr,
+            )
+            return
+        _evaluate_single_requirement(
+            req_code=req_code,
+            requirement=requirement,
+            out_path=out_path,
+            system_prompt_eval=system_prompt_eval,
+            args=args,
+            config=config,
+            log_level=log_level,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -997,8 +1070,8 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
     # Prepara output (una sola volta)
     out_path = Path(args.output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
-    us_dir = out_path / OutputDirs.US_AC
-    tc_dir = out_path / OutputDirs.TC_FROM_US_AC
+    us_dir = out_path / OutputDirs.US_PERSONA
+    tc_dir = out_path / OutputDirs.TC_FROM_US_PERSONA
     us_dir.mkdir(parents=True, exist_ok=True)
     tc_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1098,25 +1171,13 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                 )
                 print(f"Requisiti caricati: {len(requirements)}")
 
-                # Scelta strategia US
-                us_strategy = _ask_us_strategy()
-                if us_strategy is None:
-                    continue
-
-                # Estrai personas se necessario (persona o both)
-                personas_ctx: str | None = None
-                reqs_for_us = requirements  # requisiti per la generazione US
-                if us_strategy in ("persona", "both"):
-                    personas_ctx, reqs_for_us = extract_personas_context(requirements)
-                    personas_list = json.loads(personas_ctx)
-                    print(f"\n{_C.CYAN}Personas individuate ({len(personas_list)}):{_C.RESET}")
-                    for p in personas_list:
-                        print(f"  {_C.WHITE}-{_C.RESET} {p.get('code', '?')} | {p.get('title', 'N/A')}")
-                    print(f"Requisiti da elaborare (esclusi PERSONAS): {len(reqs_for_us)}")
-                if us_strategy == "ac":
-                    print(f"Strategia: AC-based")
-                elif us_strategy == "both":
-                    print(f"Strategia: entrambe (AC + persona)")
+                # Estrai personas per strategia persona-based
+                personas_ctx, reqs_for_us = extract_personas_context(requirements)
+                personas_list = json.loads(personas_ctx)
+                print(f"\n{_C.CYAN}Personas individuate ({len(personas_list)}):{_C.RESET}")
+                for p in personas_list:
+                    print(f"  {_C.WHITE}-{_C.RESET} {p.get('code', '?')} | {p.get('title', 'N/A')}")
+                print(f"Requisiti da elaborare (esclusi PERSONAS): {len(reqs_for_us)}")
 
                 scope_result = _ask_scope(reqs_for_us)
                 if scope_result is None:
@@ -1131,98 +1192,32 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                 _vlog(f"Prompt TC caricato: {len(system_prompt_tc)} char", log_level)
                 _vlog(f"Prompt TC diretti: {len(system_prompt_direct)} char", log_level)
 
-                # Fase 1: genera User Stories
-                if us_strategy == "both":
-                    # --- AC-based ---
-                    print(f"\n{_C.CYAN}── Fase 1/3a: User Stories (AC-based) ──{_C.RESET}")
-                    system_prompt_us_ac = (
-                        prompts_path / PromptFiles.US_AC
-                    ).read_text(encoding="utf-8")
-                    us_by_req, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us_ac,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir,
-                            log_level=log_level,
-                        )
-                    )
-                    # --- Persona-based ---
-                    print(f"\n{_C.CYAN}── Fase 1/3b: User Stories (persona-based) ──{_C.RESET}")
-                    system_prompt_us_persona = (
-                        prompts_path / PromptFiles.US_PERSONA
-                    ).read_text(encoding="utf-8")
-                    us_dir_persona = out_path / OutputDirs.US_PERSONA
-                    us_dir_persona.mkdir(parents=True, exist_ok=True)
-                    us_by_req_p, us_flat_p, skip_p, rej_p, err_p = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us_persona,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir_persona,
-                            personas_context=personas_ctx,
-                            log_level=log_level,
-                        )
-                    )
-                    skipped.extend(skip_p)
-                    rejected.extend(rej_p)
-                    errors.extend(err_p)
-                    print(
-                        f"\n{_C.GREEN}  US generate: "
-                        f"{len(all_user_stories)} AC-based, "
-                        f"{len(us_flat_p)} persona-based{_C.RESET}"
-                    )
-                elif us_strategy == "persona":
-                    print(f"\n{_C.CYAN}── Fase 1/3: User Stories (persona-based) ──{_C.RESET}")
-                    system_prompt_us = (
-                        prompts_path / PromptFiles.US_PERSONA
-                    ).read_text(encoding="utf-8")
-                    effective_us_dir = out_path / OutputDirs.US_PERSONA
-                    effective_us_dir.mkdir(parents=True, exist_ok=True)
-                    us_by_req, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us,
-                            config=config,
-                            args=args,
-                            us_dir=effective_us_dir,
-                            personas_context=personas_ctx,
-                            log_level=log_level,
-                        )
-                    )
-                else:
-                    print(f"\n{_C.CYAN}── Fase 1/3: User Stories (AC-based) ──{_C.RESET}")
-                    system_prompt_us = (
-                        prompts_path / PromptFiles.US_AC
-                    ).read_text(encoding="utf-8")
-                    us_by_req, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir,
-                            log_level=log_level,
-                        )
-                    )
-
                 # Mappa codice requisito → acceptance_criteria per tracciabilità
                 ac_by_req = {
                     r.get("code"): r.get("acceptance_criteria", [])
                     for r in selected
                 }
 
-                # Fase 2: genera TC indiretti (da US)
-                if us_by_req:
-                    effective_tc_dir = tc_dir
-                    if us_strategy == "persona":
-                        effective_tc_dir = out_path / OutputDirs.TC_FROM_US_PERSONA
-                        effective_tc_dir.mkdir(parents=True, exist_ok=True)
+                # Fase 1: genera User Stories (persona-based)
+                print(f"\n{_C.CYAN}── Fase 1/3: User Stories (persona-based) ──{_C.RESET}")
+                system_prompt_us = (
+                    prompts_path / PromptFiles.US_PERSONA
+                ).read_text(encoding="utf-8")
+                us_by_req, all_user_stories, skipped, rejected, errors = (
+                    _generate_us(
+                        selected=selected,
+                        system_prompt_us=system_prompt_us,
+                        config=config,
+                        args=args,
+                        us_dir=us_dir,
+                        personas_context=personas_ctx,
+                        log_level=log_level,
+                    )
+                )
 
-                    label_tc = "AC-based" if us_strategy != "persona" else "persona-based"
-                    print(f"\n{_C.CYAN}── Fase 2/3: Test Cases indiretti (da US {label_tc}) ──{_C.RESET}")
+                # Fase 2: genera TC indiretti (da US persona-based)
+                if us_by_req:
+                    print(f"\n{_C.CYAN}── Fase 2/3: Test Cases indiretti (da US persona-based) ──{_C.RESET}")
                     tc_total = len(us_by_req)
                     for tc_i, (req_code, req_us) in enumerate(
                         us_by_req.items(), 1
@@ -1243,44 +1238,9 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                             requirement_ac=ac_by_req.get(req_code),
                         )
                         _handle_tc_result(
-                            tc_result, effective_tc_dir, errors,
+                            tc_result, tc_dir, errors,
                             all_test_cases, req_code, log_level,
                         )
-
-                # Fase 2b: se "both", genera anche TC dalle US persona
-                if us_strategy == "both" and us_by_req_p:
-                    tc_dir_persona = out_path / OutputDirs.TC_FROM_US_PERSONA
-                    tc_dir_persona.mkdir(parents=True, exist_ok=True)
-                    all_test_cases_persona: list = []
-                    print(f"\n{_C.CYAN}── Fase 2b/3: Test Cases indiretti (da US persona-based) ──{_C.RESET}")
-                    tc_total_p = len(us_by_req_p)
-                    for tc_i, (req_code, req_us) in enumerate(
-                        us_by_req_p.items(), 1
-                    ):
-                        print(
-                            f"\n[pipeline] [{tc_i}/{tc_total_p}] "
-                            f"TC indiretti (persona) per {req_code} "
-                            f"({len(req_us)} user stories)..."
-                        )
-                        _vlog(f"{req_code}: {len(req_us)} user stories in input", log_level)
-                        tc_result = process_us_to_tc(
-                            user_stories=req_us,
-                            system_prompt=system_prompt_tc,
-                            config=config,
-                            temperature=args.temperature,
-                            max_tokens=args.max_tokens,
-                            verbose=verbose,
-                            requirement_ac=ac_by_req.get(req_code),
-                        )
-                        _handle_tc_result(
-                            tc_result, tc_dir_persona, errors,
-                            all_test_cases_persona, req_code, log_level,
-                        )
-                    print(
-                        f"\n{_C.GREEN}  TC indiretti generati: "
-                        f"{len(all_test_cases)} da US AC-based, "
-                        f"{len(all_test_cases_persona)} da US persona-based{_C.RESET}"
-                    )
 
                 # Fase 3: genera TC diretti (da requisiti)
                 print(f"\n{_C.CYAN}── Fase 3/3: Test Cases diretti (da requisiti) ──{_C.RESET}")
@@ -1329,24 +1289,13 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                 )
                 print(f"Requisiti caricati: {len(requirements)}")
 
-                # Scelta strategia US
-                us_strategy = _ask_us_strategy()
-                if us_strategy is None:
-                    continue
-
-                personas_ctx: str | None = None
-                reqs_for_us = requirements
-                if us_strategy in ("persona", "both"):
-                    personas_ctx, reqs_for_us = extract_personas_context(requirements)
-                    personas_list = json.loads(personas_ctx)
-                    print(f"\n{_C.CYAN}Personas individuate ({len(personas_list)}):{_C.RESET}")
-                    for p in personas_list:
-                        print(f"  {_C.WHITE}-{_C.RESET} {p.get('code', '?')} | {p.get('title', 'N/A')}")
-                    print(f"Requisiti da elaborare (esclusi PERSONAS): {len(reqs_for_us)}")
-                if us_strategy == "ac":
-                    print(f"Strategia: AC-based")
-                elif us_strategy == "both":
-                    print(f"Strategia: entrambe (AC + persona)")
+                # Estrai personas per strategia persona-based
+                personas_ctx, reqs_for_us = extract_personas_context(requirements)
+                personas_list = json.loads(personas_ctx)
+                print(f"\n{_C.CYAN}Personas individuate ({len(personas_list)}):{_C.RESET}")
+                for p in personas_list:
+                    print(f"  {_C.WHITE}-{_C.RESET} {p.get('code', '?')} | {p.get('title', 'N/A')}")
+                print(f"Requisiti da elaborare (esclusi PERSONAS): {len(reqs_for_us)}")
 
                 scope_result = _ask_scope(reqs_for_us)
                 if scope_result is None:
@@ -1356,82 +1305,21 @@ def _run_interactive(args: argparse.Namespace, config: AzureOpenAIConfig) -> Non
                 total = len(selected)
                 did_work = True
 
-                if us_strategy == "both":
-                    # --- AC-based ---
-                    print(f"\n{_C.CYAN}── User Stories (AC-based) ──{_C.RESET}")
-                    system_prompt_us_ac = (
-                        prompts_path / PromptFiles.US_AC
-                    ).read_text(encoding="utf-8")
-                    _, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us_ac,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir,
-                            log_level=log_level,
-                        )
+                print(f"\n{_C.CYAN}── User Stories (persona-based) ──{_C.RESET}")
+                system_prompt_us = (
+                    prompts_path / PromptFiles.US_PERSONA
+                ).read_text(encoding="utf-8")
+                _, all_user_stories, skipped, rejected, errors = (
+                    _generate_us(
+                        selected=selected,
+                        system_prompt_us=system_prompt_us,
+                        config=config,
+                        args=args,
+                        us_dir=us_dir,
+                        personas_context=personas_ctx,
+                        log_level=log_level,
                     )
-                    # --- Persona-based ---
-                    print(f"\n{_C.CYAN}── User Stories (persona-based) ──{_C.RESET}")
-                    system_prompt_us_persona = (
-                        prompts_path / PromptFiles.US_PERSONA
-                    ).read_text(encoding="utf-8")
-                    us_dir_persona = out_path / OutputDirs.US_PERSONA
-                    us_dir_persona.mkdir(parents=True, exist_ok=True)
-                    _, us_flat_p, skip_p, rej_p, err_p = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us_persona,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir_persona,
-                            personas_context=personas_ctx,
-                            log_level=log_level,
-                        )
-                    )
-                    skipped.extend(skip_p)
-                    rejected.extend(rej_p)
-                    errors.extend(err_p)
-                    all_user_stories.extend(us_flat_p)
-                    print(
-                        f"\n{_C.GREEN}  US generate: "
-                        f"{len(all_user_stories) - len(us_flat_p)} AC-based, "
-                        f"{len(us_flat_p)} persona-based{_C.RESET}"
-                    )
-                elif us_strategy == "persona":
-                    print(f"\n{_C.CYAN}── User Stories (persona-based) ──{_C.RESET}")
-                    system_prompt_us = (
-                        prompts_path / PromptFiles.US_PERSONA
-                    ).read_text(encoding="utf-8")
-                    effective_us_dir = out_path / OutputDirs.US_PERSONA
-                    effective_us_dir.mkdir(parents=True, exist_ok=True)
-                    _, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us,
-                            config=config,
-                            args=args,
-                            us_dir=effective_us_dir,
-                            personas_context=personas_ctx,
-                            log_level=log_level,
-                        )
-                    )
-                else:
-                    print(f"\n{_C.CYAN}── User Stories (AC-based) ──{_C.RESET}")
-                    system_prompt_us = (
-                        prompts_path / PromptFiles.US_AC
-                    ).read_text(encoding="utf-8")
-                    _, all_user_stories, skipped, rejected, errors = (
-                        _generate_us(
-                            selected=selected,
-                            system_prompt_us=system_prompt_us,
-                            config=config,
-                            args=args,
-                            us_dir=us_dir,
-                            log_level=log_level,
-                        )
-                    )
+                )
 
             # -----------------------------------------------------------
             # Solo TC indiretti (da User Stories esistenti)

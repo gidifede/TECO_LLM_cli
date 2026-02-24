@@ -1,0 +1,34 @@
+[
+  {
+    "story_id": "REQ-NF-002.US01",
+    "title": "Tracciare nei log le anomalie di sincronizzazione senza interrompere la proposizione",
+    "persona": "Motore di Offerte",
+    "goal": "registrare nei log tecnici le anomalie di sincronizzazione/aggiornamento regole tra canali e continuare a proporre offerte applicando la regola localmente disponibile",
+    "benefit": "garantire continuità operativa e abilitare il monitoring e l’intervento umano successivo senza bloccare il servizio",
+    "user_story": "Come Motore di Offerte\nVoglio tracciare nei log tecnici le anomalie di sincronizzazione/aggiornamento regole tra canali continuando a proporre offerte secondo la regola applicata localmente\nIn modo che la continuità operativa sia garantita e l’anomalia sia gestibile tramite monitoring e intervento umano successivo",
+    "channels": [],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO si verifica una inconsistenza (simulata o reale) tra canali rispetto alla visibilità/applicazione di una proposta o di una regola ALLORA il Motore di Offerte continua a proporre offerte applicando la regola disponibile localmente.",
+      "QUANDO si verifica un evento di sincronizzazione anomalo (es. incoerenza temporanea tra canali o race condition nella modifica della regola) ALLORA il Motore di Offerte registra un log tecnico dettagliato per ciascun evento.",
+      "QUANDO viene registrato un evento di sincronizzazione anomalo ALLORA il log include almeno timestamp e descrizione dell’anomalia.",
+      "QUANDO è in corso un incidente di sincronizzazione (simulato) ALLORA nessuna funzionalità di proposizione/offerta risulta bloccata o sospesa a causa dell’incidente."
+    ],
+    "business_rules": [
+      "In presenza di errori di sincronizzazione/aggiornamento regole tra canali è consentito esclusivamente il tracciamento dell’anomalia nei log tecnici.",
+      "È vietato bloccare la riproposizione dei prodotti o sospendere il servizio a seguito di errori di sincronizzazione.",
+      "La continuità operativa ha priorità rispetto alla coerenza immediata tra canali; l’anomalia è demandata a monitoring/logging per intervento umano."
+    ],
+    "edge_cases": [
+      "Errore di sincronizzazione ripetuto ad alta frequenza: il Motore continua a proporre e registra un evento di log per ciascuna anomalia senza bloccare la proposizione.",
+      "Race condition durante la modifica della regola: viene registrata l’anomalia e la proposizione procede con la regola localmente applicata al momento della valutazione.",
+      "Incoerenza temporanea: un canale mostra la proposta e un altro no; il Motore non sospende la proposizione e registra l’evento.",
+      "Impossibilità temporanea di scrittura dei log (es. storage/log sink non disponibile): il requisito non specifica il comportamento; rischio di perdita tracciamento pur mantenendo la continuità operativa."
+    ],
+    "assumptions": [
+      "La persona 'Motore di Offerte' è considerata attore principale perché il requisito è non funzionale e descrive un comportamento di logging/continuità del servizio, senza un attore umano esplicito.",
+      "Il campo 'descrizione' del log è considerato testabile come presenza di un messaggio/descrizione testuale dell’anomalia; ulteriori campi (es. canale, id regola, correlazione) non sono richiesti perché non specificati."
+    ],
+    "notes": "Requisito non funzionale trasversale ai canali: non sono indicati dettagli su formato/struttura del log oltre a timestamp e descrizione, né cosa accade se il sottosistema di logging non è disponibile; tali aspetti richiedono chiarimento in refinement."
+  }
+]

@@ -1,0 +1,100 @@
+[
+  {
+    "story_id": "REQ-I-002.US01",
+    "title": "Visualizzazione benefici Connect (cashback e punti) e pricing personalizzato per bundle",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "vedere per una combinazione/bundle il prezzo/scontistica applicata e i benefici Connect (cashback e punti) previsti, includendo le condizioni temporali di maturazione",
+    "benefit": "comprendere il vantaggio economico e prendere una decisione di acquisto informata",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio vedere per una combinazione/bundle il prezzo personalizzato e i benefici Connect (cashback e punti) previsti, con le relative condizioni\nIn modo che possa valutare chiaramente la convenienza dell’offerta prima di acquistare",
+    "channels": [
+      "App",
+      "Web",
+      "UP (canale fisico)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO consulto una combinazione/bundle per il mio profilo cliente e canale di acquisto ALLORA visualizzo il pricing/scontistica applicata coerente con configurazione per bundle/cliente/canale.",
+      "QUANDO consulto una combinazione/bundle che prevede extra-cashback e/o punti Connect ALLORA visualizzo i dettagli del beneficio (cashback e/o punti) associati alla combinazione.",
+      "QUANDO i benefici Connect sono subordinati a condizioni temporali (acquisto contestuale o entro un periodo definito) ALLORA tali condizioni sono rese disponibili al cliente in modo consultabile.",
+      "QUANDO l’erogazione di cashback/punti viene registrata dal sistema ALLORA il cliente può visualizzare i dettagli dell’erogazione (cashback/punti) a lui associati."
+    ],
+    "business_rules": [
+      "Il pricing/scontistica deve essere determinato in funzione di tipologia cliente, canale e combinazione (bundle).",
+      "Cashback e punti sono erogati nel Framework Connect solo se le condizioni previste (contestualità o finestra temporale) risultano soddisfatte."
+    ],
+    "edge_cases": [
+      "Il cliente non è aderente a Connect: i benefici cashback/punti non sono applicabili o non sono mostrabili (da chiarire) e deve essere gestita la comunicazione coerente.",
+      "Framework Connect non disponibile o in errore: il cliente non vede i dettagli di erogazione e viene mostrato un messaggio di indisponibilità senza bloccare la consultazione del pricing (se previsto).",
+      "Configurazione mancante per la terna bundle/cliente/canale: il sistema non applica sconti/benefici e gestisce una risposta coerente (es. default o errore controllato).",
+      "Acquisto non contestuale e fuori finestra temporale: i benefici non maturano e la UI deve riflettere l’assenza di erogazione."
+    ],
+    "assumptions": [
+      "Si assume che 'visibili al cliente' significhi disponibili su canali digitali (App/Web) e/o tramite canale fisico con supporto dell’operatore, ma il touchpoint esatto non è specificato nel requisito.",
+      "Si assume che i 'dettagli dell’erogazione' includano almeno tipo beneficio (cashback/punti), valore e riferimento alla combinazione; il formato non è specificato."
+    ],
+    "notes": "AC condivisi con REQ-I-002.US02 (configurazione bundle/cliente/canale e visibilità log lato marketing) e con REQ-I-002.US03 (integrazione tecnica con Framework Connect e tracciamento log). Il requisito non specifica dove il cliente visualizza i dettagli (es. sezione Loyalty) né il livello di dettaglio esatto."
+  },
+  {
+    "story_id": "REQ-I-002.US02",
+    "title": "Configurazione di pricing, cashback e punti per bundle/cliente/canale e consultazione log di erogazione",
+    "persona": "Team Marketing",
+    "goal": "configurare pricing/scontistica e benefici (cashback/punti) per combinazione, tipologia cliente e canale, e consultare i log di erogazione",
+    "benefit": "gestire campagne e incentivazioni in modo mirato e verificare l’efficacia/accuratezza dell’erogazione",
+    "user_story": "Come Team Marketing\nVoglio configurare pricing, cashback e punti per bundle/cliente/canale e consultare i log di erogazione\nIn modo che possa governare le iniziative commerciali e monitorare l’applicazione dei benefici ai clienti",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo agli strumenti di configurazione ALLORA posso configurare il pricing per una combinazione/bundle in funzione di tipologia cliente e canale.",
+      "QUANDO configuro una combinazione/bundle ALLORA posso impostare extra-cashback e/o punti Connect in funzione di tipologia cliente e canale.",
+      "QUANDO definisco i benefici Connect ALLORA posso associare la regola temporale prevista (acquisto contestuale o entro un periodo definito) alla configurazione della combinazione.",
+      "QUANDO avvengono registrazione ed erogazione di cashback/punti ALLORA i dettagli dell’erogazione sono tracciati nei log e sono consultabili dal Team Marketing."
+    ],
+    "business_rules": [
+      "Le configurazioni devono supportare la variabilità per tipologia cliente, canale e combinazione (bundle).",
+      "I log devono includere informazioni sufficienti a ricondurre l’erogazione a una specifica configurazione (bundle/cliente/canale) (dettaglio minimo da chiarire)."
+    ],
+    "edge_cases": [
+      "Configurazioni in conflitto (es. più regole applicabili per stessa terna bundle/cliente/canale): comportamento di risoluzione non specificato (priorità/override) da chiarire.",
+      "Configurazione incompleta (manca canale o tipologia cliente): il sistema deve impedire il salvataggio o gestire default (da chiarire).",
+      "Impossibilità di consultare i log (servizio logging non disponibile): la dashboard deve gestire errore e permettere retry."
+    ],
+    "assumptions": [
+      "Si assume che esista una dashboard/area di configurazione già prevista per il Team Marketing (non descritta nel requisito) coerente con le personas.",
+      "Si assume che la consultazione dei log sia almeno in lettura e con filtri base; il set di filtri non è specificato."
+    ],
+    "notes": "AC condivisi con REQ-I-002.US01 (configurabilità bundle/cliente/canale e visibilità dettagli) e con REQ-I-002.US03 (integrazione con Framework Connect e tracciamento log). Il requisito non specifica il modello dati di configurazione né la gestione delle priorità tra regole."
+  },
+  {
+    "story_id": "REQ-I-002.US03",
+    "title": "Integrazione con Framework Connect per registrazione ed erogazione di cashback e punti con tracciamento",
+    "persona": "Motore di Offerte",
+    "goal": "integrare la registrazione e l’erogazione di cashback/punti nel Framework Connect in base a configurazioni per bundle/cliente/canale e alle condizioni temporali",
+    "benefit": "garantire coerenza tra offerta proposta e benefici effettivamente riconosciuti, con auditabilità tramite log",
+    "user_story": "Come Motore di Offerte\nVoglio integrare la registrazione e l’erogazione di cashback e punti nel Framework Connect in base alla configurazione per bundle/cliente/canale e alle condizioni temporali\nIn modo che i benefici siano riconosciuti correttamente e siano tracciabili nei log",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO viene determinata una combinazione/bundle per uno specifico cliente e canale ALLORA il Motore applica il pricing/scontistica configurato per bundle/cliente/canale.",
+      "QUANDO una configurazione prevede extra-cashback e/o punti Connect e le condizioni risultano soddisfatte (acquisto contestuale o entro periodo definito) ALLORA il Motore registra e/o richiede l’erogazione di cashback/punti tramite integrazione con Framework Connect.",
+      "QUANDO il Motore interagisce con il Framework Connect per registrazione/erogazione ALLORA l’esito e i dettagli dell’operazione (cashback/punti) sono tracciati nei log.",
+      "QUANDO i dettagli di erogazione sono tracciati nei log ALLORA sono rendibili disponibili per la consultazione da parte di Cliente (fisico o digitale) e Team Marketing secondo i rispettivi canali."
+    ],
+    "business_rules": [
+      "L’integrazione con Framework Connect è necessaria per la registrazione e l’erogazione di cashback e punti.",
+      "Le condizioni temporali (contestuale/entro periodo definito) governano l’attivazione dell’erogazione dei benefici Connect."
+    ],
+    "edge_cases": [
+      "Framework Connect non raggiungibile o risponde con errore: il Motore deve tracciare il fallimento nei log e gestire retry/compensazioni (meccanismo non specificato).",
+      "Duplicazione richieste di erogazione (idempotenza): rischio di doppia erogazione non coperto dal requisito (da chiarire).",
+      "Evento di acquisto ricevuto oltre la finestra temporale: il Motore non deve richiedere erogazione e deve tracciare la motivazione nei log (se previsto).",
+      "Incoerenza tra configurazione e dati cliente/canale in input: il Motore deve gestire errore controllato e logging."
+    ],
+    "assumptions": [
+      "Si assume che il Motore disponga delle informazioni necessarie per identificare tipologia cliente, canale e combinazione al momento della decisione/applicazione.",
+      "Si assume che 'registrazione ed erogazione' implichi almeno una chiamata/integrazione verso Connect; le API specifiche non sono fornite nel requisito."
+    ],
+    "notes": "AC condivisi con REQ-I-002.US01 e REQ-I-002.US02 relativamente a integrazione Connect, tracciamento log e visibilità dei dettagli a cliente/marketing. Il requisito non definisce API, gestione idempotenza, né politiche di retry/compensazione: da approfondire in refinement."
+  }
+]

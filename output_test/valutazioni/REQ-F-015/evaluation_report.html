@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-015</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-015</h1>
+  <div class="subtitle">Provisioning e notifica post-sottoscrizione</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:58</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-015</div>
+  <div class="req-field"><strong>Titolo:</strong> Provisioning e notifica post-sottoscrizione</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">A valle della sottoscrizione di una data offerta, i sistemi verticali di vendita (e non il motore di sconti) devono garantire il provisioning dei prodotti e l&#x27;attivazione del Framework Connect, notificando il cliente tramite canali digitali e rendendo visibile la corretta attivazione sia all&#x27;operatore che al cliente.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Al completamento della sottoscrizione parte il processo di provisioning per i prodotti acquisiti.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il Framework Connect riceve le informazioni necessarie per la registrazione di cashback/points.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Clienti e operatori ricevono notifiche di avvenuta attivazione e lo stato è consultabile nel sistema.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">57</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">31</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1/2/3). Tuttavia il set &#x27;direct&#x27; introduce meno assunzioni non tracciabili (8 added_info vs 14) e presenta meno ridondanze (1 vs 2). Inoltre nel set &#x27;indirect_persona&#x27; compaiono numerosi dettagli architetturali e di processo (eventi SubscriptionCompleted, idempotenza, retry/coda, canali sportello, vincoli su canali fisici) non presenti nel requisito, riducendo maggiormente la coerenza complessiva; per questo il punteggio risulta inferiore (31 vs 57).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">57</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-015.TC01</td><td>Introduce dettagli non presenti nel requisito: uso di &#x27;eventi/log di avvio provisioning&#x27;, stato ordine &#x27;Completata&#x27;, canale &#x27;web&#x27; e ruolo &#x27;operatore abilitato&#x27; come modalità specifiche di verifica.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC02</td><td>Assume dettagli di integrazione non specificati: endpoint/queue, credenziali/chiavi, correlation/orderId, campi payload minimi (customerId, orderId), esiti tecnici (HTTP 2xx/ACK).</td></tr>
+<tr><td class='mono'>REQ-F-015.TC03</td><td>Assume esistenza di &#x27;area cliente&#x27; (portale/app), meccaniche di attesa fino a stato &#x27;Attivo&#x27; e specifica canali (email/SMS/push) non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC04</td><td>Assume una &#x27;console/area operatore&#x27; con sezione &#x27;Stato attivazione&#x27; e modalità di refresh/polling; il requisito richiede visibilità, ma non la UI/strumento.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC05</td><td>Introduce regole non esplicitate: stati &#x27;Fallito/Errore/In lavorazione&#x27; e la regola &#x27;non dichiarare attivo se un prodotto fallisce&#x27;; il requisito non tratta scenari di errore né regole di aggregazione stato.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC06</td><td>Introduce requisiti di &#x27;gestione errore integrazione&#x27; e tracciabilità tecnica dettagliata verso Connect (codici 503/timeout) non richiesti esplicitamente dall&#x27;AC-2.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC07</td><td>Assume comportamento in assenza recapiti (attivazione non dipende dalla notifica, fallimento notifica tracciato). Il requisito non specifica gestione contatti mancanti.</td></tr>
+<tr><td class='mono'>REQ-F-015.TC08</td><td>Introduce controllo autorizzativo/ruoli e auditing accessi negati; il requisito non menziona permessi o vincoli di accesso.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &#x27;i sistemi verticali di vendita (e non il motore di sconti) devono garantire...&#x27;</td><td>Nessun test valida esplicitamente che il motore di sconti NON sia responsabile/coinvolto nel provisioning/attivazione (vincolo &#x27;e non il motore di sconti&#x27;).</td></tr>
+<tr><td class='mono'>Descrizione: &#x27;...devono garantire ... l&#x27;attivazione del Framework Connect...&#x27;</td><td>I test verificano l&#x27;invio dati a Connect, ma non verificano esplicitamente l&#x27;&#x27;attivazione del Framework Connect&#x27; come outcome (es. stato/flag di Connect attivo) distinto dalla sola ricezione informazioni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-015.TC03, REQ-F-015.TC04</td><td>Entrambi coprono AC-3 sulla consultabilità dello stato post-attivazione (cliente vs operatore) con logica molto simile; parziale sovrapposizione accettabile ma ridondante.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">31</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">16</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-015.US01.TC01</td><td>Aggiunge vincoli non richiesti: &#x27;cliente autenticato&#x27;, inbox/centro notifiche, e soprattutto l&#x27;esclusione di un &#x27;canale fisico (UP)&#x27; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC03</td><td>Introduce stati e regole temporali (&#x27;In lavorazione&#x27; e nessuna notifica finché non diventa Attivo) non esplicitati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC04</td><td>Introduce gestione esplicita di errore provisioning lato cliente e regola di assenza notifica; non prevista dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC05</td><td>Introduce indisponibilità del servizio notifiche e comportamento atteso; il requisito non tratta failure del sistema di notifica.</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC06</td><td>Introduce requisito di autorizzazione/autenticazione per consultare lo stato; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC01</td><td>Introduce concetto di &#x27;front-end commerciale sportello/sala&#x27; e &#x27;riscontro/notifica&#x27; come artefatto UI specifico; il requisito parla di visibilità per operatore, non di canale sportello né di meccanismo.</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC05</td><td>Introduce comportamento di fallback per integrazione stato non raggiungibile (placeholder, non mostrare dati obsoleti); non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC06</td><td>Introduce segregazione permessi per consultazione posizione cliente; non citata nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC01</td><td>Introduce evento tecnico &#x27;SubscriptionCompleted(success=true)&#x27; ed event-bus driven provisioning; il requisito non impone eventi né messaggistica.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC02</td><td>Assume set minimo dati loyalty (timestamp, offerta) e meccanismo ack/HTTP 2xx; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC04</td><td>Introduce requisito di idempotenza su eventi duplicati; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC05</td><td>Introduce regola di business non richiesta: &#x27;invio a Connect fallito non blocca la sottoscrizione&#x27; e concetto di stato non uniforme/flag Connect; il requisito non esplicita tale disaccoppiamento né un modello di stato.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC06</td><td>Introduce gestione &#x27;provisioning parziale&#x27; e granularità per prodotto nello stato; non esplicitata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC07</td><td>Introduce &#x27;retry e/o coda&#x27; come obbligo e che provisioning non sia bloccato da Connect down; il requisito non menziona retry/coda né dipendenze tra provisioning e Connect.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &#x27;...notificando il cliente tramite canali digitali...&#x27;</td><td>Molti TC parlano genericamente di &#x27;digital (App/Web)&#x27; e inbox/push; non c&#x27;è un test che verifichi esplicitamente una notifica su un canale digitale concreto e tracciabile (es. email/SMS/push) senza introdurre assunzioni extra. La copertura resta concettuale ma poco ancorata al requisito.</td></tr>
+<tr><td class='mono'>Descrizione: &#x27;...i sistemi verticali di vendita (e non il motore di sconti)...&#x27;</td><td>Come nel set direct, nessun test valida esplicitamente l&#x27;esclusione del motore di sconti dal flusso di provisioning/attivazione.</td></tr>
+<tr><td class='mono'>Descrizione: &#x27;...garantire ... l&#x27;attivazione del Framework Connect...&#x27;</td><td>I TC coprono bene l&#x27;invio informazioni (AC-2), ma non verificano esplicitamente l&#x27;&#x27;attivazione&#x27; di Connect come stato/condizione osservabile distinta dall&#x27;invio dati.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-015.US01.TC03, REQ-F-015.US02.TC03</td><td>Stesso scenario concettuale (provisioning in corso, non mostrare &#x27;attivazione completata&#x27;) replicato per cliente e operatore con variazioni minime.</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC04, REQ-F-015.US02.TC04</td><td>Stesso scenario concettuale (errore provisioning/attivazione, no &#x27;avvenuta attivazione&#x27;) duplicato cliente/operatore.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-015&quot;,
+  &quot;title&quot;: &quot;Provisioning e notifica post-sottoscrizione&quot;,
+  &quot;description&quot;: &quot;A valle della sottoscrizione di una data offerta, i sistemi verticali di vendita (e non il motore di sconti) devono garantire il provisioning dei prodotti e l&#x27;attivazione del Framework Connect, notificando il cliente tramite canali digitali e rendendo visibile la corretta attivazione sia all&#x27;operatore che al cliente.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Al completamento della sottoscrizione parte il processo di provisioning per i prodotti acquisiti.&quot;,
+    &quot;Il Framework Connect riceve le informazioni necessarie per la registrazione di cashback/points.&quot;,
+    &quot;Clienti e operatori ricevono notifiche di avvenuta attivazione e lo stato è consultabile nel sistema.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-015.TC01</td><td>Avvio provisioning prodotti al completamento sottoscrizione (happy path)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-015.TC02</td><td>Invio informazioni a Framework Connect per registrazione cashback/points (integrazione)</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-015.TC03</td><td>Notifica digitale al cliente di avvenuta attivazione e consultazione stato lato cliente</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.TC04</td><td>Visibilità stato attivazione lato operatore dopo provisioning</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.TC05</td><td>Errore provisioning: notifica non inviata come &#x27;avvenuta attivazione&#x27; e stato consultabile come fallito/in lavorazione</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.TC06</td><td>Framework Connect non disponibile: gestione errore integrazione e tracciabilità esito</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-015.TC07</td><td>Dati contatto digitali mancanti: attivazione visibile ma notifica cliente non inviabile</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3, AC-1</td></tr>
+<tr><td class='mono'>REQ-F-015.TC08</td><td>Autorizzazioni: utente non operatore non può consultare la vista operatore di stato attivazione</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 19 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-015.US01.TC01</td><td>Notifica di avvenuta attivazione inviata al cliente su canali digitali a sottoscrizione completata (esito provisioning OK)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC02</td><td>Consultazione stato attivazione da canale digitale: stato aggiornato coerente con il verticale (Attivo)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC03</td><td>Provisioning in corso: il cliente vede stato &#x27;in lavorazione&#x27; e non riceve notifica di avvenuta attivazione</td><td>Edge Case</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC04</td><td>Errore di provisioning/attivazione: il cliente vede stato di errore e non riceve notifica di avvenuta attivazione</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC05</td><td>Canale digitale non disponibile al momento dell&#x27;invio: notifica non consegnata ma stato consultabile</td><td>Integration</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US01.TC06</td><td>Autorizzazione: il cliente non autenticato non può consultare lo stato della propria sottoscrizione</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC01</td><td>Riscontro/notifica di avvenuta attivazione mostrata all&#x27;operatore su front-end commerciale a sottoscrizione completata (esito provisioning OK)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC02</td><td>Consultazione posizione cliente: stato attivazione aggiornato e coerente con il verticale (Attivo)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC03</td><td>Provisioning in corso: l&#x27;operatore vede stato non definitivo e non conferma attivazione completata</td><td>Edge Case</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC04</td><td>Errore provisioning/attivazione: l&#x27;operatore vede stato di errore/mancata attivazione</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC05</td><td>Integrazione stato non raggiungibile: l&#x27;operatore visualizza indisponibilità temporanea dello stato</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US02.TC06</td><td>Autorizzazione: operatore senza permessi non può consultare la posizione cliente e lo stato di attivazione</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC01</td><td>Avvio provisioning prodotti al completamento sottoscrizione (evento ricevuto dal verticale)</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC02</td><td>Invio informazioni a Framework Connect al completamento sottoscrizione (cashback/points)</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC03</td><td>Esito provisioning positivo: stato di corretta attivazione reso disponibile e consultabile dai canali (cliente/operatore)</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC04</td><td>Idempotenza: evento di sottoscrizione duplicato non genera provisioning/attivazioni duplicate</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC05</td><td>Invio a Connect fallito: prodotti possono risultare attivi ma anomalia loyalty gestita senza bloccare la sottoscrizione</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC06</td><td>Provisioning parziale: stato consultabile gestisce prodotti attivi e non attivi nella stessa sottoscrizione</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-015.US03.TC07</td><td>Connect non disponibile: gestione retry/coda di invio senza bloccare l&#x27;avvio provisioning prodotti</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 8, 2, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 14, 3, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

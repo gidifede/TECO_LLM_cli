@@ -1,0 +1,151 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-007",
+  "direct": {
+    "tc_count": 11,
+    "coherence_score": 68,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-007.TC01",
+        "detail": "Introduce precondizioni non esplicitate: feature flag di abilitazione e disponibilità/raggiungibilità del servizio/engine di generazione; inoltre assume un canale specifico 'web' e una UI di dettaglio suggerimento con sezione 'Descrizione/Bozza'."
+      },
+      {
+        "test_id": "REQ-F-007.TC01",
+        "detail": "Atteso aggiuntivo: bozza 'identificabile come generata automaticamente' tramite flag/stato; il requisito non richiede un indicatore esplicito."
+      },
+      {
+        "test_id": "REQ-F-007.TC02",
+        "detail": "Introduce autenticazione e ruolo utente 'Marketing' come precondizione; il requisito cita 'team marketing' ma non definisce ruoli/controlli accesso."
+      },
+      {
+        "test_id": "REQ-F-007.TC04",
+        "detail": "Assume una specifica operazione di versioning (duplicazione/creazione nuova versione da variante esistente) non descritta dal requisito, che parla solo di 'controllo delle versioni' e gestione varianti."
+      },
+      {
+        "test_id": "REQ-F-007.TC07",
+        "detail": "Introduce una regola di autorizzazione esclusiva (utenti non marketing non possono modificare) e ruoli aggiuntivi 'Sales/Viewer' non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-007.TC08",
+        "detail": "Introduce validazioni di campo (testo descrizione obbligatorio, messaggio di validazione) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-007.TC09",
+        "detail": "Introduce gestione errori del servizio di generazione (timeout/503), segnalazione errore in UI e 'fallback' manuale come comportamento atteso; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-007.TC10",
+        "detail": "Introduce vincolo/aspettativa di assenza duplicati nelle assegnazioni e che la variante resti modificabile dopo assegnazione; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-007.TC11",
+        "detail": "Assume la possibilità di 'salvare la bozza modificata come variante' (conversione bozza->variante) come funzione specifica; il requisito non esplicita questo workflow."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"...gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela\"",
+        "detail": "I TC coprono assegnazione a tipologia e a cluster, ma non verificano esplicitamente che la selezione/uso della variante avvenga 'in funzione' dei metadati (es. che per una determinata tipologia/cluster venga effettivamente selezionata la variante corretta in output/visualizzazione)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-007.TC05",
+          "REQ-F-007.TC06"
+        ],
+        "detail": "Scenari molto simili: assegnazione variante tramite dashboard con stessi passi/attesi, cambia solo il target (tipologia vs cluster)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 14,
+    "coherence_score": 40,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-007.US01.TC01",
+        "detail": "Assume che la UI distingua bozza automatica vs varianti tramite etichetta/campo 'origine'; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC03",
+        "detail": "Assume che ogni salvataggio di una descrizione generi automaticamente una nuova versione e mantenga uno storico consultabile; il requisito richiede 'controllo delle versioni' ma non impone versioning automatico ad ogni salvataggio né uno storico consultabile in quei termini."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC04",
+        "detail": "Associa esplicitamente la variante creata da zero al singolo suggerimento ('nell’elenco descrizioni del suggerimento'); il requisito non specifica se le varianti siano per-suggerimento o globali/riusabili."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC08",
+        "detail": "Introduce una regola di accesso: 'accesso negato alla dashboard per utente non autorizzato'; il requisito non definisce controlli di accesso/ruoli, solo che il team marketing deve poter operare."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC09",
+        "detail": "Introduce accesso diretto a risorse/endpoint e comportamento di sicurezza specifico; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC10",
+        "detail": "Introduce gestione fallimento generazione: dashboard segnala assenza bozza e impedisce editing; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC11",
+        "detail": "Introduce requisito di fallback operativo in assenza bozza (creazione da zero comunque possibile); non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC12",
+        "detail": "Introduce validazioni (blocco salvataggio contenuto vuoto o solo spazi) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC13",
+        "detail": "Assume una regola: per assegnare una variante è obbligatorio valorizzare almeno uno tra tipologia e cluster; il requisito non lo dichiara."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC14",
+        "detail": "Introduce gestione conflitti di assegnazione (segnalazione conflitto e risoluzione) e presuppone vincoli di unicità per combinazione tipologia+cluster; non specificato dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: \"Il sistema genera automaticamente una bozza di descrizione per ogni suggerimento.\"",
+        "detail": "Il set non testa la generazione automatica come evento/risultato del sistema (trigger), ma assume in precondizione che la bozza sia già stata generata. Manca un TC che verifichi che, dato un suggerimento, il sistema produca effettivamente la bozza."
+      },
+      {
+        "source": "Description: \"...gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela\"",
+        "detail": "Come nel set direct, i TC verificano l'assegnazione, ma non verificano esplicitamente l'effettivo utilizzo/selezione della variante corretta quando cambia tipologia/cluster."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-007.US01.TC06",
+          "REQ-F-007.US01.TC07"
+        ],
+        "detail": "Scenari quasi identici di assegnazione variante, differisce solo il target (tipologia vs cluster)."
+      },
+      {
+        "test_ids": [
+          "REQ-F-007.US01.TC08",
+          "REQ-F-007.US01.TC09"
+        ],
+        "detail": "Entrambi testano non autorizzazione (accesso negato vs salvataggio negato) con forte sovrapposizione; il secondo è un approfondimento, ma resta parzialmente ridondante rispetto al requisito che non parla di autorizzazioni."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct resta piu aderente al requisito: ha una sola lacuna sostanziale (manca la verifica dell'uso della variante 'in funzione' di tipologia/cluster) e introduce meno assunzioni non richieste. Il set indirect_persona, pur completo sugli AC, introduce molte regole aggiuntive (versioning automatico con storico, validazioni, conflitti di assegnazione, gestione fallimenti) e soprattutto non valida davvero AC-1 perché pone la bozza generata come precondizione invece di testare la generazione. Per questo il punteggio del direct (68) supera l'indirect_persona (40)."
+  }
+}

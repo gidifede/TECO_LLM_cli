@@ -1,0 +1,231 @@
+[
+  {
+    "test_id": "REQ-F-009.TC01",
+    "title": "Generazione NBO basata su cluster e propensity (happy path) con esclusione prodotti già posseduti",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Sono disponibili nel sistema i dati di cluster e i punteggi di propensity per il cliente target.",
+      "Catalogo prodotti attivo e referenziabile dal motore NBO.",
+      "Il cliente C-1001 ha già posseduti i prodotti: P1, P3.",
+      "Non esistono regole marketing attive che consentano di riproporre P1 o P3."
+    ],
+    "test_data": [
+      "Cliente: C-1001",
+      "Cluster cliente: CL-A",
+      "Propensity (CL-A): P1=0,92; P2=0,81; P3=0,77; P4=0,35",
+      "Prodotti posseduti (C-1001): P1, P3",
+      "Catalogo prodotti: P1, P2, P3, P4 (tutti attivi)"
+    ],
+    "steps": [
+      "Invocare il motore NBO per il cliente C-1001 richiedendo la lista di proposte.",
+      "Acquisire l'elenco delle proposte restituite dal motore con i relativi metadati (es. score/ordinamento e riferimenti di tracciamento se presenti).",
+      "Verificare che nell'elenco non siano presenti i prodotti già posseduti dal cliente (P1, P3).",
+      "Verificare che le proposte includano prodotti coerenti con i dati di propensity disponibili (es. P2 con score alto rispetto a P4)."
+    ],
+    "expected_results": [
+      "Il motore restituisce una lista di proposte NBO per C-1001 senza errori.",
+      "Nessuna proposta include P1 o P3 (prodotti già posseduti) in assenza di regole marketing esplicite.",
+      "Le proposte risultano basate sui punteggi di propensity forniti/memorizzati (es. P2 proposto con priorità superiore a P4 dato 0,81 > 0,35)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica il canale; è stato inferito un canale API per l'invocazione del motore. Il requisito non definisce formato/criterio di ordinamento delle proposte: la verifica usa un confronto relativo sui punteggi di propensity disponibili."
+  },
+  {
+    "test_id": "REQ-F-009.TC02",
+    "title": "Esclusione prodotti posseduti con eccezione marketing esplicita (override consentito)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Sono disponibili cluster e propensity per il cliente target.",
+      "Il cliente C-2002 ha già posseduti i prodotti: P1.",
+      "Esiste una regola marketing attiva che consente di proporre nuovamente P1 per il cluster CL-A (eccezione configurata come da REQ-F-004).",
+      "Catalogo prodotti attivo e referenziabile dal motore NBO."
+    ],
+    "test_data": [
+      "Cliente: C-2002",
+      "Cluster cliente: CL-A",
+      "Propensity (CL-A): P1=0,88; P2=0,60",
+      "Prodotti posseduti (C-2002): P1",
+      "Regola marketing: MK-OVR-001 (consenti riproposizione P1 per CL-A)",
+      "Catalogo prodotti: P1, P2 (attivi)"
+    ],
+    "steps": [
+      "Invocare il motore NBO per il cliente C-2002 richiedendo la lista di proposte.",
+      "Acquisire l'elenco delle proposte restituite e i metadati associati.",
+      "Verificare che P1 possa essere presente tra le proposte nonostante sia già posseduto.",
+      "Verificare che l'inclusione di P1 sia associata a una regola marketing esplicita (identificabile tramite metadati o log decisionale)."
+    ],
+    "expected_results": [
+      "Il motore restituisce una lista di proposte NBO per C-2002 senza errori.",
+      "P1 può comparire tra le proposte perché esiste una regola marketing esplicita che ne consente la riproposizione.",
+      "È possibile associare l'inclusione di P1 alla regola marketing MK-OVR-001 (tramite tracciamento disponibile)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Dipendenza esterna: la definizione dettagliata di 'regola esplicita di marketing' è rimandata a REQ-F-004, non fornita qui; si assume esista un identificativo regola (es. MK-OVR-001) tracciabile."
+  },
+  {
+    "test_id": "REQ-F-009.TC03",
+    "title": "Tracciabilità nel log decisionale della regola/modello che genera ciascuna proposta NBO",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Logging decisionale abilitato e consultabile (es. datastore log o endpoint di audit).",
+      "Sono disponibili cluster e propensity per il cliente target.",
+      "Catalogo prodotti attivo."
+    ],
+    "test_data": [
+      "Cliente: C-3003",
+      "Cluster cliente: CL-B",
+      "Propensity (CL-B): P5=0,74; P6=0,69",
+      "Catalogo prodotti: P5, P6 (attivi)",
+      "Finestra temporale ricerca log: ultimi 5 minuti",
+      "Correlazione richiesta: correlationId restituito dall'invocazione (se disponibile) oppure chiave (cliente+timestamp)"
+    ],
+    "steps": [
+      "Invocare il motore NBO per il cliente C-3003 e salvare l'identificativo di correlazione della decisione (se restituito).",
+      "Recuperare le proposte NBO restituite per C-3003.",
+      "Accedere al log delle decisioni e cercare l'evento relativo all'invocazione (tramite correlationId o chiave cliente+timestamp).",
+      "Per ciascuna proposta restituita, verificare nel log la presenza dell'identificativo del modello/regola che ha portato alla proposta."
+    ],
+    "expected_results": [
+      "Nel log delle decisioni è presente un evento associabile univocamente all'invocazione del motore per C-3003.",
+      "Per ogni prodotto proposto (es. P5, P6) il log contiene un riferimento tracciabile al modello di propensity e/o alla regola utilizzata (es. modelId e/o ruleId).",
+      "Non risultano proposte prive di tracciamento della regola/modello nel log decisionale."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica il formato del log né i campi obbligatori: si assume la presenza di identificativi tracciabili (es. modelId/ruleId) e di un meccanismo di correlazione (correlationId o equivalente)."
+  },
+  {
+    "test_id": "REQ-F-009.TC04",
+    "title": "Gestione input incompleti: cluster o propensity mancanti impediscono la generazione NBO",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Per il cliente C-4004 non sono disponibili dati di cluster e/o propensity (assenza totale o parziale).",
+      "Catalogo prodotti attivo."
+    ],
+    "test_data": [
+      "Cliente: C-4004",
+      "Cluster cliente: NON disponibile",
+      "Propensity: NON disponibile",
+      "Catalogo prodotti: P1, P2 (attivi)"
+    ],
+    "steps": [
+      "Invocare il motore NBO per il cliente C-4004 richiedendo la lista di proposte.",
+      "Osservare la risposta del motore e gli eventuali dettagli di errore.",
+      "Verificare che non vengano restituite proposte basate su dati non presenti.",
+      "Verificare nel log decisionale la registrazione dell'esito (errore o nessuna proposta) con motivazione."
+    ],
+    "expected_results": [
+      "Il motore non genera proposte NBO basate su cluster/propensity mancanti.",
+      "La risposta indica in modo verificabile l'impossibilità di generare NBO per mancanza dei dati necessari (es. codice errore o esito 'nessuna proposta' con reason).",
+      "Nel log decisionale è tracciato l'esito dell'elaborazione con indicazione della causa (mancanza cluster/propensity)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica il comportamento atteso in assenza di dati (errore vs lista vuota). Il test accetta entrambe le implementazioni purché sia verificabile l'esito e sia tracciata la motivazione nel log decisionale."
+  },
+  {
+    "test_id": "REQ-F-009.TC05",
+    "title": "Indisponibilità del log decisionale: la generazione NBO deve fallire o segnalare mancata tracciabilità",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Sono disponibili cluster e propensity per il cliente target.",
+      "Il componente/servizio di log decisionale è indisponibile (timeout/errore 5xx) oppure lo storage log non è raggiungibile.",
+      "Catalogo prodotti attivo."
+    ],
+    "test_data": [
+      "Cliente: C-5005",
+      "Cluster cliente: CL-C",
+      "Propensity (CL-C): P7=0,66",
+      "Simulazione guasto logging: timeout 10s o risposta 503 dal servizio di audit/log"
+    ],
+    "steps": [
+      "Configurare l'ambiente di test per rendere indisponibile il servizio di logging decisionale (es. blocco rete o mock che restituisce 503).",
+      "Invocare il motore NBO per il cliente C-5005 richiedendo la lista di proposte.",
+      "Verificare la risposta del motore rispetto alla policy implementata (blocco dell'operazione o esito con warning/flag di mancata tracciabilità).",
+      "Ripristinare la disponibilità del servizio di logging decisionale."
+    ],
+    "expected_results": [
+      "Il sistema non produce un esito 'silenzioso' non tracciato: o l'operazione viene rifiutata/va in errore, oppure la risposta segnala in modo verificabile che la tracciabilità non è stata effettuata.",
+      "Non risultano proposte per cui non sia possibile ricondurre la generazione a un log decisionale quando il requisito di tracciabilità non può essere soddisfatto."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito impone la tracciabilità ma non specifica la policy in caso di indisponibilità del logging (fail-closed vs fail-open con segnalazione). Il test valida che non avvenga mancata tracciabilità non rilevata."
+  },
+  {
+    "test_id": "REQ-F-009.TC06",
+    "title": "Edge case: tutti i prodotti con alta propensity sono già posseduti e non esistono eccezioni marketing",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore NBO attivo e raggiungibile.",
+      "Sono disponibili cluster e propensity per il cliente target.",
+      "Il cliente C-6006 possiede tutti i prodotti con propensity sopra soglia operativa (se applicabile).",
+      "Non esistono regole marketing attive di eccezione per riproporre prodotti posseduti.",
+      "Catalogo prodotti attivo."
+    ],
+    "test_data": [
+      "Cliente: C-6006",
+      "Cluster cliente: CL-D",
+      "Propensity (CL-D): P10=0,95; P11=0,90; P12=0,20",
+      "Prodotti posseduti (C-6006): P10, P11",
+      "Catalogo prodotti: P10, P11, P12 (attivi)"
+    ],
+    "steps": [
+      "Invocare il motore NBO per il cliente C-6006 richiedendo la lista di proposte.",
+      "Verificare l'elenco delle proposte restituite.",
+      "Verificare che P10 e P11 non vengano proposti perché già posseduti.",
+      "Verificare se viene proposto P12 (se il motore propone comunque il miglior prodotto non posseduto) oppure se la lista è vuota, e che l'esito sia tracciato nel log decisionale."
+    ],
+    "expected_results": [
+      "P10 e P11 non sono presenti tra le proposte in assenza di eccezioni marketing.",
+      "Il motore restituisce un esito deterministico e verificabile: o propone il miglior prodotto non posseduto (es. P12) oppure restituisce nessuna proposta; in entrambi i casi l'esito è coerente con l'esclusione dei prodotti posseduti.",
+      "Nel log decisionale è tracciato l'esito e la regola/modello utilizzato (anche in caso di lista vuota)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica soglie minime di propensity né cosa accada se restano solo prodotti a bassa propensity; il test accetta entrambe le implementazioni (proposta del migliore non posseduto vs nessuna proposta) purché tracciate e coerenti con AC-2."
+  }
+]

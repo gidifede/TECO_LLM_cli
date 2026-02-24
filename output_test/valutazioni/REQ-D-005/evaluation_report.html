@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-D-005</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-D-005</h1>
+  <div class="subtitle">Persistenza dell&#x27;offerta e visibilità in Loyalty di Gruppo con periodo di validità</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 19:00</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-D-005</div>
+  <div class="req-field"><strong>Titolo:</strong> Persistenza dell&#x27;offerta e visibilità in Loyalty di Gruppo con periodo di validità</div>
+  <div class="req-field"><strong>Categoria:</strong> DATI</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">L&#x27;area Loyalty di gruppo è una delle interfacce web/App tramite cui il motore di offerte presenta al cliente le offerte per lui applicabili e in corso di validità. Di conseguenza la persistenza di una certa offerta per un dato periodo e a determinate condizioni è stabilita dal motore di offerte secondo le configurazioni definite dall&#x27;utente marketing nel motore stesso. Se il cliente non aggiunge immediatamente il prodotto dal pop-up, il motore renderà la proposta disponibile nella sezione &#x27;Loyalty di Gruppo&#x27; sia nell&#x27;APP che nel sito web.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Le offerte non accettate appaiono nella sezione Loyalty di Gruppo su APP e sito.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Ogni offerta salvata contiene un campo di scadenza che definisce la validità (es. 10 giorni dalla vendita del primo prodotto) ed è rispettato dal sistema.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>I test verificano che l&#x27;offerta non sia più disponibile alla scadenza e che i dettagli (nome, immagine, prezzo scontato) siano coerenti con quanto mostrato originariamente.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">63</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">28</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (copertura 3/3). Tuttavia il set indirect_persona introduce molte più informazioni non tracciabili al requisito (dashboard marketing, regole di validazione durata, read-only, gestione incoerenze, edge case e gestione errori), accumulando numerose &#x27;added_info&#x27; e alcune ridondanze, con conseguente punteggio più basso (28). Il set direct, pur avendo alcune aggiunte (deep link, gestione errori motore, API/log, time travel) e una ridondanza APP/web, resta più aderente al perimetro del requisito e ottiene un punteggio superiore (63).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">63</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-005.TC02</td><td>Assume disponibilità di endpoint/API o log per leggere il record dell’offerta salvata e il campo scadenza; nel requisito non è menzionata alcuna modalità tecnica di ispezione (API/log/backoffice).</td></tr>
+<tr><td class='mono'>REQ-D-005.TC02</td><td>Introduce gestione esplicita di fuso orario/ora locale nel calcolo scadenza; il requisito non cita vincoli di timezone.</td></tr>
+<tr><td class='mono'>REQ-D-005.TC03</td><td>Assume possibilità di &#x27;time travel&#x27;/avanzamento tempo nell’ambiente; è una scelta di test non tracciabile al requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.TC04</td><td>Assume possibilità di &#x27;time travel&#x27;/avanzamento tempo nell’ambiente; è una scelta di test non tracciabile al requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.TC05</td><td>Introduce scenario di accesso diretto ai dettagli offerta via deep link/URL e relativo comportamento (schermata &#x27;offerta non disponibile&#x27;); non previsto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.TC06</td><td>Introduce gestione errori/timeout/503 del motore offerte e requisiti di UI/UX (messaggio errore, niente dati incompleti); non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.TC07</td><td>Richiede esplicitamente coerenza &#x27;cross-canale&#x27; (dettagli su web coerenti con pop-up visto su APP); il requisito richiede coerenza con quanto mostrato originariamente, ma non specifica confronto incrociato tra canali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-2</td><td>Il requisito richiede che &#x27;ogni offerta salvata contiene un campo di scadenza ... ed è rispettato dal sistema&#x27;. I TC verificano scadenza e rispetto, ma non coprono esplicitamente la generalizzazione &#x27;ogni offerta salvata&#x27; (campionamento su più offerte/regole): la suite valida solo casi puntuali (una regola di esempio e alcune offerte specifiche).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-005.TC03, REQ-D-005.TC04</td><td>Stesso scenario (coerenza dettagli col pop-up e rimozione alla scadenza) duplicato per canale APP vs web con passi/attesi quasi identici.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">28</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">17</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-005.US01.TC03</td><td>Accetta come risultato &#x27;404/risorsa non disponibile&#x27; o comportamento equivalente per accesso al dettaglio dopo scadenza; il requisito non definisce né accesso diretto né codici/semantica di errore.</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC04</td><td>Assume che APP e web consumino la stessa sorgente dati/servizio e che la scadenza sia &#x27;la stessa su entrambi i canali&#x27;; il requisito dice solo che l’offerta sarà disponibile su APP e sito, non specifica architettura né vincolo di identica scadenza cross-canale.</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC05</td><td>Introduce regola di comportamento in caso di incoerenza dettagli (offerta non mostrata o errore di coerenza) e vincolo &#x27;non mostrare mai dettagli incoerenti&#x27;; il requisito richiede solo che i dettagli siano coerenti, non definisce handling/mitigazione quando non lo sono.</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC03</td><td>Introduce gestione indisponibilità del motore (503/timeout) e vincolo &#x27;senza dati parziali&#x27;; non previsto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC04</td><td>Assume comportamento di esclusione dell’offerta se la configurazione marketing per la scadenza è mancante/errata (&#x27;comportamento più sicuro&#x27;); il requisito non definisce fallback né error handling di configurazione.</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC05</td><td>Introduce gestione esplicita di &#x27;dato inconsistente: scadenza nel passato&#x27; come edge case; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC01</td><td>Introduce canale/attore &#x27;Dashboard marketing&#x27; e passi di configurazione UI (utente marketing, permessi, salvataggio/attivazione); il requisito cita configurazioni definite dall’utente marketing ma non richiede né descrive una dashboard né test su UI di configurazione.</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC03</td><td>Introduce regole di validazione input (durata 0 o negativa rifiutata) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC04</td><td>Introduce comportamento retroattivo/non retroattivo della modifica configurazione su offerte già persistite; non trattato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC04</td><td>Introduce requisito &#x27;Loyalty read-only&#x27; e verifica che non modifichi lo stato dell’offerta sul motore (audit log/chiamate update); non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC05</td><td>Introduce scenario &#x27;lista offerte vuota&#x27; e relativo comportamento; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC06</td><td>Introduce gestione di dati incompleti (immagine NULL) e vincoli di rendering; non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-3</td><td>AC-3 richiede che i test verifichino sia &#x27;non più disponibile alla scadenza&#x27; sia &#x27;dettagli coerenti con quanto mostrato originariamente&#x27;. Molti TC coprono uno dei due aspetti, ma non c’è una copertura sistematica che, per entrambi i canali, verifichi nello stesso scenario: (a) dettagli originari vs Loyalty e (b) successiva rimozione alla scadenza. La verifica completa end-to-end è presente solo in forma parziale/variabile (es. US03.TC02 verifica presenza/assenza ma non i dettagli; US01.TC01/TC02 verifica dettagli ma non la rimozione a scadenza).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-005.US01.TC01, REQ-D-005.US01.TC02</td><td>Stesso scenario (offerta non accettata visibile e dettagli coerenti) duplicato per APP vs web con struttura quasi identica.</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC02, REQ-D-005.US02.TC05</td><td>Entrambi verificano che un’offerta con scadenza nel passato/non valida non venga resa disponibile; cambiano solo le premesse (scaduta vs dato inconsistente).</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-D-005&quot;,
+  &quot;title&quot;: &quot;Persistenza dell&#x27;offerta e visibilità in Loyalty di Gruppo con periodo di validità&quot;,
+  &quot;description&quot;: &quot;L&#x27;area Loyalty di gruppo è una delle interfacce web/App tramite cui il motore di offerte presenta al cliente le offerte per lui applicabili e in corso di validità. Di conseguenza la persistenza di una certa offerta per un dato periodo e a determinate condizioni è stabilita dal motore di offerte secondo le configurazioni definite dall&#x27;utente marketing nel motore stesso. Se il cliente non aggiunge immediatamente il prodotto dal pop-up, il motore renderà la proposta disponibile nella sezione &#x27;Loyalty di Gruppo&#x27; sia nell&#x27;APP che nel sito web.&quot;,
+  &quot;category&quot;: &quot;DATI&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Le offerte non accettate appaiono nella sezione Loyalty di Gruppo su APP e sito.&quot;,
+    &quot;Ogni offerta salvata contiene un campo di scadenza che definisce la validità (es. 10 giorni dalla vendita del primo prodotto) ed è rispettato dal sistema.&quot;,
+    &quot;I test verificano che l&#x27;offerta non sia più disponibile alla scadenza e che i dettagli (nome, immagine, prezzo scontato) siano coerenti con quanto mostrato originariamente.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-005.TC01</td><td>Visualizzazione su APP e sito delle offerte non accettate dal pop-up nella sezione Loyalty di Gruppo</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.TC02</td><td>Persistenza dell&#x27;offerta salvata con campo scadenza valorizzato e validità rispettata prima della scadenza</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-005.TC03</td><td>Rimozione dell&#x27;offerta dalla sezione Loyalty di Gruppo alla scadenza e coerenza dei dettagli fino alla scadenza (APP)</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.TC04</td><td>Rimozione dell&#x27;offerta dalla sezione Loyalty di Gruppo alla scadenza e coerenza dei dettagli fino alla scadenza (sito web)</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.TC05</td><td>Offerta scaduta non deve essere mostrata in Loyalty di Gruppo anche se precedentemente non accettata (verifica immediata post-scadenza)</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.TC06</td><td>Gestione indisponibilità/timeout del motore offerte durante il caricamento della sezione Loyalty di Gruppo</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.TC07</td><td>Offerta non accettata: verifica che i dettagli mostrati in Loyalty di Gruppo coincidano con quelli del pop-up originario (coerenza dati cross-canale)</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 20 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-005.US01.TC01</td><td>APP: offerta non accettata da pop-up visibile in Loyalty di Gruppo finché valida</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC02</td><td>WEB: offerta non accettata da pop-up visibile in Loyalty di Gruppo finché valida</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC03</td><td>Offerta scade durante la consultazione: al refresh non è più visibile né accessibile</td><td>Edge Case</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC04</td><td>Coerenza cross-canale: stessa offerta non accettata visibile e con stessi dettagli/scadenza su APP e web</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US01.TC05</td><td>Gestione incoerenza dettagli tra pop-up e Loyalty: offerta non mostrata o segnalata come errore</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC01</td><td>Persistenza offerta non accettata con scadenza e recupero da Loyalty (API/servizio)</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC02</td><td>Offerta oltre scadenza: il Motore non la rende disponibile al servizio consumato da Loyalty</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC03</td><td>Motore non disponibile: richiesta offerte da Loyalty fallisce con errore gestibile</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC04</td><td>Configurazione marketing mancante/errata per calcolo scadenza: offerta non resa disponibile</td><td>Negative</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-005.US02.TC05</td><td>Offerta con scadenza nel passato (dato inconsistente): non resa disponibile</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC01</td><td>Dashboard marketing: configurazione validità (10 giorni da vendita primo prodotto) applicata al calcolo scadenza</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC02</td><td>Validità configurata: offerte non accettate visibili in Loyalty solo entro scadenza</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC03</td><td>Dashboard marketing: inserimento durata non ammessa (0 o negativa) rifiutato</td><td>Negative</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-005.US03.TC04</td><td>Modifica configurazione con offerte già persistite: verifica comportamento non retroattivo (da chiarire)</td><td>Edge Case</td><td>LOW</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC01</td><td>Loyalty (APP+web): mostra solo offerte non accettate e valide restituite dal Motore</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC02</td><td>Loyalty: dettagli visualizzati coerenti con quelli ricevuti e con l’originale (nome, immagine, prezzo scontato)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC03</td><td>Loyalty: offerta scaduta non restituita come disponibile non viene mostrata</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC04</td><td>Loyalty è read-only: nessuna modifica di stato offerta sul Motore durante la consultazione</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC05</td><td>Lista offerte vuota: nessuna offerta mostrata</td><td>Edge Case</td><td>LOW</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-005.US04.TC06</td><td>Dati incompleti (immagine mancante): l’offerta non espone dettagli incoerenti</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 7, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 12, 1, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

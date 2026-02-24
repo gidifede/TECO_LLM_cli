@@ -31,7 +31,7 @@ Servono le seguenti informazioni:
 - `AZURE_OPENAI_API_KEY` — chiave API
 - `AZURE_OPENAI_ENDPOINT` — endpoint Azure OpenAI (es. `https://<nome>.openai.azure.com`)
 - `AZURE_OPENAI_API_VERSION` — versione API (default: `2024-12-01-preview`)
-- `AZURE_OPENAI_DEPLOYMENT_NAME` — nome del deployment (es. `gpt-4.1`)
+- `AZURE_OPENAI_DEPLOYMENT_NAME` — nome del deployment (es. `gpt-5.2`)
 
 ---
 
@@ -71,7 +71,7 @@ Il modo più diretto è creare un file `.env` nella root di `TECO_LLM_cli` e pas
 AZURE_OPENAI_API_KEY=<la-tua-chiave>
 AZURE_OPENAI_ENDPOINT=<il-tuo-endpoint>
 AZURE_OPENAI_API_VERSION=2024-12-01-preview
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4.1
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.2
 ```
 
 ---

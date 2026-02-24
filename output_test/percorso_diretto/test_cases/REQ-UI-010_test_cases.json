@@ -1,0 +1,180 @@
+[
+  {
+    "test_id": "REQ-UI-010.TC01",
+    "title": "Accesso del team Marketing alla dashboard integrata nel Motore e utilizzo funzioni di gestione (happy path)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione Motore deployata e raggiungibile via browser",
+      "Esiste un utente con ruolo/gruppo 'Marketing' abilitato all'uso della dashboard",
+      "La funzionalità 'Dashboard configurazione offerte' è attiva nel Motore (nessun feature flag disabilitante)"
+    ],
+    "test_data": [
+      "URL Motore: https://motore.test.local/",
+      "Credenziali utente Marketing: marketing.user1 / P@ssw0rd!23"
+    ],
+    "steps": [
+      "Aprire l'URL del Motore",
+      "Eseguire il login con le credenziali dell'utente Marketing",
+      "Navigare alla sezione 'Dashboard configurazione offerte' dall'interfaccia del Motore",
+      "Avviare la creazione di una nuova combinazione/offerta dalla dashboard",
+      "Compilare i campi obbligatori richiesti dalla dashboard con valori validi",
+      "Salvare la nuova configurazione",
+      "Aprire la configurazione appena creata dalla lista/ricerca della dashboard",
+      "Modificare un campo modificabile della configurazione",
+      "Salvare le modifiche"
+    ],
+    "expected_results": [
+      "Il login va a buon fine e l'utente risulta autenticato nel Motore",
+      "La voce/sezione 'Dashboard configurazione offerte' è disponibile e accessibile all'interno del Motore",
+      "La creazione della combinazione/offerta viene completata con conferma di salvataggio e la configurazione risulta presente in elenco",
+      "L'apertura della configurazione mostra i dati salvati",
+      "Il salvataggio delle modifiche va a buon fine e i dati aggiornati risultano persistiti e visibili in dashboard"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (team Marketing) sono dedotti dai criteri di accettazione. I dettagli dei campi obbligatori e del modello dati delle combinazioni/offerte non sono specificati nel requisito: il test assume l'esistenza di almeno un set minimo di campi obbligatori compilabili con valori validi."
+  },
+  {
+    "test_id": "REQ-UI-010.TC02",
+    "title": "Verifica vincolo di deployment: la dashboard è distribuita/deployata insieme al Motore (nessuna dipendenza da app esterna)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente con Motore deployato e accesso ai metadati di build/deploy (es. artifact repository, release manifest o endpoint /version)",
+      "Disponibilità dei log applicativi del Motore o accesso alla console del browser per osservare chiamate di rete"
+    ],
+    "test_data": [
+      "URL Motore: https://motore.test.local/",
+      "Endpoint/versione (se presente): https://motore.test.local/version oppure release manifest della build corrente"
+    ],
+    "steps": [
+      "Recuperare il manifest di release/build del Motore (o l'endpoint di versione disponibile) per la release sotto test",
+      "Verificare che i componenti/UI della dashboard risultino inclusi nell'artifact del Motore (bundle/static assets o modulo applicativo) secondo il manifest",
+      "Aprire l'URL del Motore e navigare alla dashboard integrata",
+      "Osservare le richieste di rete durante il caricamento della dashboard (tab Network del browser o log reverse-proxy)",
+      "Identificare l'origine (host) delle risorse statiche della dashboard (HTML/JS/CSS) e delle chiamate backend necessarie al funzionamento"
+    ],
+    "expected_results": [
+      "Il manifest/metadata di release evidenzia che la dashboard è parte dell'artifact del Motore (stessa release/versione o stesso pacchetto di deploy)",
+      "Il caricamento delle risorse statiche della dashboard avviene dal dominio/host del Motore (o da un CDN configurato come parte del deploy del Motore) e non da una applicazione separata identificabile come sistema esterno",
+      "Le chiamate backend necessarie alla dashboard puntano a endpoint del Motore (stesso dominio o gateway del Motore) senza redirezioni verso un'applicazione esterna dedicata alla configurazione"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica come dimostrare formalmente 'distribuita/deployata insieme': il test interpreta l'AC tramite evidenze di artifact/manifest e osservazione delle origini delle risorse e delle chiamate. Se l'architettura prevede CDN o reverse-proxy, è considerato conforme se tali componenti sono parte del deployment del Motore e non un sistema esterno di configurazione."
+  },
+  {
+    "test_id": "REQ-UI-010.TC03",
+    "title": "Autorizzazioni: utente non Marketing non può accedere alle funzionalità di gestione/configurazione della dashboard",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione Motore deployata e raggiungibile via browser",
+      "Esiste un utente con ruolo/gruppo diverso da 'Marketing' (es. 'Viewer' o 'Operatore')",
+      "La dashboard è disponibile nel Motore"
+    ],
+    "test_data": [
+      "URL Motore: https://motore.test.local/",
+      "Credenziali utente non Marketing: viewer.user1 / P@ssw0rd!23"
+    ],
+    "steps": [
+      "Aprire l'URL del Motore",
+      "Eseguire il login con le credenziali dell'utente non Marketing",
+      "Tentare di navigare alla sezione 'Dashboard configurazione offerte' dal menu del Motore",
+      "Se la sezione non è visibile, tentare l'accesso diretto tramite URL della dashboard (deep link) se noto",
+      "Tentare di avviare un'operazione di creazione o modifica configurazione (se la pagina è raggiungibile)"
+    ],
+    "expected_results": [
+      "L'utente non Marketing non visualizza la sezione della dashboard nel menu oppure riceve un messaggio di accesso negato",
+      "In caso di accesso via deep link, il sistema impedisce l'accesso con risposta coerente (pagina 403/Accesso non autorizzato o redirect a pagina di errore/permessi insufficienti)",
+      "Le azioni di creazione/modifica/salvataggio risultano non eseguibili e non viene creata/modificata alcuna configurazione"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito dichiara che il team Marketing deve avere 'privilegi necessari per uso completo'; per rendere verificabile l'aspetto autorizzativo si verifica anche la negazione per ruoli diversi, pur non essendo esplicitata una matrice ruoli/permessi."
+  },
+  {
+    "test_id": "REQ-UI-010.TC04",
+    "title": "Negativo: tentativo di utilizzo di un sistema esterno per configurazione non richiesto (assenza di redirect/obblighi verso strumenti esterni)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione Motore deployata e raggiungibile via browser",
+      "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard"
+    ],
+    "test_data": [
+      "URL Motore: https://motore.test.local/",
+      "Credenziali utente Marketing: marketing.user1 / P@ssw0rd!23"
+    ],
+    "steps": [
+      "Aprire l'URL del Motore",
+      "Eseguire il login come utente Marketing",
+      "Accedere alla dashboard integrata",
+      "Eseguire una operazione tipica di configurazione (es. creare una nuova combinazione) fino alla schermata di salvataggio",
+      "Osservare se l'interfaccia propone link obbligatori, embed o redirect verso un sistema esterno per completare l'operazione",
+      "Completare il salvataggio restando nel contesto del Motore"
+    ],
+    "expected_results": [
+      "Durante l'intero flusso di configurazione non avvengono redirect obbligatori verso applicazioni esterne",
+      "Non viene richiesto all'utente di aprire un sistema esterno per completare la configurazione",
+      "L'operazione di configurazione viene completata con successo all'interno del Motore"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "L'AC-3 è interpretato come assenza di dipendenza operativa obbligatoria da un sistema esterno per completare le configurazioni. Eventuali link informativi/documentazione non sono considerati violazione se non bloccano il flusso."
+  },
+  {
+    "test_id": "REQ-UI-010.TC05",
+    "title": "Gestione sessione/autenticazione: accesso alla dashboard richiede autenticazione e mantiene il contesto nel Motore",
+    "type": "UI",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione Motore deployata e raggiungibile via browser",
+      "URL diretto (deep link) alla dashboard disponibile (se non disponibile, usare navigazione da menu)"
+    ],
+    "test_data": [
+      "URL Motore: https://motore.test.local/",
+      "URL dashboard (esempio): https://motore.test.local/offers-dashboard"
+    ],
+    "steps": [
+      "Aprire una nuova sessione del browser in modalità anonima/incognito",
+      "Accedere direttamente all'URL della dashboard senza effettuare login",
+      "Eseguire il login quando richiesto con credenziali Marketing valide",
+      "Verificare la pagina di destinazione dopo il login"
+    ],
+    "expected_results": [
+      "Senza autenticazione, l'accesso alla dashboard viene bloccato con redirect alla pagina di login del Motore (o messaggio di autenticazione richiesta)",
+      "Dopo login riuscito, l'utente viene portato alla dashboard integrata (o alla pagina richiesta originariamente) senza passaggi su sistemi esterni",
+      "L'URL e il branding/layout risultano coerenti con l'applicazione Motore"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia il meccanismo di autenticazione (SSO vs login locale). Il test verifica il comportamento osservabile: blocco accesso anonimo e accesso post-login alla dashboard nel contesto del Motore."
+  }
+]

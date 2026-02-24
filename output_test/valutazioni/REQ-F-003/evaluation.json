@@ -1,0 +1,116 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-003",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-003.TC01",
+        "detail": "Introduzione di ruoli specifici ('ExceptionManager') e dettagli UI/visibilità della sezione 'Eccezioni manuali' non definiti dal requisito (il requisito dice solo 'ruoli autorizzati' e 'dashboard')."
+      },
+      {
+        "test_id": "REQ-F-003.TC01",
+        "detail": "Uso di 'CANALI=WEB' e campo 'timezone di sistema' e stato 'Attiva' + elenco campi (autore/ruolo, data creazione) non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-003.TC02",
+        "detail": "Introduzione del canale 'APP' nella combinazione ('CANALI=APP'), non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-003.TC03",
+        "detail": "Assunzione di un meccanismo di verifica della 'deviazione del comportamento standard' tramite anteprima/log/endpoint e concetto di 'baseline' osservabile: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-003.TC04",
+        "detail": "Regola di validazione specifica 'fine precedente all’inizio non consentita' e relativo messaggio: il requisito parla solo di durata configurabile, non di vincoli/validazioni."
+      },
+      {
+        "test_id": "REQ-F-003.TC05",
+        "detail": "Assunzione di enforcement via URL diretto/API e codici HTTP (es. 403): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-003.TC06",
+        "detail": "Scenario di indisponibilità del servizio di persistenza ('ExceptionService', HTTP 500/timeout, retry/idempotenza): non menzionato nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'carattere marginale rispetto al funzionamento ordinario basato sulle regole'",
+        "detail": "Nessun test verifica che la funzionalità di eccezioni sia 'marginale' o non impatti il funzionamento ordinario basato su regole (es. presenza/assenza di interferenze quando non usata)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-003.TC01",
+          "REQ-F-003.TC02"
+        ],
+        "detail": "Entrambi verificano la creazione da dashboard di un'eccezione manuale (varia solo singolo vs multipli casi), con passi/risultati molto simili."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 6,
+    "coherence_score": 70,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-003.US01.TC01",
+        "detail": "Introduzione della persona/organizzazione 'Team Marketing' e riferimenti a bundle specifici ('BUNDLE-STARTER-2026'): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC03",
+        "detail": "Regola 'ambito generico non consentito' (es. opzione 'Tutti') e obbligo di selezionare almeno un caso specifico: il requisito dice 'casi limitati e specifici' ma non definisce divieti/validazioni UI di questo tipo."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC02",
+        "detail": "Assunzione che la durata sia obbligatoria e che il salvataggio sia bloccato se non impostata: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC04",
+        "detail": "Assunzione di validazione 'durata nel passato non consentita' con blocco salvataggio: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC06",
+        "detail": "Dettagli di comportamento (redirect/403, enforcement lato server su deep link URL): non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'deviare il comportamento standard della configurazione automatica quando necessario'",
+        "detail": "Nessun test verifica esplicitamente l'effetto dell'eccezione nel deviare il comportamento standard (si testano soprattutto creazione/validazioni/accesso)."
+      },
+      {
+        "source": "Descrizione requisito: 'carattere marginale rispetto al funzionamento ordinario basato sulle regole'",
+        "detail": "Nessun test verifica che la funzionalità di eccezioni sia marginale/non interferente con il flusso ordinario basato su regole quando non usata."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-003.US01.TC05",
+          "REQ-F-003.US01.TC06"
+        ],
+        "detail": "Entrambi testano AC-3 (RBAC) per utente non autorizzato; differiscono solo per accesso via UI vs URL diretto, con expected result sovrapponibili."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "indirect_persona",
+    "ranking": [
+      "indirect_persona",
+      "direct"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce piu informazioni non tracciabili (es. canali WEB/APP, stati 'Attiva', HTTP 500/timeout, servizio 'ExceptionService', regole di validazione specifiche) e include uno scenario di integrazione fuori requisito, ottenendo piu penalita per 'added_info' e una ridondanza. Il set indirect_persona aggiunge comunque assunzioni (persona Team Marketing, validazioni su durata/ambito) ma in misura minore e resta piu aderente al perimetro 'creazione da dashboard + ambito/durata configurabili + ruoli autorizzati', risultando nel punteggio piu alto (70 vs 55)."
+  }
+}

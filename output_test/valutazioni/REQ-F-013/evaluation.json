@@ -1,0 +1,166 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-013",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 75,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-013.TC01",
+        "detail": "Assume l'esistenza di una specifica 'interfaccia di configurazione marketing' via web/backoffice, non descritta nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.TC01",
+        "detail": "Introduce un touchpoint specifico 'WEB_PORTALE' e il canale 'web' non presenti nel requisito (che parla solo di touchpoint in generale)."
+      },
+      {
+        "test_id": "REQ-F-013.TC02",
+        "detail": "Introduce un touchpoint specifico 'APP_MOBILE' e il canale 'app' non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.TC03",
+        "detail": "Assume una modalità di integrazione sincrona del modello di propensity durante la generazione proposta e la possibilità di mocking/stubbing, non specificate nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.TC04",
+        "detail": "Definisce una strategia di fallback quando il propensity è indisponibile (ordinamento per priorità configurata) e dettagli tecnici (timeout 10s/HTTP 503) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.TC05",
+        "detail": "Assume campi/concetti specifici nei log (proposal_id/correlation_id) e requisiti di contenuto (driver ordering) non dettagliati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.TC06",
+        "detail": "Introduce una regola di gestione degli score mancanti (posizionamento deterministico, es. in coda) non definita dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"...associabili a specifici touchpoint (REQ-F-005)\"",
+        "detail": "I test non validano esplicitamente il vincolo/integrazione con quanto definito in REQ-F-005 (es. uso dell'elenco touchpoint o regole di associazione previste da quel requisito); usano touchpoint di esempio senza tracciabilità a REQ-F-005."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-013.TC04",
+          "REQ-F-013.TC06"
+        ],
+        "detail": "Entrambi coprono scenari di eccezione/assenza dati dal propensity e richiedono comportamento deterministico + tracciamento nei log; differiscono per causa (errore vs score mancanti) ma risultano parzialmente sovrapposti."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 13,
+    "coherence_score": 20,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-013.US01.TC01",
+        "detail": "Introduce canale/strumento 'dashboard' e flusso UI specifico non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC01",
+        "detail": "Assume un elenco touchpoint specifico (TP-WEB, TP-APP) e che sia 'disponibile in dashboard', dettagli non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC02",
+        "detail": "Assume esplicitamente la possibilità di associare la stessa priorità a più touchpoint tramite selezione multipla; non indicato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC03",
+        "detail": "Introduce una convenzione di ordinamento della priorità (numero più alto = posizione più alta o viceversa) che il requisito non definisce."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC03",
+        "detail": "Assume l'esistenza di un 'endpoint/servizio' e di un 'Motore di Offerte' come componente, non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC04",
+        "detail": "Introduce un 'ordering di default' in assenza di priorità configurata; il requisito non richiede un comportamento specifico per tale assenza."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC05",
+        "detail": "Introduce il concetto di 'conflitto di configurazione' (due regole applicabili) e una relativa risoluzione deterministica; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC06",
+        "detail": "Introduce requisiti di autorizzazione/ruoli (Viewer) e audit di sicurezza per accessi non autorizzati; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC07",
+        "detail": "Assume meccanismi di correlazione log (request-id/correlation-id) e contenuti minimi addizionali nei log non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC01",
+        "detail": "Richiede esplicitamente determinismo dell'ordinamento propensity a parità di input; il requisito parla di ordinare in base alla probabilità ma non impone determinismo tra invocazioni."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC02",
+        "detail": "Introduce una 'logica di combinazione' priorità+propensity da refinement; il requisito non descrive come combinare i due meccanismi."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC03",
+        "detail": "Introduce fallback deterministico quando il modello è indisponibile e dettagli tecnici (timeout/HTTP 5xx); non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC04",
+        "detail": "Introduce regole di fallback per score null/mancanti non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC05",
+        "detail": "Introduce regole di tie-break per parità di score e relativa tracciatura; non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC06",
+        "detail": "Assume contenuti minimi dei log (riferimento cliente/sessione/proposta, indicazione logica applicata) oltre al semplice 'ordine risultante tracciato', che è l'unico vincolo esplicito del requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1: \"...priorità configurabili per offerte/bundle e per touchpoint.\"",
+        "detail": "Non c'è un TC che verifichi esplicitamente la configurazione della priorità 'per touchpoint' come entità autonoma (es. priorità del touchpoint o priorità a livello touchpoint indipendente dall'offerta). I TC testano soprattutto priorità di offerta/bundle associate a touchpoint."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-013.US02.TC03",
+          "REQ-F-013.US02.TC04"
+        ],
+        "detail": "Entrambi testano fallback deterministico e tracciamento log in caso di problemi con propensity (indisponibilità vs score mancanti) con struttura molto simile."
+      },
+      {
+        "test_ids": [
+          "REQ-F-013.US02.TC04",
+          "REQ-F-013.US02.TC05"
+        ],
+        "detail": "Entrambi richiedono regole deterministiche aggiuntive (fallback/tie-break) e tracciamento; scenari diversi ma fortemente sovrapposti come obiettivo non richiesto."
+      },
+      {
+        "test_ids": [
+          "REQ-F-013.US01.TC07",
+          "REQ-F-013.US02.TC06"
+        ],
+        "detail": "Entrambi verificano la presenza di informazioni di audit nei log di proposta per ricostruire l'ordine, con expected results molto simili."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct mantiene copertura completa degli AC (3/3) con un numero più contenuto di assunzioni extra-requisito; le principali aggiunte riguardano esempi di touchpoint/canali e dettagli tecnici di integrazione/logging (7 added_info) e una sola mancanza non-AC legata al riferimento a REQ-F-005. Il set indirect_persona, pur coprendo gli AC, introduce molte più informazioni non tracciabili (dashboard, componenti/endpoint, autorizzazioni, conflitti, determinismo, tie-break, logica di combinazione) con 15 added_info, più ridondanze e una lacuna interpretativa su AC-1 (priorità 'per touchpoint' come entità). Di conseguenza il punteggio di coerenza è superiore per direct (75 vs 20)."
+  }
+}

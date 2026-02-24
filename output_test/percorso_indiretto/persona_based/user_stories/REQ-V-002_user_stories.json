@@ -1,0 +1,36 @@
+[
+  {
+    "story_id": "REQ-V-002.US01",
+    "title": "UI coerente con standard visual aziendali e icone promozionali distintive (canale fisico)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare un’interfaccia conforme agli standard visual aziendali con icone promozionali/urgenze ben distinguibili nelle card quando applicabile",
+    "benefit": "riconoscere rapidamente le promozioni senza perdere coerenza di brand e ridurre ambiguità nella proposta al cliente",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare un’interfaccia conforme agli standard visual aziendali con icone promozionali/urgenze distintive nelle card quando applicabile\nIn modo che possa riconoscere rapidamente le promozioni mantenendo coerenza di brand durante la proposta al cliente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO utilizzo le schermate di proposta/offerta nel front-end commerciale ALLORA palette colori, tipografia e componenti UI risultano conformi alla guida di stile aziendale ufficiale.",
+      "QUANDO una card di offerta richiede l’evidenza di una promozione/urgenza ALLORA la card mostra un’icona promozionale visibile e coerente con le linee guida aziendali.",
+      "QUANDO la release è candidata al rilascio ALLORA esiste evidenza di una review grafica che valida l’aderenza al brand e l’uso appropriato delle icone per le schermate rilevanti per l’operatore."
+    ],
+    "business_rules": [
+      "L’interfaccia deve rispettare palette colori, tipografia e linee guida di brand aziendali ufficiali.",
+      "Le icone promozionali/urgenze devono essere coerenti con le linee guida aziendali e al contempo distintive per l’operatore.",
+      "Le icone promozionali devono essere visualizzate nelle card solo quando applicabile (secondo regole di attivazione definite altrove).",
+      "La conformità al brand e l’uso delle icone devono essere validati tramite review grafica prima del rilascio."
+    ],
+    "edge_cases": [
+      "Offerta senza promozione/urgenza: la card non deve mostrare icone promozionali.",
+      "Icona non presente nel set approvato: deve essere bloccata in fase di review grafica (non rilasciabile).",
+      "Componenti UI personalizzati/non standard: rischio di non conformità alla guida di stile; devono essere inclusi nel perimetro della review grafica."
+    ],
+    "assumptions": [
+      "La guida di stile aziendale ufficiale e il set di icone promozionali approvate sono disponibili e accessibili al team di sviluppo/UX.",
+      "Le regole che determinano quando una promozione/urgenza è “appropriata/applicabile” sono definite in altri requisiti (non incluse in REQ-V-002).",
+      "La “review grafica” è un controllo formale con esito tracciabile (es. approvazione su ticket o checklist di release)."
+    ],
+    "notes": "Il requisito è un vincolo UI trasversale; gli AC sono applicabili a più canali ma qui sono declinati sul canale operatore. La definizione di 'quando appropriate' non è specificata nel requisito e richiede dipendenza da regole di attivazione promozioni/urgenze."
+  }
+]

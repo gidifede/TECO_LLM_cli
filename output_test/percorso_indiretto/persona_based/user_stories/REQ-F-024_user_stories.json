@@ -1,0 +1,145 @@
+[
+  {
+    "story_id": "REQ-F-024.US01",
+    "title": "Blocco proposta offerte in caso di conflitto e tracciatura su log",
+    "persona": "Motore di Offerte",
+    "goal": "non proporre alcuna offerta quando rilevo un conflitto tra regole manuali e raccomandazioni automatizzate/esterne, registrando il motivo nei log interni",
+    "benefit": "evitare proposte incoerenti e garantire tracciabilità per controlli operativi e audit senza impatti sulla UI",
+    "user_story": "Come Motore di Offerte\nVoglio non proporre alcuna offerta quando rilevo un conflitto tra regole manuali e raccomandazioni automatizzate/esterne, registrando il motivo nei log interni\nIn modo che non vengano esposte proposte incoerenti e sia possibile ricostruire l’evento a fini operativi e di audit senza mostrare messaggi all’utente",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO in ambiente di test viene riprodotto un conflitto tra regole manuali e raccomandazioni automatizzate/esterne ALLORA il Motore di Offerte non genera/provvede alcuna proposta/offerta verso i canali (cliente e operatore).",
+      "QUANDO il Motore di Offerte rileva un conflitto ALLORA registra un evento di log interno che includa almeno: identificativo della regola manuale coinvolta (es. regola A), identificativo della raccomandazione/regola esterna coinvolta (es. regola B), timestamp, identificativi delle entità coinvolte (es. cliente/prodotto/campagna o equivalenti disponibili).",
+      "QUANDO si verifica il conflitto ALLORA il Motore di Offerte non emette alcun segnale destinato alla UI che comporti la visualizzazione di messaggi di errore/alert (comportamento silente lato interfacce)."
+    ],
+    "business_rules": [
+      "In caso di conflitto tra regole manuali configurate e raccomandazioni automatizzate/esterne, la decisione operativa è: non proporre alcuna offerta.",
+      "La gestione del conflitto deve essere silente lato UI: nessun messaggio/alert visibile per cliente o operatore.",
+      "Il Motore deve tracciare nei log il motivo del mancato suggerimento con dettaglio sufficiente alla ricostruzione del conflitto."
+    ],
+    "edge_cases": [
+      "Conflitto rilevato dopo una prima generazione di proposta: il Motore non deve esporre la proposta (o deve sopprimerla) e deve loggare l’evento di conflitto.",
+      "Impossibilità di scrivere su log (es. storage/logging service non disponibile): il Motore deve comunque non proporre offerte; la gestione dell’errore di logging non deve generare messaggi verso la UI.",
+      "Conflitti multipli nella stessa valutazione: il Motore non propone offerte e registra log coerenti (uno o più eventi) tali da ricostruire i conflitti rilevati."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il formato/tecnologia dei log: si assume esista un meccanismo di logging interno consultabile da dashboard/strumenti autorizzati.",
+      "Il requisito non definisce cosa costituisca esattamente un 'conflitto' (criteri di matching/priorità): si assume che il Motore disponga di una regola deterministica per identificarlo in runtime e in test."
+    ],
+    "notes": "US focalizzata sul comportamento del Motore (no-proposal + logging + silenzio UI). I criteri di accesso ai log per audit sono coperti in una US dedicata alle personas autorizzate (Compliance/Marketing)."
+  },
+  {
+    "story_id": "REQ-F-024.US02",
+    "title": "Nessuna proposta visibile al cliente in caso di conflitto (comportamento silente)",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "non vedere offerte/proposte quando il Motore rileva un conflitto tra regole manuali e raccomandazioni automatizzate/esterne",
+    "benefit": "avere un’esperienza senza errori/alert e senza proposte incoerenti",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio non vedere offerte/proposte quando il Motore rileva un conflitto tra regole manuali e raccomandazioni automatizzate/esterne\nIn modo che non mi vengano presentate proposte incoerenti e la mia esperienza resti priva di messaggi di errore o alert",
+    "channels": [
+      "digital",
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO in ambiente di test viene riprodotto un conflitto tra regole manuali e raccomandazioni automatizzate/esterne ALLORA come cliente non visualizzo alcuna offerta/proposta (né su canali digitali né tramite proposta in canale fisico).",
+      "QUANDO si verifica il conflitto ALLORA non mi viene mostrata alcuna notifica/messaggio di errore/alert relativo al conflitto (comportamento silente)."
+    ],
+    "business_rules": [
+      "In caso di conflitto, nessuna proposta deve essere esposta al cliente.",
+      "In caso di conflitto, non devono essere mostrati messaggi di errore/alert al cliente."
+    ],
+    "edge_cases": [
+      "Cliente su canale digitale con pagina già aperta: al refresh/nuova richiesta di offerte, non devono comparire offerte né messaggi di errore/alert.",
+      "Cliente in un flusso dove normalmente comparirebbe una proposta (es. pre-checkout): in caso di conflitto, la proposta non deve essere mostrata e il flusso prosegue senza messaggi legati al conflitto."
+    ],
+    "assumptions": [
+      "Il requisito non specifica i touchpoint UI esatti in cui le offerte sono mostrate: si assume che la regola 'nessuna proposta' si applichi a qualunque punto del journey in cui il canale richiede offerte al Motore."
+    ],
+    "notes": "AC condivisi con US03 (Operatore) sul comportamento silente e assenza di proposte. L’accesso ai log non riguarda il cliente e non è incluso."
+  },
+  {
+    "story_id": "REQ-F-024.US03",
+    "title": "Nessuna proposta visibile all’operatore in caso di conflitto (comportamento silente)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "non vedere offerte/proposte quando il Motore rileva un conflitto tra regole manuali e raccomandazioni automatizzate/esterne",
+    "benefit": "evitare di proporre al cliente offerte incoerenti senza ricevere alert che interrompano l’operatività",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio non vedere offerte/proposte quando il Motore rileva un conflitto tra regole manuali e raccomandazioni automatizzate/esterne\nIn modo che non proponga offerte incoerenti e la mia operatività non sia interrotta da messaggi di errore o alert",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO in ambiente di test viene riprodotto un conflitto tra regole manuali e raccomandazioni automatizzate/esterne ALLORA non visualizzo alcuna offerta/proposta generata dal Motore per il cliente.",
+      "QUANDO si verifica il conflitto ALLORA non mi viene mostrata alcuna notifica/messaggio di errore/alert relativo al conflitto (comportamento silente)."
+    ],
+    "business_rules": [
+      "In caso di conflitto, nessuna proposta deve essere esposta all’operatore.",
+      "In caso di conflitto, non devono essere mostrati messaggi di errore/alert all’operatore."
+    ],
+    "edge_cases": [
+      "Operatore con lista offerte già caricata: a seguito di nuova richiesta/aggiornamento, in caso di conflitto la lista non deve mostrare proposte e non deve comparire alcun alert.",
+      "Conflitto su specifiche entità (es. prodotto/campagna) durante la sessione: l’operatore non deve vedere proposte e non deve ricevere messaggi relativi al conflitto."
+    ],
+    "assumptions": [
+      "Il requisito non specifica come l’interfaccia operatore rappresenti l’assenza di offerte: si assume che l’UI mostri semplicemente 'nessuna offerta disponibile' o equivalente neutro non riconducibile a un errore/alert."
+    ],
+    "notes": "AC condivisi con US02 (Cliente) sul comportamento silente e assenza di proposte. La tracciatura dettagliata è coperta in US01 (Motore). L’accesso ai log per audit è coperto in US04 (Compliance) e, se applicabile, in US05 (Marketing)."
+  },
+  {
+    "story_id": "REQ-F-024.US04",
+    "title": "Accesso ai log di conflitto per verifica e audit",
+    "persona": "PERSONA: Team Compliance",
+    "goal": "accedere ai log relativi ai conflitti tra regole manuali e raccomandazioni automatizzate/esterne",
+    "benefit": "poter verificare e auditare le decisioni del Motore in modo tracciabile",
+    "user_story": "Come PERSONA: Team Compliance\nVoglio accedere ai log relativi ai conflitti tra regole manuali e raccomandazioni automatizzate/esterne\nIn modo che possa verificare e auditare le decisioni del Motore in conformità agli obblighi di controllo",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente Compliance con ruoli autorizzati accede alla dashboard/log ALLORA può consultare i log relativi ai conflitti tra regole manuali e raccomandazioni automatizzate/esterne.",
+      "QUANDO l’utente Compliance consulta un log di conflitto ALLORA sono disponibili i dettagli necessari a ricostruire il conflitto (regola A vs regola B, timestamp, id entità coinvolte), coerentemente con quanto registrato dal Motore."
+    ],
+    "business_rules": [
+      "I log relativi ai conflitti devono essere accessibili per verifica e audit da parte dei ruoli autorizzati.",
+      "La visibilità dei log è soggetta ad autorizzazioni (solo ruoli autorizzati)."
+    ],
+    "edge_cases": [
+      "Utente Compliance non autorizzato: accesso negato ai log di conflitto.",
+      "Log presenti ma incompleti/corrotti: la dashboard deve gestire la consultazione senza esporre dati errati come certi (es. evidenziando record non leggibili) e senza impatti sui canali cliente/operatore."
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia la UI della dashboard né i filtri: si assume esista almeno una modalità di consultazione dei log e che i record di conflitto siano identificabili come tali."
+    ],
+    "notes": "US focalizzata sull’AC 'log accessibili per verifica e audit'. Dipendenza: disponibilità della dashboard/logging e dei ruoli autorizzati (vedi requisiti su ruoli/autorizzazioni)."
+  },
+  {
+    "story_id": "REQ-F-024.US05",
+    "title": "Consultazione dei log di conflitto per controlli operativi (ruoli autorizzati)",
+    "persona": "Team Marketing",
+    "goal": "consultare i log dei conflitti tra regole manuali configurate e raccomandazioni automatizzate/esterne",
+    "benefit": "individuare configurazioni in conflitto e intervenire sulle regole manuali per prevenire il mancato suggerimento",
+    "user_story": "Come Team Marketing\nVoglio consultare i log dei conflitti tra regole manuali configurate e raccomandazioni automatizzate/esterne\nIn modo che possa identificare configurazioni in conflitto e correggerle per evitare il mancato suggerimento di offerte",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente Marketing con ruoli autorizzati accede alla dashboard/log ALLORA può consultare i log relativi ai conflitti tra regole manuali e raccomandazioni automatizzate/esterne.",
+      "QUANDO l’utente Marketing visualizza un log di conflitto ALLORA il record contiene dettagli sufficienti a ricostruire il conflitto (regola A vs regola B, timestamp, id entità coinvolte), coerentemente con quanto registrato dal Motore."
+    ],
+    "business_rules": [
+      "I log relativi ai conflitti sono consultabili solo da ruoli autorizzati; Marketing accede se autorizzato.",
+      "Il comportamento silente verso cliente/operatore non deve essere alterato dalla consultazione dei log."
+    ],
+    "edge_cases": [
+      "Utente Marketing non autorizzato: accesso negato ai log di conflitto.",
+      "Elevato volume di log: la consultazione deve permettere di individuare i conflitti senza richiedere accesso ai canali cliente/operatore."
+    ],
+    "assumptions": [
+      "Il requisito non specifica esplicitamente che Marketing sia tra i 'ruoli autorizzati' ai log, ma cita regole manuali definite dal marketing e l’accesso ai log da ruoli autorizzati: si assume che Marketing possa essere autorizzato in base ai ruoli."
+    ],
+    "notes": "AC condiviso con US04 (Compliance) sull’accesso ai log per audit/verifica; differisce per finalità (controllo operativo/configurativo)."
+  }
+]

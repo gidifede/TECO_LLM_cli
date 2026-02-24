@@ -1,0 +1,265 @@
+[
+  {
+    "test_id": "REQ-D-009.TC01",
+    "title": "Export manuale del dataset visualizzato dalla dashboard con utente autorizzato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Esiste un utente con ruolo 'Analista' (o equivalente) abilitato all'export manuale dalla dashboard",
+      "La dashboard contiene almeno un widget/tabella con dataset popolato (dati non vuoti) per l'utente",
+      "Le regole di autorizzazione (RBAC/ABAC) sono configurate per consentire l'azione 'export manuale' al ruolo 'Analista'"
+    ],
+    "test_data": [
+      "Utente: analista1 / Password valida",
+      "Dashboard: 'KPI Vendite'",
+      "Filtro: Periodo=Ultimi 30 giorni; Regione=Italia",
+      "Formato export atteso (se selezionabile): CSV"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'analista1'",
+      "Navigare alla dashboard 'KPI Vendite'",
+      "Impostare i filtri Periodo=Ultimi 30 giorni e Regione=Italia",
+      "Verificare che il dataset sia visualizzato nella dashboard (tabella/grafico con valori)",
+      "Avviare l'export manuale del dataset visualizzato tramite il comando di export presente nella dashboard",
+      "Se richiesto, selezionare il formato CSV e confermare"
+    ],
+    "expected_results": [
+      "La dashboard mostra i dati filtrati (valori/righe) prima dell'export",
+      "L'azione di export manuale è disponibile/abilitata per l'utente autorizzato",
+      "Viene generato e scaricato un file di export senza errori",
+      "Il file esportato contiene i dati coerenti con quanto visualizzato nella dashboard per i filtri selezionati (stesso perimetro dati)",
+      "Il nome file e/o i metadati (se presenti) risultano coerenti con la dashboard/dataset esportato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica formati supportati (CSV/XLSX/JSON) né il comportamento esatto dell'UI; il test assume che esista un comando di export in dashboard e almeno un formato disponibile."
+  },
+  {
+    "test_id": "REQ-D-009.TC02",
+    "title": "Blocco export manuale dalla dashboard per utente non autorizzato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Esiste un utente con ruolo 'Viewer' (o equivalente) NON abilitato all'export manuale",
+      "La dashboard contiene dataset consultabile per l'utente 'Viewer'",
+      "Le regole di autorizzazione (RBAC/ABAC) sono configurate per negare l'azione 'export manuale' al ruolo 'Viewer'"
+    ],
+    "test_data": [
+      "Utente: viewer1 / Password valida",
+      "Dashboard: 'KPI Vendite'"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'viewer1'",
+      "Navigare alla dashboard 'KPI Vendite'",
+      "Individuare il comando di export nella dashboard (se visibile)",
+      "Tentare di avviare l'export manuale"
+    ],
+    "expected_results": [
+      "La dashboard è consultabile e mostra i dati (se previsti per il ruolo)",
+      "Il comando di export non è visibile oppure risulta disabilitato per l'utente non autorizzato",
+      "Se l'utente tenta comunque l'azione (es. via URL/azione diretta), il sistema nega l'operazione con messaggio di autorizzazione insufficiente e non viene generato alcun file"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce come venga mostrato il diniego (pulsante nascosto vs disabilitato vs errore). Il test accetta una delle modalità purché l'export non avvenga."
+  },
+  {
+    "test_id": "REQ-D-009.TC03",
+    "title": "Export manuale non consentito quando la dashboard non ha dati consultabili (dati mancanti o non caricati)",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Esiste un utente con ruolo abilitato all'export manuale",
+      "La dashboard consente l'applicazione di filtri che possono produrre un dataset vuoto"
+    ],
+    "test_data": [
+      "Utente: analista1 / Password valida",
+      "Dashboard: 'KPI Vendite'",
+      "Filtro: Periodo=01/01/1900-31/01/1900 (intervallo senza dati)"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente autorizzato all'export",
+      "Navigare alla dashboard 'KPI Vendite'",
+      "Impostare il filtro Periodo=01/01/1900-31/01/1900",
+      "Attendere l'aggiornamento della dashboard",
+      "Tentare di avviare l'export manuale del dataset"
+    ],
+    "expected_results": [
+      "La dashboard mostra esplicitamente che non ci sono dati da visualizzare (es. stato 'Nessun dato') oppure mostra dataset vuoto",
+      "Il sistema impedisce l'export oppure produce un export coerente con dataset vuoto secondo le regole di prodotto (comportamento deterministico)",
+      "In ogni caso, non viene esportato un file contenente dati non visualizzati/non coerenti con il perimetro selezionato"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 è dichiarativo; per renderlo verificabile si interpreta come: l'utente deve poter consultare lo stato dei dati (popolato o vuoto) prima di esportare. Il requisito non specifica la policy per export di dataset vuoti: il test accetta (a) blocco con messaggio oppure (b) file vuoto con intestazioni, purché coerente e tracciabile."
+  },
+  {
+    "test_id": "REQ-D-009.TC04",
+    "title": "Verifica presenza e consultabilità completa dei dati in dashboard prima dell'export (coerenza filtri/viste)",
+    "type": "UI",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Utente autorizzato alla consultazione della dashboard e all'export manuale",
+      "La dashboard espone indicatori/righe sufficienti per verificare la consultabilità (es. paginazione o scroll, ordinamenti)"
+    ],
+    "test_data": [
+      "Utente: analista1 / Password valida",
+      "Dashboard: 'KPI Vendite'",
+      "Filtro: Periodo=Ultimi 12 mesi; Regione=Italia",
+      "Ordinamento: Valore decrescente (se disponibile)",
+      "Paginazione: pagina 2 (se disponibile)"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'analista1'",
+      "Navigare alla dashboard 'KPI Vendite'",
+      "Impostare i filtri Periodo=Ultimi 12 mesi e Regione=Italia",
+      "Applicare l'ordinamento Valore decrescente (se disponibile)",
+      "Navigare alla pagina 2 del dataset (se disponibile) oppure scorrere per visualizzare ulteriori righe",
+      "Avviare l'export manuale del dataset visualizzato"
+    ],
+    "expected_results": [
+      "Prima dell'export, i dati risultano navigabili/consultabili nella dashboard (es. righe visibili, paginazione/scroll funzionante, ordinamento applicato)",
+      "L'export riflette il perimetro dati della vista (filtri applicati) e non include record fuori filtro",
+      "Se l'ordinamento è parte della 'vista esportata' secondo implementazione, il file rispetta l'ordinamento; in alternativa, l'ordinamento del file è documentato e consistente (comportamento deterministico)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non chiarisce se l'export debba rispettare ordinamento/paginazione della vista oppure esportare l'intero dataset filtrato. Il test verifica almeno la coerenza dei filtri e richiede comportamento deterministico/documentato per ordinamento."
+  },
+  {
+    "test_id": "REQ-D-009.TC05",
+    "title": "Gestione indisponibilità/errore del servizio di export durante export manuale",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Utente autorizzato all'export manuale",
+      "Possibilità di simulare indisponibilità del componente/servizio di export (es. mock, feature flag, interruzione servizio, timeout controllato)"
+    ],
+    "test_data": [
+      "Utente: analista1 / Password valida",
+      "Dashboard: 'KPI Vendite'",
+      "Simulazione: servizio export risponde con HTTP 503 oppure timeout > 30s"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'analista1'",
+      "Navigare alla dashboard 'KPI Vendite' e assicurarsi che i dati siano visualizzati",
+      "Abilitare la simulazione di errore/timeout del servizio di export",
+      "Avviare l'export manuale"
+    ],
+    "expected_results": [
+      "Il sistema non scarica alcun file corrotto o parziale",
+      "Il sistema mostra un messaggio di errore comprensibile e verificabile (es. 'Export non disponibile, riprovare')",
+      "L'applicazione rimane utilizzabile (nessun blocco della dashboard) e consente un nuovo tentativo dopo il ripristino del servizio"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica dipendenze tecniche; questo test assume l'esistenza di un componente/servizio di generazione export e valida la robustezza in caso di indisponibilità (scenario negativo obbligatorio)."
+  },
+  {
+    "test_id": "REQ-D-009.TC06",
+    "title": "Funzionalità di export automatico programmato assente nel rilascio iniziale senza impatto sull'export manuale (opzionale/documentata)",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "Rilascio iniziale in cui la funzionalità di export automatico programmato non è implementata oppure è disabilitata tramite configurazione/feature flag",
+      "Utente autorizzato all'export manuale dalla dashboard",
+      "È disponibile documentazione/nota di prodotto o sezione UI che indichi la natura opzionale dell'export automatico (se prevista)"
+    ],
+    "test_data": [
+      "Utente: analista1 / Password valida",
+      "Dashboard: 'KPI Vendite'",
+      "Feature flag (se presente): AUTO_EXPORT_SCHEDULING=false"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'analista1'",
+      "Navigare alla dashboard 'KPI Vendite'",
+      "Verificare l'eventuale presenza di funzionalità di pianificazione export automatico (menu/impostazioni)",
+      "Se presente, tentare di accedere alla sezione di pianificazione",
+      "Eseguire un export manuale del dataset dalla dashboard"
+    ],
+    "expected_results": [
+      "La mancanza/disabilitazione dell'export automatico programmato non impedisce l'export manuale",
+      "Se la voce/feature di pianificazione è presente, risulta chiaramente indicata come non disponibile/opzionale oppure non accessibile senza errori applicativi",
+      "L'export manuale completa con successo secondo le regole di autorizzazione"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è parzialmente non verificabile senza indicazioni su dove sia 'documentata' l'opzionalità. Il test verifica che l'assenza della pianificazione non blocchi il requisito minimo (export manuale) e che l'eventuale UI/documentazione non generi malfunzionamenti."
+  },
+  {
+    "test_id": "REQ-D-009.TC07",
+    "title": "Se presente, configurazione export automatico programmato consentita solo a ruoli autorizzati",
+    "type": "Authorization",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile via canale web",
+      "La funzionalità di export automatico programmato è implementata e abilitata (feature flag true) oppure disponibile in ambiente successivo",
+      "Esiste un utente con ruolo 'Admin' (o equivalente) autorizzato a configurare export automatici",
+      "Esiste un utente con ruolo 'Analista' (o equivalente) NON autorizzato a configurare export automatici",
+      "Le regole di autorizzazione sono configurate per distinguere tra 'export manuale' e 'configurazione export automatico'"
+    ],
+    "test_data": [
+      "Utente admin: admin1 / Password valida",
+      "Utente non autorizzato: analista1 / Password valida",
+      "Pianificazione: Frequenza=Giornaliera; Ora=02:00; Formato=CSV; Destinazione=Download area personale (o equivalente)",
+      "Feature flag (se presente): AUTO_EXPORT_SCHEDULING=true"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente 'analista1'",
+      "Navigare alla sezione di configurazione export automatico (se disponibile)",
+      "Tentare di creare una nuova pianificazione con i dati indicati",
+      "Disconnettersi",
+      "Accedere all'applicazione come utente 'admin1'",
+      "Navigare alla sezione di configurazione export automatico",
+      "Creare una nuova pianificazione con i dati indicati e salvare"
+    ],
+    "expected_results": [
+      "Per l'utente 'analista1' la creazione della pianificazione è negata (sezione non visibile/disabilitata oppure errore di autorizzazione) e nessuna pianificazione viene salvata",
+      "Per l'utente 'admin1' la pianificazione viene salvata con successo e risulta visibile nell'elenco/monitoraggio delle pianificazioni (se previsto)",
+      "Non vengono elevate autorizzazioni implicitamente: il permesso di export manuale non implica il permesso di configurare export automatici"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Questo test è condizionale: eseguibile solo se/quando la funzionalità opzionale di pianificazione è disponibile. Il requisito non specifica dove vengano consegnati i file automatici (email/SFTP/area personale): la destinazione indicata è un esempio da adattare all'implementazione reale."
+  }
+]

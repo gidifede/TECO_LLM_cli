@@ -1,5 +1,7 @@
 # Strategie suggerite per la pipeline TECO
 
+> **Nota (2026-02-23):** La **Strategia A** (usare solo diretto + persona-based) è stata implementata. Il percorso AC-based è stato rimosso dalla pipeline. La sezione 2.1 e la Strategia E sono ora superate.
+
 Analisi basata sulle valutazioni di coerenza di 5 requisiti (REQ-F-001, REQ-F-004, REQ-F-007, REQ-F-008, REQ-F-009) e sulla lettura completa dei prompt di generazione requisiti, user stories (AC-based e persona-based), test cases (diretti e indiretti) e valutazione.
 
 ---
@@ -21,7 +23,7 @@ Il percorso diretto vince in tutti i casi valutati. Il percorso indiretto AC-bas
 
 ## 2. Problemi per approccio
 
-### 2.1 Percorso indiretto AC-based — Score medio: ~4/100
+### 2.1 Percorso indiretto AC-based — Score medio: ~4/100 *(SUPERATA — rimosso dalla pipeline)*
 
 Questo approccio ha un **difetto strutturale** che lo rende inutilizzabile nella forma attuale.
 
@@ -110,7 +112,7 @@ Il risultato sono AC vaghi, dichiarativi, a volte contraddittori con la descript
 
 ## 4. Strategie consigliate
 
-### Strategia A — Intervento immediato: usare solo il percorso diretto
+### Strategia A — Intervento immediato: usare solo il percorso diretto *(IMPLEMENTATA)*
 
 **Cosa fare:** Disabilitare o deprioritizzare i percorsi indiretti (AC-based e persona-based) per la generazione TC. Usare esclusivamente il percorso diretto `requisito → TC`.
 
@@ -180,7 +182,7 @@ Le user stories nel formato COME/VOGLIO/IN MODO CHE + AC in formato QUANDO/ALLOR
 
 ---
 
-### Strategia E — Se si vuole mantenere il percorso indiretto: fix della tracciabilità
+### Strategia E — Se si vuole mantenere il percorso indiretto: fix della tracciabilità *(SUPERATA — percorso AC-based rimosso)*
 
 **Cosa fare (solo se i percorsi indiretti sono richiesti per altri motivi):**
 

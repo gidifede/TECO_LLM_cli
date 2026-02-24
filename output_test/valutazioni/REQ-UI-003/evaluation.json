@@ -1,0 +1,99 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-003",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 83,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-003.TC01",
+        "detail": "Introduzione del canale 'web' come default (il requisito non cita canali)."
+      },
+      {
+        "test_id": "REQ-UI-003.TC02",
+        "detail": "Introduzione del canale 'web' (il requisito non cita canali)."
+      },
+      {
+        "test_id": "REQ-UI-003.TC03",
+        "detail": "Introduzione del canale 'web' (il requisito non cita canali)."
+      },
+      {
+        "test_id": "REQ-UI-003.TC04",
+        "detail": "Introduzione del canale 'web' (il requisito non cita canali)."
+      },
+      {
+        "test_id": "REQ-UI-003.TC05",
+        "detail": "Scenario di gestione errore/robustezza (HTTP 500/timeout, messaggio di errore, no crash) non richiesto né menzionato dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.TC06",
+        "detail": "Assunzioni di comportamento UI su testi lunghi (troncamento, ellissi, multilinea) non specificate dal requisito; il requisito richiede solo 'sempre visibili', non regole di leggibilità/adattamento."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": []
+  },
+  "indirect_persona": {
+    "tc_count": 8,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-003.US01.TC01",
+        "detail": "Introduzione del canale 'digital' (web/app) e dell'attore 'Cliente' non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC02",
+        "detail": "Introduzione del canale 'digital' e del contesto 'Cliente' non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC03",
+        "detail": "Requisito di 'consultabilità' dettagli (scorribile/navigabile senza blocchi) non esplicitato nel requisito, che richiede solo accessibilità tramite 'maggiori info'."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC04",
+        "detail": "Scenario di autorizzazione/ruoli (non Cliente, operatore tecnico/backoffice, sessione anonima) e canale 'front-end commerciale' non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC05",
+        "detail": "Scenario di assenza/disabilitazione del controllo tramite feature flag/configurazione non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC06",
+        "detail": "Scenario di errore di caricamento dettagli (HTTP 500/timeout, fallback) non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC07",
+        "detail": "Introduzione del canale 'front-end commerciale' e del contesto 'Cliente (fisico)/modalità operatore' non presenti nel requisito; inoltre aggiunge criteri di 'comprensione' del contenuto in caso di troncamento non definiti."
+      },
+      {
+        "test_id": "REQ-UI-003.US01.TC08",
+        "detail": "Copertura multi-canale 'front-end commerciale' e contesto fisico/commerciale non presenti nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-UI-003.US01.TC03",
+        "detail": "Scenario molto simile a US01.TC08 (apertura dettagli tramite 'maggiori info' e verifica contenuto recuperabile), differisce principalmente per canale."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (3/3). Il set direct introduce poche informazioni non tracciabili (soprattutto il canale 'web' e 2 edge/errore), ottenendo un punteggio più alto (83). Il set indirect_persona aggiunge numerosi elementi estranei al requisito (ruoli/autorization, canali 'digital' e 'front-end commerciale', requisiti di consultabilità/feature flag/robustezza) e presenta anche una ridondanza (TC03 vs TC08), risultando meno coerente (58)."
+  }
+}

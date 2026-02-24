@@ -1,0 +1,94 @@
+[
+  {
+    "story_id": "REQ-F-009.US01",
+    "title": "Generazione automatica NBO basata su cluster e propensity",
+    "persona": "Motore di Offerte",
+    "goal": "identificare automaticamente i prodotti più rilevanti da proporre (NBO) in base a cluster di clientela e modelli di propensity disponibili",
+    "benefit": "produrre proposte coerenti e personalizzate, riducendo offerte non pertinenti",
+    "user_story": "Come Motore di Offerte\nVoglio identificare automaticamente i prodotti più rilevanti da proporre (NBO) sulla base di cluster di clientela e modelli di propensity\nIn modo che le proposte risultino personalizzate e pertinenti per il cliente",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte deve generare una proposta NBO per un cliente per cui sono disponibili cluster e valori/modelli di propensity ALLORA il Motore di Offerte genera una lista di prodotti proposti utilizzando tali informazioni.",
+      "QUANDO non sono disponibili cluster e/o propensity per il cliente ALLORA il Motore di Offerte non applica la logica NBO basata su cluster/propensity e registra nel log decisionale l’assenza dei dati necessari (con esito coerente con le regole di fallback definite).",
+      "QUANDO il Motore di Offerte genera una proposta NBO ALLORA per ciascuna proposta registra nel log decisionale il riferimento al cluster e al modello/parametro di propensity utilizzato."
+    ],
+    "business_rules": [
+      "La selezione NBO deve basarsi su cluster di clientela e modelli/valori di propensity disponibili al Motore di Offerte (memorizzati o forniti da sistemi esterni).",
+      "Ogni proposta generata deve essere tracciabile rispetto alla regola/modello utilizzato tramite log delle decisioni."
+    ],
+    "edge_cases": [
+      "Cluster non riconosciuto o non mappato su alcuna proposta: il Motore non produce proposte NBO e registra l’anomalia nel log decisionale.",
+      "Valori/modello di propensity non validi (es. null, fuori range, formato inatteso): il Motore non applica la logica NBO e registra l’errore nel log decisionale.",
+      "Il log decisionale non è disponibile (errore tecnico): il Motore gestisce l’errore secondo le policy di resilienza e garantisce coerenza del risultato (proposte generate o meno) registrando l’evento con meccanismi alternativi se previsti."
+    ],
+    "assumptions": [
+      "Non è specificato il comportamento di fallback quando cluster/propensity non sono disponibili: si assume esista una regola di fallback da definire (es. nessuna proposta o proposta basata su regole statiche).",
+      "Non sono specificati formato, range e governance di cluster e propensity: si assume siano definiti in un contratto dati/API a valle."
+    ],
+    "notes": "Questa US copre gli AC relativi alla generazione NBO basata su cluster/propensity e alla tracciabilità nel log. L’AC sulla tracciabilità è condiviso anche con la US del Team Compliance (ridondanza intenzionale). Dipendenza esterna: REQ-F-004 per le eccezioni Marketing su prodotti già posseduti."
+  },
+  {
+    "story_id": "REQ-F-009.US02",
+    "title": "Configurazione eccezioni per riproporre prodotti già posseduti",
+    "persona": "Team Marketing",
+    "goal": "configurare regole esplicite che consentano di proporre anche prodotti già posseduti dal cliente come eccezione alla regola standard",
+    "benefit": "abilitare campagne/strategie commerciali specifiche senza modifiche applicative",
+    "user_story": "Come Team Marketing\nVoglio configurare regole esplicite che consentano di proporre prodotti già posseduti dal cliente\nIn modo che il Motore possa applicare eccezioni commerciali alla regola standard di esclusione",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO è attiva una regola esplicita configurata dal Team Marketing che consente la riproposizione di un prodotto già posseduto ALLORA il Motore di Offerte può includere tale prodotto tra le proposte NBO per i clienti per cui la regola è applicabile.",
+      "QUANDO non esiste una regola esplicita di Marketing per la riproposizione ALLORA i prodotti già posseduti dal cliente non vengono inclusi tra le proposte NBO.",
+      "QUANDO una proposta NBO include un prodotto già posseduto in virtù di un’eccezione ALLORA nel log decisionale è tracciabile il riferimento alla regola di Marketing che ha abilitato l’eccezione."
+    ],
+    "business_rules": [
+      "Regola standard: i prodotti già posseduti dal cliente devono essere esclusi dalle proposte NBO.",
+      "Eccezione: la riproposizione di prodotti già posseduti è consentita solo in presenza di una regola esplicita configurata dal Marketing (come da REQ-F-004).",
+      "Ogni eccezione applicata deve essere tracciata nel log decisionale con riferimento alla regola Marketing."
+    ],
+    "edge_cases": [
+      "Regola Marketing configurata ma non applicabile al cliente (es. target/cluster non corrispondente): il prodotto posseduto resta escluso e la non-applicazione è tracciata nel log decisionale.",
+      "Regole Marketing in conflitto (una include, una esclude lo stesso prodotto posseduto): si applica una precedenza da definire e si traccia nel log la regola vincente e il conflitto rilevato.",
+      "Prodotto marcato come posseduto con dato incoerente/obsoleto: il Motore applica la regola in base alla fonte di verità del possesso e registra l’eventuale anomalia."
+    ],
+    "assumptions": [
+      "REQ-F-004 è richiamato ma non fornito: si assume che definisca dove e come il Marketing configuri tali eccezioni (UI, permessi, struttura regola).",
+      "Non sono specificati criteri di precedenza tra regole: si assume esista una logica di prioritizzazione da definire."
+    ],
+    "notes": "Questa US copre l’AC sull’esclusione dei prodotti posseduti e sulle eccezioni Marketing. L’AC di tracciabilità nel log è condiviso anche con Motore di Offerte e Team Compliance (ridondanza intenzionale)."
+  },
+  {
+    "story_id": "REQ-F-009.US03",
+    "title": "Audit delle decisioni NBO tramite log tracciabile",
+    "persona": "Team Compliance",
+    "goal": "consultare evidenza tracciabile della regola/modello che ha generato ciascuna proposta NBO",
+    "benefit": "abilitare verifiche di conformità e auditabilità delle decisioni del motore",
+    "user_story": "Come Team Compliance\nVoglio consultare nel log delle decisioni la regola o il modello che ha generato ciascuna proposta NBO\nIn modo che possa verificare e auditare la conformità delle decisioni del Motore",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Team Compliance accede ai log delle decisioni per una proposta NBO ALLORA può visualizzare il riferimento alla regola/modello che ha generato la proposta.",
+      "QUANDO una proposta NBO è stata generata usando cluster e propensity ALLORA nel log sono presenti i riferimenti necessari a identificare cluster e modello/parametro di propensity utilizzato.",
+      "QUANDO una proposta NBO include un prodotto già posseduto per effetto di un’eccezione ALLORA nel log è presente il riferimento alla regola esplicita di Marketing che ha abilitato l’eccezione."
+    ],
+    "business_rules": [
+      "Il log delle decisioni deve contenere informazioni sufficienti a ricostruire la motivazione della proposta (regola/modello applicato).",
+      "L’accesso ai log è soggetto ad autorizzazioni del ruolo Compliance (lettura e, se previsto, esportazione) come da requisiti di ruoli/permessi."
+    ],
+    "edge_cases": [
+      "Log incompleto (mancanza riferimento regola/modello): il sistema evidenzia l’assenza dell’informazione e consente di identificare l’evento come non auditabile.",
+      "Volumi elevati di log: il Team Compliance deve poter filtrare almeno per proposta/cliente/campagna (filtri esatti da definire) per reperire l’evidenza.",
+      "Accesso non autorizzato ai dettagli: l’utente vede solo dati consentiti (es. aggregati) e non i dettagli di tracciabilità."
+    ],
+    "assumptions": [
+      "Non sono specificati i campi esatti del log e i filtri disponibili: si assume che il ‘riferimento a regola/modello’ sia un identificativo univoco consultabile in dashboard.",
+      "Non è specificato se il Team Compliance debba esportare i log: si assume che l’export sia gestito da requisiti separati sui permessi/ruoli."
+    ],
+    "notes": "Questa US replica l’AC di tracciabilità nel log già presente nelle US di Motore di Offerte e Team Marketing (ridondanza intenzionale) perché riguarda direttamente l’audit da parte della Compliance."
+  }
+]

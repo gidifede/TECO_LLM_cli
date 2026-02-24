@@ -1,0 +1,155 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-002",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 62,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-002.TC01",
+        "detail": "Introduce dettagli non presenti nel requisito: canale specifico 'web', UI specifiche (carrello/checkout/dettaglio ordine), metodo di pagamento (carta), importi numerici e valuta, assunzione che i dettagli cashback/punti siano visibili in checkout/dettaglio ordine."
+      },
+      {
+        "test_id": "REQ-I-002.TC03",
+        "detail": "Introduce canale 'app' come esempio specifico non citato nel requisito (che parla genericamente di 'canale')."
+      },
+      {
+        "test_id": "REQ-I-002.TC04",
+        "detail": "Assume modalità di verifica/strumenti non citati: API/console di Framework Connect, campi payload (OrderId, id cliente), correlation-id e logging di integrazione con tracciatura specifica."
+      },
+      {
+        "test_id": "REQ-I-002.TC05",
+        "detail": "Introduce gestione errori/behaviour non definito dal requisito: ordine confermato vs bloccato, assenza di 'falso positivo' in UI, dettagli tecnici (timeout 30s/HTTP 503) e aspettative su log in errore."
+      },
+      {
+        "test_id": "REQ-I-002.TC06",
+        "detail": "Introduce un 'utente marketing' (MKT-001) e una 'area marketing/reportistica' specifica non menzionata nel requisito (che dice solo 'visibili al marketing' senza canale/strumento)."
+      },
+      {
+        "test_id": "REQ-I-002.TC07",
+        "detail": "Introduce regole di fallback non presenti: 'pricing di default', blocco acquisto, invio a Connect con valori null/zero o nessun invio; il requisito non specifica comportamento in assenza configurazione."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"...integrare l'erogazione di extra-cashback e punti ... in caso di acquisto contestuale o entro periodi definiti\"",
+        "detail": "Nessun test valida esplicitamente la logica 'entro periodi definiti' (finestra temporale) e la differenza tra acquisto contestuale vs entro periodo; i TC coprono l'acquisto contestuale ma non l'erogazione condizionata a finestre temporali."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-002.TC02",
+          "REQ-I-002.TC03"
+        ],
+        "detail": "Entrambi verificano variazioni di valori mostrati in base a dimensioni di configurazione (tipologia cliente vs canale) con struttura molto simile (login, apertura scheda bundle, verifica valori)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 22,
+    "coherence_score": 25,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-002.US01.TC03",
+        "detail": "Introduce una regola temporale specifica ('entro 7 giorni dall'acquisto del prodotto principale') e l'aspettativa che tale condizione sia sempre visualizzata in UI; il requisito parla di 'periodi definiti' ma non specifica durata, dipendenza da 'prodotto principale' né obbligo di visualizzazione preventiva."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC04",
+        "detail": "Introduce stato di erogazione 'Erogato' e l'esistenza di un 'evento di erogazione registrato ... (proveniente da Connect o dal Motore)'; il requisito non definisce stati né la sorgente dei record."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC05",
+        "detail": "Introduce il concetto di 'cliente aderente/non aderente a Connect' e messaggistica di inapplicabilità; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC06",
+        "detail": "Assume che la consultazione dei dettagli erogazione richieda chiamate runtime a Framework Connect e che il pricing resti consultabile indipendentemente; il requisito non definisce dipendenze architetturali né comportamento in errore."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC08",
+        "detail": "Introduce scenario di doppio acquisto (prodotto principale a T0 e componente subordinato a T0+10) e verifica di 'assenza erogazione' fuori finestra; il requisito non parla di prodotto principale/subordinato né di due eventi distinti."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC09",
+        "detail": "Introduce canale fisico 'UP' e un operatore che consulta per conto del cliente; non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC01",
+        "detail": "Introduce una 'dashboard marketing' per creare configurazioni; il requisito dice solo 'È possibile configurare' senza specificare strumenti/UI o attore."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC05",
+        "detail": "Introduce regole di validazione campi obbligatori (tipologia cliente/canale) e blocco salvataggio; non definite nel requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC06",
+        "detail": "Introduce gestione conflitti per configurazioni duplicate sulla stessa terna e vincolo 'una sola configurazione attiva'; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC07",
+        "detail": "Introduce requisito di 'retry' in consultazione log marketing; il requisito richiede visibilità nei log ma non specifica funzionalità di retry."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC08",
+        "detail": "Introduce controllo autorizzazioni/ruoli (utente non marketing) per accesso alla configurazione; non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC01",
+        "detail": "Introduce componenti/architettura non citati: 'Motore di Offerte', endpoint interni, chiamate di determinazione/composizione."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC02",
+        "detail": "Introduce identificativi transazione (TX-90001) e id operazione Connect (CONNECT-OP-12345) e l'aspettativa che il Motore 'consideri completata' l'operazione; non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC04",
+        "detail": "Introduce vincolo 'senza generare doppie erogazioni' e stati 'pending'; non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-2: \"Il sistema è integrato con il Framework Connect per la registrazione e l'erogazione di cashback e punti.\"",
+        "detail": "Diversi TC (specialmente US01/US02) trattano visibilità o configurazione senza verificare effettivamente la 'registrazione ed erogazione' verso Framework Connect (chiamata/record). La copertura di AC-2 esiste (US03.TC02/TC04/TC05), ma non è coerentemente collegata agli scenari di canale/UI descritti in US01."
+      },
+      {
+        "source": "Descrizione requisito: \"...associare la scontistica prevista... variabile per tipologia di cliente, canale e combinazione\"",
+        "detail": "I TC coprono bundle/cliente/canale, ma spesso assumono formule di calcolo (sconto percentuale, prezzo listino) non richieste; manca una verifica neutra rispetto al tipo di pricing (es. prezzo fisso configurato) senza introdurre regole di calcolo."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-002.US01.TC01",
+          "REQ-I-002.US03.TC01"
+        ],
+        "detail": "Entrambi verificano l'applicazione del pricing configurato per bundle/cliente/canale (uno via UI, uno via 'Motore'), con sovrapposizione concettuale rispetto ad AC-1."
+      },
+      {
+        "test_ids": [
+          "REQ-I-002.US01.TC07",
+          "REQ-I-002.US03.TC06"
+        ],
+        "detail": "Entrambi coprono l'assenza/incoerenza di configurazione applicabile e l'aspettativa di comportamento controllato senza applicare configurazioni errate."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 14) e meno deviazioni architetturali/di processo (dashboard, motore, ruoli, canali fisici, stati). Inoltre nel set indirect_persona molte assunzioni (aderenza a Connect, regole temporali '7 giorni', UP, retry, autorizzazioni, Motore) non sono supportate dal requisito, riducendo drasticamente la coerenza complessiva (62 vs 25)."
+  }
+}

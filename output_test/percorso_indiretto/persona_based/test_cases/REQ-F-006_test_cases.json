@@ -1,0 +1,437 @@
+[
+  {
+    "story_id": "REQ-F-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-006.US01.TC01",
+        "title": "Canale fisico: visualizzazione descrizione completa (benefici, sconto, motivazione) accanto alla proposta singola",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Il Motore di Offerte restituisce per il cliente selezionato almeno 1 prodotto suggerito sottoscrivibile/attivo con descrizione generata",
+          "La proposta è visualizzabile nel front-end commerciale (cliente correttamente identificato e profilo caricato)"
+        ],
+        "test_data": [
+          "Cliente: CF RSSMRA80A01H501U (profilo con dati completi)",
+          "Prodotto suggerito: 'Carta Premium' (ID prodotto: CP-001)",
+          "Descrizione attesa (esempio verificabile): \"Benefici: cashback 2% su spese; Sconto: canone -50% per 12 mesi; Motivazione: usi frequenti su POS nell'ultimo trimestre\""
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore OSP/OFE",
+          "Ricercare e selezionare il cliente tramite codice fiscale",
+          "Aprire la sezione che mostra le proposte del Motore di Offerte per il cliente",
+          "Individuare la proposta del prodotto 'Carta Premium'",
+          "Verificare la presenza della descrizione breve visualizzata accanto alla proposta"
+        ],
+        "expected_results": [
+          "Accanto alla proposta del prodotto selezionato è presente un testo breve (descrizione) associato alla proposta",
+          "La descrizione contiene esplicitamente una sezione/parte riconoscibile di 'benefici del prodotto'",
+          "La descrizione contiene esplicitamente un 'valore dello sconto' riservato al cliente (con valore non nullo e non ambiguo, es. percentuale o importo e periodo se applicabile)",
+          "La descrizione contiene esplicitamente una 'motivazione della proposta' riferita al contesto cliente",
+          "La descrizione visualizzata è associata alla proposta corretta (nessuna descrizione di altro prodotto)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non definisce formalmente la lunghezza massima di 'testo breve'; il test verifica solo la presenza e i contenuti obbligatori. La verifica della coerenza della motivazione è limitata alla presenza di un riferimento al contesto cliente, senza regole deterministiche fornite."
+      },
+      {
+        "test_id": "REQ-F-006.US01.TC02",
+        "title": "Canale fisico: più prodotti suggeriti, ciascuno con descrizione completa e correttamente associata",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Il Motore di Offerte restituisce per il cliente selezionato almeno 3 prodotti suggeriti sottoscrivibili/attivi, ciascuno con descrizione generata"
+        ],
+        "test_data": [
+          "Cliente: CF VRDLGI75C10F205Z",
+          "Prodotti suggeriti: 'Prestito Personale' (PP-010), 'Assicurazione Casa' (AC-020), 'Carta Premium' (CP-001)",
+          "Descrizioni attese: per ogni prodotto, testo contenente Benefici + Sconto + Motivazione (valori specifici per prodotto/cliente)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore OSP/OFE",
+          "Selezionare il cliente VRDLGI75C10F205Z",
+          "Aprire la lista delle proposte suggerite dal Motore di Offerte",
+          "Per ciascuna proposta in lista, verificare la presenza della descrizione visualizzata accanto alla proposta",
+          "Per ciascuna descrizione, verificare la presenza esplicita di benefici, sconto e motivazione"
+        ],
+        "expected_results": [
+          "Per ogni prodotto suggerito visualizzato è presente una descrizione breve accanto alla relativa proposta",
+          "Per ogni descrizione sono presenti esplicitamente i tre elementi: benefici, valore dello sconto, motivazione",
+          "Non sono presenti descrizioni duplicate o scambiate tra prodotti (associazione 1:1 tra proposta e descrizione)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non specifica il formato (etichette, separatori) dei tre elementi; la verifica è basata sulla riconoscibilità esplicita dei contenuti."
+      },
+      {
+        "test_id": "REQ-F-006.US01.TC03",
+        "title": "Canale fisico: matrice di verificabilità su prodotti e contesti cliente differenti",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Disponibili almeno 3 clienti con contesti differenti e proposte suggerite con descrizioni generate dal Motore di Offerte"
+        ],
+        "test_data": [
+          "Cliente A: CF RSSMRA80A01H501U (profilo con alta operatività POS) + Prodotto: Carta Premium (CP-001)",
+          "Cliente B: CF BNCLNZ90D15L219K (mutuo attivo) + Prodotto: Assicurazione Casa (AC-020)",
+          "Cliente C: CF FRNGPP68E22D612R (accredito stipendio recente) + Prodotto: Conto Plus (CT-005)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore",
+          "Selezionare il Cliente A e aprire le proposte suggerite",
+          "Annotare la descrizione della proposta target e verificare la presenza di benefici, sconto e motivazione",
+          "Selezionare il Cliente B e aprire le proposte suggerite",
+          "Annotare la descrizione della proposta target e verificare la presenza di benefici, sconto e motivazione",
+          "Selezionare il Cliente C e aprire le proposte suggerite",
+          "Annotare la descrizione della proposta target e verificare la presenza di benefici, sconto e motivazione"
+        ],
+        "expected_results": [
+          "Per ciascun cliente e per ciascun prodotto target la descrizione è presente e verificabile (testo leggibile e associato alla proposta)",
+          "In tutti i casi la descrizione contiene i tre elementi richiesti: benefici, valore dello sconto, motivazione",
+          "Le descrizioni risultano differenziate tra contesti cliente/prodotto (non identiche tra tutti i casi, salvo prodotti/contesti effettivamente equivalenti)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "La 'coerenza' della personalizzazione non è definita da regole deterministiche nel requisito; si verifica almeno che le descrizioni non siano tutte uguali e che la motivazione contenga un riferimento contestuale. Eventuali baseline attese (golden data) devono essere fornite dal team di business/ML per rendere il test completamente deterministico."
+      },
+      {
+        "test_id": "REQ-F-006.US01.TC04",
+        "title": "Canale fisico: anomalia descrizione mancante di uno dei tre elementi obbligatori",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Il Motore di Offerte restituisce una proposta con descrizione priva di uno degli elementi obbligatori (benefici o sconto o motivazione) oppure con campo mancante",
+          "Ambiente di test con possibilità di simulare/forzare la risposta del servizio descrizioni (stub/mocking o dataset dedicato)"
+        ],
+        "test_data": [
+          "Cliente: CF PLMNDR85H10A662S",
+          "Prodotto suggerito: 'Carta Premium' (CP-001)",
+          "Descrizione anomala (esempio): \"Benefici: cashback 2% su spese; Motivazione: usi frequenti su POS\" (manca 'Sconto')"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore",
+          "Selezionare il cliente PLMNDR85H10A662S",
+          "Aprire la sezione proposte suggerite",
+          "Individuare la proposta con descrizione anomala",
+          "Osservare il comportamento del front-end rispetto alla descrizione non conforme"
+        ],
+        "expected_results": [
+          "La proposta non viene presentata come conforme con una descrizione incompleta (non deve essere mostrato un testo che sembri completo ma manchi di uno degli elementi richiesti)",
+          "Il sistema applica un comportamento di gestione anomalia chiaramente osservabile (es. descrizione non mostrata oppure placeholder/messaggio di indisponibilità), coerente con lo standard del canale",
+          "Non viene mostrato alcun valore di sconto/beneficio/motivazione fuorviante o inventato dal canale"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito indica che la proposta non deve risultare conforme ma non definisce il fallback (blocco visualizzazione vs placeholder). Il test valida che non venga mostrata una descrizione apparentemente conforme e che la gestione anomalia sia esplicita; la specifica del messaggio/placeholder va definita."
+      },
+      {
+        "test_id": "REQ-F-006.US01.TC05",
+        "title": "Canale fisico: sconto non applicabile/non disponibile, evitare esposizione di valore fuorviante",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Il Motore di Offerte restituisce una proposta per cui lo sconto non è applicabile o non è disponibile per il cliente (campo sconto assente o valorizzato come non applicabile)"
+        ],
+        "test_data": [
+          "Cliente: CF GLLFNC92A41F839X",
+          "Prodotto suggerito: 'Conto Plus' (CT-005)",
+          "Risposta descrizione: benefici e motivazione presenti; sconto non disponibile (es. sconto=null o flag 'notApplicable')"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore",
+          "Selezionare il cliente GLLFNC92A41F839X",
+          "Aprire la lista delle proposte suggerite",
+          "Individuare la proposta 'Conto Plus'",
+          "Verificare come viene rappresentata l'informazione di sconto nella descrizione"
+        ],
+        "expected_results": [
+          "Il canale non mostra un valore di sconto numerico/percentuale non supportato dai dati ricevuti",
+          "La descrizione non contiene informazioni di sconto fuorvianti (es. '0%' se non previsto, oppure un importo casuale)",
+          "È applicato un comportamento di fallback osservabile per l'elemento sconto (es. dicitura 'Sconto non disponibile' o omissione controllata con placeholder), secondo standard di canale"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Il requisito non definisce il formato del fallback quando lo sconto non è disponibile; il test verifica l'assenza di valori fuorvianti e la presenza di una gestione esplicita."
+      },
+      {
+        "test_id": "REQ-F-006.US01.TC06",
+        "title": "Canale fisico: timeout/errore nel recupero descrizione, gestione placeholder/messaggio",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore OSP/OFE autenticato sul front-end commerciale del canale fisico",
+          "Disponibile una proposta suggerita per il cliente selezionato",
+          "Possibilità di simulare errore HTTP 5xx o timeout dal servizio che fornisce la descrizione (Motore di Offerte o servizio orchestrato)"
+        ],
+        "test_data": [
+          "Cliente: CF SRNLCU77M12H224J",
+          "Simulazione servizio descrizioni: timeout > 10s oppure risposta HTTP 504/500"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale del canale fisico come Operatore",
+          "Selezionare il cliente SRNLCU77M12H224J",
+          "Aprire la sezione proposte suggerite che richiede il recupero descrizioni",
+          "Indurre il timeout/errore del servizio descrizioni",
+          "Osservare la UI e l'eventuale logging/telemetria disponibile in ambiente di test"
+        ],
+        "expected_results": [
+          "L'operatore non visualizza una descrizione parziale o corrotta",
+          "Il canale mostra un placeholder o messaggio di indisponibilità della descrizione secondo standard del canale (comportamento osservabile)",
+          "La proposta rimane navigabile senza bloccare l'intera pagina/flow (salvo diversa decisione di progetto non fornita)",
+          "Non vengono mostrati dati inventati per sostituire la descrizione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale per OSP/OFE/figure di sala"
+        ],
+        "notes": "Lo standard esatto del messaggio/placeholder non è definito; il test verifica la gestione dell'errore in modo non fuorviante e senza degradare l'intero flusso."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-006.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-006.US02.TC01",
+        "title": "Touchpoint digitali (App/Web): visualizzazione descrizione completa per proposta singola in modalità self-service",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato (sessione valida) sul touchpoint selezionato",
+          "Il sistema mostra al cliente almeno 1 prodotto suggerito in modalità self-service",
+          "Il Motore di Offerte restituisce per la proposta una descrizione generata"
+        ],
+        "test_data": [
+          "Cliente: username 'cliente.self01' (profilo con dati completi)",
+          "Prodotto suggerito: 'Assicurazione Casa' (AC-020)",
+          "Descrizione attesa (esempio verificabile): \"Benefici: copertura eventi domestici; Sconto: -15% sul premio annuale; Motivazione: mutuo attivo e immobile di proprietà\""
+        ],
+        "steps": [
+          "Accedere al touchpoint digitale come cliente 'cliente.self01'",
+          "Navigare alla sezione in cui sono mostrate le proposte suggerite (self-service)",
+          "Selezionare o visualizzare la proposta 'Assicurazione Casa'",
+          "Verificare la presenza della descrizione breve associata alla proposta"
+        ],
+        "expected_results": [
+          "È presente un testo breve associato alla proposta visualizzata",
+          "La descrizione contiene esplicitamente benefici del prodotto",
+          "La descrizione contiene esplicitamente il valore dello sconto riservato al cliente",
+          "La descrizione contiene esplicitamente la motivazione della proposta",
+          "La descrizione è visibile in modalità self-service senza necessità di intervento operatore"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica la posizione esatta della descrizione nella UI (lista, dettaglio, pop-up). Il test va eseguito nel punto del touchpoint in cui la proposta è effettivamente esposta."
+      },
+      {
+        "test_id": "REQ-F-006.US02.TC02",
+        "title": "Touchpoint digitali (App/Web): più prodotti suggeriti, ciascuno con descrizione completa",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul touchpoint selezionato",
+          "Il sistema mostra almeno 3 prodotti suggeriti in modalità self-service, ciascuno con descrizione generata disponibile"
+        ],
+        "test_data": [
+          "Cliente: username 'cliente.self02'",
+          "Prodotti suggeriti: 'Carta Premium' (CP-001), 'Conto Plus' (CT-005), 'Prestito Personale' (PP-010)"
+        ],
+        "steps": [
+          "Accedere al touchpoint digitale come cliente 'cliente.self02'",
+          "Aprire la sezione proposte suggerite (self-service)",
+          "Per ciascuna proposta mostrata, individuare la descrizione associata",
+          "Per ciascuna descrizione, verificare la presenza di benefici, sconto e motivazione"
+        ],
+        "expected_results": [
+          "Ogni prodotto suggerito mostrato al cliente ha una descrizione breve associata",
+          "Ogni descrizione contiene esplicitamente benefici, valore dello sconto e motivazione",
+          "Le descrizioni sono associate correttamente alle rispettive proposte (nessuno scambio tra prodotti)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Se App e Web presentano UI differenti, eseguire il controllo in entrambi i canali; il requisito indica comportamento uniforme."
+      },
+      {
+        "test_id": "REQ-F-006.US02.TC03",
+        "title": "Touchpoint digitali: verificabilità output su clienti/prodotti diversi (matrice casi)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Disponibili almeno 3 clienti digitali con contesti differenti e proposte suggerite con descrizioni generate",
+          "Accesso disponibile sia da App sia da Web (stesso backend offerte)"
+        ],
+        "test_data": [
+          "Cliente A: 'cliente.self01' + Prodotto: Carta Premium (CP-001)",
+          "Cliente B: 'cliente.self03' + Prodotto: Prestito Personale (PP-010)",
+          "Cliente C: 'cliente.self04' + Prodotto: Assicurazione Casa (AC-020)"
+        ],
+        "steps": [
+          "Accedere da Web come Cliente A e aprire le proposte suggerite",
+          "Verificare che la descrizione della proposta target contenga benefici, sconto e motivazione",
+          "Accedere da App come Cliente B e aprire le proposte suggerite",
+          "Verificare che la descrizione della proposta target contenga benefici, sconto e motivazione",
+          "Accedere da Web come Cliente C e aprire le proposte suggerite",
+          "Verificare che la descrizione della proposta target contenga benefici, sconto e motivazione"
+        ],
+        "expected_results": [
+          "In tutti i casi testati l'output è verificabile (testo visibile e associato alla proposta) e contiene i tre elementi richiesti",
+          "Le descrizioni risultano differenziate tra contesti cliente/prodotto (non tutte identiche, salvo equivalenza reale)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Per rendere il test completamente deterministico in automazione, è consigliato disporre di dataset controllati o snapshot delle risposte del Motore di Offerte (golden responses)."
+      },
+      {
+        "test_id": "REQ-F-006.US02.TC04",
+        "title": "Touchpoint digitali: anomalia descrizione incompleta (manca benefici/sconto/motivazione) non deve apparire come conforme",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul touchpoint selezionato",
+          "Disponibile una proposta suggerita con descrizione priva di uno degli elementi obbligatori (simulazione via stub/dataset)",
+          "Il canale digitale recupera la descrizione dal backend al caricamento della sezione offerte o del dettaglio proposta"
+        ],
+        "test_data": [
+          "Cliente: username 'cliente.self05'",
+          "Prodotto: 'Prestito Personale' (PP-010)",
+          "Descrizione anomala (esempio): \"Benefici: rata flessibile; Sconto: TAN -1,0%\" (manca 'Motivazione')"
+        ],
+        "steps": [
+          "Accedere al touchpoint digitale come 'cliente.self05'",
+          "Aprire la sezione proposte suggerite (self-service)",
+          "Visualizzare la proposta 'Prestito Personale'",
+          "Osservare il comportamento della UI rispetto alla descrizione incompleta"
+        ],
+        "expected_results": [
+          "Il canale non mostra una descrizione che risulti apparentemente completa se manca uno degli elementi obbligatori",
+          "È presente una gestione anomalia osservabile (es. descrizione non mostrata o placeholder/messaggio di indisponibilità) secondo standard UX del canale",
+          "Non vengono inventati o completati automaticamente dal canale i contenuti mancanti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il fallback UX non è definito nel requisito; il test valida l'assenza di contenuto fuorviante e la presenza di una gestione esplicita."
+      },
+      {
+        "test_id": "REQ-F-006.US02.TC05",
+        "title": "Touchpoint digitali: sconto non disponibile/non applicabile, non mostrare valori di sconto fuorvianti",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato sul touchpoint selezionato",
+          "Disponibile una proposta suggerita per cui lo sconto non è applicabile o non disponibile (campo assente/flag dedicato)"
+        ],
+        "test_data": [
+          "Cliente: username 'cliente.self06'",
+          "Prodotto: 'Conto Plus' (CT-005)",
+          "Risposta descrizione: benefici e motivazione presenti; sconto non disponibile"
+        ],
+        "steps": [
+          "Accedere al touchpoint digitale come 'cliente.self06'",
+          "Aprire la sezione proposte suggerite",
+          "Visualizzare la proposta 'Conto Plus'",
+          "Verificare la rappresentazione dello sconto nella descrizione"
+        ],
+        "expected_results": [
+          "Non viene mostrato un valore di sconto numerico/percentuale se non presente o non applicabile",
+          "La UI mostra un fallback non fuorviante per l'informazione di sconto (es. dicitura 'Sconto non disponibile' o placeholder) secondo standard UX del canale",
+          "La descrizione non induce il cliente a credere che esista uno sconto quando non disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non definisce come rappresentare lo sconto non disponibile; il test verifica l'assenza di valori fuorvianti e la gestione esplicita."
+      },
+      {
+        "test_id": "REQ-F-006.US02.TC06",
+        "title": "Touchpoint digitali: errore/timeout recupero descrizione, gestione errore/placeholder senza blocco del self-service",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato su App o Web",
+          "Disponibile almeno una proposta suggerita",
+          "Possibilità di simulare timeout o errore dal backend che fornisce la descrizione (HTTP 5xx/504)"
+        ],
+        "test_data": [
+          "Cliente: username 'cliente.self07'",
+          "Simulazione backend descrizioni: HTTP 504 oppure timeout > 10s"
+        ],
+        "steps": [
+          "Accedere al touchpoint digitale come 'cliente.self07'",
+          "Aprire la sezione proposte suggerite (self-service)",
+          "Indurre l'errore/timeout del backend descrizioni durante il caricamento",
+          "Osservare la UI e l'eventuale possibilità di ricaricare la sezione"
+        ],
+        "expected_results": [
+          "La descrizione non viene mostrata in modo parziale o incoerente",
+          "La UI mostra un messaggio/placeholder di indisponibilità della descrizione secondo standard UX del canale",
+          "Il cliente può continuare a visualizzare la proposta (salvo diversa decisione di progetto non fornita) senza crash dell'app o errore bloccante della pagina",
+          "Non vengono mostrati contenuti di descrizione inventati dal canale"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Lo standard UX per errori non è definito; il test valida comportamento non fuorviante e resiliente. Se esiste un meccanismo di retry, aggiungere asserzioni specifiche in base alla UX definita."
+      }
+    ]
+  }
+]

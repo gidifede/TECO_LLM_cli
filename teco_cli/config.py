@@ -52,7 +52,7 @@ def load_config(
     api_key = os.getenv("AZURE_OPENAI_API_KEY", "")
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
-    deployment = deployment_override or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4.1")
+    deployment = deployment_override or os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-5.2")
 
     if not api_key:
         raise ValueError("AZURE_OPENAI_API_KEY non configurata")

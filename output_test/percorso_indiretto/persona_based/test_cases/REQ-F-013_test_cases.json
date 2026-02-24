@@ -1,0 +1,456 @@
+[
+  {
+    "story_id": "REQ-F-013.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-013.US01.TC01",
+        "title": "Creazione priorità per offerta singola e associazione a un touchpoint (dashboard)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permessi di gestione configurazione marketing (creazione/modifica priorità)",
+          "Esistono nel catalogo almeno 2 offerte singole attive: OFF-1001, OFF-1002",
+          "Elenco touchpoint disponibile in dashboard (da REQ-F-005), include almeno: TP-WEB, TP-APP"
+        ],
+        "test_data": [
+          "Offerta: OFF-1001",
+          "Touchpoint: TP-WEB",
+          "Valore priorità: 10"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing autorizzato",
+          "Aprire la funzionalità di configurazione offerte/bundle",
+          "Selezionare l'offerta singola OFF-1001",
+          "Impostare il valore di priorità a 10",
+          "Associare la priorità al touchpoint TP-WEB",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "La configurazione viene salvata con successo per OFF-1001",
+          "Risulta presente un'associazione tra OFF-1001, TP-WEB e priorità=10",
+          "Il touchpoint TP-WEB risulta selezionato/associato nella configurazione dell'offerta"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: la priorità è un valore ordinabile (es. intero) inseribile da dashboard; l'elenco touchpoint è fornito dal requisito REQ-F-005."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC02",
+        "title": "Creazione priorità per bundle e associazione a più touchpoint (dashboard)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permessi di gestione configurazione marketing (creazione/modifica priorità)",
+          "Esiste nel catalogo almeno 1 bundle attivo: BND-2001",
+          "Elenco touchpoint disponibile in dashboard include almeno: TP-WEB, TP-APP"
+        ],
+        "test_data": [
+          "Bundle: BND-2001",
+          "Touchpoint: TP-WEB, TP-APP",
+          "Valore priorità: 5"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing autorizzato",
+          "Aprire la funzionalità di configurazione offerte/bundle",
+          "Selezionare il bundle BND-2001",
+          "Impostare il valore di priorità a 5",
+          "Associare la priorità ai touchpoint TP-WEB e TP-APP",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "La configurazione viene salvata con successo per BND-2001",
+          "Risultano presenti le associazioni tra BND-2001 e TP-WEB con priorità=5 e tra BND-2001 e TP-APP con priorità=5"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: la stessa priorità può essere associata a più touchpoint tramite selezione multipla."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC03",
+        "title": "Ordinamento offerte per touchpoint tiene conto delle priorità configurate",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esistono nel catalogo le offerte OFF-1001, OFF-1002 attive e proponibili sul touchpoint TP-WEB",
+          "Configurazione marketing presente: OFF-1001 associata a TP-WEB con priorità=10",
+          "Configurazione marketing presente: OFF-1002 associata a TP-WEB con priorità=20",
+          "È disponibile un endpoint/servizio che restituisce la lista offerte ordinata per cliente e touchpoint (Motore di Offerte o componente equivalente)"
+        ],
+        "test_data": [
+          "Cliente: CUST-9001",
+          "Touchpoint: TP-WEB",
+          "Offerte: OFF-1001 (priorità 10), OFF-1002 (priorità 20)"
+        ],
+        "steps": [
+          "Invocare il servizio di recupero lista offerte per il cliente CUST-9001 e touchpoint TP-WEB",
+          "Acquisire la lista offerte restituita con l'ordine di presentazione"
+        ],
+        "expected_results": [
+          "La lista offerte include OFF-1001 e OFF-1002",
+          "OFF-1002 compare prima di OFF-1001 (priorità più alta = posizione più alta) oppure, se la convenzione è inversa, l'ordinamento rispetta in modo coerente e deterministico la regola di confronto della priorità configurata",
+          "L'ordinamento osservato è coerente con i valori di priorità configurati per TP-WEB"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione necessaria: definizione della convenzione (numero più alto = maggiore priorità o viceversa). Il test verifica il rispetto della regola configurata, purché deterministica."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC04",
+        "title": "Assenza di priorità configurata per touchpoint: applicazione ordering di default deterministico",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esistono nel catalogo almeno 3 offerte attive proponibili sul touchpoint TP-APP: OFF-1101, OFF-1102, OFF-1103",
+          "Non esistono configurazioni di priorità marketing per TP-APP per OFF-1101, OFF-1102, OFF-1103",
+          "È disponibile un endpoint/servizio che restituisce la lista offerte ordinata per cliente e touchpoint"
+        ],
+        "test_data": [
+          "Cliente: CUST-9002",
+          "Touchpoint: TP-APP",
+          "Offerte: OFF-1101, OFF-1102, OFF-1103 (nessuna priorità configurata)"
+        ],
+        "steps": [
+          "Invocare il servizio di recupero lista offerte per il cliente CUST-9002 e touchpoint TP-APP",
+          "Acquisire la lista offerte restituita con l'ordine di presentazione",
+          "Ripetere la stessa invocazione una seconda volta con gli stessi parametri"
+        ],
+        "expected_results": [
+          "La lista offerte include OFF-1101, OFF-1102, OFF-1103",
+          "L'ordinamento restituito segue le regole automatiche/di default del sistema (non basate su priorità marketing per TP-APP)",
+          "A parità di input, l'ordine restituito è identico tra la prima e la seconda invocazione (deterministico)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: definizione delle regole di ordering di default del sistema. Il test valida che in assenza di priorità marketing l'ordinamento non fallisca e sia deterministico."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC05",
+        "title": "Conflitto di configurazione marketing per stessa offerta e touchpoint: risoluzione deterministica e tracciamento nei log",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste nel catalogo l'offerta OFF-1201 attiva e proponibile su TP-WEB",
+          "Esistono due regole/configurazioni marketing entrambe applicabili a OFF-1201 su TP-WEB (configurazione in conflitto) create tramite strumenti/amministrazione disponibili",
+          "È disponibile un endpoint/servizio che restituisce la lista offerte ordinata per cliente e touchpoint",
+          "È possibile consultare i log di proposta (es. tramite sistema di logging centralizzato o tabella audit)"
+        ],
+        "test_data": [
+          "Cliente: CUST-9003",
+          "Touchpoint: TP-WEB",
+          "Offerta: OFF-1201",
+          "Regola A: priorità=10 per OFF-1201 su TP-WEB",
+          "Regola B: priorità=20 per OFF-1201 su TP-WEB"
+        ],
+        "steps": [
+          "Invocare il servizio di recupero lista offerte per il cliente CUST-9003 e touchpoint TP-WEB",
+          "Identificare l'ordine finale in cui compare OFF-1201 (posizione e contesto)",
+          "Recuperare l'evento/log di proposta relativo alla richiesta effettuata",
+          "Analizzare nel log le informazioni sulla risoluzione del conflitto"
+        ],
+        "expected_results": [
+          "Il sistema produce un ordine finale deterministico nonostante il conflitto di configurazione",
+          "Nei log di proposta è presente evidenza della regola di risoluzione applicata (es. regola selezionata o criterio di precedenza) in modo da poter ricostruire perché è stato scelto quel valore/ordine",
+          "Nei log di proposta sono presenti almeno: identificativo touchpoint, identificativi offerte coinvolte e ordine/posizione risultante"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esiste una regola di risoluzione deterministica definita a sistema; il requisito non specifica quale. Il test verifica la determinismo e la tracciatura della risoluzione nei log."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC06",
+        "title": "Accesso negato a utente non autorizzato alla configurazione priorità (dashboard) con tracciamento sicurezza",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile in dashboard senza permessi di gestione configurazione marketing (es. ruolo 'Viewer' o utente non appartenente al Team Marketing)",
+          "È attivo un meccanismo di audit/sicurezza che registra tentativi di accesso o modifica non autorizzati (policy di sicurezza)"
+        ],
+        "test_data": [
+          "Utente non autorizzato: user_viewer_01",
+          "Risorsa: pagina/funzionalità 'Configurazione offerte/bundle'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente user_viewer_01",
+          "Tentare di aprire la funzionalità di configurazione offerte/bundle",
+          "Se la pagina è accessibile in sola lettura, tentare di impostare/modificare una priorità e salvare"
+        ],
+        "expected_results": [
+          "L'accesso alla funzionalità è negato oppure le azioni di modifica sono inibite in modo esplicito",
+          "Il sistema non salva alcuna modifica di priorità/associazione touchpoint",
+          "Il tentativo non autorizzato è tracciato secondo le policy di sicurezza (evento/audit con utente, timestamp, azione, esito negato)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: specifica delle policy di sicurezza e del punto di consultazione dei log di sicurezza."
+      },
+      {
+        "test_id": "REQ-F-013.US01.TC07",
+        "title": "Registrazione nei log di proposta delle informazioni per ricostruire l'ordine determinato da priorità per touchpoint",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esistono nel catalogo le offerte OFF-1301, OFF-1302 attive e proponibili su TP-WEB",
+          "Configurazione marketing presente: OFF-1301 associata a TP-WEB con priorità=30; OFF-1302 associata a TP-WEB con priorità=10",
+          "È disponibile un endpoint/servizio che restituisce la lista offerte ordinata per cliente e touchpoint",
+          "È possibile consultare i log di proposta generati dalla richiesta"
+        ],
+        "test_data": [
+          "Cliente: CUST-9004",
+          "Touchpoint: TP-WEB",
+          "Offerte: OFF-1301 (priorità 30), OFF-1302 (priorità 10)"
+        ],
+        "steps": [
+          "Invocare il servizio di recupero lista offerte per il cliente CUST-9004 e touchpoint TP-WEB",
+          "Recuperare l'evento/log di proposta associato alla richiesta (correlazione tramite request-id/correlation-id se disponibile)",
+          "Verificare nel log i dettagli dell'ordine determinato"
+        ],
+        "expected_results": [
+          "Nei log di proposta è presente l'elenco delle offerte con la posizione/ordine finale (ranking/indice)",
+          "Nei log di proposta è presente il touchpoint TP-WEB",
+          "Nei log di proposta è presente un'indicazione della logica di ordering utilizzata (almeno: applicazione priorità marketing) sufficiente a ricostruire l'ordine determinato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: il log contiene almeno identificativi offerte, touchpoint e posizione finale; il requisito originale non dettaglia lo schema del log."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-013.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-013.US02.TC01",
+        "title": "Ordering automatico basato su modello di propensity per cliente e touchpoint",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un modello/servizio di propensity integrato e invocabile dal Motore di Offerte",
+          "Esistono almeno 3 offerte proponibili sul touchpoint TP-WEB: OFF-2001, OFF-2002, OFF-2003",
+          "Il modello di propensity restituisce score deterministici per la stessa richiesta (stesso cliente, touchpoint, set offerte)"
+        ],
+        "test_data": [
+          "Cliente: CUST-9101",
+          "Touchpoint: TP-WEB",
+          "Offerte candidate: OFF-2001, OFF-2002, OFF-2003"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9101 su TP-WEB",
+          "Acquisire l'ordine delle offerte restituito",
+          "Ripetere la stessa invocazione con gli stessi parametri",
+          "Confrontare l'ordine restituito tra le due invocazioni"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte applica un ordinamento automatico basato su propensity (non mantiene un ordine casuale o non deterministico)",
+          "L'output contiene un ordine deterministico delle offerte (l'ordine della prima e seconda invocazione è identico a parità di input)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: contratto del modello di propensity e garanzia di determinismo a parità di input; non specificato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC02",
+        "title": "Combinazione deterministica tra priorità marketing per touchpoint e propensity (se configurata)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un modello/servizio di propensity integrato e invocabile dal Motore di Offerte",
+          "Esistono almeno 3 offerte proponibili sul touchpoint TP-APP: OFF-2101, OFF-2102, OFF-2103",
+          "Esiste configurazione marketing di priorità per TP-APP per almeno una delle offerte (es. OFF-2103)",
+          "È definita una logica deterministica di combinazione tra priorità e propensity (da refinement)"
+        ],
+        "test_data": [
+          "Cliente: CUST-9102",
+          "Touchpoint: TP-APP",
+          "Offerte candidate: OFF-2101, OFF-2102, OFF-2103",
+          "Priorità marketing: OFF-2103 priorità=100 su TP-APP"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9102 su TP-APP",
+          "Acquisire l'ordine delle offerte restituito",
+          "Ripetere la stessa invocazione con gli stessi parametri",
+          "Recuperare i log di proposta associati alla richiesta"
+        ],
+        "expected_results": [
+          "L'output contiene un ordine deterministico risultante dal modello di propensity eventualmente combinato con la priorità configurata per touchpoint",
+          "A parità di input, l'ordine restituito è identico tra invocazioni ripetute",
+          "Nei log di proposta è indicato che l'ordering ha considerato propensity e priorità marketing (o la logica di combinazione applicata)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Assunzione: esiste una regola di combinazione priorità+propensity deterministica, non specificata nel requisito; il test verifica determinismo e tracciabilità della logica applicata."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC03",
+        "title": "Modello di propensity non disponibile: applicazione fallback deterministico e tracciamento nei log",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è configurato per invocare un servizio/modello di propensity esterno",
+          "È possibile simulare indisponibilità del modello (timeout/HTTP 5xx) tramite ambiente di test o mock",
+          "Esistono almeno 3 offerte proponibili su TP-WEB: OFF-2201, OFF-2202, OFF-2203",
+          "È possibile consultare i log di proposta associati alla richiesta"
+        ],
+        "test_data": [
+          "Cliente: CUST-9103",
+          "Touchpoint: TP-WEB",
+          "Offerte candidate: OFF-2201, OFF-2202, OFF-2203",
+          "Errore simulato modello: HTTP 503 oppure timeout > soglia configurata"
+        ],
+        "steps": [
+          "Configurare il mock/ambiente per far fallire la chiamata al modello di propensity con HTTP 503 o timeout",
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9103 su TP-WEB",
+          "Acquisire l'ordine delle offerte restituito",
+          "Recuperare i log di proposta associati alla richiesta"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte restituisce comunque una lista offerte ordinata (non errore bloccante lato consumer) applicando un fallback deterministico",
+          "A parità di input e con modello non disponibile, l'ordine di fallback è deterministico (ripetendo la chiamata si ottiene lo stesso ordine)",
+          "Nei log di proposta è presente l'indicazione che è stato applicato il fallback per indisponibilità/errore del modello (con dettaglio dell'errore o codice esito)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: definizione dell'ordinamento di fallback e delle soglie di timeout/retry."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC04",
+        "title": "Propensity non calcolabile per alcune offerte: ordinamento con fallback per le offerte impattate e tracciamento",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un modello/servizio di propensity integrato e invocabile dal Motore di Offerte",
+          "È possibile simulare risposta del modello con score mancanti/null per un sottoinsieme di offerte",
+          "Esistono almeno 4 offerte proponibili su TP-APP: OFF-2301, OFF-2302, OFF-2303, OFF-2304",
+          "È possibile consultare i log di proposta associati alla richiesta"
+        ],
+        "test_data": [
+          "Cliente: CUST-9104",
+          "Touchpoint: TP-APP",
+          "Offerte candidate: OFF-2301, OFF-2302, OFF-2303, OFF-2304",
+          "Risposta modello: score presenti per OFF-2301 e OFF-2302; score null/mancanti per OFF-2303 e OFF-2304"
+        ],
+        "steps": [
+          "Configurare il mock/ambiente affinché il modello restituisca score null/mancanti per OFF-2303 e OFF-2304",
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9104 su TP-APP",
+          "Acquisire l'ordine delle offerte restituito",
+          "Recuperare i log di proposta associati alla richiesta"
+        ],
+        "expected_results": [
+          "La lista restituita include tutte le offerte candidate, incluse quelle senza score (OFF-2303, OFF-2304)",
+          "Le offerte senza score sono ordinate tramite regole di fallback deterministiche (posizionamento coerente e ripetibile a parità di input)",
+          "Nei log di proposta è tracciata la condizione di score non calcolabile per le offerte impattate e la logica applicata (fallback)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: definizione delle regole di fallback quando lo score è mancante."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC05",
+        "title": "Parità di score di propensity: applicazione tie-break deterministico e tracciamento",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un modello/servizio di propensity integrato e invocabile dal Motore di Offerte",
+          "È possibile simulare risposta del modello con score identici per più offerte",
+          "Esistono almeno 3 offerte proponibili su TP-WEB: OFF-2401, OFF-2402, OFF-2403",
+          "È possibile consultare i log di proposta associati alla richiesta"
+        ],
+        "test_data": [
+          "Cliente: CUST-9105",
+          "Touchpoint: TP-WEB",
+          "Offerte candidate: OFF-2401, OFF-2402, OFF-2403",
+          "Risposta modello: OFF-2401 score=0,80; OFF-2402 score=0,80; OFF-2403 score=0,50"
+        ],
+        "steps": [
+          "Configurare il mock/ambiente affinché il modello restituisca score identici per OFF-2401 e OFF-2402",
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9105 su TP-WEB",
+          "Acquisire l'ordine delle offerte restituito",
+          "Ripetere la stessa invocazione con gli stessi parametri",
+          "Recuperare i log di proposta associati alla richiesta"
+        ],
+        "expected_results": [
+          "OFF-2403 risulta posizionata dopo OFF-2401 e OFF-2402 (score inferiore)",
+          "Tra OFF-2401 e OFF-2402 viene applicata una regola di tie-break deterministica (l'ordine relativo è identico tra invocazioni ripetute)",
+          "Nei log di proposta è indicata l'applicazione della regola di tie-break (o un flag/causale di parità score) in modo da poter ricostruire l'ordine"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Assunzione: esiste una regola di tie-break deterministica (es. per ID offerta, ranking secondario, priorità marketing, ecc.), non specificata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-013.US02.TC06",
+        "title": "Log di proposta contiene ordine finale e informazioni minime di audit per ordering da propensity",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un modello/servizio di propensity integrato e invocabile dal Motore di Offerte",
+          "Esistono almeno 3 offerte proponibili su TP-APP: OFF-2501, OFF-2502, OFF-2503",
+          "È possibile consultare i log di proposta associati alla richiesta (con correlazione request-id/correlation-id)"
+        ],
+        "test_data": [
+          "Cliente: CUST-9106",
+          "Touchpoint: TP-APP",
+          "Offerte candidate: OFF-2501, OFF-2502, OFF-2503"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte per generare la lista offerte per CUST-9106 su TP-APP",
+          "Recuperare i log di proposta associati alla richiesta",
+          "Verificare la presenza delle informazioni di audit sull'ordering"
+        ],
+        "expected_results": [
+          "Nei log di proposta è presente l'ordine risultante delle offerte (lista ordinata o coppie offerta-posizione)",
+          "Nei log di proposta è presente il touchpoint della richiesta (TP-APP) e un riferimento al cliente o a un identificativo di sessione/proposta",
+          "Nei log di proposta è presente un'indicazione della logica di ordering utilizzata (propensity e/o combinazione con priorità e/o fallback) sufficiente a ricostruire l'ordine determinato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Assunzione: lo schema log include almeno identificativi offerte, touchpoint, posizione finale e indicazione della logica applicata; il requisito non definisce i campi esatti."
+      }
+    ]
+  }
+]

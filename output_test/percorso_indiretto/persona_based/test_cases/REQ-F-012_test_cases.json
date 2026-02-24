@@ -1,0 +1,314 @@
+[
+  {
+    "story_id": "REQ-F-012.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-012.US01.TC01",
+        "title": "Configurazione completa per-bundle di pricing, punti Connect, cashback/sconti e metadati di validità (salvataggio riuscito)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1001' selezionabile in dashboard",
+          "Il servizio di persistenza configurazione bundle è disponibile",
+          "Il servizio di logging/audit è disponibile"
+        ],
+        "test_data": [
+          "Bundle: BND-1001",
+          "Pricing (esempio): Prezzo bundle = 199,99 EUR",
+          "Punti Connect (esempio): 500 punti (applicati all'intera offerta bundle)",
+          "Incentivo (esempio): Cashback = 20,00 EUR",
+          "Metadati di validità (esempio): Data inizio = 2026-03-01 00:00, Data fine = 2026-03-31 23:59"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1001'",
+          "Impostare il pricing del bundle a '199,99 EUR'",
+          "Impostare i punti Connect a '500'",
+          "Impostare l'incentivo 'Cashback' a '20,00 EUR'",
+          "Impostare i metadati di validità con data inizio '2026-03-01 00:00' e data fine '2026-03-31 23:59'",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema consente la modifica dei campi di pricing, punti Connect, cashback/sconti e metadati di validità per il bundle selezionato",
+          "Il salvataggio va a buon fine e viene mostrata una conferma di avvenuto salvataggio",
+          "Riaprendo la configurazione del bundle 'BND-1001' i valori salvati corrispondono esattamente ai valori inseriti",
+          "I punti Connect risultano associati al bundle/offerta e non ai singoli prodotti del bundle (assenza di campi/associazioni per-prodotto nella schermata e/o nel riepilogo di configurazione)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "I campi esatti dei metadati di validità non sono specificati; il test assume almeno Data inizio/Data fine con validazione cronologica."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC02",
+        "title": "Definizione regola temporale per clienti già possessori con finestra di validità dedicata (salvataggio riuscito)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1001' selezionabile in dashboard",
+          "La dashboard espone una sezione per regole temporali dedicate ai clienti già possessori di prodotti",
+          "Il servizio di persistenza configurazione bundle è disponibile",
+          "Il servizio di logging/audit è disponibile"
+        ],
+        "test_data": [
+          "Bundle: BND-1001",
+          "Regola: 'Clienti già possessori' = abilitata",
+          "Periodo regola possessori: Data inizio = 2026-03-10 00:00, Data fine = 2026-03-20 23:59"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1001'",
+          "Aprire la sezione 'Regole temporali' del bundle",
+          "Selezionare/abilitare la regola dedicata ai 'clienti già possessori di prodotti'",
+          "Impostare la finestra temporale della regola con data inizio '2026-03-10 00:00' e data fine '2026-03-20 23:59'",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema consente di impostare una finestra temporale specifica per la regola dedicata ai clienti già possessori di prodotti",
+          "Il salvataggio va a buon fine e viene mostrata una conferma di avvenuto salvataggio",
+          "Riaprendo la configurazione del bundle 'BND-1001' la regola 'clienti già possessori' risulta configurata con il periodo salvato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La definizione operativa di 'clienti già possessori di prodotti' (quali prodotti/fonte dati) non è nel perimetro; il test valida solo la configurabilità della finestra temporale."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC03",
+        "title": "Audit log: salvataggio modifica genera record con before/after per i soli campi modificati",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1002' selezionabile in dashboard con configurazione preesistente",
+          "Configurazione preesistente bundle 'BND-1002': Prezzo = 149,99 EUR; Punti Connect = 300; Cashback = 10,00 EUR; Validità = 2026-03-01 00:00 -> 2026-03-31 23:59",
+          "Il servizio di logging/audit è disponibile e consultabile (UI o endpoint/DB di audit)"
+        ],
+        "test_data": [
+          "Bundle: BND-1002",
+          "Nuovi valori: Prezzo = 159,99 EUR; Punti Connect invariati = 300; Cashback = 15,00 EUR; Validità invariata"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1002'",
+          "Modificare il prezzo bundle da '149,99 EUR' a '159,99 EUR'",
+          "Modificare il cashback da '10,00 EUR' a '15,00 EUR'",
+          "Lasciare invariati i punti Connect e i metadati di validità",
+          "Salvare la configurazione",
+          "Aprire la sezione/strumento di consultazione audit log per il bundle 'BND-1002'",
+          "Selezionare l'ultima voce di log associata al salvataggio appena effettuato"
+        ],
+        "expected_results": [
+          "Il salvataggio va a buon fine e viene mostrata una conferma di avvenuto salvataggio",
+          "È presente un nuovo record di audit log relativo al bundle 'BND-1002' e all'operazione di salvataggio",
+          "Nel record di audit log sono presenti i valori 'before' e 'after' per il campo 'Prezzo bundle' con before='149,99 EUR' e after='159,99 EUR'",
+          "Nel record di audit log sono presenti i valori 'before' e 'after' per il campo 'Cashback' con before='10,00 EUR' e after='15,00 EUR'",
+          "Nel record di audit log i campi non modificati (es. Punti Connect, Validità) non risultano indicati come cambiati (assenza nel dettaglio modifiche oppure before=after)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il contenuto esatto del log non è specificato; il test assume almeno la tracciatura before/after dei campi modificati tra pricing, incentivi e metadati."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC04",
+        "title": "Autorizzazioni: utente senza permesso non può modificare/salvare configurazione bundle",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile 'viewer_marketing' senza permessi di modifica (sola lettura) sulla configurazione bundle",
+          "Esiste un bundle 'BND-1001' selezionabile in dashboard"
+        ],
+        "test_data": [
+          "Utente: viewer_marketing",
+          "Bundle: BND-1001"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con l'utente 'viewer_marketing'",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1001'",
+          "Tentare di modificare il campo 'Prezzo bundle'",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "I campi di configurazione risultano non editabili oppure il sistema impedisce la modifica (es. messaggio di permessi insufficienti)",
+          "Il sistema non consente il salvataggio della configurazione e mostra un errore di autorizzazione",
+          "Non viene creato alcun record di audit log relativo a modifiche (poiché la modifica non è stata accettata)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Ruoli/permessi non specificati nel requisito; il test assume l'esistenza di un profilo sola lettura come controllo minimo di sicurezza."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC05",
+        "title": "Validazione metadati di validità: data fine precedente alla data inizio blocca il salvataggio",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1003' selezionabile in dashboard",
+          "Il servizio di logging/audit è disponibile"
+        ],
+        "test_data": [
+          "Bundle: BND-1003",
+          "Metadati di validità non coerenti: Data inizio = 2026-04-10 00:00, Data fine = 2026-04-01 23:59"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1003'",
+          "Impostare i metadati di validità con data inizio '2026-04-10 00:00'",
+          "Impostare la data fine a '2026-04-01 23:59'",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema blocca il salvataggio della configurazione",
+          "Il sistema mostra un messaggio di errore che indica l'incoerenza delle date (data fine precedente alla data inizio)",
+          "Nessuna modifica viene persistita per il bundle 'BND-1003'",
+          "Non viene creato alcun record di audit log per l'operazione fallita"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo esatto dell'errore non è specificato; il test verifica la presenza di un errore esplicito e il blocco del salvataggio."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC06",
+        "title": "Servizio audit/log non disponibile: il salvataggio non viene confermato e viene mostrato errore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1004' selezionabile in dashboard",
+          "Il servizio di persistenza configurazione bundle è disponibile",
+          "Il servizio di logging/audit è non disponibile (es. timeout/HTTP 5xx) oppure simulato non disponibile in ambiente di test"
+        ],
+        "test_data": [
+          "Bundle: BND-1004",
+          "Modifica: Punti Connect da 200 a 250"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1004'",
+          "Modificare i punti Connect da '200' a '250'",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema non conferma il salvataggio e mostra un errore relativo all'impossibilità di registrare l'audit/log",
+          "La configurazione del bundle 'BND-1004' rimane invariata (riaprendo la schermata i punti Connect risultano ancora '200')",
+          "Non risulta presente un record di audit log relativo alla modifica tentata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case richiede di evitare configurazioni non auditabili; il test assume comportamento 'fail-closed' (nessuna persistenza senza audit)."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC07",
+        "title": "Conflitto regole temporali possessori: periodo sovrapposto ad altra regola dello stesso bundle impedisce il salvataggio",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1005' selezionabile in dashboard",
+          "Sul bundle 'BND-1005' esiste già una regola temporale 'clienti già possessori' con periodo 2026-03-10 00:00 -> 2026-03-20 23:59",
+          "Il servizio di logging/audit è disponibile"
+        ],
+        "test_data": [
+          "Bundle: BND-1005",
+          "Nuova/seconda regola possessori (o modifica periodo) con sovrapposizione: 2026-03-15 00:00 -> 2026-03-25 23:59"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1005'",
+          "Aprire la sezione 'Regole temporali'",
+          "Creare una nuova regola per 'clienti già possessori di prodotti' oppure modificare la regola esistente impostando il periodo 2026-03-15 00:00 -> 2026-03-25 23:59",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema segnala un conflitto di sovrapposizione tra periodi per regole dello stesso bundle",
+          "Il sistema impedisce il salvataggio finché il conflitto non viene risolto",
+          "Nessuna modifica viene persistita relativamente alle regole temporali del bundle",
+          "Non viene creato alcun record di audit log per l'operazione fallita"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito indica 'impedisce (o richiede correzione)'; il test valida il blocco del salvataggio e la presenza di segnalazione conflitto."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC08",
+        "title": "Audit log: modifica multipla include before/after per ciascun campo modificato (pricing, punti, validità)",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato con permessi di modifica configurazione bundle",
+          "Esiste un bundle 'BND-1006' selezionabile in dashboard con configurazione preesistente",
+          "Configurazione preesistente bundle 'BND-1006': Prezzo = 99,99 EUR; Punti Connect = 100; Validità = 2026-05-01 00:00 -> 2026-05-31 23:59",
+          "Il servizio di logging/audit è disponibile e consultabile (UI o endpoint/DB di audit)"
+        ],
+        "test_data": [
+          "Bundle: BND-1006",
+          "Nuovi valori: Prezzo = 109,99 EUR; Punti Connect = 150; Validità = 2026-05-05 00:00 -> 2026-06-05 23:59"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con un utente abilitato",
+          "Aprire la sezione di configurazione offerte bundle",
+          "Selezionare il bundle 'BND-1006'",
+          "Modificare il prezzo bundle a '109,99 EUR'",
+          "Modificare i punti Connect a '150'",
+          "Modificare i metadati di validità a 2026-05-05 00:00 -> 2026-06-05 23:59",
+          "Salvare la configurazione",
+          "Aprire la sezione/strumento di consultazione audit log per il bundle 'BND-1006'",
+          "Selezionare l'ultima voce di log associata al salvataggio appena effettuato"
+        ],
+        "expected_results": [
+          "È presente un nuovo record di audit log relativo al salvataggio effettuato",
+          "Nel record di audit log sono presenti i valori before/after per 'Prezzo bundle' (before='99,99 EUR', after='109,99 EUR')",
+          "Nel record di audit log sono presenti i valori before/after per 'Punti Connect' (before='100', after='150')",
+          "Nel record di audit log sono presenti i valori before/after per i metadati di validità (before='2026-05-01 00:00 -> 2026-05-31 23:59', after='2026-05-05 00:00 -> 2026-06-05 23:59')"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Serve accesso al dettaglio dell'audit log (UI o API/DB). Se l'audit log è asincrono, definire un tempo massimo di attesa (es. 10s) in base a requisiti non forniti."
+      }
+    ]
+  }
+]

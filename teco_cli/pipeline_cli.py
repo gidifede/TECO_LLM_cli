@@ -66,16 +66,6 @@ def parse_pipeline_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Elabora solo i primi N requisiti (utile per test).",
     )
     parser.add_argument(
-        "--strategy",
-        choices=["ac", "persona", "both"],
-        default="ac",
-        help=(
-            "Strategia di decomposizione user stories: "
-            "'ac' (per acceptance criterion), 'persona' (per persona), "
-            "'both' (entrambe in sequenza). Default: ac."
-        ),
-    )
-    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Mostra log dettagliato.",
@@ -127,7 +117,6 @@ def main() -> None:
         max_tokens=args.max_tokens,
         verbose=args.verbose,
         limit=args.limit,
-        strategy=args.strategy,
     )
 
 

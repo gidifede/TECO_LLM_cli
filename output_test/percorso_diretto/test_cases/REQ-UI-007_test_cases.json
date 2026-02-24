@@ -1,0 +1,208 @@
+[
+  {
+    "test_id": "REQ-UI-007.TC01",
+    "title": "Visualizzazione proposta bundle come pop-up prima del checkout (web)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente non in checkout (si trova nel flusso di acquisto prima della pagina/step di checkout).",
+      "Ambiente web disponibile e raggiungibile.",
+      "Esiste una proposta di bundle configurata e associata al contesto di navigazione/prodotto dell'utente (secondo configurazione di test).",
+      "Condizioni di trigger abilitate secondo documentazione di progetto (vedi notes)."
+    ],
+    "test_data": [
+      "Canale: web (Chrome ultima versione)",
+      "Utente: customer_web_01",
+      "Contesto: prodotto/servizio per cui è prevista una proposta bundle (configurazione di test)",
+      "Trigger: scenario documentato T1 (es. ingresso in carrello o pagina prodotto, secondo documentazione)"
+    ],
+    "steps": [
+      "Accedere al sito web con l'utente customer_web_01.",
+      "Navigare fino al contesto previsto dal trigger T1 (secondo documentazione).",
+      "Rimanere nello step precedente al checkout (non avviare il checkout).",
+      "Osservare la UI al verificarsi del trigger T1."
+    ],
+    "expected_results": [
+      "Prima dell'avvio del checkout, viene mostrato un pop-up che presenta la proposta di bundle.",
+      "Il pop-up è la modalità iniziale di presentazione della proposta (non viene presentata prima in altra forma primaria nello stesso step)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori non sono esplicitati nel requisito: si assume l'attore 'cliente' (utente finale). Il requisito rimanda a 'condizioni di trigger documentate' e a una 'descrizione fornita dall'utente' non incluse: il test usa un placeholder 'T1' che deve essere sostituito con trigger reali definiti nei documenti di progetto."
+  },
+  {
+    "test_id": "REQ-UI-007.TC02",
+    "title": "Visualizzazione proposta bundle come pop-up prima del checkout (APP)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente autenticato in APP (se previsto dal flusso) e non in checkout.",
+      "APP installata e configurata su dispositivo di test.",
+      "Esiste una proposta di bundle configurata e associata al contesto di navigazione/prodotto dell'utente (secondo configurazione di test).",
+      "Condizioni di trigger abilitate secondo documentazione di progetto (vedi notes)."
+    ],
+    "test_data": [
+      "Canale: APP (Android 14 o iOS 17, build candidata al test)",
+      "Utente: customer_app_01",
+      "Contesto: prodotto/servizio per cui è prevista una proposta bundle (configurazione di test)",
+      "Trigger: scenario documentato T1 (es. ingresso in carrello o pagina prodotto, secondo documentazione)"
+    ],
+    "steps": [
+      "Aprire l'APP e autenticarsi con l'utente customer_app_01 (se richiesto).",
+      "Navigare fino al contesto previsto dal trigger T1 (secondo documentazione).",
+      "Rimanere nello step precedente al checkout (non avviare il checkout).",
+      "Osservare la UI al verificarsi del trigger T1."
+    ],
+    "expected_results": [
+      "Prima dell'avvio del checkout, viene mostrato un pop-up che presenta la proposta di bundle.",
+      "Il pop-up è la modalità iniziale di presentazione della proposta (non viene presentata prima in altra forma primaria nello stesso step)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Gli attori non sono esplicitati nel requisito: si assume l'attore 'cliente' (utente finale). Il requisito rimanda a 'condizioni di trigger documentate' e a una 'descrizione fornita dall'utente' non incluse: il test usa un placeholder 'T1' che deve essere sostituito con trigger reali definiti nei documenti di progetto."
+  },
+  {
+    "test_id": "REQ-UI-007.TC03",
+    "title": "Il pop-up appare solo al verificarsi delle condizioni di trigger documentate (trigger positivo)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canali disponibili: web e APP.",
+      "Esiste una proposta di bundle configurata e associata al contesto previsto.",
+      "Sono disponibili almeno due trigger documentati: T1 (positivo) e T2 (positivo) (vedi notes)."
+    ],
+    "test_data": [
+      "Trigger: T1 e T2 (secondo documentazione)",
+      "Utente: customer_multi_01"
+    ],
+    "steps": [
+      "Sul canale web, accedere con l'utente customer_multi_01.",
+      "Eseguire le azioni necessarie a soddisfare il trigger T1 (secondo documentazione) prima del checkout.",
+      "Chiudere il pop-up (se previsto dall'interazione standard) e tornare allo stato precedente al checkout.",
+      "Eseguire le azioni necessarie a soddisfare il trigger T2 (secondo documentazione) prima del checkout.",
+      "Ripetere i passi 1-4 sul canale APP."
+    ],
+    "expected_results": [
+      "Al verificarsi del trigger T1, il pop-up viene mostrato prima del checkout su web e su APP.",
+      "Al verificarsi del trigger T2, il pop-up viene mostrato prima del checkout su web e su APP."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Dipendenza esterna: l'elenco e la definizione operativa dei trigger (T1, T2, ...) non sono inclusi nel requisito. Sostituire T1/T2 con i trigger effettivamente documentati (es. evento su carrello, soglia importo, categoria prodotto, ecc.)."
+  },
+  {
+    "test_id": "REQ-UI-007.TC04",
+    "title": "Il pop-up non appare quando le condizioni di trigger non sono soddisfatte (trigger negativo)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canali disponibili: web e APP.",
+      "Esiste una proposta di bundle configurata, ma i trigger non devono essere soddisfatti nello scenario di test.",
+      "È disponibile almeno un caso 'non trigger' documentato o deducibile come N1 (vedi notes)."
+    ],
+    "test_data": [
+      "Scenario N1: percorso/condizione che NON soddisfa i trigger documentati (secondo documentazione)",
+      "Utente: customer_multi_02"
+    ],
+    "steps": [
+      "Sul canale web, accedere con l'utente customer_multi_02.",
+      "Eseguire le azioni previste dallo scenario N1 rimanendo prima del checkout.",
+      "Osservare la UI per l'intera durata dello scenario N1.",
+      "Ripetere i passi 1-3 sul canale APP."
+    ],
+    "expected_results": [
+      "Durante lo scenario N1 (prima del checkout), il pop-up non viene mostrato su web.",
+      "Durante lo scenario N1 (prima del checkout), il pop-up non viene mostrato su APP."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica esplicitamente scenari in cui il pop-up non deve apparire; questo test interpreta AC-2 in modo verificabile introducendo uno scenario 'non trigger' (N1) che deve essere definito a partire dalla documentazione dei trigger."
+  },
+  {
+    "test_id": "REQ-UI-007.TC05",
+    "title": "Verificabilità di aspetto e comportamento del pop-up in test utente (web)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente web disponibile e raggiungibile.",
+      "Esiste una proposta di bundle configurata e associata al contesto previsto.",
+      "Trigger T1 disponibile per mostrare il pop-up prima del checkout.",
+      "Sono disponibili specifiche UI/UX o checklist di test utente per 'aspetto' e 'comportamento' (vedi notes)."
+    ],
+    "test_data": [
+      "Canale: web",
+      "Trigger: T1 (secondo documentazione)",
+      "Checklist UI/UX: CL-POPUP-001 (da fornire)"
+    ],
+    "steps": [
+      "Accedere al sito web e portarsi nel contesto del trigger T1 prima del checkout.",
+      "Attendere la comparsa del pop-up.",
+      "Verificare gli elementi di aspetto previsti dalla checklist CL-POPUP-001 (es. layout, testi, coerenza grafica, leggibilità).",
+      "Verificare i comportamenti previsti dalla checklist CL-POPUP-001 (es. possibilità di chiusura, focus, blocco/sblocco interazione con pagina sottostante, persistenza durante scroll se previsto)."
+    ],
+    "expected_results": [
+      "Tutti i controlli di 'aspetto' definiti nella checklist CL-POPUP-001 risultano conformi su web.",
+      "Tutti i controlli di 'comportamento' definiti nella checklist CL-POPUP-001 risultano conformi su web."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è dichiarativo ('verificabili in test utente') e non definisce criteri misurabili: si assume l'esistenza di una checklist/spec UI/UX (CL-POPUP-001) come base di verifica. Dipendenza esterna: specifiche di aspetto/comportamento e descrizione dettagliata del pop-up 'coerente con la descrizione fornita dall'utente' non incluse nel requisito."
+  },
+  {
+    "test_id": "REQ-UI-007.TC06",
+    "title": "Verificabilità di aspetto e comportamento del pop-up in test utente (APP)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "APP installata e configurata su dispositivo di test.",
+      "Esiste una proposta di bundle configurata e associata al contesto previsto.",
+      "Trigger T1 disponibile per mostrare il pop-up prima del checkout.",
+      "Sono disponibili specifiche UI/UX o checklist di test utente per 'aspetto' e 'comportamento' (vedi notes)."
+    ],
+    "test_data": [
+      "Canale: APP",
+      "Dispositivo: iPhone 15 (iOS 17) o Pixel 8 (Android 14)",
+      "Trigger: T1 (secondo documentazione)",
+      "Checklist UI/UX: CL-POPUP-001 (da fornire)"
+    ],
+    "steps": [
+      "Aprire l'APP e portarsi nel contesto del trigger T1 prima del checkout.",
+      "Attendere la comparsa del pop-up.",
+      "Verificare gli elementi di aspetto previsti dalla checklist CL-POPUP-001 (es. layout, testi, coerenza grafica, leggibilità).",
+      "Verificare i comportamenti previsti dalla checklist CL-POPUP-001 (es. possibilità di chiusura, gestione back, focus, blocco/sblocco interazione con schermata sottostante)."
+    ],
+    "expected_results": [
+      "Tutti i controlli di 'aspetto' definiti nella checklist CL-POPUP-001 risultano conformi su APP.",
+      "Tutti i controlli di 'comportamento' definiti nella checklist CL-POPUP-001 risultano conformi su APP."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "AC-3 è dichiarativo ('verificabili in test utente') e non definisce criteri misurabili: si assume l'esistenza di una checklist/spec UI/UX (CL-POPUP-001) come base di verifica. Dipendenza esterna: specifiche di aspetto/comportamento e descrizione dettagliata del pop-up 'coerente con la descrizione fornita dall'utente' non incluse nel requisito."
+  }
+]

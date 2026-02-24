@@ -1,0 +1,191 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-005",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 67,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-005.TC01",
+        "detail": "Assume protocollo/semantica di risposta (HTTP 200, schema con campi obbligatori, decisionId) non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.TC01",
+        "detail": "Introduce concetti operativi non presenti nel requisito (credenziali/certificati tecnici, gateway per canale, CorrelationId come meccanismo standard)."
+      },
+      {
+        "test_id": "REQ-V-005.TC02",
+        "detail": "Assume esistenza e accessibilità di una UI/API amministrativa per leggere la matrice e che le tipologie siano 'selezionabili/attive'."
+      },
+      {
+        "test_id": "REQ-V-005.TC03",
+        "detail": "Assume endpoint/API di decisione con parametro tipologia prodotto e codici errore specifici (unknown product type/missing mapping) non citati."
+      },
+      {
+        "test_id": "REQ-V-005.TC04",
+        "detail": "Assume che la decisione generi un'offerta con offerId e che esista un provisioning avviabile/attendibile; il requisito parla di 'offerte tracciate e correlate' ma non definisce offerId né come si inneschi il provisioning."
+      },
+      {
+        "test_id": "REQ-V-005.TC05",
+        "detail": "Scenario di rifiuto per canale non supportato (ATM) e codici HTTP 400/422: comportamento non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.TC06",
+        "detail": "Assume che un prodotto fuori lista (mutuo) debba essere rifiutato e che non venga generata alcuna offerta: il requisito non afferma esclusività della lista everyday rispetto al resto del catalogo."
+      },
+      {
+        "test_id": "REQ-V-005.TC07",
+        "detail": "Introduce requisiti di autorizzazione/RBAC su log (ruoli audit_reader/sales_user_basic) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.TC08",
+        "detail": "Introduce resilienza/gestione fault provisioning (timeout/500, evento errore) non richiesta esplicitamente dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1",
+        "detail": "Il requisito richiede disponibilità/coerenza su OSP/OFE, App e Web per le 'funzionalità previste'; i TC verificano soprattutto invocazioni/risposte e schema, ma non validano quali siano le funzionalità previste (non definite nel requisito) oltre alla mera chiamata/risposta."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-005.TC02",
+          "REQ-V-005.TC03"
+        ],
+        "detail": "Entrambi coprono AC-2 sulla gestione delle tipologie everyday; TC02 verifica presenza in matrice, TC03 verifica accettazione in richiesta decisione per tutte le tipologie (parziale sovrapposizione di scopo)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 38,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-005.US01.TC01",
+        "detail": "Introduce UI/feature specifiche ('sezione offerte/proposte', dettaglio offerta) e attore 'Cliente digitale' non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC02",
+        "detail": "Introduce URL di portale e assunzioni di autenticazione utente non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC03",
+        "detail": "Assume che la 'coerenza canale' significhi stessa disponibilità di tipologie entro una finestra temporale (entro 5 minuti): regola non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC04",
+        "detail": "Introduce trattamento di offerte non-everyday visibili su canali digitali e vincoli di presentazione/classificazione non richiesti."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC05",
+        "detail": "Introduce gestione errori di indisponibilità App (no crash, messaggi) non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC06",
+        "detail": "Introduce gestione errori di indisponibilità Web (no loop/blocchi client) non specificata dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC01",
+        "detail": "Introduce attore 'Operatore' e un 'front-end commerciale' come canale; il requisito parla di canale OSP/OFE ma non definisce un front-end né ruoli operativi."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC01",
+        "detail": "Assume esistenza di offerte già 'attive' per ciascuna tipologia e che siano consultabili/proponibili: non è nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC02",
+        "detail": "Assume consultazione matrice 'dal contesto OSP/OFE' e permessi specifici: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC03",
+        "detail": "Assume coerenza tra canali come confronto degli insiemi di tipologie per lo stesso cliente e finestra temporale: non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC05",
+        "detail": "Introduce gestione indisponibilità canale fisico e requisiti di comportamento del client: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC06",
+        "detail": "Introduce autorizzazione/ruoli per accesso a funzionalità offerte su canale fisico: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC02",
+        "detail": "Assume API di 'generazione offerta' con customerId/productType e che il Motore restituisca offerId/correlationId: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC03",
+        "detail": "Introduce tassonomia eventi provisioning (PROVISIONING_STARTED/COMPLETED) non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC04",
+        "detail": "Introduce fault injection/feature flag per forzare assenza chiave correlazione: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC05",
+        "detail": "Introduce scenario di indisponibilità provisioning come 'non conformità' attesa (mancanza log), mentre il requisito richiede tracciamento/correlazione ma non definisce comportamento in fault."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC06",
+        "detail": "Scenario su tipologia non supportata (mutuo) con atteso 'fuori ambito' o comunque generabile: il requisito non stabilisce come trattare prodotti extra-lista."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC01",
+        "detail": "Introduce 'Motore di Offerte' come componente distinto; il requisito parla di 'motore' senza distinguere un motore offerte/UI."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1",
+        "detail": "Il requisito include esplicitamente OSP/OFE come canale; i TC usano spesso 'front-end commerciale' come canale (stringa diversa) e non validano chiaramente la disponibilità/coerenza sul canale come definito (OSP/OFE) a livello di motore, ma a livello di UI/consultazione offerte."
+      },
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "AC-3 richiede correlazione delle offerte ai log di decisione e provisioning; diversi TC parlano di log ma non verificano esplicitamente la correlazione 'offerta ↔ decisione ↔ provisioning' con riferimenti incrociati tra i tre oggetti (spesso si limita a offerId/correlationId senza includere decisionId o senza catena completa)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-005.US01.TC01",
+          "REQ-V-005.US01.TC02"
+        ],
+        "detail": "Stesso scenario di visualizzazione offerte per tipologie everyday su App vs Web con expected molto simili."
+      },
+      {
+        "test_ids": [
+          "REQ-V-005.US01.TC05",
+          "REQ-V-005.US01.TC06",
+          "REQ-V-005.US02.TC05"
+        ],
+        "detail": "Tre TC di indisponibilità canale (App/Web/OSP-OFE) con attesi analoghi e non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-V-005.US02.TC02",
+          "REQ-V-005.US03.TC01"
+        ],
+        "detail": "Duplica la verifica presenza tipologie everyday in matrice (AC-2) in due contesti diversi."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono formalmente tutti gli AC, ma il set direct introduce meno informazioni non tracciabili e mantiene un legame piu vicino al testo del requisito (canali OSP/OFE, App, Web; lista prodotti; tracciamento). Il set indirect_persona aggiunge molte assunzioni di UI, attori/ruoli, autenticazione e componenti ('Motore di Offerte', front-end commerciale) non presenti nel requisito e presenta anche lacune di allineamento (canale OSP/OFE sostituito da 'front-end commerciale' e correlazione end-to-end non sempre esplicitata), risultando complessivamente meno coerente."
+  }
+}

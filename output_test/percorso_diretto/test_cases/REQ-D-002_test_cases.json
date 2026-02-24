@@ -1,0 +1,222 @@
+[
+  {
+    "test_id": "REQ-D-002.TC01",
+    "title": "Creazione e salvataggio di più varianti testuali per la stessa offerta (dashboard marketing)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente 'Marketing' con accesso alla dashboard marketing",
+      "Esiste un'offerta attiva con ID 'OFF-1001' e descrizione base valorizzata",
+      "La funzionalità di gestione varianti descrizione è abilitata in ambiente di test"
+    ],
+    "test_data": [
+      "Offerta: OFF-1001",
+      "Variante A - testo: \"Attiva ora e risparmia il 20% sul canone per 6 mesi\"",
+      "Variante B - testo: \"Offerta esclusiva: 20% di sconto per 6 mesi, solo per te\""
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing come utente Marketing",
+      "Aprire la sezione di gestione offerte",
+      "Selezionare l'offerta con ID 'OFF-1001'",
+      "Aprire la sezione 'Varianti descrizione' dell'offerta",
+      "Creare una nuova variante inserendo il testo della Variante A",
+      "Salvare la Variante A",
+      "Creare una seconda variante inserendo il testo della Variante B",
+      "Salvare la Variante B",
+      "Riaprire la sezione 'Varianti descrizione' dell'offerta 'OFF-1001'"
+    ],
+    "expected_results": [
+      "Il sistema consente l'inserimento e il salvataggio di più varianti per la stessa offerta senza sovrascrivere le varianti esistenti",
+      "Nella lista varianti dell'offerta 'OFF-1001' risultano presenti almeno due varianti distinte con i testi esatti di Variante A e Variante B",
+      "Le varianti salvate risultano persistenti dopo la riapertura della sezione (nessuna perdita dati)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori e canali sono stati inferiti: il requisito cita 'dashboard marketing' e 'interfaccia' senza specificare canale; si assume dashboard su web."
+  },
+  {
+    "test_id": "REQ-D-002.TC02",
+    "title": "Associazione di una variante a più identificatori di cluster/segmento",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente 'Marketing' con accesso alla dashboard marketing",
+      "Esiste un'offerta attiva con ID 'OFF-1001'",
+      "Esiste almeno una variante descrizione salvata per OFF-1001 (es. Variante A)",
+      "Nel sistema esistono cluster/segmenti con identificatori 'CL-RET-01' e 'CL-VIP-99' selezionabili/associabili alle varianti"
+    ],
+    "test_data": [
+      "Offerta: OFF-1001",
+      "Variante: Variante A",
+      "Cluster da associare: CL-RET-01, CL-VIP-99"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing come utente Marketing",
+      "Aprire l'offerta con ID 'OFF-1001'",
+      "Aprire la sezione 'Varianti descrizione'",
+      "Selezionare la Variante A",
+      "Associare alla Variante A il cluster 'CL-RET-01'",
+      "Associare alla Variante A il cluster 'CL-VIP-99'",
+      "Salvare le associazioni",
+      "Riaprire i dettagli della Variante A"
+    ],
+    "expected_results": [
+      "Il sistema consente di associare alla stessa variante più identificatori di cluster/segmento",
+      "Dopo il salvataggio, nei dettagli della Variante A risultano associati sia 'CL-RET-01' sia 'CL-VIP-99'",
+      "Le associazioni risultano persistenti dopo la riapertura dei dettagli variante"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il formato degli identificatori di cluster; sono stati usati esempi realistici (CL-...)."
+  },
+  {
+    "test_id": "REQ-D-002.TC03",
+    "title": "Visualizzazione della variante corretta in interfaccia per cliente appartenente a un cluster associato",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un'offerta attiva con ID 'OFF-1001' visibile in interfaccia cliente",
+      "Per OFF-1001 esiste una variante 'Variante VIP' con testo \"Offerta esclusiva: 20% di sconto per 6 mesi, solo per te\"",
+      "La variante 'Variante VIP' è associata al cluster 'CL-VIP-99'",
+      "Esiste un cliente 'CUST-0007' contrassegnato con cluster 'CL-VIP-99'",
+      "Il cliente 'CUST-0007' può accedere all'interfaccia dove viene mostrata la descrizione dell'offerta"
+    ],
+    "test_data": [
+      "Cliente: CUST-0007 (cluster: CL-VIP-99)",
+      "Offerta: OFF-1001",
+      "Testo atteso variante: \"Offerta esclusiva: 20% di sconto per 6 mesi, solo per te\""
+    ],
+    "steps": [
+      "Autenticarsi come cliente 'CUST-0007' nell'interfaccia cliente",
+      "Navigare alla pagina/dettaglio dell'offerta con ID 'OFF-1001'",
+      "Individuare il campo/area UI della descrizione dell'offerta"
+    ],
+    "expected_results": [
+      "L'interfaccia mostra, per l'offerta 'OFF-1001', il testo descrizione esattamente corrispondente alla variante associata al cluster 'CL-VIP-99'",
+      "La descrizione visualizzata non corrisponde alla descrizione base quando esiste una variante associata al cluster del cliente"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica quale 'interfaccia' (web/app); il test è impostato su web. Se esistono più canali, replicare il caso sugli altri canali."
+  },
+  {
+    "test_id": "REQ-D-002.TC04",
+    "title": "Negativo: creazione variante con testo mancante (campo obbligatorio)",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente 'Marketing' con accesso alla dashboard marketing",
+      "Esiste un'offerta attiva con ID 'OFF-1001'"
+    ],
+    "test_data": [
+      "Offerta: OFF-1001",
+      "Testo variante: stringa vuota (\"\")"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing come utente Marketing",
+      "Aprire l'offerta con ID 'OFF-1001'",
+      "Aprire la sezione 'Varianti descrizione'",
+      "Avviare la creazione di una nuova variante",
+      "Lasciare vuoto il campo testo della variante",
+      "Tentare il salvataggio della variante"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della variante con testo mancante",
+      "Viene mostrato un messaggio di validazione che indica che il testo della variante è obbligatorio",
+      "Nella lista varianti non viene creata alcuna nuova variante"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita le regole di validazione; si assume che una 'variante testuale' richieda un testo non vuoto per essere salvata."
+  },
+  {
+    "test_id": "REQ-D-002.TC05",
+    "title": "Edge case: associazione della stessa variante a un numero elevato di cluster",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente 'Marketing' con accesso alla dashboard marketing",
+      "Esiste un'offerta attiva con ID 'OFF-1001'",
+      "Esiste una variante descrizione salvata per OFF-1001",
+      "Nel sistema esiste un set di almeno 50 identificatori cluster selezionabili (es. CL-001 ... CL-050)"
+    ],
+    "test_data": [
+      "Offerta: OFF-1001",
+      "Variante: Variante A",
+      "Cluster: CL-001, CL-002, ... , CL-050 (50 cluster)"
+    ],
+    "steps": [
+      "Accedere alla dashboard marketing come utente Marketing",
+      "Aprire l'offerta con ID 'OFF-1001'",
+      "Aprire la sezione 'Varianti descrizione'",
+      "Selezionare una variante esistente (Variante A)",
+      "Associare alla Variante A i cluster da CL-001 a CL-050",
+      "Salvare le associazioni",
+      "Riaprire i dettagli della Variante A"
+    ],
+    "expected_results": [
+      "Il sistema consente il salvataggio dell'associazione della variante a molteplici cluster senza errori applicativi",
+      "Dopo il salvataggio, i cluster associati risultano presenti e coerenti (conteggio pari a 50 o comunque pari al numero selezionato)",
+      "Non si verificano duplicazioni dello stesso identificatore cluster nella lista associata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce limiti massimi di cluster associabili; questo test verifica robustezza su un volume elevato ragionevole."
+  },
+  {
+    "test_id": "REQ-D-002.TC06",
+    "title": "Integration: persistenza e recupero delle varianti e associazioni cluster nel servizio dati",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Sono disponibili endpoint/API o servizi back-end per: (1) creare variante descrizione, (2) associare cluster, (3) recuperare varianti per offerta",
+      "Esiste un'offerta con ID 'OFF-1001'",
+      "Sono disponibili cluster 'CL-RET-01' e 'CL-VIP-99'"
+    ],
+    "test_data": [
+      "Offerta: OFF-1001",
+      "Testo variante: \"Attiva ora e risparmia il 20% sul canone per 6 mesi\"",
+      "Cluster associati: CL-RET-01, CL-VIP-99"
+    ],
+    "steps": [
+      "Inviare una richiesta al servizio per creare una nuova variante per l'offerta 'OFF-1001' con il testo indicato",
+      "Verificare la risposta del servizio e acquisire l'identificativo variante restituito",
+      "Inviare una richiesta al servizio per associare alla variante creata i cluster 'CL-RET-01' e 'CL-VIP-99'",
+      "Inviare una richiesta al servizio per recuperare tutte le varianti dell'offerta 'OFF-1001'",
+      "Individuare nella risposta la variante creata"
+    ],
+    "expected_results": [
+      "La creazione variante restituisce esito positivo e un identificativo variante non nullo",
+      "L'associazione cluster restituisce esito positivo",
+      "Nel recupero varianti per 'OFF-1001' la variante creata è presente con il testo esatto e include entrambi i cluster associati"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non cita esplicitamente API/servizi; questo test di integrazione assume l'esistenza di un livello dati/servizi a supporto della dashboard e dell'interfaccia."
+  }
+]

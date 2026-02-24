@@ -1,0 +1,34 @@
+[
+  {
+    "story_id": "REQ-F-019.US01",
+    "title": "Aggiungere al carrello il prodotto suggerito dal pop-up bundle (azione diretta)",
+    "persona": "Cliente digitale",
+    "goal": "aggiungere immediatamente al carrello il prodotto suggerito dal trigger di proposta bundle tramite una call to action nel pop-up",
+    "benefit": "ridurre l’attrito e completare più velocemente l’acquisto del bundle",
+    "user_story": "Come Cliente digitale\nVoglio aggiungere immediatamente al carrello il prodotto suggerito dal pop-up di proposta bundle tramite un’azione diretta\nIn modo che possa completare più velocemente l’acquisto del bundle senza passaggi inutili",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo il pop-up (o elemento equivalente) di proposta bundle ALLORA è presente un pulsante/controllo di call to action per aggiungere immediatamente al carrello il prodotto suggerito.",
+      "QUANDO premo il pulsante/controllo di aggiunta al carrello ALLORA lo stato del carrello risulta aggiornato e l’aggiunta del prodotto è riflessa correttamente senza errori (verificabile con test end-to-end).",
+      "QUANDO l’aggiunta al carrello richiede la selezione/conferma di varianti o opzioni ALLORA il flusso mi guida nella scelta/conferma senza interrompere il processo di aggiunta al carrello."
+    ],
+    "business_rules": [
+      "La call to action di aggiunta al carrello deve essere disponibile all’interno del trigger di proposta bundle (pop-up/tasca a comparsa o equivalente).",
+      "L’aggiornamento del carrello a seguito dell’azione deve risultare consistente e verificabile end-to-end."
+    ],
+    "edge_cases": [
+      "QUANDO premo 'Aggiungi al carrello' e il servizio di carrello non è disponibile ALLORA ricevo un errore gestito e il carrello non viene aggiornato in modo incoerente.",
+      "QUANDO il prodotto suggerito non è più aggiungibile (es. non disponibile) AL MOMENTO dell’azione ALLORA l’aggiunta fallisce in modo gestito e non produce un carrello in stato errato.",
+      "QUANDO sono richieste varianti/opzioni ma non ne seleziono una valida ALLORA il sistema impedisce la conferma e mi richiede una selezione corretta senza uscire dal flusso di aggiunta."
+    ],
+    "assumptions": [
+      "Si assume che esista un carrello sui canali digitali (App/Web) e che l’azione 'Aggiungi al carrello' aggiorni tale carrello.",
+      "Si assume che il concetto di 'varianti/opzioni' sia applicabile solo ad alcuni prodotti e che il sistema disponga di un meccanismo UI per guidare la selezione all’interno del flusso."
+    ],
+    "notes": "Il requisito non specifica il tipo esatto di componente UI (popup/tasca a comparsa o altro): la story copre qualsiasi elemento equivalente che ospiti la call to action. Non sono specificate modalità di gestione errori/indisponibilità: gli edge case sono riportati come scenari limite da chiarire in refinement."
+  }
+]

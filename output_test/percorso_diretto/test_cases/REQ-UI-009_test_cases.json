@@ -1,0 +1,267 @@
+[
+  {
+    "test_id": "REQ-UI-009.TC01",
+    "title": "Visualizzazione della proposta temporanea non accettata nella sezione Loyalty (WEB)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente cliente autenticato sul sito web",
+      "La sezione 'Loyalty di Gruppo' è disponibile e raggiungibile dal menu del sito",
+      "Esiste una proposta/offerta temporanea generata da pop-up per l'utente e NON accettata",
+      "La proposta non è scaduta (data/ora corrente < data/ora scadenza proposta)"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-1001",
+      "Nome proposta atteso: \"Offerta Loyalty Week\"",
+      "Immagine attesa: \"loyalty_week.jpg\"",
+      "Prezzo scontato atteso: \"19,99 EUR\""
+    ],
+    "steps": [
+      "Accedere al sito web con l'utente cliente_loyalty_01",
+      "Navigare alla sezione 'Loyalty di Gruppo'",
+      "Visualizzare l'elenco delle offerte personali nella sezione",
+      "Individuare nell'elenco la proposta generata dal pop-up con ID PROP-1001"
+    ],
+    "expected_results": [
+      "La sezione 'Loyalty di Gruppo' mostra un elenco di offerte personali",
+      "Nell'elenco è presente la proposta non accettata ID PROP-1001",
+      "Per la proposta ID PROP-1001 sono visibili: nome \"Offerta Loyalty Week\", immagine \"loyalty_week.jpg\" e prezzo scontato \"19,99 EUR\""
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori inferiti: cliente autenticato. Il requisito cita una 'proposta generata dal pop-up': si assume che la proposta sia identificabile e recuperabile in Loyalty tramite un ID o attributi equivalenti."
+  },
+  {
+    "test_id": "REQ-UI-009.TC02",
+    "title": "Visualizzazione della proposta temporanea non accettata nella sezione Loyalty (APP)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente cliente autenticato su app mobile",
+      "La sezione 'Loyalty di Gruppo' è disponibile e raggiungibile nell'app",
+      "Esiste una proposta/offerta temporanea generata da pop-up per l'utente e NON accettata",
+      "La proposta non è scaduta (data/ora corrente < data/ora scadenza proposta)"
+    ],
+    "test_data": [
+      "Canale: app",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-1001",
+      "Nome proposta atteso: \"Offerta Loyalty Week\"",
+      "Immagine attesa: \"loyalty_week.jpg\"",
+      "Prezzo scontato atteso: \"19,99 EUR\""
+    ],
+    "steps": [
+      "Aprire l'app mobile ed effettuare l'accesso con l'utente cliente_loyalty_01",
+      "Aprire la sezione 'Loyalty di Gruppo'",
+      "Visualizzare l'elenco delle offerte personali nella sezione",
+      "Individuare nell'elenco la proposta generata dal pop-up con ID PROP-1001"
+    ],
+    "expected_results": [
+      "La sezione 'Loyalty di Gruppo' mostra un elenco di offerte personali",
+      "Nell'elenco è presente la proposta non accettata ID PROP-1001",
+      "Per la proposta ID PROP-1001 sono visibili: nome \"Offerta Loyalty Week\", immagine \"loyalty_week.jpg\" e prezzo scontato \"19,99 EUR\""
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Attori inferiti: cliente autenticato. Si assume parità di contenuto tra app e web per nome/immagine/prezzo scontato."
+  },
+  {
+    "test_id": "REQ-UI-009.TC03",
+    "title": "Riapertura della proposta da Loyalty e aggiunta al carrello entro la scadenza (WEB)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente cliente autenticato sul sito web",
+      "Esiste una proposta/offerta temporanea generata da pop-up per l'utente e NON accettata",
+      "La proposta è visibile in 'Loyalty di Gruppo'",
+      "La proposta non è scaduta (data/ora corrente < data/ora scadenza proposta)",
+      "Funzionalità carrello attiva sul sito web"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-1001",
+      "SKU/prodotto associato alla proposta: SKU-ABC-001",
+      "Quantità: 1"
+    ],
+    "steps": [
+      "Accedere al sito web con l'utente cliente_loyalty_01",
+      "Navigare alla sezione 'Loyalty di Gruppo'",
+      "Selezionare la proposta ID PROP-1001 dall'elenco",
+      "Aprire la pagina/scheda dettagli della proposta",
+      "Cliccare sul comando per procedere all'acquisto (es. 'Aggiungi al carrello')",
+      "Aprire il carrello"
+    ],
+    "expected_results": [
+      "La selezione della proposta ID PROP-1001 apre la vista dettagli della proposta",
+      "Dalla vista dettagli è possibile avviare l'acquisto entro la scadenza (azione disponibile e non disabilitata)",
+      "Il prodotto associato (SKU-ABC-001) risulta presente nel carrello con quantità 1"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito fornisce 'es. aggiungere al carrello' come modalità di acquisto: il test valida l'aggiunta al carrello come percorso minimo verificabile."
+  },
+  {
+    "test_id": "REQ-UI-009.TC04",
+    "title": "Riapertura della proposta da Loyalty e aggiunta al carrello entro la scadenza (APP)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente cliente autenticato su app mobile",
+      "Esiste una proposta/offerta temporanea generata da pop-up per l'utente e NON accettata",
+      "La proposta è visibile in 'Loyalty di Gruppo'",
+      "La proposta non è scaduta (data/ora corrente < data/ora scadenza proposta)",
+      "Funzionalità carrello attiva nell'app"
+    ],
+    "test_data": [
+      "Canale: app",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-1001",
+      "SKU/prodotto associato alla proposta: SKU-ABC-001",
+      "Quantità: 1"
+    ],
+    "steps": [
+      "Aprire l'app mobile ed effettuare l'accesso con l'utente cliente_loyalty_01",
+      "Aprire la sezione 'Loyalty di Gruppo'",
+      "Selezionare la proposta ID PROP-1001 dall'elenco",
+      "Aprire la schermata dettagli della proposta",
+      "Toccare il comando per procedere all'acquisto (es. 'Aggiungi al carrello')",
+      "Aprire il carrello dall'app"
+    ],
+    "expected_results": [
+      "La selezione della proposta ID PROP-1001 apre la schermata dettagli della proposta",
+      "Dalla schermata dettagli è possibile avviare l'acquisto entro la scadenza (azione disponibile e non disabilitata)",
+      "Il prodotto associato (SKU-ABC-001) risulta presente nel carrello con quantità 1"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito non specifica differenze tra canali; questo test replica il flusso E2E su app."
+  },
+  {
+    "test_id": "REQ-UI-009.TC05",
+    "title": "Proposta scaduta: impossibilità di procedere all'acquisto da Loyalty",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente cliente autenticato (web o app)",
+      "Esiste una proposta/offerta temporanea generata da pop-up per l'utente e NON accettata",
+      "La proposta è visibile in 'Loyalty di Gruppo' oppure è raggiungibile dalla sezione",
+      "La proposta è scaduta (data/ora corrente >= data/ora scadenza proposta)"
+    ],
+    "test_data": [
+      "Canali: web, app",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-2002",
+      "Scadenza proposta: \"2026-02-20 23:59\" (passata rispetto all'orario di esecuzione test)"
+    ],
+    "steps": [
+      "Accedere come cliente_loyalty_01 sul canale in test (web o app)",
+      "Aprire la sezione 'Loyalty di Gruppo'",
+      "Selezionare la proposta ID PROP-2002",
+      "Aprire i dettagli della proposta",
+      "Tentare di procedere all'acquisto (es. premere 'Aggiungi al carrello')"
+    ],
+    "expected_results": [
+      "Il sistema non consente di procedere all'acquisto per la proposta scaduta (azione disabilitata oppure operazione bloccata)",
+      "Viene mostrata un'indicazione verificabile di scadenza/non validità della proposta (es. messaggio 'Offerta scaduta' o equivalente)",
+      "Il carrello non viene modificato a seguito del tentativo"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica il comportamento UI esatto per offerte scadute; si valida in modo non ambiguo che l'acquisto sia impedito e che l'utente riceva un feedback di scadenza."
+  },
+  {
+    "test_id": "REQ-UI-009.TC06",
+    "title": "Errore di recupero elenco Loyalty: gestione indisponibilità servizio offerte",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente cliente autenticato (web o app)",
+      "La sezione 'Loyalty di Gruppo' è raggiungibile",
+      "Il servizio/API che fornisce l'elenco offerte Loyalty è configurato per restituire errore (es. HTTP 500) o timeout"
+    ],
+    "test_data": [
+      "Canali: web, app",
+      "Utente: cliente_loyalty_01",
+      "Simulazione errore: timeout 10s oppure HTTP 500 dal servizio elenco offerte"
+    ],
+    "steps": [
+      "Accedere come cliente_loyalty_01 sul canale in test (web o app)",
+      "Aprire la sezione 'Loyalty di Gruppo'",
+      "Attendere il caricamento dell'elenco offerte"
+    ],
+    "expected_results": [
+      "L'applicazione non va in crash e rimane utilizzabile",
+      "Viene mostrato un messaggio di errore o stato vuoto informativo relativo all'impossibilità di caricare le offerte",
+      "Non vengono mostrati dati parziali incoerenti (es. card senza nome/prezzo) per la proposta"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Dipendenza esterna inferita: servizio/API per elenco offerte Loyalty. Il requisito non definisce il testo del messaggio di errore; si verifica la presenza di un feedback e la resilienza dell'interfaccia."
+  },
+  {
+    "test_id": "REQ-UI-009.TC07",
+    "title": "Edge case: proposta presente in elenco ma con attributi obbligatori mancanti (nome/immagine/prezzo scontato)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Utente cliente autenticato (web o app)",
+      "La sezione 'Loyalty di Gruppo' è raggiungibile",
+      "Esiste una proposta temporanea non accettata visibile in Loyalty con almeno un attributo mancante tra: nome, immagine, prezzo scontato (dati incompleti lato backend)"
+    ],
+    "test_data": [
+      "Canali: web, app",
+      "Utente: cliente_loyalty_01",
+      "Proposta temporanea (ID): PROP-3003",
+      "Dati incompleti: nome nullo, immagine \"loyalty_generic.jpg\", prezzo scontato nullo"
+    ],
+    "steps": [
+      "Accedere come cliente_loyalty_01 sul canale in test (web o app)",
+      "Aprire la sezione 'Loyalty di Gruppo'",
+      "Individuare la proposta ID PROP-3003 nell'elenco"
+    ],
+    "expected_results": [
+      "La card della proposta ID PROP-3003 non mostra campi vuoti non gestiti (es. 'null', 'NaN', placeholder tecnici)",
+      "Se un attributo obbligatorio non è disponibile, l'interfaccia mostra un fallback coerente (es. immagine di default) e/o impedisce la visualizzazione della proposta in modo controllato",
+      "Le altre offerte personali, se presenti, risultano comunque visualizzate correttamente"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito impone la visualizzazione di nome/immagine/prezzo scontato; non definisce fallback. Questo test evidenzia un caso limite e valida che l'UI gestisca dati incompleti senza renderizzazioni errate."
+  }
+]

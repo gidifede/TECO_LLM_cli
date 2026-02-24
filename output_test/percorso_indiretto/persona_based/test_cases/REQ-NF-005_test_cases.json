@@ -1,0 +1,362 @@
+[
+  {
+    "story_id": "REQ-NF-005.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-005.US01.TC01",
+        "title": "Avvio export log consentito a utente Marketing autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Marketing attivo con permesso di export log abilitato (es. permesso 'LOG_EXPORT')",
+          "L'utente Marketing è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: userId=mk_001, username=marketing.autorizzato@example.com",
+          "Permesso associato: LOG_EXPORT=abilitato"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente) che include la funzione di export",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)",
+          "Attendere il completamento dell'operazione di export"
+        ],
+        "expected_results": [
+          "L'azione di export viene avviata senza errori di autorizzazione",
+          "Al completamento, il sistema rende disponibile un file esportato (download disponibile o file generato secondo lo standard della dashboard)",
+          "Non viene mostrato alcun messaggio di blocco/permesso insufficiente"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il formato del file esportato e la posizione/UX di download non sono specificati: la verifica si limita alla disponibilità di un artefatto di export e all'assenza di blocchi di autorizzazione."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC02",
+        "title": "Blocco export log per utente Marketing non autorizzato e nessun file generato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Marketing attivo senza permesso di export log (LOG_EXPORT disabilitato/assente)",
+          "L'utente Marketing è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente Marketing non autorizzato: userId=mk_002, username=marketing.noexport@example.com",
+          "Permesso associato: LOG_EXPORT=disabilitato/assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing non autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente) che include la funzione di export",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)"
+        ],
+        "expected_results": [
+          "Il sistema blocca l'operazione di export per permessi insufficienti",
+          "Non viene generato alcun file esportato (nessun download disponibile e nessun job/export creato)",
+          "Viene mostrato un messaggio di errore/avviso coerente con accesso negato (es. 'Operazione non consentita' o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità con cui la dashboard segnala il blocco (toast, dialog, banner) non è specificata: verificare che il contenuto indichi chiaramente l'accesso negato."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC03",
+        "title": "Registrazione audit nei log di sistema dopo export completato da Marketing autorizzato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Marketing attivo con permesso di export log abilitato (LOG_EXPORT)",
+          "L'utente Marketing è autenticato in dashboard",
+          "È disponibile un meccanismo di consultazione dei log di sistema/audit (es. SIEM, tabella audit, endpoint admin) per verificare l'evento"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: userId=mk_001, username=marketing.autorizzato@example.com",
+          "Finestra temporale attesa evento audit: da T0 (click export) a T0+5 minuti"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Avviare l'export log",
+          "Attendere il completamento dell'export",
+          "Accedere al sistema di consultazione dei log di sistema/audit",
+          "Ricercare un evento di tipo 'export log' (o equivalente) relativo all'utente userId=mk_001 nella finestra temporale dell'operazione"
+        ],
+        "expected_results": [
+          "Nei log di sistema/audit è presente un record relativo all'export appena completato",
+          "Il record contiene l'identificativo univoco dell'utente (userId=mk_001 o equivalente)",
+          "Il record contiene data/ora dell'operazione coerente con il momento di completamento dell'export (timestamp compreso nella finestra temporale attesa)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: non è specificato dove/come siano consultabili i log di sistema. Per automazione, prevedere accesso a storage audit (DB/Elastic/Cloud logging) o API di audit."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC04",
+        "title": "Permesso revocato durante sessione: export negato al tentativo successivo (Marketing)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Marketing attivo con permesso LOG_EXPORT inizialmente abilitato",
+          "L'utente Marketing è autenticato in dashboard",
+          "È disponibile un modo per revocare il permesso LOG_EXPORT all'utente durante la sessione (es. admin console/IDP)"
+        ],
+        "test_data": [
+          "Utente Marketing: userId=mk_003, username=marketing.revoca@example.com",
+          "Permesso iniziale: LOG_EXPORT=abilitato",
+          "Cambio permesso: LOG_EXPORT=revocato"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing con LOG_EXPORT abilitato",
+          "Senza disconnettersi, revocare il permesso LOG_EXPORT all'utente mk_003 tramite il sistema di gestione autorizzazioni",
+          "Tornare alla dashboard nella sessione esistente",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)"
+        ],
+        "expected_results": [
+          "Il sistema valuta i permessi correnti e nega l'export dopo la revoca",
+          "Non viene generato alcun file esportato (nessun download disponibile e nessun job/export creato)",
+          "Viene mostrato un messaggio di accesso negato/permesso insufficiente"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non è specificato se i permessi siano cacheati in sessione: il test valida che la revoca abbia effetto al momento del tentativo di export."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC05",
+        "title": "Errore di scrittura audit: l'export non deve risultare non tracciato (Marketing)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Marketing attivo con permesso LOG_EXPORT abilitato",
+          "L'utente Marketing è autenticato in dashboard",
+          "È possibile simulare un errore di scrittura nei log di sistema/audit (es. audit service down, DB audit non raggiungibile, permessi di scrittura negati)"
+        ],
+        "test_data": [
+          "Utente Marketing autorizzato: userId=mk_004, username=marketing.auditfail@example.com",
+          "Simulazione fault: servizio audit/logging non disponibile (timeout 30s) oppure errore 500"
+        ],
+        "steps": [
+          "Configurare la simulazione di errore di scrittura audit/logging per gli eventi di export",
+          "Accedere alla dashboard come utente Marketing autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Avviare l'export log",
+          "Attendere l'esito dell'operazione"
+        ],
+        "expected_results": [
+          "Il sistema non completa l'export in modo 'silenzioso' senza tracciamento",
+          "L'operazione fallisce con un errore esplicito oppure viene gestita in modo da garantire che non esista un export completato senza un record audit associato",
+          "Non risulta disponibile un file esportato se non esiste la relativa traccia audit"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento non completamente definito dalla user story: l'edge case richiede che non esistano export 'non tracciati'. Se il prodotto prevede retry/queue audit, adeguare le verifiche (es. export in stato 'pending' finché audit non scritto)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-NF-005.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-005.US02.TC01",
+        "title": "Avvio export log consentito a utente Compliance autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Compliance attivo con permesso di export log abilitato (es. permesso 'LOG_EXPORT')",
+          "L'utente Compliance è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: userId=cp_001, username=compliance.autorizzato@example.com",
+          "Permesso associato: LOG_EXPORT=abilitato"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente) che include la funzione di export",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)",
+          "Attendere il completamento dell'operazione di export"
+        ],
+        "expected_results": [
+          "L'azione di export viene avviata senza errori di autorizzazione",
+          "Al completamento, il sistema rende disponibile un file esportato (download disponibile o file generato secondo lo standard della dashboard)",
+          "Non viene mostrato alcun messaggio di blocco/permesso insufficiente"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test duplicato per persona diversa (Compliance) per coprire esplicitamente il caso d'uso multi-ruolo sulla stessa funzionalità."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC02",
+        "title": "Blocco export log per utente Compliance non autorizzato e nessun file generato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Compliance attivo senza permesso di export log (LOG_EXPORT disabilitato/assente)",
+          "L'utente Compliance è autenticato in dashboard"
+        ],
+        "test_data": [
+          "Utente Compliance non autorizzato: userId=cp_002, username=compliance.noexport@example.com",
+          "Permesso associato: LOG_EXPORT=disabilitato/assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance non autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente) che include la funzione di export",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)"
+        ],
+        "expected_results": [
+          "Il sistema blocca l'operazione di export per permessi insufficienti",
+          "Non viene generato alcun file esportato (nessun download disponibile e nessun job/export creato)",
+          "Viene mostrato un messaggio di errore/avviso coerente con accesso negato (es. 'Operazione non consentita' o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Verifica di autorizzazione specifica per il Team Compliance, coerente con i criteri condivisi tra le user stories."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC03",
+        "title": "Registrazione audit nei log di sistema dopo export completato da Compliance autorizzato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Compliance attivo con permesso di export log abilitato (LOG_EXPORT)",
+          "L'utente Compliance è autenticato in dashboard",
+          "È disponibile un meccanismo di consultazione dei log di sistema/audit (es. SIEM, tabella audit, endpoint admin) per verificare l'evento"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: userId=cp_001, username=compliance.autorizzato@example.com",
+          "Finestra temporale attesa evento audit: da T0 (click export) a T0+5 minuti"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Avviare l'export log",
+          "Attendere il completamento dell'export",
+          "Accedere al sistema di consultazione dei log di sistema/audit",
+          "Ricercare un evento di tipo 'export log' (o equivalente) relativo all'utente userId=cp_001 nella finestra temporale dell'operazione"
+        ],
+        "expected_results": [
+          "Nei log di sistema/audit è presente un record relativo all'export appena completato",
+          "Il record contiene l'identificativo univoco dell'utente (userId=cp_001 o equivalente)",
+          "Il record contiene data/ora dell'operazione coerente con il momento di completamento dell'export (timestamp compreso nella finestra temporale attesa)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: accesso ai log/audit non specificato. Per automazione, definire query/filtri e sorgente log ufficiale."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC04",
+        "title": "Permesso revocato durante sessione: export negato al tentativo successivo (Compliance)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Compliance attivo con permesso LOG_EXPORT inizialmente abilitato",
+          "L'utente Compliance è autenticato in dashboard",
+          "È disponibile un modo per revocare il permesso LOG_EXPORT all'utente durante la sessione (es. admin console/IDP)"
+        ],
+        "test_data": [
+          "Utente Compliance: userId=cp_003, username=compliance.revoca@example.com",
+          "Permesso iniziale: LOG_EXPORT=abilitato",
+          "Cambio permesso: LOG_EXPORT=revocato"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance con LOG_EXPORT abilitato",
+          "Senza disconnettersi, revocare il permesso LOG_EXPORT all'utente cp_003 tramite il sistema di gestione autorizzazioni",
+          "Tornare alla dashboard nella sessione esistente",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Selezionare l'azione 'Export log'",
+          "Confermare l'avvio dell'export (se richiesta conferma)"
+        ],
+        "expected_results": [
+          "Il sistema valuta i permessi correnti e nega l'export dopo la revoca",
+          "Non viene generato alcun file esportato (nessun download disponibile e nessun job/export creato)",
+          "Viene mostrato un messaggio di accesso negato/permesso insufficiente"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Come per Marketing, il requisito implica un controllo accessi effettivo al momento dell'azione; se presente caching token, verificare meccanismo di refresh/reauth previsto."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC05",
+        "title": "Errore di scrittura audit: l'export non deve risultare non tracciato (Compliance)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è disponibile e raggiungibile",
+          "Esiste un utente del Team Compliance attivo con permesso LOG_EXPORT abilitato",
+          "L'utente Compliance è autenticato in dashboard",
+          "È possibile simulare un errore di scrittura nei log di sistema/audit (es. audit service down, DB audit non raggiungibile, permessi di scrittura negati)"
+        ],
+        "test_data": [
+          "Utente Compliance autorizzato: userId=cp_004, username=compliance.auditfail@example.com",
+          "Simulazione fault: servizio audit/logging non disponibile (timeout 30s) oppure errore 500"
+        ],
+        "steps": [
+          "Configurare la simulazione di errore di scrittura audit/logging per gli eventi di export",
+          "Accedere alla dashboard come utente Compliance autorizzato",
+          "Navigare alla sezione 'Log' (o equivalente)",
+          "Avviare l'export log",
+          "Attendere l'esito dell'operazione"
+        ],
+        "expected_results": [
+          "Il sistema non completa l'export in modo 'silenzioso' senza tracciamento",
+          "L'operazione fallisce con un errore esplicito oppure viene gestita in modo da garantire che non esista un export completato senza un record audit associato",
+          "Non risulta disponibile un file esportato se non esiste la relativa traccia audit"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento da chiarire: il requisito originale impone tracciamento di tutte le operazioni; questo test valida che in caso di fault audit non si producano export non auditati."
+      }
+    ]
+  }
+]

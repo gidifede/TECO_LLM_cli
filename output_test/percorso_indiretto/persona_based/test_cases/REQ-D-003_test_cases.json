@@ -1,0 +1,320 @@
+[
+  {
+    "story_id": "REQ-D-003.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-003.US01.TC01",
+        "title": "Visualizzazione colonne minime nel log proposte in dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti in ambiente almeno 3 record di log proposte con campi valorizzati (bundle_id, cliente_id o riferimento identificativo previsto, cluster_id, motivo_proposta, timestamp, canale)"
+        ],
+        "test_data": [
+          "Record A: bundle_id=BND-1001, cliente_id=CL-9001, cluster_id=CLUST-01, motivo_proposta=UPSELL, timestamp=2026-02-20T10:15:00Z, canale=WEB",
+          "Record B: bundle_id=BND-1002, cliente_id=CL-9002, cluster_id=CLUST-02, motivo_proposta=CROSS_SELL, timestamp=2026-02-21T09:05:00Z, canale=APP",
+          "Record C: bundle_id=BND-1001, cliente_id=CL-9003, cluster_id=CLUST-01, motivo_proposta=RETENTION, timestamp=2026-02-22T18:30:00Z, canale=STORE"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle' (o sezione equivalente dei log proposte)",
+          "Visualizzare l'intestazione della tabella/griglia dei risultati"
+        ],
+        "expected_results": [
+          "La dashboard mostra una tabella/griglia dei log proposte",
+          "Per ogni record visualizzato sono presenti almeno i campi/colonne: bundle_id, cliente_id (o riferimento identificativo previsto), cluster_id, motivo_proposta, timestamp, canale"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se il requisito prevede un identificativo cliente alternativo a 'cliente_id', il test è da considerarsi superato se la colonna alternativa è presente ed è utilizzabile per identificare e filtrare il cliente."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC02",
+        "title": "Filtro per bundle: visualizzazione dei soli record coerenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti record di log per almeno due bundle differenti, incluso bundle_id=BND-1001 e bundle_id=BND-1002"
+        ],
+        "test_data": [
+          "Bundle da filtrare: BND-1001"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'bundle' selezionando/indicando il valore BND-1001",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La lista dei log mostra esclusivamente record con bundle_id = BND-1001",
+          "Non sono presenti in lista record con bundle_id diverso da BND-1001"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC03",
+        "title": "Filtro per cliente: visualizzazione dei soli record coerenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti record di log per almeno due clienti differenti, incluso cliente_id=CL-9001 e cliente_id=CL-9002 (o identificativo equivalente)"
+        ],
+        "test_data": [
+          "Cliente da filtrare: CL-9001"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'cliente' selezionando/indicando il valore CL-9001 (o identificativo cliente equivalente)",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La lista dei log mostra esclusivamente record con cliente_id (o identificativo equivalente) = CL-9001",
+          "Non sono presenti in lista record associati a clienti diversi da CL-9001"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se il sistema non usa 'cliente_id' ma un riferimento alternativo, utilizzare quel riferimento per l'impostazione e verifica del filtro."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC04",
+        "title": "Filtro per cluster: visualizzazione dei soli record coerenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti record di log per almeno due cluster differenti, incluso cluster_id=CLUST-01 e cluster_id=CLUST-02"
+        ],
+        "test_data": [
+          "Cluster da filtrare: CLUST-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'cluster' selezionando/indicando il valore CLUST-01",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La lista dei log mostra esclusivamente record con cluster_id = CLUST-01",
+          "Non sono presenti in lista record con cluster_id diverso da CLUST-01"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC05",
+        "title": "Filtro per periodo temporale valido: visualizzazione dei soli record nel range",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti record di log con timestamp distribuiti su più giorni, inclusi record nel periodo 2026-02-20..2026-02-21 e record fuori da tale periodo"
+        ],
+        "test_data": [
+          "Data/ora inizio: 2026-02-20T00:00:00Z",
+          "Data/ora fine: 2026-02-21T23:59:59Z"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'periodo temporale' con inizio 2026-02-20T00:00:00Z",
+          "Impostare il filtro 'periodo temporale' con fine 2026-02-21T23:59:59Z",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La lista dei log mostra esclusivamente record con timestamp compreso tra 2026-02-20T00:00:00Z e 2026-02-21T23:59:59Z (estremi inclusi)",
+          "Non sono presenti in lista record con timestamp precedente all'inizio o successivo alla fine del periodo selezionato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il test assume che il filtro temporale accetti date/ore in formato ISO-8601 o equivalente UI; adeguare il formato ai controlli effettivamente disponibili in dashboard."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC06",
+        "title": "Evento registrato: campi obbligatori popolati nel record visualizzato in dashboard",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "È disponibile un meccanismo per generare/registrare un evento di proposta in ambiente (es. servizio applicativo che produce log proposte)",
+          "La dashboard legge i log dalla sorgente dati prevista (DB/data lake/servizio) con latenza accettabile per la verifica"
+        ],
+        "test_data": [
+          "Nuovo evento da registrare: bundle_id=BND-2001, cliente_id=CL-9100, cluster_id=CLUST-03, motivo_proposta=UPSELL, timestamp=2026-02-23T11:00:00Z, canale=WEB"
+        ],
+        "steps": [
+          "Generare/registrare un evento di proposta con i dati specificati",
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare un filtro (es. per bundle BND-2001 o per cliente CL-9100) per individuare il nuovo record",
+          "Aprire/visualizzare il record corrispondente all'evento registrato"
+        ],
+        "expected_results": [
+          "Il record del nuovo evento è presente in dashboard",
+          "Nel record del nuovo evento i campi obbligatori risultano popolati: bundle_id, cliente_id (o riferimento identificativo previsto), cluster_id, motivo_proposta, timestamp, canale",
+          "Nessuno dei campi obbligatori del record risulta nullo o vuoto"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità del componente che registra l'evento e della pipeline di alimentazione della dashboard; la latenza di propagazione non è specificata nel requisito."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC07",
+        "title": "Autorizzazione: accesso negato alla dashboard log proposte per utente senza permessi",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente 'non autorizzato' privo dei permessi di accesso alla dashboard dei log proposte",
+          "La dashboard dei log proposte è raggiungibile tramite URL/menu applicativo"
+        ],
+        "test_data": [
+          "Utente non autorizzato: user_no_mkt (ruolo privo di permesso dashboard log proposte)"
+        ],
+        "steps": [
+          "Autenticarsi come utente non autorizzato user_no_mkt",
+          "Tentare di accedere alla sezione 'Log proposte bundle' tramite menu o URL diretto"
+        ],
+        "expected_results": [
+          "L'accesso alla sezione dei log proposte è negato (es. messaggio 'Accesso non autorizzato' o pagina 403 equivalente)",
+          "Non vengono mostrati record di log proposte"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito assume permessi definiti altrove; il test verifica il controllo di accesso senza introdurre dettagli sul modello ruoli."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC08",
+        "title": "Edge case: filtro bundle con valore inesistente restituisce lista vuota senza errori",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Non esistono record di log con bundle_id=BND-DOES-NOT-EXIST"
+        ],
+        "test_data": [
+          "Bundle inesistente: BND-DOES-NOT-EXIST"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'bundle' con valore BND-DOES-NOT-EXIST",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La dashboard mostra zero record (lista vuota)",
+          "Non vengono mostrati errori applicativi (es. eccezioni, pagine di errore, crash UI)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC09",
+        "title": "Negative: periodo temporale non valido (inizio > fine) blocca o segnala errore e non applica il filtro",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti record di log nel sistema"
+        ],
+        "test_data": [
+          "Data/ora inizio: 2026-02-22T00:00:00Z",
+          "Data/ora fine: 2026-02-21T23:59:59Z"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'periodo temporale' con inizio 2026-02-22T00:00:00Z",
+          "Impostare il filtro 'periodo temporale' con fine 2026-02-21T23:59:59Z",
+          "Tentare di applicare il filtro"
+        ],
+        "expected_results": [
+          "La dashboard impedisce l'applicazione del filtro oppure mostra un errore di validazione che indica che la data/ora di inizio deve essere precedente o uguale alla data/ora di fine",
+          "Il filtro non viene applicato (i risultati non vengono aggiornati secondo il range non valido)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica il testo dell'errore né il comportamento esatto (blocco vs messaggio); il test considera valido uno dei due comportamenti purché il filtro non venga applicato."
+      },
+      {
+        "test_id": "REQ-D-003.US01.TC10",
+        "title": "Edge case: volume elevato di record nel periodo selezionato consente uso filtri senza timeout lato utente",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "L'utente Team Marketing dispone di permessi per accedere alla dashboard dei log proposte",
+          "Sono presenti molti record di log nel periodo selezionato (es. >= 50.000) o un dataset di test equivalente",
+          "Sono disponibili metriche/osservabilità per rilevare timeout lato utente o errori di caricamento (es. messaggi UI, errori console, response timeout)"
+        ],
+        "test_data": [
+          "Periodo ad alto volume: 2026-02-01T00:00:00Z .. 2026-02-23T23:59:59Z",
+          "Filtro aggiuntivo: cluster_id=CLUST-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard con un utente appartenente al Team Marketing",
+          "Aprire la sezione 'Log proposte bundle'",
+          "Impostare il filtro 'periodo temporale' con inizio 2026-02-01T00:00:00Z",
+          "Impostare il filtro 'periodo temporale' con fine 2026-02-23T23:59:59Z",
+          "Applicare il filtro",
+          "Impostare il filtro 'cluster' con valore CLUST-01",
+          "Applicare il filtro"
+        ],
+        "expected_results": [
+          "La dashboard completa il caricamento dei risultati senza errori bloccanti o timeout lato utente",
+          "Dopo l'applicazione del filtro 'cluster', la lista mostra record coerenti con cluster_id=CLUST-01"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce una soglia temporale (SLA) né paginazione/limit; il test verifica l'assenza di timeout/errori percepiti dall'utente durante l'uso dei filtri su un dataset elevato."
+      }
+    ]
+  }
+]

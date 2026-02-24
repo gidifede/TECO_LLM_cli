@@ -1,0 +1,563 @@
+[
+  {
+    "story_id": "REQ-UI-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-001.US01.TC01",
+        "title": "Visualizzazione corretta offerta su App con campi minimi presenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente digitale identificato (es. customer_id) con almeno 1 offerta generata dal Motore e resa disponibile al canale App tramite meccanismo concordato",
+          "App disponibile e raggiunge l'ambiente di test (mockup App o App integrata in ambiente demo)",
+          "L'utente è autenticato in App con profilo Cliente digitale"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10001",
+          "Offerta associata al cliente: offer_id=OFF-APP-0001",
+          "Prodotto suggerito: \"Polizza Casa\"",
+          "Sconto/condizione: \"-10% premio annuo\"",
+          "Motivazione: \"Sconto per clienti con accredito stipendio\" (prevista per questa tipologia)"
+        ],
+        "steps": [
+          "Aprire l'App ed effettuare login come Cliente digitale",
+          "Navigare alla sezione di visualizzazione offerte (come definita dal mockup/UX)",
+          "Richiedere l'elenco offerte del cliente",
+          "Selezionare l'offerta offer_id=OFF-APP-0001 per visualizzarne i dettagli essenziali"
+        ],
+        "expected_results": [
+          "L'App mostra l'offerta OFF-APP-0001 senza errori di caricamento",
+          "Sono visualizzati almeno: prodotto suggerito \"Polizza Casa\", sconto/condizione \"-10% premio annuo\" e motivazione \"Sconto per clienti con accredito stipendio\"",
+          "I valori visualizzati corrispondono ai dati resi disponibili dal Motore tramite il meccanismo di integrazione concordato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La posizione esatta della sezione offerte in App non è specificata: si assume esista una schermata/area dedicata nel mockup o nell'App demo."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC02",
+        "title": "Visualizzazione corretta offerta su Web con campi minimi presenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente digitale identificato (es. customer_id) con almeno 1 offerta generata dal Motore e resa disponibile al canale Web tramite meccanismo concordato",
+          "Portale Web disponibile e raggiunge l'ambiente di test (mockup Web o Web integrato in ambiente demo)",
+          "L'utente è autenticato sul canale Web con profilo Cliente digitale"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10002",
+          "Offerta associata al cliente: offer_id=OFF-WEB-0002",
+          "Prodotto suggerito: \"Conto Premium\"",
+          "Sconto/condizione: \"Canone 0 per 12 mesi\"",
+          "Motivazione: \"Offerta dedicata ai nuovi clienti\" (prevista per questa tipologia)"
+        ],
+        "steps": [
+          "Accedere al portale Web ed effettuare login come Cliente digitale",
+          "Navigare alla sezione di visualizzazione offerte (come definita dal mockup/UX)",
+          "Richiedere l'elenco offerte del cliente",
+          "Selezionare l'offerta offer_id=OFF-WEB-0002 per visualizzarne i dettagli essenziali"
+        ],
+        "expected_results": [
+          "Il portale Web mostra l'offerta OFF-WEB-0002 senza errori di caricamento",
+          "Sono visualizzati almeno: prodotto suggerito \"Conto Premium\", sconto/condizione \"Canone 0 per 12 mesi\" e motivazione \"Offerta dedicata ai nuovi clienti\"",
+          "I valori visualizzati corrispondono ai dati resi disponibili dal Motore tramite il meccanismo di integrazione concordato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La posizione esatta della sezione offerte in Web non è specificata: si assume esista una pagina/area dedicata nel mockup o nel portale demo."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC03",
+        "title": "App/Web - Nessuna offerta disponibile: visualizzazione stato 'nessuna offerta' senza errori",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente digitale identificato (es. customer_id) senza offerte generate dal Motore (0 offerte disponibili)",
+          "App e Web disponibili in ambiente di test (mockup o demo)",
+          "L'utente è autenticato sul canale in test con profilo Cliente digitale"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10003 (nessuna offerta)"
+        ],
+        "steps": [
+          "Accedere al canale digitale in test (App o Web) ed effettuare login come Cliente digitale",
+          "Navigare alla sezione di visualizzazione offerte",
+          "Richiedere l'elenco offerte del cliente CD-10003"
+        ],
+        "expected_results": [
+          "Il canale non visualizza alcuna offerta per il cliente CD-10003",
+          "È mostrato uno stato informativo coerente (es. messaggio 'Nessuna offerta disponibile' o equivalente definito dal canale) senza errori applicativi",
+          "Non sono mostrati dati parziali o riferimenti a offerte inesistenti"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il testo esatto del messaggio non è definito: la verifica si basa sulla presenza di uno stato 'nessuna offerta' e sull'assenza di errori/dati incoerenti."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC04",
+        "title": "App/Web - Integrazione non raggiungibile: gestione errore/timeout senza mostrare dati incoerenti",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "App e/o Web configurati per recuperare le offerte tramite meccanismo di integrazione concordato",
+          "Il servizio di integrazione verso il Motore (es. API/endpoint) è non raggiungibile o risponde in timeout (simulazione tramite stub, proxy o disabilitazione endpoint)",
+          "L'utente è autenticato sul canale in test con profilo Cliente digitale"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10004",
+          "Simulazione integrazione: timeout > 30s oppure HTTP 503 dal servizio offerte"
+        ],
+        "steps": [
+          "Accedere al canale digitale in test (App o Web) ed effettuare login come Cliente digitale",
+          "Navigare alla sezione di visualizzazione offerte",
+          "Richiedere l'elenco offerte del cliente CD-10004 durante l'indisponibilità dell'integrazione"
+        ],
+        "expected_results": [
+          "Il canale mostra una gestione di errore/timeout coerente (es. messaggio di errore o stato di non disponibilità), senza crash",
+          "Non vengono visualizzati dati di offerte parziali o potenzialmente incoerenti",
+          "L'utente può rimanere nel canale e riprovare/uscire dalla sezione senza blocchi (comportamento minimo: l'applicazione resta utilizzabile)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La UX di errore (testo, pulsanti) non è definita: la verifica è focalizzata su assenza di dati parziali e corretta gestione del fault di integrazione."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC05",
+        "title": "App/Web - Offerta con campi minimi mancanti: non considerata visualizzabile correttamente",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente digitale con un'offerta resa disponibile al canale digitale ma con payload incompleto (almeno uno tra prodotto suggerito, sconto/condizione, motivazione prevista mancante)",
+          "App e/o Web disponibili in ambiente di test",
+          "L'utente è autenticato sul canale in test con profilo Cliente digitale"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10005",
+          "Offerta associata: offer_id=OFF-BAD-0005",
+          "Payload incompleto: prodotto suggerito assente/null; sconto/condizione=\"-5%\"; motivazione prevista=\"Promo fedeltà\" ma assente/null"
+        ],
+        "steps": [
+          "Accedere al canale digitale in test (App o Web) ed effettuare login come Cliente digitale",
+          "Navigare alla sezione di visualizzazione offerte",
+          "Richiedere l'elenco offerte del cliente CD-10005",
+          "Tentare di visualizzare l'offerta OFF-BAD-0005"
+        ],
+        "expected_results": [
+          "L'offerta OFF-BAD-0005 non risulta 'visualizzabile correttamente' perché mancano campi minimi richiesti",
+          "Il canale non mostra l'offerta con dati incompleti oppure la gestisce come anomalia secondo comportamento definito dal canale (minimo verificabile: non presenta informazioni fuorvianti/spacciate per complete)",
+          "Non vengono mostrati valori placeholder non concordati (es. stringhe tecniche, 'null', codici interni) al posto dei campi minimi"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il comportamento di fallback/UI per payload incompleto è indicato come 'da definire': il test valida almeno che non venga considerata una visualizzazione corretta e che non vengano mostrati dati incoerenti."
+      },
+      {
+        "test_id": "REQ-UI-001.US01.TC06",
+        "title": "Autorizzazione canale digitale: utente non autenticato non accede alla sezione offerte",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "App e/o Web disponibili in ambiente di test",
+          "Esiste un cliente con offerte disponibili (per evitare falsi negativi dovuti ad assenza offerte)"
+        ],
+        "test_data": [
+          "Cliente: customer_id=CD-10001 con offerta OFF-APP-0001 disponibile"
+        ],
+        "steps": [
+          "Aprire il canale digitale in test (App o Web) senza effettuare login",
+          "Tentare di accedere alla sezione di visualizzazione offerte tramite navigazione diretta o URL deep link (se applicabile)"
+        ],
+        "expected_results": [
+          "Il canale richiede autenticazione (redirect a login o blocco accesso) prima di mostrare le offerte",
+          "Nessun dato di offerta viene visualizzato a utente non autenticato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Non sono specificate regole di sicurezza: si assume che la visualizzazione offerte sia protetta da autenticazione standard del canale."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-001.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-001.US02.TC01",
+        "title": "Front-end commerciale: visualizzazione corretta offerta con campi minimi presenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente identificato (es. codice fiscale) con almeno 1 offerta generata dal Motore e resa disponibile al front-end commerciale tramite meccanismo concordato",
+          "Front-end commerciale disponibile in ambiente di test (mockup o demo)",
+          "Operatore autenticato nel front-end commerciale"
+        ],
+        "test_data": [
+          "Cliente: CF=RSSMRA80A01H501U",
+          "Offerta associata: offer_id=OFF-FE-0100",
+          "Prodotto suggerito: \"Prestito Personale\"",
+          "Sconto/condizione: \"TAN 6,90%\"",
+          "Motivazione: \"Offerta pre-approvata\" (prevista per questa tipologia)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale ed effettuare login come Operatore",
+          "Agganciare/ricercare il cliente con CF=RSSMRA80A01H501U secondo funzionalità esistenti del front-end",
+          "Aprire la sezione di consultazione offerte per il cliente",
+          "Selezionare l'offerta offer_id=OFF-FE-0100 per visualizzarne i dettagli essenziali"
+        ],
+        "expected_results": [
+          "Il front-end commerciale mostra l'offerta OFF-FE-0100 senza errori di caricamento",
+          "Sono visualizzati almeno: prodotto suggerito \"Prestito Personale\", sconto/condizione \"TAN 6,90%\" e motivazione \"Offerta pre-approvata\"",
+          "I valori visualizzati corrispondono ai dati resi disponibili dal Motore tramite il meccanismo di integrazione concordato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Le modalità di aggancio cliente non sono specificate dalla US: si assume esistano già nel front-end e siano fuori perimetro del requisito."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC02",
+        "title": "Front-end commerciale: nessuna offerta disponibile per il cliente",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente senza offerte generate dal Motore (0 offerte disponibili)",
+          "Front-end commerciale disponibile in ambiente di test (mockup o demo)",
+          "Operatore autenticato nel front-end commerciale"
+        ],
+        "test_data": [
+          "Cliente: CF=VRDLGI75C15F205Z (nessuna offerta)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale ed effettuare login come Operatore",
+          "Agganciare/ricercare il cliente con CF=VRDLGI75C15F205Z",
+          "Aprire la sezione di consultazione offerte per il cliente"
+        ],
+        "expected_results": [
+          "Il front-end non visualizza alcuna offerta per il cliente",
+          "È mostrato uno stato informativo coerente (es. 'Nessuna offerta disponibile' o equivalente) senza errori applicativi",
+          "Non sono mostrati dati incoerenti o residui di offerte di altri clienti"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il testo esatto del messaggio non è definito: la verifica si basa su assenza di errori e assenza di dati incoerenti."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC03",
+        "title": "Front-end commerciale: integrazione non raggiungibile (timeout/errore) e prosecuzione senza offerte",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale configurato per recuperare le offerte tramite meccanismo di integrazione concordato",
+          "Il servizio di integrazione verso il Motore (es. API/endpoint) è non raggiungibile o risponde in timeout (simulazione tramite stub, proxy o disabilitazione endpoint)",
+          "Operatore autenticato nel front-end commerciale"
+        ],
+        "test_data": [
+          "Cliente: CF=BNCLNZ90D22H501K",
+          "Simulazione integrazione: timeout > 30s oppure HTTP 503 dal servizio offerte"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale ed effettuare login come Operatore",
+          "Agganciare/ricercare il cliente con CF=BNCLNZ90D22H501K",
+          "Aprire la sezione di consultazione offerte durante l'indisponibilità dell'integrazione"
+        ],
+        "expected_results": [
+          "Il front-end gestisce l'errore/timeout mostrando uno stato di non disponibilità (messaggio o indicazione equivalente) senza crash",
+          "Non vengono visualizzati dati di offerte parziali o potenzialmente incoerenti",
+          "L'operatore può proseguire l'operatività nel front-end senza rimanere bloccato nella sezione offerte"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La UX di errore non è definita: il test verifica la gestione dell'indisponibilità e l'assenza di dati parziali."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC04",
+        "title": "Front-end commerciale: offerta con dati minimi incompleti non considerata visualizzabile correttamente",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un cliente con un'offerta resa disponibile al front-end commerciale ma con payload incompleto (almeno uno tra prodotto suggerito, sconto/condizione, motivazione prevista mancante)",
+          "Front-end commerciale disponibile in ambiente di test",
+          "Operatore autenticato nel front-end commerciale"
+        ],
+        "test_data": [
+          "Cliente: CF=FRNGPP82E10F839R",
+          "Offerta associata: offer_id=OFF-FE-BAD-0200",
+          "Payload incompleto: prodotto suggerito=\"Carta Prepagata\"; sconto/condizione assente/null; motivazione prevista=\"Promo estiva\" presente"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale ed effettuare login come Operatore",
+          "Agganciare/ricercare il cliente con CF=FRNGPP82E10F839R",
+          "Aprire la sezione di consultazione offerte",
+          "Tentare di visualizzare l'offerta OFF-FE-BAD-0200"
+        ],
+        "expected_results": [
+          "L'offerta OFF-FE-BAD-0200 non risulta 'visualizzabile correttamente' perché mancano campi minimi richiesti",
+          "Il front-end non presenta l'offerta come completa (es. non la mostra oppure la segnala come anomalia secondo comportamento definito), evitando informazioni fuorvianti",
+          "Non vengono mostrati valori tecnici o placeholder (es. 'null') al posto dei campi minimi"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il comportamento UI per anomalia è indicato come 'da definire': il test valida almeno che non sia considerata una visualizzazione corretta e che non si mostrino dati incoerenti."
+      },
+      {
+        "test_id": "REQ-UI-001.US02.TC05",
+        "title": "Autorizzazione front-end commerciale: utente non autenticato non accede alle offerte cliente",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale disponibile in ambiente di test",
+          "Esiste un cliente con offerte disponibili"
+        ],
+        "test_data": [
+          "Cliente: CF=RSSMRA80A01H501U con offerta OFF-FE-0100 disponibile"
+        ],
+        "steps": [
+          "Aprire il front-end commerciale senza effettuare login",
+          "Tentare di accedere alla sezione di consultazione offerte cliente (tramite navigazione o accesso diretto se possibile)"
+        ],
+        "expected_results": [
+          "Il front-end richiede autenticazione prima di consentire l'accesso alla consultazione offerte",
+          "Nessun dato di offerta viene visualizzato a utente non autenticato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Non sono specificate regole di sicurezza/ruoli (OSP/OFE/figure di sala): si assume protezione tramite autenticazione standard del front-end."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-001.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-001.US03.TC01",
+        "title": "Integrazione Motore->Canali: esposizione offerta tramite meccanismo concordato (digitale e front-end commerciale)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un meccanismo di integrazione concordato per il canale digitale (es. API/endpoint/event) e uno per il front-end commerciale (possono coincidere o essere distinti)",
+          "Ambiente di test con possibilità di generare un'offerta dal Motore (o simulare evento di generazione) e osservare la trasmissione/esposizione verso i canali",
+          "Logging/monitoring abilitato per verificare chiamate/risposte o eventi pubblicati"
+        ],
+        "test_data": [
+          "Offerta generata dal Motore: offer_id=OFF-INT-0001",
+          "Cliente: customer_id=CD-20001 / CF=PLLMRC85M01F205X",
+          "Prodotto suggerito: \"Assicurazione Viaggio\"",
+          "Sconto/condizione: \"5%\"",
+          "Motivazione: \"Promo stagionale\" (prevista)"
+        ],
+        "steps": [
+          "Attivare la generazione dell'offerta OFF-INT-0001 sul Motore per il cliente indicato",
+          "Verificare che il Motore esponga/trasmetta l'offerta verso il meccanismo di integrazione del canale digitale",
+          "Verificare che il Motore esponga/trasmetta l'offerta verso il meccanismo di integrazione del front-end commerciale",
+          "Recuperare l'offerta dai due canali (o dai rispettivi endpoint/coda/event store) per confronto del payload"
+        ],
+        "expected_results": [
+          "Esiste evidenza tecnica della trasmissione/esposizione dell'offerta verso il canale digitale (es. risposta 200/201, evento pubblicato, messaggio consegnato) secondo meccanismo concordato",
+          "Esiste evidenza tecnica della trasmissione/esposizione dell'offerta verso il front-end commerciale secondo meccanismo concordato",
+          "Il payload esposto verso entrambi i domini canale contiene almeno i campi minimi: prodotto suggerito, sconto/condizione e motivazione quando prevista"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "API/endpoint",
+          "integrazione verso App/Web",
+          "integrazione verso front-end commerciale"
+        ],
+        "notes": "Il requisito non specifica push/pull né schema dati: la verifica si basa sull'evidenza che un meccanismo concordato esista e trasporti i campi minimi."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC02",
+        "title": "E2E demo: offerta generata dal Motore visualizzabile su mockup App/Web e su mockup front-end commerciale",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Mockup App/Web e mockup front-end commerciale disponibili in ambiente demo/esercitazione",
+          "Meccanismi di integrazione concordati attivi tra Motore e i due canali (anche tramite stub/middleware purché end-to-end dimostrabile)",
+          "Utente Cliente digitale autenticabile su App/Web e Operatore autenticabile su front-end commerciale"
+        ],
+        "test_data": [
+          "Cliente digitale: customer_id=CD-30001",
+          "Cliente sportello: CF=MRARSS70A01H501F (può coincidere con lo stesso soggetto del cliente digitale se previsto dai dati demo)",
+          "Offerta generata: offer_id=OFF-E2E-0007",
+          "Prodotto suggerito: \"Piano di Accumulo\"",
+          "Sconto/condizione: \"Commissioni 0 per 6 mesi\"",
+          "Motivazione: \"Profilo di risparmio coerente\" (prevista)"
+        ],
+        "steps": [
+          "Generare l'offerta OFF-E2E-0007 sul Motore per il cliente indicato",
+          "Su mockup App/Web, accedere come Cliente digitale e aprire la sezione offerte",
+          "Verificare la presenza e la visualizzazione dell'offerta OFF-E2E-0007 su App/Web",
+          "Su mockup front-end commerciale, accedere come Operatore e agganciare il cliente",
+          "Aprire la sezione offerte sul front-end commerciale",
+          "Verificare la presenza e la visualizzazione dell'offerta OFF-E2E-0007 sul front-end commerciale"
+        ],
+        "expected_results": [
+          "L'offerta OFF-E2E-0007 è visualizzabile correttamente su mockup App/Web (senza errori e con campi minimi presenti)",
+          "L'offerta OFF-E2E-0007 è visualizzabile correttamente su mockup front-end commerciale (senza errori e con campi minimi presenti)",
+          "I valori di prodotto/sconto/motivazione visualizzati sui due canali sono coerenti con quanto generato/esposto dal Motore"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "integrazione verso App/Web",
+          "integrazione verso front-end commerciale"
+        ],
+        "notes": "La demo è esplicitamente citata negli AC originali: questo test richiede ambienti mockup coerenti e dati demo sincronizzati."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC03",
+        "title": "Motore: motivazione non prevista per tipologia offerta può essere assente senza bloccare la visualizzazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile una tipologia di offerta per cui la motivazione NON è prevista dagli accordi con Marketing",
+          "Meccanismo di integrazione concordato attivo verso almeno un canale (digitale o front-end commerciale) per verificare il payload esposto"
+        ],
+        "test_data": [
+          "Offerta generata: offer_id=OFF-NOMOT-0003",
+          "Tipologia offerta: \"Offerta standard senza motivazione\" (secondo accordi Marketing)",
+          "Prodotto suggerito: \"Buono Fruttifero\"",
+          "Sconto/condizione: \"Rendimento 3,00%\"",
+          "Motivazione: assente"
+        ],
+        "steps": [
+          "Generare l'offerta OFF-NOMOT-0003 sul Motore per un cliente",
+          "Recuperare il payload dell'offerta esposta dal Motore verso il canale tramite meccanismo concordato",
+          "Verificare i campi presenti nel payload"
+        ],
+        "expected_results": [
+          "Il payload esposto include almeno prodotto suggerito e sconto/condizione",
+          "Il campo motivazione può essere assente per la tipologia per cui non è prevista, senza che l'offerta venga considerata non conforme ai requisiti minimi",
+          "Non sono presenti valorizzazioni fittizie o tecniche per la motivazione (es. 'N/A', 'null') se non concordate"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "API/endpoint"
+        ],
+        "notes": "Dipendenza esterna: serve una classificazione condivisa con Marketing su quali tipologie prevedono la motivazione. In assenza, il test richiede una configurazione/dato demo concordato."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC04",
+        "title": "Motore: canale destinatario non disponibile/non raggiungibile durante esposizione/trasmissione offerta",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un meccanismo di integrazione concordato verso almeno un canale",
+          "Il canale destinatario o il relativo endpoint/broker è reso non raggiungibile (simulazione)",
+          "È possibile generare un'offerta dal Motore in ambiente di test e osservare l'esito della consegna/esposizione"
+        ],
+        "test_data": [
+          "Offerta generata: offer_id=OFF-DOWN-0009",
+          "Simulazione indisponibilità: endpoint canale non raggiungibile oppure broker down"
+        ],
+        "steps": [
+          "Configurare la simulazione di indisponibilità del canale destinatario",
+          "Generare l'offerta OFF-DOWN-0009 sul Motore",
+          "Osservare la gestione dell'errore di consegna/esposizione lato Motore (log, metriche, stato invio o risposta tecnica)"
+        ],
+        "expected_results": [
+          "Il Motore rileva l'errore di consegna/esposizione verso il canale (es. errore di connessione/timeout/risposta 5xx) senza interrompere il processo in modo non gestito",
+          "È disponibile un'evidenza tecnica dell'errore (log/trace/metriche) utile al monitoraggio operativo",
+          "Non viene prodotta un'evidenza di 'successo' verso il canale quando la consegna/esposizione è fallita"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "API/endpoint",
+          "integrazione verso App/Web",
+          "integrazione verso front-end commerciale"
+        ],
+        "notes": "Le modalità tecniche di gestione (retry, DLQ, ecc.) sono 'da definire': il test verifica almeno detection e tracciabilità del fault, evitando falsi successi."
+      },
+      {
+        "test_id": "REQ-UI-001.US03.TC05",
+        "title": "Motore: payload con campi minimi mancanti non soddisfa requisiti minimi di esposizione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile simulare o forzare la generazione di un'offerta con payload incompleto (es. configurazione di test, stub, o manipolazione dati)",
+          "Meccanismo di integrazione concordato attivo per osservare il payload esposto"
+        ],
+        "test_data": [
+          "Offerta generata: offer_id=OFF-MINMISS-0011",
+          "Payload incompleto: prodotto suggerito assente/null; sconto/condizione=\"-15%\"; motivazione prevista=\"Promo\" presente"
+        ],
+        "steps": [
+          "Generare o simulare l'offerta OFF-MINMISS-0011 con payload incompleto",
+          "Recuperare il payload esposto dal Motore verso il canale tramite meccanismo concordato",
+          "Verificare la presenza dei campi minimi nel payload"
+        ],
+        "expected_results": [
+          "Il payload non rispetta i requisiti minimi perché manca almeno un campo obbligatorio tra quelli minimi",
+          "L'anomalia è rilevabile in modo oggettivo (es. campo assente/null nel payload), consentendo di determinare che l'offerta non è idonea alla visualizzazione corretta sui canali",
+          "Non viene considerato conforme un payload che omette campi minimi richiesti dagli accordi con Marketing"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "API/endpoint"
+        ],
+        "notes": "Il requisito non specifica se il Motore debba bloccare l'esposizione o segnalarla: il test valida la non conformità rispetto ai campi minimi, verificabile sul payload."
+      }
+    ]
+  }
+]

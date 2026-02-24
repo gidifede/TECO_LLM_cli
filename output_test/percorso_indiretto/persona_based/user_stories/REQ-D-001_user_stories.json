@@ -1,0 +1,64 @@
+[
+  {
+    "story_id": "REQ-D-001.US01",
+    "title": "Salvataggio e applicazione delle configurazioni definite in dashboard",
+    "persona": "Team Marketing",
+    "goal": "salvare le modifiche alla matrice delle combinazioni e alle eccezioni (flag, sconti, durate, target) e renderle applicabili dal motore",
+    "benefit": "mettere in produzione rapidamente configurazioni commerciali aggiornate e coerenti con quanto impostato in dashboard",
+    "user_story": "Come Team Marketing\nVoglio salvare tramite dashboard le modifiche alla matrice delle combinazioni e alle eccezioni (flag vietato/interessante, sconti, durate promozionali, target)\nIn modo che il Motore di Offerte possa recuperarle e applicarle in produzione in modo affidabile",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO modifico una configurazione in dashboard e confermo il salvataggio ALLORA la modifica viene persistita in un datastore e risulta recuperabile dal Motore di Offerte per il calcolo delle proposte.",
+      "QUANDO salvo una modifica in dashboard ALLORA il sistema rende disponibile (in modo documentato) il momento entro cui il Motore di Offerte leggerà e applicherà la nuova configurazione.",
+      "QUANDO creo o modifico un oggetto di configurazione in dashboard ALLORA l’oggetto salvato include almeno i campi: stato combinazione, sconto, periodo di validità e target."
+    ],
+    "business_rules": [
+      "Le configurazioni modificabili via dashboard includono: matrice delle combinazioni, flag vietato/interessante, sconti, durate promozionali, target, eccezioni manuali.",
+      "La modifica è considerata effettiva solo dopo persistenza nel datastore (fonte per il Motore di Offerte)."
+    ],
+    "edge_cases": [
+      "Salvataggio non riuscito (errore datastore): la dashboard segnala il fallimento e la configurazione non risulta applicata dal motore.",
+      "Concorrenza di modifica: due utenti Marketing modificano la stessa configurazione; il sistema gestisce il conflitto (es. rifiuto/override) in modo esplicito e tracciabile.",
+      "Valori di periodo di validità incoerenti (es. data fine < data inizio): il salvataggio viene bloccato o la modifica viene rifiutata con messaggio di validazione.",
+      "Il Motore di Offerte non riesce a recuperare la configurazione (servizio/datastore non disponibile): la modifica resta persistita ma non applicabile finché l’integrazione non torna disponibile."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il meccanismo di propagazione (pull periodico, cache, eventi): si assume che esista un processo documentato che garantisce l’applicazione entro un tempo definito.",
+      "Il requisito non definisce il valore del 'tempo prevedibile e documentato': si assume che tale valore sia configurabile e/o dichiarato in documentazione operativa/SLA."
+    ],
+    "notes": "Gli AC del requisito sono tutti applicabili a questa persona perché l’azione di modifica/salvataggio avviene in dashboard Marketing, mentre l’effetto atteso è la disponibilità al Motore. Il requisito potrebbe beneficiare di ulteriore dettaglio sul 'tempo prevedibile e documentato' e sul comportamento in caso di conflitti di modifica."
+  },
+  {
+    "story_id": "REQ-D-001.US02",
+    "title": "Recupero e applicazione affidabile delle configurazioni persistite per il calcolo proposte",
+    "persona": "Motore di Offerte",
+    "goal": "recuperare dal datastore le configurazioni salvate da dashboard e applicarle al calcolo delle proposte entro un tempo definito",
+    "benefit": "generare proposte coerenti con le ultime regole commerciali configurate e valide",
+    "user_story": "Come Motore di Offerte\nVoglio recuperare dal datastore le configurazioni salvate da dashboard (matrice, flag, sconti, validità, target, eccezioni) e applicarle al calcolo delle proposte entro un tempo prevedibile e documentato\nIn modo che le proposte generate riflettano in modo affidabile le regole commerciali correnti",
+    "channels": [],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO eseguo il calcolo delle proposte ALLORA recupero le configurazioni persistite (o una loro vista consistente) da un datastore e le utilizzo nel calcolo.",
+      "QUANDO una configurazione viene modificata e salvata via dashboard ALLORA leggo e applico la nuova configurazione entro un tempo prevedibile e documentato.",
+      "QUANDO leggo un oggetto di configurazione ALLORA questo include almeno i campi: stato combinazione, sconto, periodo di validità e target, necessari per determinare la proposta."
+    ],
+    "business_rules": [
+      "Il datastore delle configurazioni è la fonte da cui il Motore di Offerte recupera le regole da applicare al calcolo delle proposte.",
+      "Il Motore di Offerte deve considerare periodo di validità e target come parte dell’oggetto di configurazione utilizzato nel calcolo."
+    ],
+    "edge_cases": [
+      "Configurazione non disponibile/irrecuperabile dal datastore: il motore gestisce l’errore senza corrompere lo stato (es. fallback a ultima configurazione disponibile o blocco calcolo) secondo policy da definire.",
+      "Configurazione parzialmente mancante (campi obbligatori assenti): il motore rifiuta l’uso della configurazione e registra l’anomalia.",
+      "Letture incoerenti durante aggiornamenti (race condition tra write e read): il motore usa una vista consistente o una versione stabile della configurazione.",
+      "Configurazioni con periodi di validità scaduti o non ancora attivi: il motore non le applica al calcolo."
+    ],
+    "assumptions": [
+      "Non è specificato se il motore usa caching/versioning: si assume esista un meccanismo (da definire) che consenta applicazione entro il tempo documentato.",
+      "Non è specificata la policy di fallback in caso di errore di lettura: si assume che venga definita come regola operativa/non funzionale del sistema."
+    ],
+    "notes": "AC condivisi con REQ-D-001.US01 (persona Team Marketing): persistenza nel datastore, applicazione entro tempo documentato, presenza campi minimi dell’oggetto di configurazione. Questa US copre la prospettiva del motore (lettura/applicazione) mentre US01 copre la prospettiva di modifica/salvataggio in dashboard."
+  }
+]

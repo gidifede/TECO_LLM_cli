@@ -1,0 +1,174 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-009",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 54,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-009.TC01",
+        "detail": "Assume canale 'web', ruoli specifici ('Analista') e presenza di un comando UI di export in dashboard; il requisito parla genericamente di ruoli/autorizzazioni ma non di canali, ruoli nominati o specifiche UI."
+      },
+      {
+        "test_id": "REQ-D-009.TC01",
+        "detail": "Introduce formato export 'CSV', filtri specifici e aspettative su nome file/metadati; il requisito non specifica formati, filtri, naming o metadati."
+      },
+      {
+        "test_id": "REQ-D-009.TC02",
+        "detail": "Introduce ruolo 'Viewer' e dettagli di diniego via URL/azione diretta; il requisito richiede solo rispetto autorizzazioni, non modalità di enforcement."
+      },
+      {
+        "test_id": "REQ-D-009.TC03",
+        "detail": "Definisce una policy per dataset vuoto (blocco o export vuoto) e richiede comportamento 'deterministico'; il requisito non tratta dataset vuoti né determinismo."
+      },
+      {
+        "test_id": "REQ-D-009.TC04",
+        "detail": "Introduce requisiti su paginazione/scroll/ordinamento e su come l'export debba rifletterli o essere documentato; il requisito parla solo di consultabilità completa prima dell'export, non di paginazione/ordinamento né di documentazione del comportamento."
+      },
+      {
+        "test_id": "REQ-D-009.TC05",
+        "detail": "Aggiunge gestione errori/robustezza (HTTP 503/timeout, nessun file corrotto, retry) e presuppone un 'servizio export'; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.TC06",
+        "detail": "Introduce feature flag, specifiche su presenza UI/documentazione e comportamento di accesso; il requisito dice solo che la configurazione export automatici è opzionale/documentata, senza definire feature flag o punti UI."
+      },
+      {
+        "test_id": "REQ-D-009.TC07",
+        "detail": "Introduce ruoli 'Admin' vs 'Analista', dettagli schedulazione (giornaliera, ora), formato e destinazione 'area personale'; il requisito non specifica parametri di schedulazione né destinazioni."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: 'Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.'",
+        "detail": "I TC coprono autorizzazioni per export manuale e per configurazione export automatico (se presente), ma non verificano che l'export automatico in sé (esecuzione del job) sia soggetto ad autorizzazioni/ruoli; si testa solo l'accesso alla configurazione."
+      },
+      {
+        "source": "Descrizione: richiesta esplicita citata dall'utente: 'configurazione combinazioni e monitoraggio, export, gestione regole di accesso'",
+        "detail": "I TC non coprono 'monitoraggio' (es. visibilità/stato delle pianificazioni) come requisito esplicito; viene citato 'se previsto' ma non validato come obbligo del requisito (anche se la frase nel requisito è ambigua)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-009.TC01",
+          "REQ-D-009.TC04"
+        ],
+        "detail": "Entrambi verificano consultabilità dati in dashboard prima dell'export e coerenza dell'export con quanto visualizzato (filtri/vista). Differiscono per dettagli (paginazione/ordinamento) ma lo scenario base è sovrapposto."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 32,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-009.US01.TC01",
+        "detail": "Introduce persona/ruolo 'Team Marketing' e permessi nominati ('EXPORT_DASHBOARD_MANUALE'); il requisito non definisce team né codici permesso."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC02",
+        "detail": "Richiede messaggio coerente e tentativi via scorciatoia/URL; modalità non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC03",
+        "detail": "Aggiunge requisito che l'export non sostituisca la UI (no redirect/schermata); non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC04",
+        "detail": "Assume che, se la feature è abilitata, esista una sezione UI 'Export programmati' e che si possano salvare parametri (nome, frequenza, giorno, ora, dataset); il requisito non specifica UI né campi di configurazione."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC05",
+        "detail": "Assume accesso via URL diretto alla configurazione; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC06",
+        "detail": "Richiede evidenza di documentazione in UI/help/release notes linkate; il requisito dice 'opzionale/documentata' ma non vincola canali o modalità di documentazione."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC07",
+        "detail": "Introduce gestione sessione scaduta/re-auth e assenza stack trace; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC08",
+        "detail": "Definisce comportamento per dataset vuoto (file vuoto/header o messaggio); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC09",
+        "detail": "Aggiunge robustezza su errore export con retry e nessun effetto collaterale; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US01.TC10",
+        "detail": "Introduce revoca permessi durante sessione e requisito di enforcement immediato; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC01",
+        "detail": "Introduce persona/ruolo 'Compliance' e relative viste dati; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC04",
+        "detail": "Aggiunge regola 'export non include dati non visibili' con distinzione aggregato/dettaglio e colonne/azioni specifiche; il requisito parla di autorizzazioni ma non di equivalenza tra perimetro visibile e perimetro esportato né di record-level/aggregate-only."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC05",
+        "detail": "Aggiunge gestione timeout/504 e stabilità UI; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-009.US02.TC06",
+        "detail": "Assume permessi nominati 'CONFIG_EXPORT_AUTOMATICO' e sezione 'Export programmati'; non definiti dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: 'Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.'",
+        "detail": "Come nel set direct, i TC testano soprattutto l'accesso alla configurazione dell'export automatico, non l'esecuzione di export automatici e la relativa enforcement autorizzativa (es. chi può far partire/ottenere i file generati automaticamente)."
+      },
+      {
+        "source": "Acceptance Criteria AC-1: 'meccanismo di export manuale ... (es. scarica dataset visualizzato)'",
+        "detail": "Molti TC verificano solo che 'viene scaricato un file relativo alla vista', ma raramente verificano esplicitamente la coerenza contenutistica tra dataset visualizzato e dataset esportato (il 'perimetro dati' è testato in modo forte solo in US02.TC04, che però introduce assunzioni non richieste)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-009.US01.TC01",
+          "REQ-D-009.US02.TC02"
+        ],
+        "detail": "Stesso scenario di base: utente autorizzato esegue export manuale con successo dopo caricamento vista."
+      },
+      {
+        "test_ids": [
+          "REQ-D-009.US01.TC02",
+          "REQ-D-009.US02.TC03"
+        ],
+        "detail": "Stesso scenario di base: utente non autorizzato non può eseguire export manuale e non viene generato file."
+      },
+      {
+        "test_ids": [
+          "REQ-D-009.US01.TC06",
+          "REQ-D-009.US02.TC07"
+        ],
+        "detail": "Stesso scenario di base: export automatico non presente nel rilascio, export manuale non bloccato e assenza indicata/documentata."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set indirect_persona introduce molte piu informazioni non tracciabili al requisito (ruoli/personae Marketing/Compliance, permessi nominati, gestione sessione, revoca permessi, codici errore specifici, sezione UI 'Export programmati', regola aggregato/dettaglio), con conseguente penalizzazione maggiore. Il set direct, pur aggiungendo dettagli (formato CSV, feature flag, gestione errori servizio export), resta piu vicino al testo del requisito e presenta meno ridondanze."
+  }
+}

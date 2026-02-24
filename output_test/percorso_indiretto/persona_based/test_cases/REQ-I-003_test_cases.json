@@ -1,0 +1,320 @@
+[
+  {
+    "story_id": "REQ-I-003.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-003.US01.TC01",
+        "title": "Attivazione/modifica regola in dashboard resa disponibile al motore (verifica consultazione regole)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test con Dashboard Marketing e Motore di Offerte integrati e raggiungibili",
+          "Esiste una regola marketing in dashboard in stato 'Bozza' o 'Disattiva' modificabile dal Team Marketing",
+          "È disponibile un endpoint/log/telemetria per verificare che il Motore legga/ottenga le regole dalla dashboard (come da documentazione tecnica)"
+        ],
+        "test_data": [
+          "Regola R-EXC-001: tipo=Esclusione, scope=Prodotto 'P1', target='T1', stato iniziale=Disattiva",
+          "Modifica regola: attivazione stato=Attiva, validità=oggi..oggi+7 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard esterna con un utente del Team Marketing abilitato alla gestione regole",
+          "Aprire il dettaglio della regola 'R-EXC-001'",
+          "Impostare lo stato della regola su 'Attiva' e salvare",
+          "Avviare una generazione proposte sul Motore per un contesto coerente con prodotto 'P1' e target 'T1'",
+          "Verificare tramite endpoint/log/telemetria che il Motore abbia consultato/ottenuto l'elenco regole dalla dashboard includendo 'R-EXC-001' attiva"
+        ],
+        "expected_results": [
+          "La dashboard conferma il salvataggio e mostra la regola 'R-EXC-001' in stato 'Attiva'",
+          "Durante la generazione proposte, il Motore effettua una consultazione delle regole verso la dashboard (chiamata/lettura evidenziata da log/telemetria)",
+          "La consultazione/lettura include la regola 'R-EXC-001' come attiva e applicabile al contesto richiesto"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità di un meccanismo osservabile (log/telemetria/endpoint) per verificare il punto di lettura delle regole da parte del Motore; non è specificato dalla user story come avvenga tecnicamente."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC02",
+        "title": "Regola di esclusione attiva in dashboard esclude/modifica coerentemente le proposte generate dal motore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard e Motore integrati e funzionanti",
+          "Esiste una regola di esclusione attivabile per una combinazione/prodotto/target",
+          "È disponibile un canale cliente (es. canale web di presentazione proposte) collegato al Motore per verificare le proposte presentate al cliente"
+        ],
+        "test_data": [
+          "Regola R-EXC-002: tipo=Esclusione, condizione=Prodotto 'P2', target='T2', oggetto esclusione=Proposta 'OFFERTA_X', stato=Attiva",
+          "Contesto cliente: prodotto richiesto='P2', target='T2'"
+        ],
+        "steps": [
+          "Accedere alla dashboard esterna come Team Marketing",
+          "Verificare che la regola 'R-EXC-002' sia in stato 'Attiva' e salvata",
+          "Dal canale cliente, richiedere le proposte per il contesto prodotto 'P2' e target 'T2'",
+          "Raccogliere l'elenco proposte restituito/presentato al cliente"
+        ],
+        "expected_results": [
+          "La regola 'R-EXC-002' risulta attiva in dashboard",
+          "Le proposte presentate al cliente non includono 'OFFERTA_X' (oppure la mostrano modificata secondo quanto definito dalla regola di esclusione, se la regola prevede modifica anziché rimozione)",
+          "L'effetto di esclusione/modifica è verificabile confrontando l'elenco proposte con l'aspettativa della regola"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale cita 'proposte presentate al cliente'; questo test presuppone l'esistenza di un canale di presentazione collegato al Motore. Se non disponibile, eseguire la verifica sull'output del Motore (API) come proxy del canale."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC03",
+        "title": "Regola di inclusione/personalizzazione attiva influenza coerentemente le proposte generate",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard e Motore integrati e funzionanti",
+          "Esiste una regola di inclusione o personalizzazione (parametro commerciale) configurabile in dashboard",
+          "Il Motore produce un output ispezionabile che includa i campi modificati dalla personalizzazione (es. prezzo, sconto, priorità, etichetta campagna)"
+        ],
+        "test_data": [
+          "Regola R-PERS-001: tipo=Personalizzazione, condizione=target 'T3', modifica=applica sconto 10% su 'OFFERTA_Y', stato=Attiva",
+          "Contesto cliente: target='T3'"
+        ],
+        "steps": [
+          "Accedere alla dashboard esterna come Team Marketing",
+          "Impostare la regola 'R-PERS-001' su 'Attiva' e salvare",
+          "Richiedere la generazione proposte per un cliente con target 'T3'",
+          "Individuare nell'output del canale/motore la proposta 'OFFERTA_Y' e i relativi attributi commerciali"
+        ],
+        "expected_results": [
+          "La regola 'R-PERS-001' risulta attiva in dashboard",
+          "La proposta 'OFFERTA_Y' risulta inclusa e presenta lo sconto del 10% (o il parametro commerciale definito) applicato",
+          "Nessuna altra proposta non prevista dalla regola viene modificata in modo inatteso"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'attributo esatto da modificare non è specificato nel requisito; il test assume che l'output renda visibile l'effetto della personalizzazione (es. prezzo/sconto/label)."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC04",
+        "title": "Regola in stato non attivo non viene applicata dal motore",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Dashboard e Motore integrati e funzionanti",
+          "Esiste una regola configurata in dashboard ma in stato 'Disattiva' o equivalente",
+          "È possibile generare proposte per un contesto che renderebbe la regola applicabile se fosse attiva"
+        ],
+        "test_data": [
+          "Regola R-EXC-003: tipo=Esclusione, condizione=Prodotto 'P3', target='T4', oggetto esclusione=Proposta 'OFFERTA_Z', stato=Disattiva",
+          "Contesto cliente: prodotto='P3', target='T4'"
+        ],
+        "steps": [
+          "Accedere alla dashboard esterna come Team Marketing",
+          "Verificare che la regola 'R-EXC-003' sia in stato 'Disattiva' e salvata",
+          "Richiedere le proposte per il contesto prodotto 'P3' e target 'T4'",
+          "Raccogliere l'elenco proposte restituito/presentato al cliente"
+        ],
+        "expected_results": [
+          "La regola 'R-EXC-003' risulta 'Disattiva' in dashboard",
+          "La proposta 'OFFERTA_Z' non risulta esclusa/modificata a causa della regola disattiva (è presente e non alterata rispetto al comportamento baseline)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il comportamento baseline (senza regole) deve essere noto/replicabile per rendere la verifica oggettiva."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC05",
+        "title": "Regola definita ma non applicabile al contesto corrente non altera le proposte",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Dashboard e Motore integrati e funzionanti",
+          "Esiste una regola attiva con condizione di target/prodotto specifica"
+        ],
+        "test_data": [
+          "Regola R-PERS-002: tipo=Personalizzazione, condizione=target 'T5', modifica=priorità=Alta per 'OFFERTA_W', stato=Attiva",
+          "Contesto cliente: target='T6' (diverso da T5)"
+        ],
+        "steps": [
+          "Accedere alla dashboard esterna come Team Marketing",
+          "Verificare che la regola 'R-PERS-002' sia in stato 'Attiva'",
+          "Richiedere le proposte per un cliente con target 'T6'",
+          "Analizzare l'output per verificare presenza e attributi di 'OFFERTA_W'"
+        ],
+        "expected_results": [
+          "La regola 'R-PERS-002' risulta attiva in dashboard",
+          "Per il target 'T6' la proposta 'OFFERTA_W' non viene forzata/prioritizzata/modificata dalla regola (nessun effetto della regola non applicabile)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce come rappresentare 'priorità'; la verifica va adattata al modello dati delle proposte disponibile nel canale/motore."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC06",
+        "title": "Verifica documentazione di integrazione: interdipendenza operativa tra dashboard e motore esplicitata",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile la documentazione di integrazione/tecnica versione corrente (es. Confluence, repository, portale documentazione)",
+          "Accesso in lettura alla documentazione per il QA"
+        ],
+        "test_data": [
+          "Documento: 'Integrazione Dashboard Marketing ↔ Motore Offerte' (o equivalente), versione pubblicata"
+        ],
+        "steps": [
+          "Aprire la documentazione di integrazione/tecnica indicata dal progetto",
+          "Individuare la sezione che descrive la relazione tra Dashboard Marketing e Motore Offerte",
+          "Verificare che sia descritto che il Motore utilizza regole provenienti dalla dashboard per modificare/escludere proposte"
+        ],
+        "expected_results": [
+          "La documentazione contiene una descrizione esplicita dell'interdipendenza operativa: il Motore utilizza regole della dashboard per modificare/escludere proposte"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test di verifica documentale; non valida il comportamento runtime ma la presenza del contenuto richiesto."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-003.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-003.US02.TC01",
+        "title": "Il Motore legge e applica regole marketing provenienti dalla dashboard durante la generazione proposte",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte integrato con Dashboard Marketing e raggiungibile",
+          "È disponibile un ambiente di test con possibilità di ispezionare le chiamate/letture del Motore verso la Dashboard (log/trace/APM)",
+          "Esiste una regola attiva in dashboard applicabile al contesto di generazione"
+        ],
+        "test_data": [
+          "Regola R-INC-001: tipo=Inclusione, condizione=Prodotto 'P10', target 'T10', include=Proposta 'OFFERTA_A', stato=Attiva",
+          "Richiesta generazione: prodotto='P10', target='T10'"
+        ],
+        "steps": [
+          "Verificare in dashboard che la regola 'R-INC-001' sia attiva",
+          "Inviare al Motore una richiesta di generazione proposte per prodotto 'P10' e target 'T10'",
+          "Raccogliere log/trace della generazione",
+          "Analizzare l'output proposte del Motore"
+        ],
+        "expected_results": [
+          "Nei log/trace risulta che il Motore legge/ottiene le regole dalla dashboard durante il flusso di generazione",
+          "L'output del Motore include 'OFFERTA_A' in coerenza con la regola di inclusione attiva",
+          "Non è necessario configurare nel Motore una regola duplicata per ottenere l'effetto (la fonte è la dashboard, evidenziata dal punto di lettura nei log/trace)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La non-duplicazione della logica è verificata indirettamente tramite evidenza del punto di lettura/applicazione da dashboard; non è possibile validare completamente l'assenza di duplicazione senza accesso a codice/configurazioni interne."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC02",
+        "title": "Aggiornamento regola attivata in dashboard produce effetto verificabile sulle proposte (propagazione)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard e Motore integrati e funzionanti",
+          "È disponibile un canale consumer o un client di test che consumi le proposte dal Motore",
+          "Esiste una regola disattiva che, se attivata, cambia l'elenco proposte in modo osservabile"
+        ],
+        "test_data": [
+          "Regola R-EXC-010: tipo=Esclusione, condizione=target 'T20', esclude='OFFERTA_B', stato iniziale=Disattiva",
+          "Contesto cliente: target='T20'"
+        ],
+        "steps": [
+          "Richiedere le proposte per target 'T20' e salvare l'elenco come baseline",
+          "Accedere alla dashboard e attivare la regola 'R-EXC-010'",
+          "Richiedere nuovamente le proposte per target 'T20'",
+          "Confrontare l'elenco proposte con la baseline"
+        ],
+        "expected_results": [
+          "Nella baseline 'OFFERTA_B' risulta presente (o comunque non esclusa dalla regola R-EXC-010)",
+          "Dopo l'attivazione della regola, 'OFFERTA_B' risulta assente (o modificata coerentemente alla regola di esclusione)",
+          "La differenza tra baseline e secondo risultato è riconducibile all'attivazione della regola in dashboard"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica tempi di propagazione; se esiste caching/polling, definire una finestra massima (SLA) nella documentazione tecnica. In assenza, il test deve registrare il tempo effettivo di propagazione come evidenza."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC03",
+        "title": "Verifica documentazione tecnica: punti del flusso in cui il Motore legge/rispetta le regole sono specificati",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile la documentazione tecnica versione corrente",
+          "Accesso in lettura alla documentazione per il QA"
+        ],
+        "test_data": [
+          "Documento: 'Motore Offerte - Integrazione regole marketing' (o equivalente), versione pubblicata"
+        ],
+        "steps": [
+          "Aprire la documentazione tecnica del Motore relativa alle regole marketing",
+          "Individuare la sezione 'Punti di lettura/applicazione regole' (o equivalente)",
+          "Verificare che siano elencati i punti del flusso in cui il Motore legge e rispetta le regole della dashboard (es. pre-selezione, post-filtri, pricing/personalizzazione)"
+        ],
+        "expected_results": [
+          "La documentazione tecnica identifica chiaramente i punti del flusso in cui il Motore legge le regole dalla dashboard",
+          "La documentazione tecnica descrive come e quando il Motore applica le regole alle proposte (modifica/esclusione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Test di verifica documentale; non implica validazione del comportamento runtime."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC04",
+        "title": "Verifica documentazione: interdipendenza operativa Motore↔Dashboard esplicitata",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile la documentazione di integrazione/architettura versione corrente",
+          "Accesso in lettura alla documentazione per il QA"
+        ],
+        "test_data": [
+          "Documento architetturale/integrativo che descrive Dashboard Marketing e Motore Offerte"
+        ],
+        "steps": [
+          "Aprire la documentazione architetturale/integrativa",
+          "Cercare la descrizione delle dipendenze tra Dashboard Marketing e Motore Offerte",
+          "Verificare che sia indicato che il Motore utilizza le regole provenienti dalla dashboard per modificare/escludere proposte"
+        ],
+        "expected_results": [
+          "La documentazione descrive esplicitamente l'interdipendenza operativa: la dashboard è fonte regole e il Motore le usa per modificare/escludere proposte"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Se esistono più documenti, la verifica è soddisfatta se almeno un documento ufficiale e versionato contiene l'informazione richiesta."
+      }
+    ]
+  }
+]

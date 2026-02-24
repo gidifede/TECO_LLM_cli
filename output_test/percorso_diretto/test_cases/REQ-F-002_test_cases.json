@@ -1,0 +1,479 @@
+[
+  {
+    "test_id": "REQ-F-002.TC01",
+    "title": "Creazione bundle (A,B) da dashboard senza data entry dell’intera matrice teorica",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Nel catalogo prodotti esistono almeno i prodotti: Prodotto A='Piano Mobile X', Prodotto B='Fibra Casa Y', Prodotto C='Assicurazione Z'",
+      "La dashboard è raggiungibile dalla home/dashboard applicativa"
+    ],
+    "test_data": [
+      "Prodotto A: 'Piano Mobile X'",
+      "Prodotto B: 'Fibra Casa Y'",
+      "Prodotto C (non selezionato nel bundle): 'Assicurazione Z'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire la sezione di configurazione combinazioni/bundle prodotti",
+      "Avviare la creazione di un nuovo bundle/combinazione",
+      "Selezionare Prodotto A='Piano Mobile X' come primo elemento della coppia",
+      "Selezionare Prodotto B='Fibra Casa Y' come secondo elemento della coppia",
+      "Salvare la nuova combinazione"
+    ],
+    "expected_results": [
+      "La dashboard consente di creare una combinazione come coppia (A,B) selezionando i soli prodotti desiderati, senza richiedere la compilazione di tutte le combinazioni teoriche della matrice",
+      "La combinazione (Piano Mobile X, Fibra Casa Y) risulta presente nell’elenco delle combinazioni configurate",
+      "Nessuna combinazione non selezionata (es. (Piano Mobile X, Assicurazione Z)) viene creata automaticamente"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito specifica che la matrice NxN è un concetto logico e non d’interfaccia: il test verifica la creazione per coppie (A,B) senza data entry massivo. Attori (team Marketing) dedotti dalla descrizione."
+  },
+  {
+    "test_id": "REQ-F-002.TC02",
+    "title": "Impostazione completa dei parametri commerciali e regolatori su una combinazione (vietata/regolare, flag marketing, sconto, validità, target)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y) creata e visibile in dashboard"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Stato regolatorio: 'Regolare' (non vietata)",
+      "Flag marketing: 'Disponibile/Interessante' = ON",
+      "Sconto: 10,00 EUR",
+      "Data inizio: 2026-03-01",
+      "Data fine: 2026-03-31",
+      "Target: 'Nuovi clienti'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire la sezione combinazioni/bundle prodotti",
+      "Selezionare la combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Impostare lo stato regolatorio su 'Regolare'",
+      "Impostare il flag marketing 'Disponibile/Interessante' su ON",
+      "Inserire lo sconto '10,00 EUR'",
+      "Impostare la data inizio '2026-03-01'",
+      "Impostare la data fine '2026-03-31'",
+      "Selezionare il target 'Nuovi clienti'",
+      "Salvare le modifiche"
+    ],
+    "expected_results": [
+      "La dashboard consente di impostare lo stato regolatorio della combinazione",
+      "La dashboard consente di impostare il flag marketing della combinazione",
+      "La dashboard consente di associare uno sconto alla combinazione e lo salva con il valore inserito",
+      "La dashboard consente di impostare un periodo di validità con data inizio e data fine e lo salva",
+      "La dashboard consente di impostare il target di applicazione e lo salva",
+      "Dopo il salvataggio, riaprendo il dettaglio della combinazione, tutti i valori risultano valorizzati come inseriti"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona anche touchpoint e attivazione/spegnimento dell’offerta, ma non sono esplicitati negli AC: coperti in test separati come regole implicite della description."
+  },
+  {
+    "test_id": "REQ-F-002.TC03",
+    "title": "Persistenza delle modifiche: verifica che le configurazioni restino invariate dopo logout/login",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y) con parametri impostati e salvati"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y) e annotare i valori configurati",
+      "Eseguire logout",
+      "Eseguire login nuovamente come utente Marketing",
+      "Riaprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "expected_results": [
+      "Tutti i parametri configurati in precedenza risultano invariati e coerenti con quanto salvato (persistenza dei dati)",
+      "Non sono presenti reset o valori di default al posto dei valori salvati"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il criterio AC-3 parla anche di effetto sul motore entro tempi di propagazione: il test di integrazione dedicato è REQ-F-002.TC10."
+  },
+  {
+    "test_id": "REQ-F-002.TC04",
+    "title": "Modifica dei parametri di una combinazione esistente da dashboard (update completo)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y) con parametri impostati"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Nuovo stato regolatorio: 'Vietata'",
+      "Nuovo flag marketing: OFF",
+      "Nuovo sconto: 0,00 EUR",
+      "Nuova data inizio: 2026-04-01",
+      "Nuova data fine: 2026-04-30",
+      "Nuovo target: 'Clienti esistenti'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire la sezione combinazioni/bundle prodotti",
+      "Selezionare la combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Impostare lo stato regolatorio su 'Vietata'",
+      "Impostare il flag marketing su OFF",
+      "Impostare lo sconto su '0,00 EUR'",
+      "Impostare la data inizio su '2026-04-01'",
+      "Impostare la data fine su '2026-04-30'",
+      "Impostare il target su 'Clienti esistenti'",
+      "Salvare le modifiche",
+      "Ricaricare la pagina o riaprire il dettaglio della combinazione"
+    ],
+    "expected_results": [
+      "La dashboard consente la modifica (update) di ciascun parametro della combinazione esistente",
+      "Dopo il salvataggio, i nuovi valori risultano persistiti e visualizzati correttamente",
+      "Lo stato 'Vietata' risulta associato alla combinazione selezionata"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori (team Marketing) inferiti dalla descrizione; non sono definiti altri ruoli nel requisito."
+  },
+  {
+    "test_id": "REQ-F-002.TC05",
+    "title": "Validazione periodo di validità: data fine precedente alla data inizio",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Data inizio: 2026-05-10",
+      "Data fine: 2026-05-01"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Impostare la data inizio su '2026-05-10'",
+      "Impostare la data fine su '2026-05-01'",
+      "Tentare di salvare le modifiche"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio con data fine precedente alla data inizio",
+      "Viene mostrato un messaggio di errore esplicito che indica l’incongruenza del periodo di validità",
+      "I valori precedentemente salvati restano invariati (nessuna persistenza parziale)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita regole di validazione date; questa è un’assunzione necessaria per rendere verificabile il concetto di 'periodo di validità (data inizio/fine)'."
+  },
+  {
+    "test_id": "REQ-F-002.TC06",
+    "title": "Validazione sconto: inserimento valore non numerico o formato non valido",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Sconto non valido: 'DIECI EURO'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Inserire nello sconto il valore 'DIECI EURO'",
+      "Tentare di salvare le modifiche"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio con sconto in formato non numerico/non valido",
+      "Viene mostrato un messaggio di errore che indica il formato atteso per lo sconto",
+      "La configurazione precedentemente salvata non viene alterata"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il formato dello sconto; il test verifica almeno la gestione di input palesemente non numerici."
+  },
+  {
+    "test_id": "REQ-F-002.TC07",
+    "title": "Regole di non associabilità: impedire la creazione di una combinazione marcata come non associabile",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Nel catalogo prodotti esistono: Prodotto A='Piano Mobile X', Prodotto C='Assicurazione Z'",
+      "In dashboard esiste una regola specifica che indica che 'Piano Mobile X' NON è associabile a 'Assicurazione Z'"
+    ],
+    "test_data": [
+      "Tentativo combinazione: (Piano Mobile X, Assicurazione Z)"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire la sezione combinazioni/bundle prodotti",
+      "Avviare la creazione di un nuovo bundle/combinazione",
+      "Selezionare Prodotto A='Piano Mobile X'",
+      "Selezionare Prodotto B='Assicurazione Z'",
+      "Tentare di salvare la combinazione"
+    ],
+    "expected_results": [
+      "Il sistema impedisce la creazione/salvataggio della combinazione non associabile",
+      "Viene mostrato un messaggio di errore che indica che i prodotti selezionati non sono associabili secondo le regole configurate",
+      "La combinazione (Piano Mobile X, Assicurazione Z) non risulta presente nell’elenco delle combinazioni configurate"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Questa regola è descritta nella description come capacità dell’interfaccia di associare regole di NON associabilità; non è esplicitata negli AC. Il test la tratta come comportamento implicito del requisito."
+  },
+  {
+    "test_id": "REQ-F-002.TC08",
+    "title": "Attivazione/spegnimento di un bundle (sospensione senza cancellazione della definizione)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y) con parametri commerciali configurati"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Stato attivazione: OFF (spenta), poi ON (riattivata)"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Impostare lo stato di attivazione della combinazione su OFF",
+      "Salvare",
+      "Riaprire il dettaglio della combinazione",
+      "Impostare lo stato di attivazione su ON",
+      "Salvare",
+      "Riaprire il dettaglio della combinazione"
+    ],
+    "expected_results": [
+      "La dashboard consente di spegnere (disattivare) una combinazione senza cancellarne la definizione",
+      "Dopo lo spegnimento, la combinazione risulta ancora presente in elenco e i parametri configurati risultano invariati",
+      "La dashboard consente di riattivare la combinazione",
+      "Dopo la riattivazione, la combinazione risulta attiva e mantiene le parametrizzazioni precedentemente salvate"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Funzionalità di attivazione/spegnimento descritta nella description ma non esplicitata negli AC."
+  },
+  {
+    "test_id": "REQ-F-002.TC09",
+    "title": "Configurazione touchpoint consentiti/non consentiti per un’offerta (web, app, operatori umani)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste almeno una offerta/bundle configurata e identificabile in dashboard (es. (Piano Mobile X, Fibra Casa Y))",
+      "La dashboard espone la sezione di configurazione touchpoint per l’offerta"
+    ],
+    "test_data": [
+      "Offerta: (Piano Mobile X, Fibra Casa Y)",
+      "Touchpoint consentiti: Web=CONSENTITO, App=NON CONSENTITO",
+      "Operatori umani: OSP=CONSENTITO, OFE=NON CONSENTITO, Consulenti in sala UP=CONSENTITO, Consulenti remoti=NON CONSENTITO"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio dell’offerta/bundle (Piano Mobile X, Fibra Casa Y)",
+      "Aprire la sezione 'Touchpoint' dell’offerta",
+      "Impostare Web su 'PUÒ essere venduta'",
+      "Impostare App su 'NON PUÒ essere venduta'",
+      "Impostare OSP su 'PUÒ essere venduta'",
+      "Impostare OFE su 'NON PUÒ essere venduta'",
+      "Impostare Consulenti in sala UP su 'PUÒ essere venduta'",
+      "Impostare Consulenti remoti su 'NON PUÒ essere venduta'",
+      "Salvare la configurazione",
+      "Riaprire la sezione 'Touchpoint' dell’offerta"
+    ],
+    "expected_results": [
+      "La dashboard consente di associare a un’offerta i touchpoint su cui può o non può essere venduta includendo canali digitali (Web, App) e operatori umani indicati (OSP, OFE, consulenti in sala UP, consulenti remoti)",
+      "Dopo il salvataggio, la configurazione dei touchpoint risulta persistita e visualizzata coerentemente"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "I touchpoint sono citati nella description ma non negli AC; la tracciatura usa AC-3 per la persistenza/effetto delle modifiche. Dipendenza: serve un modello dati/maschera che colleghi 'offerta' e touchpoint; non dettagliato nel requisito."
+  },
+  {
+    "test_id": "REQ-F-002.TC10",
+    "title": "Integrazione: propagazione delle modifiche al motore proposte entro il tempo concordato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "È disponibile un ambiente con motore di generazione proposte integrato e interrogabile (API o UI di verifica)",
+      "È definito e misurabile il 'tempo di propagazione concordato' (T_propagazione) in configurazione/contratto di servizio",
+      "Esiste un contesto di test per cui il motore può generare proposte includendo la combinazione (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Modifica: impostare stato regolatorio='Vietata' (oppure disattivazione OFF)",
+      "T_propagazione: valore concordato (es. 5 minuti) da configurazione ambiente",
+      "Chiamata/azione di generazione proposte: 'generaProposte' per cliente 'CL-10004567' (esempio)"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Impostare la combinazione (Piano Mobile X, Fibra Casa Y) come 'Vietata' oppure impostarla su OFF e salvare",
+      "Registrare l’istante di salvataggio (t0)",
+      "Invocare il motore proposte per il cliente di test e acquisire l’elenco proposte a t0 (immediatamente dopo il salvataggio)",
+      "Ripetere l’invocazione del motore proposte fino a t0 + T_propagazione",
+      "Acquisire l’elenco proposte a t0 + T_propagazione"
+    ],
+    "expected_results": [
+      "Entro t0 + T_propagazione, il motore proposte non include più la combinazione/offerta modificata (vietata o spenta) tra le proposte generate",
+      "L’esito è ripetibile su invocazioni successive (assenza stabile della proposta non più consentita/attiva)",
+      "Il sistema consente di determinare in modo oggettivo il rispetto di T_propagazione (timestamp e log/risposta del motore)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna non risolta: il requisito cita 'tempi di propagazione concordati' ma non fornisce il valore; il test richiede che T_propagazione sia definito in ambiente. Il canale del motore non è specificato (API/UI), quindi i passi sono descritti in modo agnostico ma verificabile."
+  },
+  {
+    "test_id": "REQ-F-002.TC11",
+    "title": "Autorizzazione: accesso alla dashboard negato a utente non Marketing",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente 'SalesUser' autenticabile ma NON appartenente ai team Marketing e non abilitato alla configurazione",
+      "La dashboard/configuratore è disponibile"
+    ],
+    "test_data": [
+      "Utente: 'sales.user01' (ruolo non Marketing)"
+    ],
+    "steps": [
+      "Accedere all’applicazione con l’utente 'sales.user01'",
+      "Tentare di aprire la dashboard/configuratore combinazioni dalla navigazione principale",
+      "Se disponibile un URL diretto, tentare di accedere direttamente all’URL della dashboard/configuratore"
+    ],
+    "expected_results": [
+      "L’utente non Marketing non visualizza la voce di menu/entry point alla dashboard oppure non può accedervi",
+      "In caso di accesso diretto via URL, il sistema nega l’accesso (es. 403 o pagina 'Accesso non autorizzato')",
+      "Nessuna operazione di creazione/modifica configurazioni risulta possibile per l’utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito indica esplicitamente che l’accesso è per team Marketing; non definisce altri ruoli. Il comportamento esatto UI (menu nascosto vs errore) può variare: entrambe le modalità sono accettabili purché l’accesso sia negato."
+  },
+  {
+    "test_id": "REQ-F-002.TC12",
+    "title": "Edge case: prevenzione duplicati della stessa coppia (A,B) in fase di creazione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y) creata e salvata"
+    ],
+    "test_data": [
+      "Nuovo tentativo di creazione: (Piano Mobile X, Fibra Casa Y) identica a quella esistente"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire la sezione combinazioni/bundle prodotti",
+      "Avviare la creazione di un nuovo bundle/combinazione",
+      "Selezionare Prodotto A='Piano Mobile X'",
+      "Selezionare Prodotto B='Fibra Casa Y'",
+      "Tentare di salvare"
+    ],
+    "expected_results": [
+      "Il sistema impedisce la creazione di una combinazione duplicata identica (A,B) già esistente oppure la gestisce in modo deterministico (es. aggiornamento della stessa entità) senza creare duplicati in elenco",
+      "L’elenco delle combinazioni contiene una sola occorrenza della coppia (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la gestione duplicati; questo test esplicita un comportamento atteso per evitare ambiguità e garantire ripetibilità. Se il prodotto prevede duplicati per versioning, il requisito va chiarito."
+  },
+  {
+    "test_id": "REQ-F-002.TC13",
+    "title": "Negative: indisponibilità del servizio di persistenza/configurazione durante il salvataggio",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo/team Marketing abilitato all’accesso alla dashboard",
+      "È possibile simulare un errore del backend di configurazione (es. risposta 500/timeout) in ambiente di test",
+      "Esiste già la combinazione (Piano Mobile X, Fibra Casa Y)"
+    ],
+    "test_data": [
+      "Combinazione: (Piano Mobile X, Fibra Casa Y)",
+      "Modifica: flag marketing ON->OFF",
+      "Simulazione errore: timeout backend 30s oppure HTTP 500"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing",
+      "Aprire il dettaglio della combinazione (Piano Mobile X, Fibra Casa Y)",
+      "Modificare il flag marketing (es. impostarlo su OFF)",
+      "Abilitare la simulazione di errore del backend per l’operazione di salvataggio",
+      "Tentare di salvare le modifiche"
+    ],
+    "expected_results": [
+      "Il sistema segnala chiaramente l’errore di salvataggio (timeout o errore server) senza indicare successo",
+      "Le modifiche non risultano persistite (rientrando nel dettaglio dopo refresh si vedono i valori precedenti)",
+      "Non si verificano stati incoerenti (es. parziale salvataggio di alcuni campi e non di altri) osservabili dalla UI"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito richiede persistenza ed effetto delle modifiche: questo test copre il caso di errore del servizio esterno/backend. La modalità di fault injection dipende dall’ambiente."
+  }
+]

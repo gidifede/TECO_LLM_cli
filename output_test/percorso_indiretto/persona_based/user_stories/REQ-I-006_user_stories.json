@@ -1,0 +1,129 @@
+[
+  {
+    "story_id": "REQ-I-006.US01",
+    "title": "Persistenza e calcolo validità delle offerte per cliente",
+    "persona": "Motore di Offerte",
+    "goal": "persistire le offerte e calcolarne/aggiornarne la validità temporale, esponendo per ciascun cliente l’elenco delle offerte applicabili e in corso di validità con i dati necessari alla presentazione",
+    "benefit": "garantire coerenza e affidabilità delle offerte mostrate sui canali, con una sorgente primaria unica per stato e validità",
+    "user_story": "Come Motore di Offerte\nVoglio persistere le offerte e calcolarne la scadenza/validità temporale, esponendo per ciascun cliente l’elenco delle offerte applicabili e in corso di validità con tutti i dati necessari alla presentazione\nIn modo che tutte le interfacce che consumano tali dati mostrino offerte coerenti e aggiornate",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO viene creata o aggiornata un’offerta per un cliente ALLORA il Motore la persiste come repository primario includendo gli attributi necessari a determinare la validità temporale (es. inizio validità, fine validità/scadenza o regola di calcolo).",
+      "QUANDO il Motore calcola o ricalcola la validità/scadenza di un’offerta ALLORA lo stato di validità risultante viene salvato e reso disponibile in lettura ai consumer.",
+      "QUANDO un consumer richiede l’elenco offerte di un cliente ALLORA il Motore restituisce solo le offerte applicabili e in corso di validità alla data/ora della richiesta.",
+      "QUANDO il Motore restituisce un’offerta in corso di validità ALLORA include anche tutti i dati necessari alla sua presentazione sulle interfacce (secondo le specifiche di integrazione).",
+      "QUANDO un’offerta cambia (dati o validità) ALLORA i consumer che acquisiscono i dati dal Motore visualizzano l’aggiornamento in modo coerente con quanto esposto dal Motore (come da test di integrazione)."
+    ],
+    "business_rules": [
+      "Il Motore è il repository primario delle offerte e della loro validità temporale.",
+      "Il Motore è responsabile del calcolo della scadenza/validità temporale delle offerte.",
+      "Il Motore espone per ciascun cliente l’elenco delle offerte applicabili e in corso di validità.",
+      "Il Motore espone i dati necessari alla presentazione dell’offerta sulle interfacce consumer."
+    ],
+    "edge_cases": [
+      "Richiesta elenco offerte per cliente inesistente o non riconosciuto: il Motore restituisce un esito gestito (es. lista vuota o errore secondo specifica).",
+      "Offerta con dati di validità mancanti/incoerenti (es. fine validità < inizio validità): il Motore gestisce la condizione secondo regole di validazione (da specificare).",
+      "Richieste concorrenti durante un aggiornamento di validità: il Motore garantisce coerenza dei dati letti (da specificare il livello di consistenza).",
+      "Offerta appena scaduta durante il tempo di risposta: il Motore applica la validità rispetto al timestamp di valutazione (da specificare)."
+    ],
+    "assumptions": [
+      "Le ‘specifiche di integrazione’ definiscono in modo puntuale quali campi costituiscono ‘tutti i dati necessari’ alla presentazione dell’offerta; in assenza, l’elenco campi non è determinabile dal requisito.",
+      "La modalità di calcolo della validità (campi data/ora vs regole) e il fuso orario di riferimento non sono esplicitati nel requisito e devono essere definiti nelle specifiche."
+    ],
+    "notes": "Questa US copre l’AC sulla responsabilità del Motore come repository primario e sul fatto che gli aggiornamenti di offerte/validità gestiti dal Motore siano visualizzati correttamente dai consumer. La parte ‘tutte le interfacce’ è trasversale e viene ripresa anche nelle US dei consumer (Loyalty/Operatore/Cliente digitale). Dipendenza esterna: disponibilità e dettaglio delle specifiche di integrazione."
+  },
+  {
+    "story_id": "REQ-I-006.US02",
+    "title": "Recupero read-only di stato e validità offerte in Sezione Loyalty",
+    "persona": "Sezione Loyalty di Gruppo (APP e sito)",
+    "goal": "ottenere dal Motore lo stato e la validità delle offerte tramite sole chiamate di lettura",
+    "benefit": "visualizzare offerte aggiornate senza modificare lo stato lato Motore, rispettando il boundary read-only della Loyalty",
+    "user_story": "Come Sezione Loyalty di Gruppo (APP e sito)\nVoglio recuperare dal Motore lo stato e la validità delle offerte tramite sole chiamate di lettura\nIn modo che le offerte visualizzate siano aggiornate e io rimanga un componente read-only rispetto allo stato delle proposte",
+    "channels": [
+      "APP",
+      "sito"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la Sezione Loyalty deve mostrare le offerte di un cliente ALLORA invoca esclusivamente API/call di lettura verso il Motore per ottenere elenco, stato e validità delle offerte.",
+      "QUANDO il Motore aggiorna i dati o la validità di un’offerta ALLORA la Sezione Loyalty, alla successiva lettura, visualizza le informazioni aggiornate coerentemente con quanto restituito dal Motore (come da test di integrazione)."
+    ],
+    "business_rules": [
+      "La Sezione Loyalty utilizza esclusivamente call di lettura per ottenere stato e validità dell’offerta (nessuna operazione di update sul Motore nell’ambito di questo requisito)."
+    ],
+    "edge_cases": [
+      "Motore non raggiungibile o timeout: la Sezione Loyalty gestisce l’errore di lettura (messaggio/placeholder) secondo linee guida di canale (da specificare).",
+      "Risposta del Motore vuota: la Sezione Loyalty mostra assenza offerte senza errori.",
+      "Risposta con campi mancanti per la presentazione: la Sezione Loyalty applica fallback UI o segnala errore (da specificare)."
+    ],
+    "assumptions": [
+      "Le API di lettura (endpoint, payload, versioning) sono definite nelle specifiche di integrazione, non incluse nel requisito.",
+      "La frequenza di refresh/lettura (on-demand, cache, TTL) non è specificata e va definita per garantire l’allineamento ‘correttamente visualizzati’ dei test di integrazione."
+    ],
+    "notes": "AC condivisi con REQ-I-006.US01: aggiornamenti gestiti dal Motore correttamente visualizzati dai consumer; qui declinati per la Sezione Loyalty. Il requisito non definisce comportamenti UI/UX in caso di errore: indicati come assunzioni."
+  },
+  {
+    "story_id": "REQ-I-006.US03",
+    "title": "Visualizzazione offerte valide per cliente su canale fisico (operatore)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare per un cliente l’elenco delle offerte applicabili e in corso di validità, con i dati necessari alla presentazione",
+    "benefit": "proporre al cliente solo offerte attive e coerenti con lo stato/validità determinati dal Motore",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare per un cliente l’elenco delle offerte applicabili e in corso di validità con i dati necessari alla presentazione\nIn modo che io possa proporre al cliente solo offerte attive e correttamente aggiornate",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO seleziono un cliente sul mio front-end ALLORA il sistema mi mostra l’elenco delle offerte applicabili e in corso di validità recuperate dal Motore.",
+      "QUANDO il Motore aggiorna i dati o la validità di un’offerta ALLORA, alla successiva acquisizione dal Motore, l’interfaccia operatore visualizza le informazioni aggiornate coerentemente (come da test di integrazione).",
+      "QUANDO viene visualizzata un’offerta ALLORA sono disponibili i dati necessari alla sua presentazione (secondo specifiche di integrazione) per permettermi di illustrarla al cliente."
+    ],
+    "business_rules": [
+      "Le offerte mostrate all’operatore devono essere in corso di validità secondo il calcolo del Motore.",
+      "I dati visualizzati dall’operatore derivano dai dati esposti dal Motore (repository primario) per stato e validità."
+    ],
+    "edge_cases": [
+      "Cliente non identificabile o senza offerte applicabili: l’interfaccia mostra lista vuota/nessuna offerta disponibile.",
+      "Dati offerta non completi per la presentazione: l’interfaccia gestisce la mancanza (es. indicazione ‘dettagli non disponibili’) secondo specifica (da definire).",
+      "Motore non disponibile: l’operatore riceve un errore gestito e non visualizza dati potenzialmente obsoleti (da specificare comportamento di cache)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il meccanismo di integrazione tra front-end operatore e Motore (diretto o tramite layer intermedio): si assume esista un consumer che ‘acquisisce tali dati dal Motore’.",
+      "Non sono definiti i campi minimi necessari alla presentazione su canale operatore: demandati alle specifiche di integrazione."
+    ],
+    "notes": "AC condivisi con REQ-I-006.US01 e REQ-I-006.US02: corretta visualizzazione degli aggiornamenti gestiti dal Motore da parte dei consumer. Questa US non introduce funzionalità di sottoscrizione o ‘sanatoria condizioni’ perché non presenti nel requisito."
+  },
+  {
+    "story_id": "REQ-I-006.US04",
+    "title": "Consultazione offerte valide per cliente su canali digitali",
+    "persona": "Cliente digitale",
+    "goal": "consultare l’elenco delle offerte applicabili e in corso di validità, con i dati necessari alla presentazione, acquisiti dal Motore",
+    "benefit": "vedere offerte aggiornate e coerenti con la validità calcolata dal Motore durante l’esperienza digitale",
+    "user_story": "Come Cliente digitale\nVoglio consultare le offerte per me applicabili e in corso di validità con tutti i dati necessari alla loro presentazione, acquisiti dal Motore\nIn modo che io veda proposte aggiornate e coerenti con la loro validità temporale",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo ai touchpoint digitali che mostrano le offerte ALLORA visualizzo l’elenco delle offerte applicabili e in corso di validità ottenute (direttamente o indirettamente) dai dati esposti dal Motore.",
+      "QUANDO il Motore aggiorna i dati o la validità di un’offerta ALLORA, alla successiva acquisizione dei dati dal Motore, le offerte che visualizzo risultano aggiornate coerentemente (come da test di integrazione).",
+      "QUANDO visualizzo un’offerta ALLORA sono presenti i dati necessari alla presentazione dell’offerta sul canale digitale (secondo specifiche di integrazione)."
+    ],
+    "business_rules": [
+      "Le offerte mostrate al cliente digitale devono essere in corso di validità secondo il calcolo del Motore.",
+      "I dati di stato e validità provengono dal Motore quale repository primario."
+    ],
+    "edge_cases": [
+      "Nessuna offerta valida disponibile: il canale digitale comunica l’assenza di offerte senza errori.",
+      "Motore o servizio di esposizione non disponibile: il canale digitale gestisce l’errore e non mostra dati incoerenti/obsoleti (da specificare).",
+      "Offerta che scade durante la sessione: alla successiva lettura l’offerta non è più mostrata se non più valida (timestamp di valutazione da definire)."
+    ],
+    "assumptions": [
+      "I touchpoint digitali specifici (es. pop-up, sezione Loyalty, altre pagine) non sono elencati nel requisito; si assume che ‘interfacce verso i clienti’ includano App e Web.",
+      "La catena di integrazione (App/Web → servizi intermedi → Motore) non è specificata; si assume che i dati visualizzati siano acquisiti dal Motore come sorgente primaria."
+    ],
+    "notes": "AC condivisi con REQ-I-006.US01/US02/US03: corretta visualizzazione degli aggiornamenti gestiti dal Motore da parte di tutte le interfacce consumer. Il requisito non descrive azioni del cliente (es. accettazione/aggiunta al carrello), quindi la US è limitata alla consultazione/visualizzazione."
+  }
+]

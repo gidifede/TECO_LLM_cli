@@ -1,0 +1,497 @@
+[
+  {
+    "story_id": "REQ-F-031.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-031.US01.TC01",
+        "title": "Export manuale con filtri temporali e multi-tipo evento (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log",
+          "Sono presenti log con timestamp nell'intervallo 2026-01-10 09:00:00 - 2026-01-10 18:00:00",
+          "Sono presenti eventi di tipo 'LOGIN' e 'PURCHASE' nell'intervallo, e almeno un evento di tipo diverso (es. 'PASSWORD_RESET') nello stesso intervallo"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-01-10 09:00:00",
+          "Intervallo fine: 2026-01-10 18:00:00",
+          "Tipi evento selezionati: LOGIN, PURCHASE"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Navigare alla sezione 'Log' o equivalente",
+          "Selezionare l'azione 'Esporta' per avviare un export manuale",
+          "Impostare data/ora di inizio su '2026-01-10 09:00:00'",
+          "Impostare data/ora di fine su '2026-01-10 18:00:00'",
+          "Selezionare i tipi evento 'LOGIN' e 'PURCHASE'",
+          "Confermare l'export",
+          "Scaricare/aprire il file esportato"
+        ],
+        "expected_results": [
+          "L'interfaccia consente di inserire una data/ora di inizio e una data/ora di fine per l'export",
+          "L'interfaccia consente di selezionare più di un tipo evento per l'export",
+          "Il file esportato contiene solo record con timestamp compreso tra '2026-01-10 09:00:00' e '2026-01-10 18:00:00' (inclusi)",
+          "Il file esportato contiene solo record con tipo evento uguale a 'LOGIN' o 'PURCHASE'",
+          "Nel file esportato non sono presenti record di tipo 'PASSWORD_RESET' (o altro tipo non selezionato) anche se presenti nell'intervallo"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Verifica indipendente dal formato file (CSV/JSON). L'inclusività dei limiti temporali (inclusi) è un'interpretazione: se il prodotto adotta esclusività, adeguare le asserzioni."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC02",
+        "title": "Autorizzazione: utente senza permesso export non può avviare export log",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile in dashboard senza permesso di esportazione log (es. ruolo 'Viewer Marketing')",
+          "La sezione 'Log' è accessibile in sola lettura a tale utente"
+        ],
+        "test_data": [
+          "Utente: marketing_viewer_01"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'marketing_viewer_01'",
+          "Navigare alla sezione 'Log' o equivalente",
+          "Verificare la presenza dell'azione 'Esporta' (pulsante/voce menu)",
+          "Tentare di avviare un export (se l'azione è visibile)"
+        ],
+        "expected_results": [
+          "L'azione di export non è disponibile oppure è disabilitata per l'utente senza permesso",
+          "Se l'utente tenta comunque l'operazione, il sistema blocca l'export e mostra un messaggio di autorizzazione insufficiente",
+          "Nessun file di export viene generato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non esplicita RBAC; il test valida un controllo standard enterprise. Se non previsto, marcare come non applicabile."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC03",
+        "title": "Validazione intervallo temporale non valido (fine precedente all'inizio)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-01-10 18:00:00",
+          "Intervallo fine: 2026-01-10 09:00:00",
+          "Tipi evento selezionati: LOGIN"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Avviare un export manuale dei log",
+          "Impostare data/ora di inizio su '2026-01-10 18:00:00'",
+          "Impostare data/ora di fine su '2026-01-10 09:00:00'",
+          "Selezionare il tipo evento 'LOGIN'",
+          "Confermare l'export"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'avvio dell'export",
+          "Viene mostrato un errore di validazione che indica che la data/ora di fine non può precedere la data/ora di inizio",
+          "Non viene generato alcun file di export"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC04",
+        "title": "Intervallo temporale valido ma senza eventi corrispondenti: export vuoto o sola intestazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log",
+          "Non esistono eventi nel sistema nell'intervallo 2030-01-01 00:00:00 - 2030-01-01 00:10:00 per i tipi selezionati"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2030-01-01 00:00:00",
+          "Intervallo fine: 2030-01-01 00:10:00",
+          "Tipi evento selezionati: LOGIN"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Avviare un export manuale dei log",
+          "Impostare l'intervallo temporale su '2030-01-01 00:00:00' - '2030-01-01 00:10:00'",
+          "Selezionare il tipo evento 'LOGIN'",
+          "Confermare l'export",
+          "Scaricare/aprire il file esportato"
+        ],
+        "expected_results": [
+          "L'export viene completato senza errori",
+          "Il file esportato non contiene record evento",
+          "Il file esportato è vuoto oppure contiene solo intestazioni/metadata (comportamento da confermare)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento 'file vuoto vs sola intestazione' non definito: il test accetta entrambe le opzioni e richiede decisione di prodotto per rendere l'asserzione univoca."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC05",
+        "title": "Nessun tipo evento selezionato: gestione secondo regola di prodotto (errore o default tutti)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-01-10 09:00:00",
+          "Intervallo fine: 2026-01-10 18:00:00",
+          "Tipi evento selezionati: nessuno"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Avviare un export manuale dei log",
+          "Impostare l'intervallo temporale su '2026-01-10 09:00:00' - '2026-01-10 18:00:00'",
+          "Assicurarsi che nessun tipo evento sia selezionato",
+          "Confermare l'export"
+        ],
+        "expected_results": [
+          "Il sistema applica una delle seguenti politiche, in modo consistente e documentabile: (A) blocca l'export e mostra un errore 'Selezionare almeno un tipo evento' oppure (B) procede includendo tutti i tipi evento disponibili",
+          "Se viene applicata la politica (A), non viene generato alcun file",
+          "Se viene applicata la politica (B), il file esportato contiene solo eventi nell'intervallo temporale impostato, indipendentemente dal tipo evento"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento non definito dall'edge case: il test formalizza le due opzioni e richiede chiarimento per rendere l'esito deterministico."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC06",
+        "title": "Rifiuto tipi evento non riconosciuti (validazione input via API/back-end)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log",
+          "È disponibile un endpoint o un meccanismo di invio richiesta export che consenta di osservare l'errore di validazione (es. chiamata API dell'UI intercettabile o API diretta)"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-01-10 09:00:00",
+          "Intervallo fine: 2026-01-10 18:00:00",
+          "Tipo evento non valido: 'EVENTO_NON_VALIDO_999'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Avviare un export manuale dei log",
+          "Impostare l'intervallo temporale su '2026-01-10 09:00:00' - '2026-01-10 18:00:00'",
+          "Inviare la richiesta di export includendo un tipo evento non riconosciuto (es. tramite API o manipolazione del payload della richiesta dell'UI)",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "Il sistema rifiuta la richiesta di export",
+          "Viene restituito/mostrato un errore di validazione che indica che il tipo evento non è consentito o non riconosciuto",
+          "Non viene generato alcun file di export"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità di API o possibilità di testare la validazione lato back-end. Se la UI impedisce qualsiasi valore non in lista, questo test va eseguito a livello API/integration."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC07",
+        "title": "Export programmato con filtri (se previsto e abilitato): file generato rispetta intervallo e tipi evento",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Feature di export programmato disponibile e abilitata (feature flag ON) oppure funzionalità presente in prodotto",
+          "Utente Team Marketing autenticato in dashboard con permesso di configurare export programmati",
+          "È disponibile un meccanismo per eseguire/forzare l'esecuzione del job (scheduler) o attendere l'orario di run",
+          "Sono presenti log nell'intervallo configurato per i tipi selezionati e log fuori filtro (fuori intervallo e/o tipo diverso)"
+        ],
+        "test_data": [
+          "Configurazione export programmato: esecuzione unica o pianificazione ravvicinata (es. tra 5 minuti)",
+          "Intervallo inizio: 2026-01-10 09:00:00",
+          "Intervallo fine: 2026-01-10 18:00:00",
+          "Tipi evento selezionati: LOGIN, PURCHASE"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Navigare alla sezione di configurazione export programmati",
+          "Creare un nuovo export programmato",
+          "Impostare l'intervallo temporale su '2026-01-10 09:00:00' - '2026-01-10 18:00:00'",
+          "Selezionare i tipi evento 'LOGIN' e 'PURCHASE'",
+          "Salvare/attivare la pianificazione",
+          "Attendere l'esecuzione del job o forzarne l'esecuzione secondo strumenti disponibili",
+          "Recuperare il file generato dall'export programmato"
+        ],
+        "expected_results": [
+          "La configurazione dell'export programmato consente di impostare intervallo temporale e uno o più tipi evento",
+          "Il job genera un file di export secondo la pianificazione",
+          "Il file generato contiene solo record con timestamp compreso nell'intervallo configurato",
+          "Il file generato contiene solo record con tipo evento uguale a 'LOGIN' o 'PURCHASE'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test eseguibile solo se l'export programmato è implementato/abilitato. In caso contrario, marcare come N/A e coprire AC-4 con evidenza di feature flag OFF."
+      },
+      {
+        "test_id": "REQ-F-031.US01.TC08",
+        "title": "Servizio export non disponibile/timeout: gestione errore e nessun file generato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard con permesso di esportazione log",
+          "È possibile simulare indisponibilità del servizio di export o del backend log (es. ambiente di test con fault injection, mock, o blocco rete)"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-01-10 09:00:00",
+          "Intervallo fine: 2026-01-10 18:00:00",
+          "Tipi evento selezionati: LOGIN"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Configurare la condizione di errore del servizio (timeout/500) per la chiamata di export",
+          "Avviare un export manuale dei log",
+          "Impostare l'intervallo temporale su '2026-01-10 09:00:00' - '2026-01-10 18:00:00'",
+          "Selezionare il tipo evento 'LOGIN'",
+          "Confermare l'export",
+          "Osservare l'esito dell'operazione nell'interfaccia"
+        ],
+        "expected_results": [
+          "Il sistema segnala un errore di esecuzione export (es. timeout o errore server) in modo comprensibile",
+          "Non viene scaricato/generato alcun file di export",
+          "L'utente può riprovare l'operazione dopo il ripristino del servizio (assenza di blocchi permanenti lato UI)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica messaggistica/strategie di retry; il test verifica almeno la non generazione del file e la corretta segnalazione errore."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-031.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-031.US02.TC01",
+        "title": "Export manuale con filtri temporali e multi-tipo evento per audit (happy path)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato in dashboard con permesso di esportazione log",
+          "Sono presenti log con timestamp nell'intervallo 2026-02-01 00:00:00 - 2026-02-01 23:59:59",
+          "Sono presenti eventi di tipo 'ACCESS_GRANTED' e 'ACCESS_DENIED' nell'intervallo, e almeno un evento di tipo diverso (es. 'PROFILE_UPDATE') nello stesso intervallo"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-02-01 00:00:00",
+          "Intervallo fine: 2026-02-01 23:59:59",
+          "Tipi evento selezionati: ACCESS_GRANTED, ACCESS_DENIED"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Compliance",
+          "Navigare alla sezione 'Log' o equivalente",
+          "Selezionare l'azione 'Esporta' per avviare un export manuale",
+          "Impostare data/ora di inizio su '2026-02-01 00:00:00'",
+          "Impostare data/ora di fine su '2026-02-01 23:59:59'",
+          "Selezionare i tipi evento 'ACCESS_GRANTED' e 'ACCESS_DENIED'",
+          "Confermare l'export",
+          "Scaricare/aprire il file esportato"
+        ],
+        "expected_results": [
+          "L'interfaccia consente di inserire una data/ora di inizio e una data/ora di fine per l'export",
+          "L'interfaccia consente di selezionare più di un tipo evento per l'export",
+          "Il file esportato contiene solo record con timestamp compreso tra '2026-02-01 00:00:00' e '2026-02-01 23:59:59' (inclusi)",
+          "Il file esportato contiene solo record con tipo evento uguale a 'ACCESS_GRANTED' o 'ACCESS_DENIED'",
+          "Nel file esportato non sono presenti record di tipo 'PROFILE_UPDATE' (o altro tipo non selezionato) anche se presenti nell'intervallo"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test parallelo a US01 ma con dataset/eventi tipici di audit. Inclusività dei limiti temporali interpretata: adeguare se necessario."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC02",
+        "title": "Autorizzazione: utente Compliance senza permesso export non può esportare log",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile in dashboard senza permesso di esportazione log (es. ruolo 'Compliance Viewer')"
+        ],
+        "test_data": [
+          "Utente: compliance_viewer_01"
+        ],
+        "steps": [
+          "Accedere alla dashboard come 'compliance_viewer_01'",
+          "Navigare alla sezione 'Log' o equivalente",
+          "Verificare la presenza dell'azione 'Esporta' (pulsante/voce menu)",
+          "Tentare di avviare un export (se l'azione è visibile)"
+        ],
+        "expected_results": [
+          "L'azione di export non è disponibile oppure è disabilitata per l'utente senza permesso",
+          "Se l'utente tenta comunque l'operazione, il sistema blocca l'export e mostra un messaggio di autorizzazione insufficiente",
+          "Nessun file di export viene generato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia ruoli/permessi; il test assume controlli di accesso standard."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC03",
+        "title": "Validazione intervallo temporale non valido (fine precedente all'inizio) in export manuale",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato in dashboard con permesso di esportazione log"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-02-01 23:59:59",
+          "Intervallo fine: 2026-02-01 00:00:00",
+          "Tipi evento selezionati: ACCESS_DENIED"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Compliance",
+          "Avviare un export manuale dei log",
+          "Impostare data/ora di inizio su '2026-02-01 23:59:59'",
+          "Impostare data/ora di fine su '2026-02-01 00:00:00'",
+          "Selezionare il tipo evento 'ACCESS_DENIED'",
+          "Confermare l'export"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'avvio dell'export",
+          "Viene mostrato un errore di validazione che indica che la data/ora di fine non può precedere la data/ora di inizio",
+          "Non viene generato alcun file di export"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC04",
+        "title": "Tipi evento non riconosciuti: export rifiutato con errore di validazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Compliance autenticato in dashboard con permesso di esportazione log",
+          "È disponibile un endpoint o un meccanismo di invio richiesta export che consenta di osservare l'errore di validazione (es. API o manipolazione payload)"
+        ],
+        "test_data": [
+          "Intervallo inizio: 2026-02-01 00:00:00",
+          "Intervallo fine: 2026-02-01 23:59:59",
+          "Tipo evento non valido: 'INVALID_AUDIT_EVENT_001'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Compliance",
+          "Avviare un export manuale dei log",
+          "Impostare l'intervallo temporale su '2026-02-01 00:00:00' - '2026-02-01 23:59:59'",
+          "Inviare la richiesta di export includendo un tipo evento non riconosciuto",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "Il sistema rifiuta la richiesta di export",
+          "Viene restituito/mostrato un errore di validazione che indica che il tipo evento non è consentito o non riconosciuto",
+          "Non viene generato alcun file di export"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se la UI offre solo una lista chiusa e non permette valori arbitrari, eseguire il test a livello API/Integration."
+      },
+      {
+        "test_id": "REQ-F-031.US02.TC05",
+        "title": "Export programmato con filtri per audit (se previsto): applicazione filtri su file generato",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Feature di export programmato disponibile e abilitata (feature flag ON) oppure funzionalità presente in prodotto",
+          "Utente Team Compliance autenticato in dashboard con permesso di configurare export programmati",
+          "È disponibile un meccanismo per eseguire/forzare l'esecuzione del job (scheduler) o attendere l'orario di run",
+          "Sono presenti log nel periodo/tipi selezionati e log che non soddisfano i filtri"
+        ],
+        "test_data": [
+          "Pianificazione: esecuzione unica o pianificazione ravvicinata (es. tra 5 minuti)",
+          "Intervallo inizio: 2026-02-01 00:00:00",
+          "Intervallo fine: 2026-02-01 23:59:59",
+          "Tipi evento selezionati: ACCESS_GRANTED, ACCESS_DENIED"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Compliance",
+          "Aprire la sezione di configurazione export programmati",
+          "Creare un nuovo export programmato",
+          "Impostare l'intervallo temporale su '2026-02-01 00:00:00' - '2026-02-01 23:59:59'",
+          "Selezionare i tipi evento 'ACCESS_GRANTED' e 'ACCESS_DENIED'",
+          "Salvare/attivare la pianificazione",
+          "Attendere l'esecuzione del job o forzarne l'esecuzione secondo strumenti disponibili",
+          "Recuperare il file generato dall'export programmato",
+          "Verificare i record presenti nel file"
+        ],
+        "expected_results": [
+          "La configurazione dell'export programmato consente di impostare intervallo temporale e uno o più tipi evento",
+          "Il job genera un file di export secondo la pianificazione",
+          "Il file generato contiene esclusivamente eventi che rispettano l'intervallo temporale e i tipi evento configurati"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se l'export programmato non è nel rilascio, marcare come N/A e gestire AC-4 tramite evidenza di feature flag/assenza funzionalità."
+      }
+    ]
+  }
+]

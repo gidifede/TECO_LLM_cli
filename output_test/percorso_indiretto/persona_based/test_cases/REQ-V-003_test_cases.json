@@ -1,0 +1,380 @@
+[
+  {
+    "story_id": "REQ-V-003.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-003.US01.TC01",
+        "title": "Applicazione della retention aziendale alla persistenza/archiviazione dei log senza override locale",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione e produce eventi di logging",
+          "È disponibile una fonte autoritativa di policy aziendali di retention consultabile dal sistema (es. servizio/configurazione centralizzata)",
+          "Sono disponibili almeno due policy aziendali di retention (es. 'log applicativi: 90 giorni', 'log audit: 365 giorni')"
+        ],
+        "test_data": [
+          "Evento log A: livello=INFO, categoria=applicativo, timestamp=2026-02-23T10:15:00Z, payload='Offerta calcolata per idOfferta=OF-10001'",
+          "Evento log B: livello=INFO, categoria=audit, timestamp=2026-02-23T10:16:00Z, payload='Calcolo offerta completato idOfferta=OF-10001'"
+        ],
+        "steps": [
+          "Configurare la fonte autoritativa con retention 'applicativo=90 giorni' e 'audit=365 giorni'",
+          "Generare l'Evento log A dal Motore di Offerte",
+          "Generare l'Evento log B dal Motore di Offerte",
+          "Verificare nei metadati del sistema di logging/archiviazione la retention applicata ai log della categoria 'applicativo'",
+          "Verificare nei metadati del sistema di logging/archiviazione la retention applicata ai log della categoria 'audit'"
+        ],
+        "expected_results": [
+          "L'Evento log A risulta persistito/archiviato con retention pari a 90 giorni (o valore equivalente calcolato come data scadenza = timestamp + 90 giorni)",
+          "L'Evento log B risulta persistito/archiviato con retention pari a 365 giorni (o valore equivalente calcolato come data scadenza = timestamp + 365 giorni)",
+          "Non risultano impostazioni locali applicate dal Motore di Offerte che alterino la durata di conservazione rispetto alla policy aziendale"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: disponibilità e formato della policy aziendale. Se la retention è implementata come regola di lifecycle sul sistema di storage, verificare tramite API/console/metadata di storage."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC02",
+        "title": "Rifiuto di una richiesta di modifica retention a livello applicativo (override locale)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione",
+          "Esiste un meccanismo di configurazione runtime o deploy-time del Motore di Offerte (es. file config, env var, API interna) che possa includere parametri di retention",
+          "È disponibile una fonte autoritativa di policy aziendali di retention consultabile dal sistema"
+        ],
+        "test_data": [
+          "Tentativo override: retention_log_applicativi=30 giorni (diverso dalla policy aziendale 90 giorni)",
+          "Policy aziendale: log applicativi=90 giorni"
+        ],
+        "steps": [
+          "Impostare nella fonte autoritativa la retention 'log applicativi=90 giorni'",
+          "Tentare di configurare il Motore di Offerte con retention locale '30 giorni' per i log applicativi (tramite il meccanismo disponibile)",
+          "Avviare o ricaricare la configurazione del Motore di Offerte",
+          "Generare un evento di log applicativo dal Motore di Offerte",
+          "Verificare i log/telemetria del Motore di Offerte relativi alla configurazione retention",
+          "Verificare la retention effettivamente applicata al log generato"
+        ],
+        "expected_results": [
+          "La modifica di retention locale viene rifiutata o ignorata dal sistema in modo esplicito (es. errore di validazione, warning bloccante, configurazione non applicata)",
+          "Il Motore di Offerte applica comunque la retention aziendale (90 giorni) al log generato",
+          "È presente un'evidenza tracciabile dell'evento di rifiuto/ignoramento dell'override (es. entry di log di configurazione o audit interno)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "L'interfaccia di configurazione non è specificata: il test va adattato al punto reale in cui sarebbe possibile tentare un override (config file/env var/API)."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC03",
+        "title": "Gestione privacy: anonimizzazione dei dati personali nei log prima della conservazione/esposizione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione e produce eventi di logging",
+          "Sono definite e applicabili le direttive interne di privacy/anonimizzazione per i log (es. mascheramento di email e codice fiscale)",
+          "Il sistema di logging consente di recuperare il contenuto del log persistito (es. query su storage/indice)"
+        ],
+        "test_data": [
+          "Evento log con PII: livello=INFO, categoria=applicativo, payload='Richiesta offerta per email=mario.rossi@example.com, CF=RSSMRA80A01H501U, idCliente=12345'",
+          "Regola attesa (esempio): email mascherata 'm***@example.com' e CF anonimizzato/mascherato 'RSS*************' (secondo direttive interne)"
+        ],
+        "steps": [
+          "Configurare/abilitare nel sistema l'applicazione delle direttive interne di privacy per il logging (se previsto)",
+          "Generare l'evento di log contenente PII dal Motore di Offerte",
+          "Recuperare il log persistito dal sistema di logging/archiviazione",
+          "Ispezionare il contenuto del payload del log persistito"
+        ],
+        "expected_results": [
+          "Il log persistito non contiene i valori in chiaro dei dati personali presenti nell'evento originale (es. email e CF non risultano in chiaro)",
+          "Il log persistito mostra i dati personali gestiti secondo le regole previste (es. mascheramento/anonimizzazione applicata in modo coerente alle direttive interne)",
+          "Non esistono copie del medesimo evento con PII in chiaro nello storage di log consultabile"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Le tecniche di anonimizzazione e l'elenco PII non sono specificati nella story: le verifiche vanno parametrizzate sulle direttive interne effettive. Il test assume che sia possibile interrogare lo storage dei log."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC04",
+        "title": "Policy di retention non recuperabile: blocco dell'applicazione non conforme e segnalazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione",
+          "La fonte autoritativa delle policy aziendali di retention è normalmente utilizzata dal sistema",
+          "È possibile simulare indisponibilità della fonte policy (es. timeout, DNS, credenziali errate, servizio down)"
+        ],
+        "test_data": [
+          "Simulazione errore: timeout 30s verso servizio policy",
+          "Evento log: livello=INFO, categoria=applicativo, payload='Evento di test retention policy down'"
+        ],
+        "steps": [
+          "Rendere non disponibile la fonte autoritativa delle policy aziendali di retention",
+          "Tentare di avviare o ricaricare la configurazione del Motore di Offerte (se applicabile)",
+          "Generare un evento di log dal Motore di Offerte",
+          "Verificare l'esito della persistenza/archiviazione del log",
+          "Verificare la presenza di segnalazioni/alert nei log di sistema o nei canali di monitoraggio"
+        ],
+        "expected_results": [
+          "Il sistema non applica una retention locale sostitutiva in assenza della policy aziendale (nessun fallback non autorizzato)",
+          "Il sistema segnala in modo esplicito l'impossibilità di applicare la policy (es. errore/alert con causa 'policy non disponibile')",
+          "Il comportamento risultante impedisce configurazioni locali non conformi (es. persistenza bloccata o log marcati come non conformi secondo meccanismo previsto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story non definisce se il logging debba essere bloccato o degradato in modo controllato: il test verifica almeno assenza di override locale e presenza di segnalazione; il criterio 'impedire configurazioni locali non conformi' va confermato a livello di comportamento atteso."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC05",
+        "title": "Dati personali non riconosciuti/strutturati nei log: rilevazione non conformità e segnalazione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione",
+          "Sono applicabili direttive interne di privacy/anonimizzazione",
+          "È disponibile un meccanismo di controllo/alerting su eventi di logging non conformi (es. contatore, log di sicurezza, DLQ)"
+        ],
+        "test_data": [
+          "Evento log con PII non strutturata: payload='Contatto: mario.rossi(at)example.com - documento: RSSMRA80A01H501U' (formato non standard)",
+          "Soglia/indicatore atteso: evento marcato come 'privacy_check_failed' o equivalente (secondo implementazione)"
+        ],
+        "steps": [
+          "Generare l'evento di log con PII non strutturata dal Motore di Offerte",
+          "Recuperare il log persistito dal sistema di logging/archiviazione",
+          "Verificare se nel log persistito sono presenti dati personali in chiaro",
+          "Verificare la presenza di una segnalazione di non conformità privacy associata all'evento"
+        ],
+        "expected_results": [
+          "Se l'anonimizzazione non è applicabile al dato non strutturato, l'evento risulta segnalato come non conforme (es. flag/alert/entry dedicata) prima o al momento della conservazione/esposizione",
+          "Non è possibile considerare l'evento conforme senza evidenza di gestione privacy (es. il sistema non deve 'silenziosamente' conservare PII in chiaro senza segnalazione)",
+          "La segnalazione contiene informazioni sufficienti per investigazione (es. id evento, timestamp, motivo del fallimento) senza esporre ulteriormente PII"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il comportamento 'blocco o segnalazione' è indicato come 'da confermare' nella story: questo test valida almeno la rilevabilità dell'anomalia e l'assenza di conservazione silente di PII in chiaro."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC06",
+        "title": "Disponibilità di evidenze documentali e configurative per audit su accesso e conservazione dei log",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un repository/documentazione ufficiale delle procedure di accesso e conservazione (es. wiki aziendale, sistema documentale) oppure un endpoint di esportazione evidenze",
+          "Esistono configurazioni verificabili relative a retention e privacy (es. policy id/versione, configurazione storage lifecycle, regole mascheramento) accessibili in lettura a fini di audit"
+        ],
+        "test_data": [
+          "Riferimento documento: 'Procedura Accesso Log Motore Offerte' (versione e data pubblicazione)",
+          "Evidenza configurativa: ID policy retention='RET-LOG-APP-001' versione='v3', ID policy privacy='PRIV-LOG-002' versione='v5'"
+        ],
+        "steps": [
+          "Richiedere/recuperare la documentazione delle procedure di accesso ai log del Motore di Offerte",
+          "Richiedere/recuperare la documentazione delle procedure di conservazione/retention dei log",
+          "Recuperare le evidenze configurative correnti applicate al logging (retention e privacy) dal sistema o dai sistemi collegati",
+          "Verificare che documentazione ed evidenze riportino identificativi/versioni e modalità di verifica",
+          "Verificare che le evidenze siano accessibili e riproducibili (es. esportabili o consultabili con riferimenti stabili)"
+        ],
+        "expected_results": [
+          "Sono disponibili documenti che descrivono modalità di accesso e conservazione dei log del Motore di Offerte",
+          "Le evidenze includono riferimenti verificabili (es. ID policy, versione, data efficacia, sistema responsabile) e consentono di dimostrare come vengono applicate retention e privacy",
+          "Le evidenze risultano consultabili in modo consistente e utilizzabili in sede di audit (es. possibilità di esportazione o consultazione con tracciabilità di versione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story non specifica dove risiedano le evidenze: il test va adattato al repository/strumento reale. Questo test è di integrazione perché coinvolge sistemi/documentazione esterni al Motore di Offerte."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-003.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-003.US02.TC01",
+        "title": "Consultazione log da dashboard da parte del Team Compliance con dati personali gestiti secondo direttive interne",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile una dashboard per la consultazione dei log",
+          "Esiste un utente con ruolo 'Compliance' abilitato all'accesso alla dashboard",
+          "Sono presenti log del Motore di Offerte contenenti dati personali già trattati secondo direttive interne (anonimizzati/mascherati se previsto)",
+          "Le direttive interne privacy applicabili sono attive nel sistema di logging"
+        ],
+        "test_data": [
+          "Credenziali utente Compliance: username='comp_user_01'",
+          "Filtro ricerca: sistema='MotoreOfferte', intervallo='ultime 24 ore', parola chiave='idOfferta=OF-10001'",
+          "Esempio dato personale atteso mascherato: email 'm***@example.com'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'comp_user_01'",
+          "Navigare alla sezione di ricerca/consultazione log",
+          "Impostare i filtri di ricerca per i log del Motore di Offerte e l'intervallo temporale indicato",
+          "Eseguire la ricerca",
+          "Aprire il dettaglio di un log che originariamente conteneva dati personali",
+          "Verificare la visualizzazione dei campi/payload contenenti dati personali"
+        ],
+        "expected_results": [
+          "La dashboard mostra i log del Motore di Offerte corrispondenti ai filtri impostati",
+          "Nel dettaglio del log, eventuali dati personali risultano gestiti secondo direttive interne (es. mascherati/anonimizzati) e non sono visualizzati in chiaro se non consentito",
+          "Non sono presenti in dashboard duplicati dello stesso evento con dati personali in chiaro"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non definisce granularità permessi o casi di 'view unmasked': questo test assume che la consultazione Compliance debba essere conforme e quindi non esponga PII in chiaro se non previsto dalle direttive interne."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC02",
+        "title": "Accesso del Team Compliance a evidenze documentate su accesso e conservazione log utilizzabili in audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile dalla dashboard (o tramite link integrato) un repository documentale delle procedure",
+          "Esiste un utente con ruolo 'Compliance' abilitato alla consultazione della documentazione",
+          "Sono pubblicati documenti di procedura relativi ad accesso e conservazione dei log, con versione e data"
+        ],
+        "test_data": [
+          "Credenziali utente Compliance: username='comp_user_01'",
+          "Documento atteso: 'Procedura Accesso Log Motore Offerte' versione='1.8' data='2026-01-15'",
+          "Documento atteso: 'Procedura Conservazione/Retention Log Motore Offerte' versione='2.3' data='2026-01-20'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'comp_user_01'",
+          "Aprire la sezione 'Documentazione' o 'Evidenze Audit' relativa ai log",
+          "Ricercare e aprire il documento 'Procedura Accesso Log Motore Offerte'",
+          "Verificare presenza di versione, data e riferimenti a policy applicate",
+          "Ricercare e aprire il documento 'Procedura Conservazione/Retention Log Motore Offerte'",
+          "Verificare presenza di versione, data e riferimenti a policy applicate"
+        ],
+        "expected_results": [
+          "I documenti di procedura sono accessibili dal Team Compliance e consultabili senza errori",
+          "Ogni documento riporta metadati di auditabilità (versione, data, owner/responsabile o equivalente) e riferimenti alle modalità di accesso/conservazione",
+          "Le evidenze sono utilizzabili in audit (es. consultabili con link stabile o esportabili secondo funzionalità prevista)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di 'utilizzabilità in audit' non è dettagliata: si valida tramite presenza metadati e accessibilità/esportabilità se prevista dallo strumento."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC03",
+        "title": "Log fuori finestra di retention: impossibilità di recupero oltre quanto previsto dalle policy",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile la dashboard di consultazione log",
+          "Esiste un utente con ruolo 'Compliance' abilitato all'accesso",
+          "La policy aziendale di retention per la tipologia di log oggetto del test è nota (es. 90 giorni)",
+          "Sono presenti log storici più vecchi della finestra di retention (es. > 90 giorni) oppure è possibile simulare l'invecchiamento/expiring dei log"
+        ],
+        "test_data": [
+          "Credenziali utente Compliance: username='comp_user_01'",
+          "Filtro ricerca: sistema='MotoreOfferte', intervallo='da 120 giorni fa a 110 giorni fa' (oltre retention 90 giorni)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'comp_user_01'",
+          "Navigare alla sezione di ricerca log",
+          "Impostare l'intervallo temporale oltre la finestra di retention prevista",
+          "Eseguire la ricerca",
+          "Tentare di aprire eventuali risultati (se presenti) o esportare i dati della ricerca"
+        ],
+        "expected_results": [
+          "La dashboard non restituisce log oltre la finestra di retention prevista dalle policy aziendali (risultato vuoto o messaggio informativo coerente)",
+          "Non è possibile esportare/recuperare log oltre la retention tramite la dashboard",
+          "Il comportamento è coerente con l'applicazione della retention aziendale (assenza di accesso a dati non più conservati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il messaggio utente non è specificato: verificare almeno l'assenza dei log e l'impossibilità di recuperarli."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC04",
+        "title": "Documentazione procedure non disponibile o non aggiornata: evidenza di non conformità per audit",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile la dashboard (o accesso) per consultare documentazione/evidenze",
+          "Esiste un utente con ruolo 'Compliance' abilitato all'accesso",
+          "È possibile simulare indisponibilità del repository documentale o presenza di documenti obsoleti (es. versione scaduta, data oltre soglia interna)"
+        ],
+        "test_data": [
+          "Credenziali utente Compliance: username='comp_user_01'",
+          "Simulazione: repository documentale non raggiungibile (HTTP 503) oppure documento con versione '0.9' e data '2023-01-01' marcato come obsoleto secondo regole interne"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'comp_user_01'",
+          "Aprire la sezione 'Documentazione' o 'Evidenze Audit'",
+          "Tentare di aprire la documentazione delle procedure di accesso e conservazione",
+          "Verificare la gestione dell'errore o dell'obsolescenza",
+          "Verificare la presenza di un'indicazione di non conformità o mancanza evidenze"
+        ],
+        "expected_results": [
+          "Se la documentazione non è disponibile, la dashboard mostra un errore esplicito e non presenta evidenze come se fossero disponibili",
+          "Se la documentazione è obsoleta/non aggiornata, la dashboard rende evidente lo stato (es. 'obsoleto', 'non aggiornato', 'non conforme') secondo le regole implementate",
+          "L'esito consente al Team Compliance di rilevare che l'audit non è pienamente verificabile per mancanza/obsolescenza delle evidenze"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La soglia di 'non aggiornato' non è definita: va parametrizzata su regole interne o metadati disponibili. Il requisito richiede verificabilità; questo test valida che l'assenza emerga come non conformità."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC05",
+        "title": "Rilevazione anomalia: incoerenza tra log visualizzati e regole di anonimizzazione attese",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile la dashboard di consultazione log",
+          "Esiste un utente con ruolo 'Compliance' abilitato all'accesso",
+          "Sono definite direttive interne di anonimizzazione applicabili ai dati personali nei log",
+          "È disponibile almeno un log di test in cui (per difetto o configurazione errata) un dato personale risulti non anonimizzato oppure è possibile simulare la mancata applicazione della regola"
+        ],
+        "test_data": [
+          "Credenziali utente Compliance: username='comp_user_01'",
+          "Log anomalo: payload contiene email in chiaro 'mario.rossi@example.com' dove la direttiva richiede mascheramento",
+          "Filtro ricerca: parola chiave='mario.rossi@example.com' oppure id evento noto"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'comp_user_01'",
+          "Ricercare il log anomalo tramite filtro/parola chiave o identificativo evento",
+          "Aprire il dettaglio del log anomalo",
+          "Verificare la presenza di dati personali in chiaro nel contenuto visualizzato",
+          "Verificare se la dashboard o il sistema segnala l'anomalia di conformità (es. flag, warning, possibilità di segnalazione)"
+        ],
+        "expected_results": [
+          "L'incoerenza rispetto alle regole di anonimizzazione è rilevabile (es. dato in chiaro individuabile e/o segnalazione di non conformità presente)",
+          "La consultazione non maschera ulteriormente in modo fuorviante l'anomalia (es. non deve mostrare come conforme un log che contiene PII in chiaro)",
+          "È presente un'indicazione o tracciamento utile per audit/remediation (es. riferimento evento, timestamp, regola violata o messaggio equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di segnalazione non è specificata: il test richiede almeno che l'anomalia sia individuabile e non nascosta; l'eventuale workflow di remediation va definito separatamente."
+      }
+    ]
+  }
+]

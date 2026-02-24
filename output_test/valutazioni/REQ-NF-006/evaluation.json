@@ -1,0 +1,162 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-NF-006",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 76,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-006.TC03",
+        "detail": "Introduce dettagli non presenti nel requisito su formato di export (CSV), modalità UI (pulsante/menu) e requisito che il contenuto esportato corrisponda ai dati visibili."
+      },
+      {
+        "test_id": "REQ-NF-006.TC04",
+        "detail": "Assume esistenza di un endpoint backend specifico (/api/export) e di un codice HTTP 403; il requisito non menziona API/endpoint né codici di errore."
+      },
+      {
+        "test_id": "REQ-NF-006.TC06",
+        "detail": "Assume una necessità di logout/login per propagazione permessi (gestione cache/sessione) non indicata dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.TC07",
+        "detail": "Introduce una regola di accesso all'interfaccia admin (solo 'amministratori') e test di negazione accesso per non-admin: il requisito dice che i permessi sono configurabili/verificabili via interfaccia admin, ma non specifica chi possa accedervi."
+      },
+      {
+        "test_id": "REQ-NF-006.TC08",
+        "detail": "Gestisce il caso 'utente senza ruolo' e aggiunge aspettative di stabilità (no crash/500): non esplicitato nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito",
+        "detail": "La descrizione richiede che le funzionalità di esportazione siano disponibili solo agli utenti autorizzati; i TC coprono autorizzato/non autorizzato, ma non verificano esplicitamente che l'esportazione sia inibita per tutti i ruoli non autorizzati in modo generalizzato (oltre al singolo ruolo d'esempio)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-006.TC05",
+          "REQ-NF-006.TC06"
+        ],
+        "detail": "Entrambi coprono configurazione permessi via interfaccia admin; TC06 aggiunge verifica end-to-end ma ripete gran parte dello scenario di modifica/salvataggio già testato in TC05."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 20,
+    "coherence_score": 49,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-006.US01.TC02",
+        "detail": "Richiede un 'empty state' e contenuti/messaggi specifici; il requisito non menziona empty state o messaggistica."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC03",
+        "detail": "Introduce il concetto di 'metadati sensibili' (nomi colonne, conteggi record, preview) come vincolo esplicito; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC04",
+        "detail": "Assume deep-link/URL/API specifici e verifica del payload di rete; il requisito non parla di URL, routing o payload."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC05",
+        "detail": "Introduce vincolo 'applicazione alle sessioni successive' (U_MKT non autenticato) non espresso dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC06",
+        "detail": "Richiede che per 'ciascun dataset/sezione configurabile' sia mostrato uno stato univoco; il requisito dice configurabili/verificabili, ma non impone completezza per ogni dataset/sezione né modalità di rappresentazione."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC08",
+        "detail": "Introduce un permesso esplicito 'Export=OFF' come entità configurabile; il requisito menziona export solo come funzionalità da limitare, non come permesso configurabile separato."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC09",
+        "detail": "Aggiunge la regola che l'export deve contenere esclusivamente dati visibili e non includere dati non autorizzati; il requisito non specifica questa correlazione contenuto-export vs visibilità."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC10",
+        "detail": "Assume meccanismi di selezione cosa esportare (filtri/selezione dataset/endpoint) e accetta comportamenti alternativi 'bloccato o limita'; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC11",
+        "detail": "Gestisce cambio permessi durante sessione attiva e comportamento minimo logout/login; il requisito non tratta la dinamica temporale di applicazione permessi."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC01",
+        "detail": "Introduce domini/sezioni specifiche (Dati/Log/Report) e permessi per 'log'; il requisito non menziona log/report come ambiti."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC02",
+        "detail": "Assume esistenza di ricerca globale/filtri e vincoli su messaggi che non rivelino info; non nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC03",
+        "detail": "Introduce 'report storici' e identificativi report; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC06",
+        "detail": "Come US01.TC08, introduce permesso di esportazione come configurazione esplicita (Export=OFF) non dichiarata dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC07",
+        "detail": "Come US01.TC09, aggiunge vincolo sul contenuto esportato limitato agli ambiti visibili; non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC08",
+        "detail": "Introduce 'export massivo' e un controllo RBAC specifico per export massivo; non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC09",
+        "detail": "Assume deep link/route specifiche (/dashboard/log) e comportamento di blocco su route; non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito",
+        "detail": "Il requisito parla di 'interfacce applicative verso gli utenti del sistema' in generale; i TC sono fortemente focalizzati sulla 'dashboard' e non coprono altri possibili canali/interfacce applicative (se esistenti)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-006.US01.TC01",
+          "REQ-NF-006.US01.TC03"
+        ],
+        "detail": "Entrambi verificano permessi parziali (sezione consentita vs sezione negata) con aspettative molto simili di non visibilità/accesso."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-006.US01.TC04",
+          "REQ-NF-006.US02.TC09"
+        ],
+        "detail": "Entrambi testano accesso diretto/deep-link a risorsa non autorizzata tramite URL/route."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-006.US01.TC08",
+          "REQ-NF-006.US02.TC06"
+        ],
+        "detail": "Entrambi testano export non disponibile quando il ruolo non ha permesso export (stesso scenario replicato su persona diversa)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1 e AC-2). Tuttavia, il set direct introduce meno informazioni non tracciabili (5 added_info) e meno ridondanze (1) rispetto al set indirect_persona, che aggiunge molti dettagli non presenti nel requisito (empty state, metadati, deep-link/payload, export massivo, dinamiche di sessione) e presenta piu ridondanze. Per questo il punteggio di coerenza del direct risulta superiore (76 vs 49)."
+  }
+}

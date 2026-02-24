@@ -1,0 +1,91 @@
+[
+  {
+    "story_id": "REQ-V-005.US01",
+    "title": "Visualizzare offerte per prodotti everyday su App/Web",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare offerte e proposte relative ai prodotti everyday supportati sui canali digitali",
+    "benefit": "consultare proposte coerenti e disponibili durante l’esperienza di acquisto self-service",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare offerte e proposte relative ai prodotti everyday supportati su App e Web\nIn modo che possa consultare proposte coerenti e disponibili durante la mia esperienza di acquisto digitale",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo al canale App ALLORA posso fruire delle funzionalità previste dal Motore di Offerte in modo coerente con gli altri canali supportati (OSP/OFE e Web) per quanto riguarda la disponibilità delle tipologie prodotto everyday.",
+      "QUANDO accedo al canale Web ALLORA posso fruire delle funzionalità previste dal Motore di Offerte in modo coerente con gli altri canali supportati (OSP/OFE e App) per quanto riguarda la disponibilità delle tipologie prodotto everyday.",
+      "QUANDO il Motore di Offerte genera un’offerta per una delle tipologie prodotto everyday (fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto) ALLORA l’offerta risulta visualizzabile sul canale digitale e associata a una tipologia supportata."
+    ],
+    "business_rules": [
+      "Le tipologie prodotto supportate includono: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto.",
+      "La coerenza cross-canale riguarda la disponibilità delle funzionalità previste e delle tipologie prodotto supportate (non sono definiti nel requisito dettagli di UI/UX o parità funzionale puntuale)."
+    ],
+    "edge_cases": [
+      "Il canale App o Web non è disponibile: l’utente non riesce a consultare le offerte (gestione errore non specificata nel requisito).",
+      "Un’offerta è generata per una tipologia non inclusa nell’elenco everyday: l’offerta non deve essere considerata supportata per questo requisito.",
+      "Incoerenza tra canali (es. tipologia disponibile su App ma non su Web): deve emergere come difetto rispetto al criterio di coerenza."
+    ],
+    "assumptions": [
+      "Il requisito non specifica quali siano nel dettaglio le “funzionalità previste” per canale; si assume che la verifica sia limitata a disponibilità e coerenza delle tipologie prodotto supportate e della fruibilità delle offerte sui canali indicati."
+    ],
+    "notes": "AC condivisi con REQ-V-005.US02: coerenza e disponibilità su canali (OSP/OFE, App, Web) e supporto delle tipologie prodotto everyday."
+  },
+  {
+    "story_id": "REQ-V-005.US02",
+    "title": "Gestire offerte per prodotti everyday su canale fisico (OSP/OFE)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "accedere a offerte/proposte del Motore per i prodotti everyday sul canale fisico",
+    "benefit": "proporre al cliente offerte coerenti con i canali digitali e con le tipologie prodotto supportate",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio accedere alle offerte e proposte del Motore per i prodotti everyday su canale OSP/OFE\nIn modo che possa proporre al cliente offerte coerenti con i canali digitali e con le tipologie prodotto supportate",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO opero su canale OSP/OFE ALLORA il sistema risulta disponibile e coerente con App e Web per le funzionalità previste, relativamente alla gestione delle tipologie prodotto everyday.",
+      "QUANDO consulto o propongo offerte per una delle tipologie prodotto everyday (fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto) ALLORA tali tipologie risultano supportate dal sistema come tipologie gestite nella matrice di combinazioni."
+    ],
+    "business_rules": [
+      "Le tipologie prodotto supportate includono: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto.",
+      "Il requisito vincola i canali supportati a OSP/OFE, App e Web."
+    ],
+    "edge_cases": [
+      "Il canale OSP/OFE non è disponibile: l’operatore non riesce a consultare/proporre offerte (gestione errore non specificata nel requisito).",
+      "L’operatore tenta di operare su un prodotto non incluso nell’elenco everyday: il comportamento atteso non è coperto da questo requisito.",
+      "Differenze di supporto tipologie tra OSP/OFE e canali digitali: violazione della coerenza cross-canale."
+    ],
+    "assumptions": [
+      "Il requisito non distingue OSP da OFE a livello di permessi o UI; si assume che entrambi rientrino nel canale fisico supportato e debbano poter fruire delle funzionalità previste per le tipologie prodotto indicate."
+    ],
+    "notes": "AC condivisi con REQ-V-005.US01: coerenza e disponibilità su canali (OSP/OFE, App, Web) e supporto delle tipologie prodotto everyday."
+  },
+  {
+    "story_id": "REQ-V-005.US03",
+    "title": "Supportare tipologie prodotto everyday nella matrice combinazioni e tracciamento/log",
+    "persona": "Motore di Offerte",
+    "goal": "gestire le tipologie prodotto everyday come tipologie supportate nella matrice di combinazioni e tracciare/correlare le offerte ai log di decisione e provisioning",
+    "benefit": "garantire supporto uniforme dei prodotti sui canali e auditabilità delle decisioni e degli esiti di provisioning",
+    "user_story": "Come Motore di Offerte\nVoglio gestire le tipologie prodotto everyday nella matrice di combinazioni e tracciare/correlare le offerte ai log di decisione e provisioning\nIn modo che il supporto ai canali sia uniforme e le offerte siano auditabili end-to-end",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO configuro/uso la matrice di combinazioni ALLORA le tipologie prodotto fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto risultano gestite come tipologie supportate.",
+      "QUANDO il Motore genera un’offerta relativa a una delle tipologie prodotto everyday ALLORA l’offerta è tracciata e correlata ai relativi log di decisione.",
+      "QUANDO un’offerta relativa a una delle tipologie prodotto everyday avvia o subisce eventi/esiti di provisioning ALLORA l’offerta è tracciata e correlata ai relativi log di provisioning."
+    ],
+    "business_rules": [
+      "Le tipologie prodotto everyday supportate sono limitate all’elenco fornito nel requisito.",
+      "Ogni offerta per i prodotti everyday deve avere correlazione ai log di decisione e provisioning (modalità/identificativi di correlazione non specificati nel requisito)."
+    ],
+    "edge_cases": [
+      "Generazione offerta senza identificativo di correlazione ai log: l’offerta non risulta auditabile come richiesto.",
+      "Eventi di provisioning non disponibili o non associabili: impossibile correlare l’offerta ai log di provisioning.",
+      "Offerta generata per tipologia non supportata: deve risultare fuori ambito rispetto alla matrice/tipologie supportate."
+    ],
+    "assumptions": [
+      "Il requisito non specifica schema dei log, chiavi di correlazione, né sistemi sorgente dei log di provisioning; si assume esista un meccanismo di correlazione (es. correlationId/offerId) verificabile tramite consultazione log o API tecniche.",
+      "Il requisito non specifica canali tecnici del Motore; pertanto 'channels' è lasciato vuoto perché la persona è un componente di sistema."
+    ],
+    "notes": "Questa US copre l’AC relativo a tracciamento e correlazione ai log (decisione e provisioning), non attribuibile direttamente a una singola UI di canale."
+  }
+]

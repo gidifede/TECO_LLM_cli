@@ -1,0 +1,482 @@
+[
+  {
+    "story_id": "REQ-F-007.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-007.US01.TC01",
+        "title": "Visualizzazione bozza generata automaticamente per un suggerimento in dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Team Marketing' attivo e abilitato all’accesso alla dashboard",
+          "Esiste un 'suggerimento' SUGG-1001 nel sistema",
+          "Per SUGG-1001 il sistema ha generato automaticamente una bozza di descrizione associata"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Suggerimento: SUGG-1001",
+          "Bozza attesa: tipo='bozza automatica' associata a SUGG-1001"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il dettaglio del suggerimento 'SUGG-1001'",
+          "Aprire la sezione 'Descrizioni' del suggerimento"
+        ],
+        "expected_results": [
+          "Per il suggerimento 'SUGG-1001' è presente una descrizione identificata come bozza generata automaticamente",
+          "La bozza risulta associata al suggerimento 'SUGG-1001' (relazione visibile in UI o tramite identificativo nel dettaglio)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Si assume che la UI distingua la bozza automatica dalle varianti (es. etichetta 'Bozza automatica' o campo 'origine')."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC02",
+        "title": "Apertura e modifica della bozza tramite dashboard (senza salvataggio)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1001' con bozza automatica disponibile"
+        ],
+        "test_data": [
+          "Testo modifica: 'Nuova descrizione promozionale per il target Famiglie.'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1001'",
+          "Selezionare la bozza automatica dall’elenco descrizioni",
+          "Aprire la bozza in modalità editing",
+          "Sostituire/integrare il contenuto con 'Nuova descrizione promozionale per il target Famiglie.'"
+        ],
+        "expected_results": [
+          "La bozza si apre correttamente in modalità modificabile",
+          "Il contenuto inserito risulta presente nell’editor prima del salvataggio (modifiche in corso visibili)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC03",
+        "title": "Salvataggio modifica su descrizione esistente con creazione di una nuova versione e mantenimento storico",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1001' con una descrizione esistente (bozza o variante) disponibile in dashboard",
+          "La dashboard mostra l’elenco versioni/varianti per il suggerimento"
+        ],
+        "test_data": [
+          "Testo versione precedente: 'Descrizione base offerta.'",
+          "Testo nuova versione: 'Descrizione base offerta aggiornata con beneficio extra.'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1001'",
+          "Aprire una descrizione esistente dall’elenco",
+          "Annotare l’identificativo/versione corrente visualizzata (es. v1)",
+          "Modificare il contenuto inserendo 'Descrizione base offerta aggiornata con beneficio extra.'",
+          "Salvare la descrizione",
+          "Tornare all’elenco versioni/varianti del suggerimento"
+        ],
+        "expected_results": [
+          "Il salvataggio va a buon fine",
+          "Nell’elenco versioni/varianti è presente una versione aggiuntiva rispetto a prima del salvataggio",
+          "La versione precedente rimane consultabile e distinta dalla versione aggiornata (versioni separate)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non specifica schema di versioning (numerazione, autore, timestamp). La verifica si basa sulla presenza di versioni distinte consultabili."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC04",
+        "title": "Creazione descrizione da zero e salvataggio come nuova variante associata al suggerimento",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1002' consultabile in dashboard"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1002",
+          "Testo nuova descrizione: 'Offerta dedicata: attiva ora e risparmia sul canone mensile.'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1002'",
+          "Selezionare l’azione 'Crea descrizione da zero'",
+          "Inserire il testo 'Offerta dedicata: attiva ora e risparmia sul canone mensile.'",
+          "Salvare la nuova descrizione"
+        ],
+        "expected_results": [
+          "Il salvataggio va a buon fine",
+          "La nuova descrizione risulta presente nell’elenco descrizioni del suggerimento 'SUGG-1002' come nuova variante"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC05",
+        "title": "Visualizzazione elenco versioni/varianti disponibili per un suggerimento con indicazione della versione",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1003' con almeno 1 bozza automatica e 2 varianti create manualmente (o 2 versioni distinte)"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1003",
+          "Numero minimo atteso elementi in elenco: 3 (1 bozza + 2 varianti/versioni)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1003'",
+          "Aprire la sezione 'Descrizioni'"
+        ],
+        "expected_results": [
+          "La dashboard mostra l’elenco delle descrizioni disponibili per 'SUGG-1003'",
+          "Ogni elemento in elenco mostra un’indicazione di versione/variante (es. numero versione o identificativo variante) tale da distinguere elementi diversi"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La forma dell’indicazione di versione non è specificata; è sufficiente che consenta di distinguere in modo univoco le versioni/varianti."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC06",
+        "title": "Assegnazione di una variante a una tipologia di offerta",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1004' con almeno una variante salvata",
+          "Esiste almeno una tipologia di offerta selezionabile in dashboard"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1004",
+          "Variante: VAR-2001",
+          "Tipologia offerta: 'Retention'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1004'",
+          "Selezionare la variante 'VAR-2001'",
+          "Aprire l’azione 'Assegna variante'",
+          "Selezionare la tipologia di offerta 'Retention'",
+          "Confermare il salvataggio dell’assegnazione"
+        ],
+        "expected_results": [
+          "L’assegnazione viene salvata con successo",
+          "La variante 'VAR-2001' risulta associata alla tipologia di offerta 'Retention' (informazione visibile nel dettaglio variante o nell’elenco)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale prevede assegnazione a tipologia e/o cluster; questo test copre il caso 'solo tipologia'."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC07",
+        "title": "Assegnazione di una variante a un cluster di clientela",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1004' con almeno una variante salvata",
+          "Esiste almeno un cluster di clientela selezionabile in dashboard"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1004",
+          "Variante: VAR-2002",
+          "Cluster clientela: 'Famiglie'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1004'",
+          "Selezionare la variante 'VAR-2002'",
+          "Aprire l’azione 'Assegna variante'",
+          "Selezionare il cluster di clientela 'Famiglie'",
+          "Confermare il salvataggio dell’assegnazione"
+        ],
+        "expected_results": [
+          "L’assegnazione viene salvata con successo",
+          "La variante 'VAR-2002' risulta associata al cluster 'Famiglie' (informazione visibile nel dettaglio variante o nell’elenco)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale prevede assegnazione a tipologia e/o cluster; questo test copre il caso 'solo cluster'."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC08",
+        "title": "Accesso negato alla dashboard per utente non autorizzato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile senza ruolo 'Team Marketing' (es. ruolo 'Sales' o 'Viewer')",
+          "La dashboard di editing è raggiungibile via URL/voce di menu"
+        ],
+        "test_data": [
+          "Utente non autorizzato: sales.user1"
+        ],
+        "steps": [
+          "Autenticarsi con l’utente 'sales.user1'",
+          "Tentare di accedere alla dashboard di editing descrizioni"
+        ],
+        "expected_results": [
+          "L’accesso alla dashboard viene negato",
+          "Il sistema mostra un messaggio di autorizzazione insufficiente oppure una pagina di accesso non consentito"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede che solo Team Marketing (o autorizzati) possa accedere/operare; il requisito originale non dettaglia ruoli, ma la capacità di modifica via dashboard (AC-2) implica controllo accessi."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC09",
+        "title": "Operazione di modifica/salvataggio negata a utente non autorizzato (accesso diretto a risorsa)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile senza ruolo 'Team Marketing'",
+          "Esiste una descrizione associata al suggerimento 'SUGG-1001'",
+          "È possibile invocare l’azione di salvataggio (UI o endpoint) per una descrizione esistente"
+        ],
+        "test_data": [
+          "Utente non autorizzato: viewer.user1",
+          "Suggerimento: SUGG-1001",
+          "Testo tentato: 'Tentativo modifica non autorizzata.'"
+        ],
+        "steps": [
+          "Autenticarsi con l’utente 'viewer.user1'",
+          "Aprire direttamente il dettaglio del suggerimento 'SUGG-1001' (se accessibile)",
+          "Tentare di aprire una descrizione in editing e inserire 'Tentativo modifica non autorizzata.'",
+          "Tentare di salvare la modifica"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della modifica",
+          "Il sistema mostra un messaggio di autorizzazione insufficiente",
+          "La descrizione rimane invariata (nessuna nuova versione/variante creata)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se l’utente non autorizzato non può nemmeno visualizzare il suggerimento, i passi 2-3 possono essere sostituiti da tentativo di accesso diretto alla funzione di edit; l’obiettivo è verificare il blocco dell’operazione."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC10",
+        "title": "Generazione automatica bozza fallita: dashboard segnala assenza bozza e impedisce editing della bozza",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-FAIL-01' consultabile in dashboard",
+          "Per 'SUGG-FAIL-01' la generazione automatica della bozza è fallita e non esiste bozza associata"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-FAIL-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-FAIL-01'",
+          "Aprire la sezione 'Descrizioni'",
+          "Tentare di aprire la bozza automatica (se presente come placeholder) o di avviare l’editing della bozza"
+        ],
+        "expected_results": [
+          "La dashboard segnala l’assenza della bozza automatica per il suggerimento",
+          "Non è possibile aprire/modificare una bozza non esistente (azione disabilitata o errore gestito)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non descrive la gestione errori di generazione; test derivato dagli edge case della user story per robustezza."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC11",
+        "title": "In assenza bozza automatica, creazione da zero consentita per Team Marketing",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-FAIL-01' consultabile in dashboard",
+          "Per 'SUGG-FAIL-01' non esiste bozza automatica (generazione fallita)",
+          "La dashboard consente la creazione da zero indipendentemente dall’esistenza della bozza"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-FAIL-01",
+          "Testo nuova descrizione: 'Descrizione creata manualmente in assenza di bozza.'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-FAIL-01'",
+          "Selezionare l’azione 'Crea descrizione da zero'",
+          "Inserire il testo 'Descrizione creata manualmente in assenza di bozza.'",
+          "Salvare la nuova descrizione"
+        ],
+        "expected_results": [
+          "Il salvataggio va a buon fine",
+          "La nuova descrizione risulta presente nell’elenco descrizioni del suggerimento come variante"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento richiesto dagli edge case della user story: in assenza bozza, l’editing della bozza è bloccato ma la creazione da zero resta possibile se permessi lo consentono."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC12",
+        "title": "Blocco salvataggio descrizione vuota o con soli spazi",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste un suggerimento 'SUGG-1005' consultabile in dashboard"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1005",
+          "Contenuto non valido: '' (stringa vuota)",
+          "Contenuto non valido: '   ' (solo spazi)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1005'",
+          "Selezionare l’azione 'Crea descrizione da zero'",
+          "Inserire il contenuto vuoto ''",
+          "Tentare di salvare",
+          "Inserire il contenuto con soli spazi '   '",
+          "Tentare di salvare"
+        ],
+        "expected_results": [
+          "Il sistema blocca il salvataggio quando il contenuto è vuoto",
+          "Il sistema mostra un messaggio che richiede un contenuto valido",
+          "Il sistema blocca il salvataggio quando il contenuto contiene solo spazi",
+          "Nessuna nuova variante/versione viene creata a seguito dei tentativi falliti"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non esplicita la validazione del contenuto; test derivato dagli edge case della user story."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC13",
+        "title": "Assegnazione variante senza tipologia e senza cluster: richiesta campi minimi",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1006' con almeno una variante salvata",
+          "La dashboard prevede un’azione 'Assegna variante' con selezione tipologia e/o cluster"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1006",
+          "Variante: VAR-3001",
+          "Tipologia offerta: (non selezionata)",
+          "Cluster clientela: (non selezionato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1006'",
+          "Selezionare la variante 'VAR-3001'",
+          "Aprire l’azione 'Assegna variante'",
+          "Lasciare non selezionati sia 'Tipologia di offerta' sia 'Cluster di clientela'",
+          "Tentare di confermare il salvataggio dell’assegnazione"
+        ],
+        "expected_results": [
+          "Il sistema blocca il salvataggio dell’assegnazione",
+          "Il sistema richiede la valorizzazione dei campi minimi necessari per l’assegnazione (messaggio di validazione visibile)",
+          "Non viene creata/aggiornata alcuna assegnazione per la variante"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Ambiguità: non è specificato se tipologia/cluster siano entrambi opzionali o se almeno uno sia obbligatorio. Il test assume che almeno uno tra tipologia e cluster sia richiesto, come indicato dall’edge case della user story."
+      },
+      {
+        "test_id": "REQ-F-007.US01.TC14",
+        "title": "Conflitto di assegnazione: più varianti assegnate alla stessa combinazione cluster/tipologia",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente autenticato con ruolo 'Team Marketing'",
+          "Esiste il suggerimento 'SUGG-1007' con almeno due varianti salvate (VAR-4001, VAR-4002)",
+          "Esiste la tipologia offerta 'Upsell' e il cluster 'Giovani'",
+          "VAR-4001 è già assegnata a tipologia 'Upsell' e cluster 'Giovani'"
+        ],
+        "test_data": [
+          "Suggerimento: SUGG-1007",
+          "Variante già assegnata: VAR-4001 -> Tipologia='Upsell', Cluster='Giovani'",
+          "Variante da assegnare: VAR-4002 -> Tipologia='Upsell', Cluster='Giovani'"
+        ],
+        "steps": [
+          "Accedere alla dashboard di editing come utente 'Team Marketing'",
+          "Aprire il suggerimento 'SUGG-1007'",
+          "Selezionare la variante 'VAR-4002'",
+          "Aprire l’azione 'Assegna variante'",
+          "Selezionare tipologia 'Upsell'",
+          "Selezionare cluster 'Giovani'",
+          "Confermare il salvataggio dell’assegnazione"
+        ],
+        "expected_results": [
+          "La dashboard segnala un conflitto di assegnazione per la combinazione Tipologia='Upsell' e Cluster='Giovani'",
+          "Il sistema richiede una risoluzione del conflitto (ad esempio selezione della variante attiva o annullamento dell’operazione)",
+          "Lo stato finale non presenta ambiguità: risulta chiaro quale variante è attiva per la combinazione (oppure l’assegnazione non viene applicata finché non risolta)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non definisce la strategia di risoluzione conflitti; il test verifica almeno la segnalazione e la richiesta di risoluzione come da edge case della user story."
+      }
+    ]
+  }
+]

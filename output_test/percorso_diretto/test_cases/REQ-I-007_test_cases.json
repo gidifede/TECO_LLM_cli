@@ -1,0 +1,229 @@
+[
+  {
+    "test_id": "REQ-I-007.TC01",
+    "title": "E2E: evento da verticale aggiorna lo stato proposta e la transizione è visibile su tutte le interfacce consumer",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore deployato e raggiungibile",
+      "Verticale di vendita (o stub certificato) configurato per inviare eventi verso il canale/endpoint del Motore",
+      "Esiste una proposta P-10001 associata al cliente C-90001 in stato iniziale noto (es. 'CREATA') nel Motore",
+      "Sono disponibili e raggiungibili almeno due interfacce che consumano l'elenco offerte dal Motore (es. API pubblica e portale web interno) e puntano allo stesso ambiente",
+      "Autorizzazioni valide per interrogare le interfacce consumer (token/credenziali)"
+    ],
+    "test_data": [
+      "Cliente: C-90001",
+      "Proposta: P-10001 (stato iniziale: 'CREATA')",
+      "Evento in ingresso dal verticale: eventId=EVT-0001, sourceSystem=VERT-01, proposalId=P-10001, customerId=C-90001, eventType='VENDITA_EFFETTIVA', eventTimestamp=2026-02-23T10:15:30Z, payload coerente con lo schema concordato",
+      "Interfaccia consumer A: endpoint 'GET /offerte?customerId=C-90001'",
+      "Interfaccia consumer B: schermata/endpoint alternativo che mostra le offerte per C-90001"
+    ],
+    "steps": [
+      "Verificare sul Motore lo stato corrente della proposta P-10001 (prima dell'evento)",
+      "Inviare l'evento EVT-0001 dal verticale verso il canale/endpoint del Motore",
+      "Verificare la risposta del canale/endpoint del Motore alla ricezione dell'evento (acknowledgement)",
+      "Interrogare il Motore per ottenere lo stato aggiornato della proposta P-10001",
+      "Interrogare l'interfaccia consumer A per ottenere l'elenco offerte disponibili per il cliente C-90001",
+      "Interrogare l'interfaccia consumer B per ottenere l'elenco offerte disponibili per il cliente C-90001",
+      "Confrontare lo stato della proposta P-10001 tra Motore e le due interfacce consumer"
+    ],
+    "expected_results": [
+      "Lo stato iniziale della proposta P-10001 risulta quello atteso e noto (es. 'CREATA')",
+      "Il canale/endpoint del Motore accetta l'evento e restituisce un acknowledgement di successo (es. HTTP 200/202) con riferimento a eventId=EVT-0001",
+      "Dopo l'elaborazione dell'evento, lo stato della proposta P-10001 nel Motore risulta transizionato allo stato atteso per eventType='VENDITA_EFFETTIVA' (secondo la mappatura configurata)",
+      "L'interfaccia consumer A mostra la proposta P-10001 coerente con lo stato aggiornato (e, se applicabile, non la include tra le 'offerte disponibili' se il nuovo stato la rende non disponibile)",
+      "L'interfaccia consumer B mostra la proposta P-10001 coerente con lo stato aggiornato (stessa regola di inclusione/esclusione dell'interfaccia A)",
+      "Non vi sono discrepanze tra lo stato della proposta nel Motore e quanto esposto dalle interfacce consumer"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "api",
+      "web"
+    ],
+    "notes": "Attori e canali consumer (API/Web) sono inferiti dal criterio 'tutte le interfacce' ma non specificati nel requisito. Gli stati e la mappatura evento→transizione non sono esplicitati: il test richiede una tabella di transizione configurata/nota in ambiente."
+  },
+  {
+    "test_id": "REQ-I-007.TC02",
+    "title": "Integration: validazione contratto endpoint eventi (schema/payload) e aggiornamento stato riproducibile per lo stesso evento",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile sul canale/endpoint eventi",
+      "Schema/contratto evento condiviso disponibile (es. OpenAPI/AsyncAPI/JSON Schema) per validazione",
+      "Esiste una proposta P-10002 associata al cliente C-90002 in stato iniziale noto (es. 'CREATA')"
+    ],
+    "test_data": [
+      "Cliente: C-90002",
+      "Proposta: P-10002 (stato iniziale: 'CREATA')",
+      "Evento: eventId=EVT-0002, sourceSystem=VERT-01, proposalId=P-10002, customerId=C-90002, eventType='VENDITA_EFFETTIVA', eventTimestamp=2026-02-23T11:00:00Z",
+      "Stesso identico evento reinviato: eventId=EVT-0002 (duplicato)"
+    ],
+    "steps": [
+      "Validare il payload dell'evento EVT-0002 rispetto allo schema/contratto atteso",
+      "Inviare l'evento EVT-0002 al canale/endpoint del Motore",
+      "Interrogare il Motore per verificare lo stato della proposta P-10002 dopo l'elaborazione",
+      "Reinviare lo stesso identico evento EVT-0002 (duplicato) al canale/endpoint del Motore",
+      "Interrogare nuovamente il Motore per verificare lo stato della proposta P-10002"
+    ],
+    "expected_results": [
+      "Il payload dell'evento risulta conforme allo schema/contratto pubblicato (campi obbligatori presenti, tipi e formati corretti)",
+      "Il Motore accetta l'evento EVT-0002 e lo elabora senza errori",
+      "Lo stato della proposta P-10002 transiziona allo stato atteso per eventType='VENDITA_EFFETTIVA'",
+      "Alla ricezione del duplicato EVT-0002, il Motore non applica una transizione incoerente o ulteriore rispetto a quella già applicata (idempotenza o gestione duplicati)",
+      "Lo stato finale della proposta P-10002 risulta identico dopo prima e seconda ricezione dello stesso eventId"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica esplicitamente idempotenza/gestione duplicati, ma la 'riproducibilità' è stata interpretata come necessità di comportamento deterministico a parità di evento (assunzione). Se il sistema non prevede deduplica per eventId, aggiornare il test secondo la regola prevista."
+  },
+  {
+    "test_id": "REQ-I-007.TC03",
+    "title": "Negative: evento con payload non valido (campi obbligatori mancanti) non aggiorna lo stato della proposta",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile sul canale/endpoint eventi",
+      "Esiste una proposta P-10003 associata al cliente C-90003 in stato iniziale noto (es. 'CREATA')"
+    ],
+    "test_data": [
+      "Cliente: C-90003",
+      "Proposta: P-10003 (stato iniziale: 'CREATA')",
+      "Evento non valido: eventId=EVT-0003, sourceSystem=VERT-01, proposalId=P-10003, eventType='VENDITA_EFFETTIVA' (customerId mancante), eventTimestamp=2026-02-23T11:30:00Z"
+    ],
+    "steps": [
+      "Verificare sul Motore lo stato corrente della proposta P-10003 (prima dell'evento)",
+      "Inviare l'evento non valido EVT-0003 al canale/endpoint del Motore",
+      "Verificare la risposta del canale/endpoint del Motore",
+      "Interrogare il Motore per verificare lo stato della proposta P-10003 dopo il tentativo di elaborazione"
+    ],
+    "expected_results": [
+      "Lo stato iniziale della proposta P-10003 risulta quello atteso e noto (es. 'CREATA')",
+      "Il Motore rifiuta l'evento non valido con errore di validazione (es. HTTP 400 o equivalente) e dettaglio del campo mancante",
+      "Lo stato della proposta P-10003 nel Motore rimane invariato rispetto al valore pre-evento",
+      "Non risultano transizioni di stato applicate in conseguenza dell'evento rifiutato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non esplicita codici errore; il test verifica comunque che l'evento non produca aggiornamenti di stato in caso di payload non conforme."
+  },
+  {
+    "test_id": "REQ-I-007.TC04",
+    "title": "Negative: evento con eventType non riconosciuto non produce transizione di stato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile sul canale/endpoint eventi",
+      "Esiste una proposta P-10004 associata al cliente C-90004 in stato iniziale noto (es. 'CREATA')"
+    ],
+    "test_data": [
+      "Cliente: C-90004",
+      "Proposta: P-10004 (stato iniziale: 'CREATA')",
+      "Evento con tipo sconosciuto: eventId=EVT-0004, sourceSystem=VERT-01, proposalId=P-10004, customerId=C-90004, eventType='TRIGGER_NON_MAPPATO', eventTimestamp=2026-02-23T12:00:00Z"
+    ],
+    "steps": [
+      "Verificare sul Motore lo stato corrente della proposta P-10004 (prima dell'evento)",
+      "Inviare l'evento EVT-0004 al canale/endpoint del Motore",
+      "Verificare la risposta del canale/endpoint del Motore",
+      "Interrogare il Motore per verificare lo stato della proposta P-10004 dopo l'elaborazione"
+    ],
+    "expected_results": [
+      "Lo stato iniziale della proposta P-10004 risulta quello atteso e noto (es. 'CREATA')",
+      "Il Motore gestisce il tipo evento non mappato in modo controllato (rifiuto esplicito con errore o accettazione con esito 'ignored' secondo specifica di integrazione)",
+      "Lo stato della proposta P-10004 rimane invariato (nessuna transizione applicata) se eventType non è associato ad alcuna transizione"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "La gestione di eventType non mappati non è definita nel requisito; il test è formulato per verificare che non avvengano transizioni di stato non governate dai verticali/mappature previste."
+  },
+  {
+    "test_id": "REQ-I-007.TC05",
+    "title": "Authorization: sorgente non autorizzata non può inviare eventi che aggiornano lo stato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore raggiungibile sul canale/endpoint eventi",
+      "Meccanismo di autenticazione/identificazione sorgente attivo (es. mTLS, API key, OAuth client credentials) per i verticali",
+      "Esiste una proposta P-10005 associata al cliente C-90005 in stato iniziale noto (es. 'CREATA')"
+    ],
+    "test_data": [
+      "Cliente: C-90005",
+      "Proposta: P-10005 (stato iniziale: 'CREATA')",
+      "Evento valido: eventId=EVT-0005, sourceSystem=VERT-FAKE, proposalId=P-10005, customerId=C-90005, eventType='VENDITA_EFFETTIVA', eventTimestamp=2026-02-23T12:30:00Z",
+      "Credenziali: token/API key non valida o certificato non autorizzato"
+    ],
+    "steps": [
+      "Verificare sul Motore lo stato corrente della proposta P-10005 (prima dell'evento)",
+      "Inviare l'evento EVT-0005 al canale/endpoint del Motore usando credenziali non valide/non autorizzate",
+      "Verificare la risposta del canale/endpoint del Motore",
+      "Interrogare il Motore per verificare lo stato della proposta P-10005 dopo il tentativo"
+    ],
+    "expected_results": [
+      "Lo stato iniziale della proposta P-10005 risulta quello atteso e noto (es. 'CREATA')",
+      "Il Motore rifiuta la richiesta per mancanza di autorizzazione (es. HTTP 401/403 o equivalente)",
+      "Lo stato della proposta P-10005 rimane invariato (nessuna transizione applicata)",
+      "Non risulta registrato alcun aggiornamento di stato attribuibile all'evento rifiutato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non descrive esplicitamente il modello di sicurezza, ma essendo i verticali 'unici sistemi che comandano le transizioni', è necessario verificare che sorgenti non autorizzate non possano innescare transizioni (assunzione di controllo accessi sul canale/endpoint)."
+  },
+  {
+    "test_id": "REQ-I-007.TC06",
+    "title": "Negative/Integration: indisponibilità del canale/endpoint eventi (timeout/5xx) non produce aggiornamenti di stato e consente retry controllato",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test con possibilità di simulare indisponibilità del Motore o del canale/endpoint eventi (es. fault injection, proxy, feature di test)",
+      "Esiste una proposta P-10006 associata al cliente C-90006 in stato iniziale noto (es. 'CREATA')",
+      "Verticale di vendita (o stub) in grado di effettuare retry configurabile"
+    ],
+    "test_data": [
+      "Cliente: C-90006",
+      "Proposta: P-10006 (stato iniziale: 'CREATA')",
+      "Evento: eventId=EVT-0006, sourceSystem=VERT-01, proposalId=P-10006, customerId=C-90006, eventType='VENDITA_EFFETTIVA', eventTimestamp=2026-02-23T13:00:00Z",
+      "Simulazione errore: HTTP 503 o timeout di rete sul canale/endpoint eventi per il primo invio"
+    ],
+    "steps": [
+      "Verificare sul Motore lo stato corrente della proposta P-10006 (prima dell'evento)",
+      "Configurare la simulazione di indisponibilità del canale/endpoint eventi del Motore per il primo tentativo",
+      "Inviare l'evento EVT-0006 dal verticale verso il Motore (primo tentativo)",
+      "Verificare che il verticale riceva errore/timeout sul primo tentativo",
+      "Rimuovere la simulazione di indisponibilità e ripristinare il canale/endpoint",
+      "Reinviare l'evento EVT-0006 (retry)",
+      "Interrogare il Motore per verificare lo stato della proposta P-10006 dopo l'elaborazione del retry"
+    ],
+    "expected_results": [
+      "Lo stato iniziale della proposta P-10006 risulta quello atteso e noto (es. 'CREATA')",
+      "Al primo tentativo, l'invio dell'evento fallisce con timeout/errore 5xx (o equivalente) e non risulta alcun aggiornamento di stato nel Motore",
+      "Dopo il retry a canale ripristinato, il Motore accetta l'evento e applica la transizione di stato attesa per eventType='VENDITA_EFFETTIVA'",
+      "Non risultano transizioni duplicate o incoerenti dovute ai tentativi multipli"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica politiche di retry/garanzie di consegna; il test valida che un fallimento di integrazione non generi aggiornamenti parziali e che, a evento consegnato con successo, la transizione diventi visibile ai consumer."
+  }
+]

@@ -1,0 +1,204 @@
+[
+  {
+    "test_id": "REQ-UI-003.TC01",
+    "title": "Visualizzazione di default della card: nome prodotto e sconto sempre visibili senza interazione",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un'offerta pubblicabile con campi popolati: nome prodotto, descrizione sintetica offerta, USP sintetica, valore sconto, descrizione completa, benefici estesi, motivazione, condizioni particolari",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte"
+    ],
+    "test_data": [
+      "Offerta O-1001: Nome prodotto='Fibra Ultra 1Gb', Descrizione sintetica offerta='Attivazione inclusa', USP sintetica='Velocità fino a 1Gb', Sconto='20% per 6 mesi', Descrizione completa='Offerta valida su nuove attivazioni...', Benefici estesi='Modem incluso, assistenza premium...', Motivazione='Sconto fedeltà', Condizioni particolari='Vincolo 24 mesi, penale recesso anticipato'"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-1001",
+      "Verificare nella vista iniziale (senza click o hover) la presenza del nome prodotto",
+      "Verificare nella vista iniziale (senza click o hover) la presenza del valore dello sconto",
+      "Verificare nella vista iniziale (senza click o hover) la presenza della descrizione sintetica dell'offerta",
+      "Verificare nella vista iniziale (senza click o hover) la presenza della unique selling proposition in forma sintetica"
+    ],
+    "expected_results": [
+      "Il nome prodotto 'Fibra Ultra 1Gb' è visibile nella card senza alcuna interazione",
+      "Il valore sconto '20% per 6 mesi' è visibile nella card senza alcuna interazione",
+      "La descrizione sintetica 'Attivazione inclusa' è visibile nella card senza alcuna interazione",
+      "La USP sintetica 'Velocità fino a 1Gb' è visibile nella card senza alcuna interazione"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori/canali non sono esplicitati nel requisito: si assume il canale web come default per test UI."
+  },
+  {
+    "test_id": "REQ-UI-003.TC02",
+    "title": "Presenza del controllo 'maggiori info' (o equivalente) sulla card",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un'offerta pubblicabile con dettagli completi popolati",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte"
+    ],
+    "test_data": [
+      "Offerta O-1001 (come in TC01)"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-1001",
+      "Verificare la presenza di un controllo di interazione etichettato 'maggiori info' oppure con testo/icone equivalenti che indichino l'accesso ai dettagli",
+      "Verificare che il controllo sia cliccabile/tappabile"
+    ],
+    "expected_results": [
+      "Sulla card è presente un pulsante/controllo per accedere ai dettagli (es. etichetta 'maggiori info' o equivalente)",
+      "Il controllo risulta abilitato e interagibile"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito consente un controllo 'o equivalente': il test verifica l'esistenza di un affordance chiaro per i dettagli, senza vincolare il testo esatto."
+  },
+  {
+    "test_id": "REQ-UI-003.TC03",
+    "title": "Recupero dei dettagli completi tramite 'maggiori info' (espansione in-page o apertura pannello/modale)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un'offerta pubblicabile con dettagli completi popolati",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte"
+    ],
+    "test_data": [
+      "Offerta O-1001: Descrizione completa='Offerta valida su nuove attivazioni...', Benefici estesi='Modem incluso, assistenza premium...', Motivazione='Sconto fedeltà', Condizioni particolari='Vincolo 24 mesi, penale recesso anticipato'"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-1001",
+      "Cliccare sul controllo 'maggiori info' (o equivalente)",
+      "Osservare l'area/pannello/modale dei dettagli visualizzati",
+      "Verificare la presenza della descrizione completa",
+      "Verificare la presenza dei benefici estesi",
+      "Verificare la presenza della motivazione",
+      "Verificare la presenza delle condizioni particolari"
+    ],
+    "expected_results": [
+      "Dopo il click su 'maggiori info' viene mostrata una sezione/pannello/modale con i dettagli completi della proposta",
+      "La descrizione completa visualizzata include il testo 'Offerta valida su nuove attivazioni...'",
+      "I benefici estesi visualizzati includono 'Modem incluso, assistenza premium...'",
+      "La motivazione visualizzata include 'Sconto fedeltà'",
+      "Le condizioni particolari visualizzate includono 'Vincolo 24 mesi, penale recesso anticipato'"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica se i dettagli si aprono in espansione, modale o nuova vista: il test accetta una delle modalità purché i contenuti risultino accessibili."
+  },
+  {
+    "test_id": "REQ-UI-003.TC04",
+    "title": "Dettagli non mostrati di default sulla card prima dell'interazione",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un'offerta pubblicabile con dettagli completi popolati",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte"
+    ],
+    "test_data": [
+      "Offerta O-1001: Descrizione completa='Offerta valida su nuove attivazioni...', Benefici estesi='Modem incluso, assistenza premium...', Motivazione='Sconto fedeltà', Condizioni particolari='Vincolo 24 mesi, penale recesso anticipato'"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-1001",
+      "Senza cliccare 'maggiori info' (o equivalente), verificare che non siano visibili nella vista principale i contenuti di descrizione completa",
+      "Senza cliccare 'maggiori info' (o equivalente), verificare che non siano visibili nella vista principale i benefici estesi",
+      "Senza cliccare 'maggiori info' (o equivalente), verificare che non sia visibile nella vista principale la motivazione",
+      "Senza cliccare 'maggiori info' (o equivalente), verificare che non siano visibili nella vista principale le condizioni particolari"
+    ],
+    "expected_results": [
+      "Prima di qualsiasi interazione, la descrizione completa non è visibile nella vista principale della card",
+      "Prima di qualsiasi interazione, i benefici estesi non sono visibili nella vista principale della card",
+      "Prima di qualsiasi interazione, la motivazione non è visibile nella vista principale della card",
+      "Prima di qualsiasi interazione, le condizioni particolari non sono visibili nella vista principale della card"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Interpretazione necessaria: la description richiede che i dettagli 'altri' non appesantiscano la vista principale; si verifica quindi che non siano mostrati di default."
+  },
+  {
+    "test_id": "REQ-UI-003.TC05",
+    "title": "Gestione errore: click su 'maggiori info' con recupero dettagli non disponibile (timeout/5xx)",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste almeno un'offerta pubblicabile con dettagli completi attesi",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte",
+      "Il servizio/componente che fornisce i dettagli completi è simulabile o controllabile per restituire errore (es. HTTP 500) o timeout"
+    ],
+    "test_data": [
+      "Offerta O-1001",
+      "Simulazione errore backend dettagli: HTTP 500 oppure timeout > 10s"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-1001",
+      "Abilitare la simulazione di errore/timeout sul recupero dei dettagli completi",
+      "Cliccare sul controllo 'maggiori info' (o equivalente)",
+      "Osservare il comportamento dell'interfaccia dopo il tentativo di apertura dei dettagli"
+    ],
+    "expected_results": [
+      "Il sistema non va in crash e la pagina rimane utilizzabile",
+      "Viene mostrato un messaggio di errore o stato di mancato caricamento dei dettagli (es. 'Impossibile caricare i dettagli, riprova')",
+      "I dettagli completi non vengono mostrati in modo parziale/incoerente"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento in caso di errore: il test verifica requisiti minimi di robustezza per il recupero dettagli (nessun crash e feedback utente). Dipendenza esterna: disponibilità/controllo del servizio dettagli."
+  },
+  {
+    "test_id": "REQ-UI-003.TC06",
+    "title": "Edge case: testo lungo per nome prodotto e sconto resta visibile senza click (no troncamento totale)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un'offerta con nome prodotto e/o valore sconto molto lunghi",
+      "L'utente ha accesso alla pagina/sezione che visualizza le card delle offerte"
+    ],
+    "test_data": [
+      "Offerta O-2002: Nome prodotto='Super Offerta Fibra Ultra Mega 1Gb + TV + Mobile Illimitato - Edizione Speciale 2026', Sconto='Sconto del 20% per 6 mesi + 10€ extra per i primi 3 mesi'"
+    ],
+    "steps": [
+      "Aprire la pagina/sezione che mostra l'elenco delle offerte in formato card",
+      "Individuare la card relativa all'offerta O-2002",
+      "Verificare nella vista iniziale (senza click) la presenza del nome prodotto",
+      "Verificare nella vista iniziale (senza click) la presenza del valore dello sconto"
+    ],
+    "expected_results": [
+      "Il nome prodotto è visibile nella card senza click (anche se eventualmente troncato con ellissi o su più righe, purché non scompaia completamente)",
+      "Il valore dello sconto è visibile nella card senza click (anche se eventualmente adattato graficamente, purché non scompaia completamente)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce regole di layout (righe, ellissi): l'edge case verifica il vincolo funzionale di 'sempre visibili' anche con testi lunghi."
+  }
+]

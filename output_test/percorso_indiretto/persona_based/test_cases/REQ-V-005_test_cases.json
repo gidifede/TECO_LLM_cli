@@ -1,0 +1,604 @@
+[
+  {
+    "story_id": "REQ-V-005.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-005.US01.TC01",
+        "title": "Visualizzazione offerte everyday su App con tipologie supportate (coerenza cross-canale)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente App disponibile e raggiungibile",
+          "Motore di Offerte operativo e raggiungibile dai canali",
+          "Esiste almeno un’offerta attiva generata dal Motore per ciascuna tipologia everyday: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "L’utente Cliente digitale è autenticato su App (se l’accesso alle offerte richiede autenticazione; in caso contrario eseguire come utente non autenticato)"
+        ],
+        "test_data": [
+          "Utente App: cliente.digitale01",
+          "Offerte attive per tipologie: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "Identificativi offerta (esempi): OFF-FIB-1001, OFF-SIM-1002, OFF-ENE-1003, OFF-CPP-1004, OFF-CC-1005, OFF-LIB-1006, OFF-ADNA-1007, OFF-AA-1008"
+        ],
+        "steps": [
+          "Aprire l’App",
+          "Accedere con l’utenza cliente.digitale01 (se richiesto)",
+          "Navigare alla sezione in cui sono mostrate le offerte/proposte del Motore di Offerte",
+          "Verificare che siano presenti offerte per le tipologie everyday attese",
+          "Per ciascuna offerta visualizzata, aprire il dettaglio offerta"
+        ],
+        "expected_results": [
+          "La sezione offerte/proposte è accessibile e carica senza errori bloccanti",
+          "Sono visualizzabili offerte associate alle tipologie supportate: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "Nel dettaglio di ciascuna offerta è presente (o deducibile) l’associazione a una tipologia supportata e tale tipologia appartiene all’elenco everyday"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Il requisito non definisce le “funzionalità previste” oltre alla disponibilità/coerenza delle tipologie: la verifica è limitata a fruibilità della sezione offerte e presenza/associazione alle tipologie supportate."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC02",
+        "title": "Visualizzazione offerte everyday su Web con tipologie supportate (coerenza cross-canale)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente Web disponibile e raggiungibile",
+          "Motore di Offerte operativo e raggiungibile dai canali",
+          "Esiste almeno un’offerta attiva generata dal Motore per ciascuna tipologia everyday: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "L’utente Cliente digitale è autenticato su Web (se l’accesso alle offerte richiede autenticazione; in caso contrario eseguire come utente non autenticato)"
+        ],
+        "test_data": [
+          "Utente Web: cliente.digitale01",
+          "URL portale: https://portale.example/offerte",
+          "Identificativi offerta (esempi): OFF-FIB-1001, OFF-SIM-1002, OFF-ENE-1003, OFF-CPP-1004, OFF-CC-1005, OFF-LIB-1006, OFF-ADNA-1007, OFF-AA-1008"
+        ],
+        "steps": [
+          "Aprire il browser",
+          "Navigare al portale Web",
+          "Accedere con l’utenza cliente.digitale01 (se richiesto)",
+          "Aprire la pagina/sezione offerte/proposte del Motore di Offerte",
+          "Verificare che siano presenti offerte per le tipologie everyday attese",
+          "Aprire il dettaglio di almeno un’offerta per ciascuna tipologia everyday disponibile"
+        ],
+        "expected_results": [
+          "La sezione offerte/proposte è accessibile e carica senza errori bloccanti",
+          "Sono visualizzabili offerte associate alle tipologie supportate: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "Nel dettaglio di ciascuna offerta è presente (o deducibile) l’associazione a una tipologia supportata e tale tipologia appartiene all’elenco everyday"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il requisito non definisce parità UI/UX tra canali; il test valida disponibilità e fruibilità delle offerte e l’associazione a tipologie supportate."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC03",
+        "title": "Coerenza App vs Web: stessa disponibilità tipologie everyday offerte dal Motore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente App e Web disponibili e raggiungibili",
+          "Motore di Offerte operativo e raggiungibile dai canali",
+          "Stesso profilo cliente (cliente.digitale01) utilizzabile su App e Web",
+          "Set di offerte attive per il profilo cliente.digitale01 generato dal Motore (stessa finestra temporale di osservazione)"
+        ],
+        "test_data": [
+          "Utente: cliente.digitale01",
+          "Finestra di osservazione: stessa sessione/entro 5 minuti tra App e Web",
+          "Elenco tipologie attese: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+        ],
+        "steps": [
+          "Accedere su App con l’utenza cliente.digitale01",
+          "Aprire la sezione offerte/proposte",
+          "Annotare l’elenco delle tipologie prodotto delle offerte visualizzate su App",
+          "Accedere su Web con la stessa utenza cliente.digitale01",
+          "Aprire la sezione offerte/proposte",
+          "Annotare l’elenco delle tipologie prodotto delle offerte visualizzate su Web",
+          "Confrontare gli insiemi di tipologie disponibili su App e su Web"
+        ],
+        "expected_results": [
+          "L’insieme delle tipologie prodotto offerte disponibili su App coincide con l’insieme delle tipologie prodotto offerte disponibili su Web, limitatamente alle tipologie everyday supportate",
+          "Eventuali differenze di disponibilità per tipologia (es. tipologia presente su App ma assente su Web) sono rilevabili come non conformità al requisito di coerenza cross-canale"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito parla di coerenza rispetto alla disponibilità delle tipologie; non impone parità di contenuti/ordinamento o grafica. Il confronto è fatto a livello di insieme di tipologie disponibili."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC04",
+        "title": "Offerta generata per tipologia non everyday non deve risultare supportata/associata a tipologia supportata su canale digitale",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente App e/o Web disponibile e raggiungibile",
+          "Motore di Offerte operativo",
+          "Esiste un’offerta generata dal Motore con tipologia prodotto NON inclusa nell’elenco everyday (es. 'mutuo') e resa disponibile al profilo cliente.digitale01"
+        ],
+        "test_data": [
+          "Utente: cliente.digitale01",
+          "Offerta non everyday: OFF-MUT-9001 (tipologia: mutuo)"
+        ],
+        "steps": [
+          "Accedere al canale digitale (App oppure Web) con l’utenza cliente.digitale01",
+          "Aprire la sezione offerte/proposte",
+          "Ricercare/individuare l’offerta OFF-MUT-9001 (se presente in lista)",
+          "Aprire il dettaglio dell’offerta OFF-MUT-9001 (se selezionabile)"
+        ],
+        "expected_results": [
+          "L’offerta OFF-MUT-9001 non risulta associata a una tipologia everyday supportata",
+          "Se l’offerta è mostrata, la tipologia visualizzata non appartiene all’elenco everyday supportato (e quindi l’offerta risulta fuori ambito per questo requisito)",
+          "Non vengono erroneamente presentate come supportate tipologie non incluse nell’elenco everyday"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non specifica se offerte non everyday debbano essere nascoste o solo non considerate supportate; il test verifica che non vengano trattate come tipologie supportate everyday."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC05",
+        "title": "Gestione indisponibilità canale digitale: App non disponibile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "App non disponibile (es. servizio down, rete bloccata, manutenzione) oppure simulazione indisponibilità tramite disabilitazione connettività",
+          "Motore di Offerte può essere operativo o non rilevante (il canale è indisponibile)"
+        ],
+        "test_data": [
+          "Scenario indisponibilità: timeout rete 30s oppure risposta HTTP 503 (se applicabile)"
+        ],
+        "steps": [
+          "Avviare l’App in condizioni di indisponibilità",
+          "Tentare di accedere alla sezione offerte/proposte"
+        ],
+        "expected_results": [
+          "L’utente non riesce a consultare le offerte sul canale App a causa dell’indisponibilità del canale",
+          "L’evento di errore è rilevabile (es. messaggio di errore o schermata di servizio non disponibile), senza crash dell’applicazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La gestione errore non è specificata nel requisito; si valida almeno l’assenza di crash e la rilevabilità dell’indisponibilità."
+      },
+      {
+        "test_id": "REQ-V-005.US01.TC06",
+        "title": "Gestione indisponibilità canale digitale: Web non disponibile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Portale Web non disponibile (es. DNS/servizio down, manutenzione) oppure simulazione indisponibilità",
+          "Motore di Offerte può essere operativo o non rilevante (il canale è indisponibile)"
+        ],
+        "test_data": [
+          "URL portale: https://portale.example/offerte",
+          "Scenario indisponibilità: risposta HTTP 503/504 oppure pagina non raggiungibile"
+        ],
+        "steps": [
+          "Aprire il browser",
+          "Navigare all’URL del portale Web",
+          "Tentare di accedere alla sezione offerte/proposte"
+        ],
+        "expected_results": [
+          "L’utente non riesce a consultare le offerte sul canale Web a causa dell’indisponibilità del canale",
+          "L’errore è rilevabile (es. pagina di errore/servizio non disponibile), senza loop o blocchi del client"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La gestione errore non è specificata nel requisito; si valida almeno la rilevabilità dell’indisponibilità."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-005.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-005.US02.TC01",
+        "title": "Consultazione/proposta offerte everyday su canale fisico OSP/OFE con tipologie supportate",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (OSP/OFE) disponibile e raggiungibile dalla postazione operatore",
+          "Motore di Offerte operativo e integrato con OSP/OFE",
+          "Operatore abilitato ad accedere al front-end commerciale",
+          "Esiste almeno un’offerta attiva generata dal Motore per ciascuna tipologia everyday: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+        ],
+        "test_data": [
+          "Operatore: op.sportello01",
+          "Cliente target (esempio): CF RSSMRA80A01H501U",
+          "Identificativi offerta (esempi): OFF-FIB-2001, OFF-SIM-2002, OFF-ENE-2003, OFF-CPP-2004, OFF-CC-2005, OFF-LIB-2006, OFF-ADNA-2007, OFF-AA-2008"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con l’utenza op.sportello01",
+          "Aprire la funzione di consultazione/proposta offerte del Motore",
+          "Selezionare il cliente target tramite CF RSSMRA80A01H501U (se richiesto dal flusso)",
+          "Visualizzare l’elenco offerte/proposte disponibili",
+          "Aprire il dettaglio di almeno un’offerta per ciascuna tipologia everyday disponibile"
+        ],
+        "expected_results": [
+          "La funzione di consultazione/proposta offerte è accessibile e carica senza errori bloccanti",
+          "Sono consultabili/proponibili offerte per tipologie everyday supportate: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "Ogni offerta consultata/proposta risulta associata a una tipologia appartenente all’elenco everyday supportato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non distingue OSP da OFE: il test è applicabile a entrambe le modalità del canale fisico."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC02",
+        "title": "Verifica matrice combinazioni: tipologie everyday risultano gestite come tipologie supportate in OSP/OFE",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (OSP/OFE) disponibile",
+          "Disponibile una funzione/API/servizio per consultare la matrice di combinazioni o l’elenco tipologie gestite (direttamente o indirettamente tramite UI di backoffice/configurazione)",
+          "Operatore o utente tecnico con permessi di consultazione configurazioni (se richiesto)"
+        ],
+        "test_data": [
+          "Elenco tipologie attese in matrice: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+        ],
+        "steps": [
+          "Accedere alla funzionalità di consultazione della matrice di combinazioni (o endpoint di lettura configurazione) dal contesto OSP/OFE",
+          "Recuperare l’elenco tipologie prodotto gestite come supportate",
+          "Verificare la presenza di ciascuna tipologia everyday nell’elenco"
+        ],
+        "expected_results": [
+          "La matrice di combinazioni include come tipologie supportate: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto",
+          "Non risultano mancanti tipologie everyday previste dal requisito"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Dipendenza: disponibilità di una vista/UI o API tecnica per leggere la matrice di combinazioni. In assenza, il test può essere eseguito verificando indirettamente la tipologia tramite creazione/consultazione offerte per ciascuna tipologia."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC03",
+        "title": "Coerenza OSP/OFE vs canali digitali: disponibilità tipologie everyday",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali App, Web e front-end commerciale disponibili",
+          "Motore di Offerte operativo e integrato con tutti i canali",
+          "Stesso cliente target utilizzabile su tutti i canali (es. CF RSSMRA80A01H501U) o regole di targeting equivalenti",
+          "Set di offerte attive per il cliente target generato dal Motore (stessa finestra temporale di osservazione)"
+        ],
+        "test_data": [
+          "Cliente target: CF RSSMRA80A01H501U",
+          "Finestra di osservazione: stessa sessione/entro 5 minuti tra i canali",
+          "Elenco tipologie attese: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+        ],
+        "steps": [
+          "Su OSP/OFE, consultare le offerte per il cliente target e annotare le tipologie prodotto disponibili",
+          "Su App, consultare le offerte per il medesimo cliente/profilo e annotare le tipologie prodotto disponibili",
+          "Su Web, consultare le offerte per il medesimo cliente/profilo e annotare le tipologie prodotto disponibili",
+          "Confrontare gli insiemi di tipologie disponibili tra OSP/OFE, App e Web"
+        ],
+        "expected_results": [
+          "Gli insiemi di tipologie prodotto disponibili risultano coerenti tra OSP/OFE, App e Web, limitatamente alle tipologie everyday supportate",
+          "Differenze di disponibilità per tipologia tra canali risultano rilevabili come non conformità al requisito di coerenza cross-canale"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale",
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non impone parità di UI/UX o contenuti; la coerenza è validata a livello di disponibilità tipologie."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC04",
+        "title": "Operatore tenta di gestire/proporre prodotto non everyday: non deve risultare tipologia supportata everyday",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale (OSP/OFE) disponibile",
+          "Motore di Offerte operativo",
+          "Esiste o viene restituita una proposta/offerta per tipologia NON inclusa nell’elenco everyday (es. 'mutuo') per il cliente target oppure è disponibile una selezione prodotto non everyday nel canale fisico"
+        ],
+        "test_data": [
+          "Operatore: op.sportello01",
+          "Cliente target: CF RSSMRA80A01H501U",
+          "Tipologia non everyday: mutuo",
+          "Offerta non everyday (esempio): OFF-MUT-9002"
+        ],
+        "steps": [
+          "Accedere a OSP/OFE con l’utenza op.sportello01",
+          "Aprire la funzione di consultazione/proposta offerte",
+          "Selezionare il cliente target",
+          "Individuare la proposta/offerta OFF-MUT-9002 (se presente) o selezionare la tipologia prodotto 'mutuo' (se disponibile)",
+          "Aprire il dettaglio proposta/offerta (se applicabile)"
+        ],
+        "expected_results": [
+          "La tipologia non everyday (es. mutuo) non risulta trattata come tipologia everyday supportata ai fini del requisito",
+          "Non vengono erroneamente presentate come supportate tipologie non incluse nell’elenco everyday"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito dichiara che il comportamento per prodotti non inclusi non è coperto; il test verifica che non vengano marcati/gestiti come tipologie everyday supportate nella matrice."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC05",
+        "title": "Gestione indisponibilità canale fisico OSP/OFE: impossibilità consultazione/proposta offerte",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale OSP/OFE non disponibile (es. servizio down, rete non raggiungibile) oppure simulazione indisponibilità",
+          "Operatore disponibile con credenziali valide"
+        ],
+        "test_data": [
+          "Operatore: op.sportello01",
+          "Scenario indisponibilità: timeout 30s oppure errore applicativo di servizio non disponibile"
+        ],
+        "steps": [
+          "Tentare di accedere a OSP/OFE con l’utenza op.sportello01",
+          "Se l’accesso è possibile, tentare di aprire la funzione di consultazione/proposta offerte"
+        ],
+        "expected_results": [
+          "L’operatore non riesce a consultare/proporre offerte a causa dell’indisponibilità del canale OSP/OFE",
+          "L’errore è rilevabile (es. messaggio/alert), senza blocco irreversibile del client"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La gestione errore non è specificata nel requisito; si valida almeno la rilevabilità dell’indisponibilità."
+      },
+      {
+        "test_id": "REQ-V-005.US02.TC06",
+        "title": "Autorizzazione: accesso non consentito alla consultazione offerte da utente non operatore",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale disponibile",
+          "Esiste un utente non abilitato al ruolo Operatore (es. utente con ruolo 'viewer' o credenziali non valide per OSP/OFE)"
+        ],
+        "test_data": [
+          "Utente non autorizzato: utente.viewer01",
+          "Ruolo previsto: Operatore sportello/sala"
+        ],
+        "steps": [
+          "Aprire il front-end commerciale",
+          "Tentare l’accesso con l’utenza utente.viewer01",
+          "Tentare di navigare alla funzione di consultazione/proposta offerte (se l’accesso parziale è consentito)"
+        ],
+        "expected_results": [
+          "L’utente non autorizzato non può accedere alle funzionalità di consultazione/proposta offerte",
+          "Il sistema mostra un esito di accesso negato (es. errore autorizzazione) oppure non rende disponibile la funzione nel menu"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non definisce ruoli/permessi; questo test è generato per coprire il controllo autorizzativo minimo su un canale fisico tipicamente profilato."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-V-005.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-V-005.US03.TC01",
+        "title": "Matrice combinazioni: presenza tipologie everyday come tipologie supportate",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Disponibile una API tecnica o console di configurazione per leggere la matrice di combinazioni (o esportarne il contenuto)",
+          "Accesso tecnico con permessi di lettura configurazione"
+        ],
+        "test_data": [
+          "Elenco tipologie attese: fibra, SIM, energia, carte prepagate, conto corrente, libretto postale, assicurazioni danni non auto, assicurazione auto"
+        ],
+        "steps": [
+          "Accedere alla console/API di configurazione del Motore di Offerte",
+          "Recuperare la matrice di combinazioni (o la sezione che elenca le tipologie supportate)",
+          "Verificare che ciascuna tipologia everyday sia presente e marcata come supportata"
+        ],
+        "expected_results": [
+          "La matrice di combinazioni include e marca come supportate tutte le tipologie everyday elencate nel requisito",
+          "Non risultano tipologie everyday mancanti o disabilitate"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: disponibilità di strumenti/API per consultare la matrice. In assenza, la verifica può essere effettuata indirettamente tramite generazione offerte per ciascuna tipologia e verifica accettazione dal Motore."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC02",
+        "title": "Generazione offerta everyday: correlazione ai log di decisione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Disponibile una API per richiedere la generazione di un’offerta per una tipologia everyday (o un flusso che la inneschi)",
+          "Disponibile accesso ai log di decisione (es. sistema di logging centralizzato) e possibilità di ricerca per chiave di correlazione (offerId/correlationId)",
+          "È definito un meccanismo di correlazione verificabile (es. offerId restituito dall’API e presente nei log)"
+        ],
+        "test_data": [
+          "Tipologia: fibra",
+          "Richiesta generazione offerta (esempio): customerId=123456, productType=fibra",
+          "Chiave attesa: offerId generato (esempio OFF-DEC-3001) oppure correlationId (esempio CORR-DEC-3001)"
+        ],
+        "steps": [
+          "Inviare una richiesta al Motore per generare un’offerta per tipologia 'fibra'",
+          "Acquisire dall’esito la chiave di correlazione (offerId e/o correlationId)",
+          "Accedere al sistema di log di decisione",
+          "Ricercare un evento/log di decisione usando la chiave di correlazione acquisita",
+          "Aprire il dettaglio del log di decisione trovato"
+        ],
+        "expected_results": [
+          "Il Motore genera un’offerta per tipologia everyday richiesta e restituisce una chiave di correlazione (offerId e/o correlationId)",
+          "Nei log di decisione è presente almeno un record correlato all’offerta generata, rintracciabile tramite la chiave di correlazione",
+          "Il record di log di decisione contiene la stessa chiave di correlazione dell’offerta (match esatto)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica formato/sistema dei log; si assume la presenza di offerId/correlationId verificabile via log search. In automazione, usare query su log store (es. Elasticsearch/Splunk) con timeout controllato."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC03",
+        "title": "Offerta everyday con eventi provisioning: correlazione ai log di provisioning",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Disponibile un flusso che avvia provisioning per un’offerta everyday (o simulatore/mocked provisioning in ambiente test)",
+          "Disponibile accesso ai log di provisioning e possibilità di ricerca per chiave di correlazione (offerId/correlationId)",
+          "È definito un meccanismo di correlazione verificabile (offerId/correlationId)"
+        ],
+        "test_data": [
+          "Tipologia: SIM",
+          "Richiesta generazione offerta: customerId=123456, productType=SIM",
+          "Evento provisioning atteso: PROVISIONING_STARTED e/o PROVISIONING_COMPLETED (nomi evento esemplificativi)",
+          "Chiave attesa: offerId (esempio OFF-PROV-3002) oppure correlationId (esempio CORR-PROV-3002)"
+        ],
+        "steps": [
+          "Inviare una richiesta al Motore per generare un’offerta per tipologia 'SIM'",
+          "Acquisire dall’esito la chiave di correlazione (offerId e/o correlationId)",
+          "Avviare il flusso che genera eventi/esiti di provisioning per l’offerta (o triggerare il provisioning tramite API/integrazione disponibile)",
+          "Accedere al sistema di log di provisioning",
+          "Ricercare record di provisioning usando la chiave di correlazione acquisita",
+          "Aprire il dettaglio dei record di provisioning trovati"
+        ],
+        "expected_results": [
+          "Per l’offerta everyday generata sono registrati eventi/esiti di provisioning nei log di provisioning",
+          "I record di provisioning sono correlati all’offerta tramite la stessa chiave (offerId/correlationId) con match esatto",
+          "È possibile ricostruire la catena offerta → eventi/esiti di provisioning tramite la correlazione nei log"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: disponibilità del sistema di provisioning o di un simulatore in test. I nomi evento sono indicativi: verificare la correlazione, non una specifica tassonomia eventi non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC04",
+        "title": "Generazione offerta everyday senza chiave di correlazione: non auditabile (difetto)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Possibilità di simulare/forzare una condizione in cui la chiave di correlazione non venga generata o non venga propagata nei log (es. configurazione errata, feature flag, fault injection)",
+          "Accesso ai log di decisione e provisioning"
+        ],
+        "test_data": [
+          "Tipologia: energia",
+          "Richiesta generazione offerta: customerId=123456, productType=energia",
+          "Fault injection: disabilitare propagazione correlationId nei log (se disponibile)"
+        ],
+        "steps": [
+          "Configurare la condizione di fault injection per impedire la generazione/propagazione della chiave di correlazione",
+          "Inviare una richiesta al Motore per generare un’offerta per tipologia 'energia'",
+          "Verificare l’esito della generazione e l’eventuale presenza di offerId/correlationId",
+          "Ricercare nei log di decisione record correlabili all’offerta usando gli identificativi disponibili",
+          "Se viene avviato provisioning, ricercare nei log di provisioning record correlabili all’offerta"
+        ],
+        "expected_results": [
+          "L’offerta generata risulta priva di una chiave di correlazione utilizzabile (offerId/correlationId assente o non presente nei log) oppure la chiave non è rintracciabile nei log",
+          "Non è possibile correlare in modo deterministico l’offerta ai log di decisione e/o provisioning, evidenziando una non conformità al requisito di auditabilità end-to-end"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Test negativo orientato a rilevare difetti di auditabilità; richiede capacità di fault injection o configurazioni di test. Il requisito non specifica comportamento di errore: l’atteso è l’evidenza della mancata correlazione."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC05",
+        "title": "Eventi provisioning non disponibili/non associabili: impossibilità di correlazione ai log provisioning",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Sistema di provisioning non disponibile oppure simulazione indisponibilità (timeout/errore) durante l’avvio o la pubblicazione eventi",
+          "Accesso ai log di provisioning"
+        ],
+        "test_data": [
+          "Tipologia: conto corrente",
+          "Richiesta generazione offerta: customerId=123456, productType=conto_corrente",
+          "Simulazione indisponibilità provisioning: timeout 30s o errore 5xx"
+        ],
+        "steps": [
+          "Generare un’offerta per tipologia 'conto corrente' e acquisire offerId/correlationId",
+          "Triggerare il provisioning per l’offerta in condizioni di indisponibilità del sistema di provisioning",
+          "Verificare nei log di provisioning la presenza di record correlati usando offerId/correlationId"
+        ],
+        "expected_results": [
+          "Non risultano presenti (o risultano incompleti) log di provisioning correlati all’offerta a causa dell’indisponibilità/non associabilità degli eventi",
+          "La mancanza di correlazione ai log di provisioning è rilevabile come non conformità all’obbligo di tracciamento/correlazione end-to-end"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce retry/compensazioni; il test valida la capacità di evidenziare la mancanza di correlazione quando il provisioning è indisponibile."
+      },
+      {
+        "test_id": "REQ-V-005.US03.TC06",
+        "title": "Offerta per tipologia non supportata: fuori ambito rispetto a matrice tipologie supportate",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Disponibile una API/endpoint di generazione offerta che accetta tipologia prodotto come input"
+        ],
+        "test_data": [
+          "Tipologia non supportata: mutuo",
+          "Richiesta generazione offerta: customerId=123456, productType=mutuo"
+        ],
+        "steps": [
+          "Inviare una richiesta al Motore per generare un’offerta con tipologia 'mutuo'",
+          "Verificare l’esito della richiesta (successo/errore) e l’eventuale creazione dell’offerta",
+          "Se viene creata un’offerta, verificare come viene classificata rispetto alle tipologie supportate in matrice"
+        ],
+        "expected_results": [
+          "La tipologia 'mutuo' non risulta presente tra le tipologie supportate nella matrice di combinazioni",
+          "Se il Motore genera comunque un’offerta, essa non risulta classificata come tipologia supportata everyday ai fini del requisito (evidenza: tipologia non in elenco supportato)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica se la generazione debba fallire o essere permessa; l’atteso è che la tipologia non venga considerata supportata nella matrice everyday."
+      }
+    ]
+  }
+]

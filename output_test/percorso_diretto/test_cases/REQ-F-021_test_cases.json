@@ -1,0 +1,204 @@
+[
+  {
+    "test_id": "REQ-F-021.TC01",
+    "title": "Visualizzazione del questionario subito dopo la selezione di un prodotto che lo richiede (web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-Q marcato nel catalogo come 'richiede questionario'.",
+      "Il checkout/funnel è attivo e raggiungibile dalla selezione prodotto."
+    ],
+    "test_data": [
+      "Prodotto: P-Q (flag 'richiede questionario' = true)",
+      "Cliente: utente non autenticato oppure autenticato (non vincolante ai fini del requisito)"
+    ],
+    "steps": [
+      "Aprire il canale web e navigare alla pagina/lista prodotti.",
+      "Selezionare il prodotto P-Q.",
+      "Avviare il percorso di checkout per il prodotto selezionato.",
+      "Osservare la schermata/step successivo immediatamente dopo la selezione del prodotto."
+    ],
+    "expected_results": [
+      "Il sistema mostra il questionario come step del checkout immediatamente dopo la selezione del prodotto P-Q.",
+      "Il questionario è presentato prima delle fasi finali del checkout (es. riepilogo/checkout finale/pagamento/conferma).",
+      "La navigazione/URL/breadcrumb/stepper (se presente) indica che l'utente è all'interno del funnel di checkout e non in una sezione esterna scollegata."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è dichiarativo; è stato reso verificabile controllando indicatori oggettivi di integrazione nel funnel (stepper/breadcrumb/URL/continuità del checkout). Attori non esplicitati: si assume 'cliente' che effettua il checkout."
+  },
+  {
+    "test_id": "REQ-F-021.TC02",
+    "title": "Blocco del completamento checkout se il questionario obbligatorio non è compilato (web)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-Q marcato nel catalogo come 'richiede questionario'.",
+      "Il questionario associato a P-Q contiene almeno un campo obbligatorio."
+    ],
+    "test_data": [
+      "Prodotto: P-Q (flag 'richiede questionario' = true)",
+      "Compilazione questionario: lasciare vuoti i campi obbligatori (es. 'Data di nascita' non valorizzata)"
+    ],
+    "steps": [
+      "Aprire il canale web e selezionare il prodotto P-Q.",
+      "Avviare il checkout e arrivare allo step del questionario.",
+      "Non compilare i campi obbligatori del questionario.",
+      "Tentare di proseguire allo step successivo del checkout (es. clic su 'Continua').",
+      "Se il sistema consente di proseguire di step, tentare di completare comunque la sottoscrizione fino alla conferma finale."
+    ],
+    "expected_results": [
+      "Il sistema impedisce l'avanzamento oltre lo step del questionario finché i campi obbligatori non sono compilati.",
+      "Viene mostrato un messaggio di validazione che indica quali campi del questionario sono obbligatori/mancanti.",
+      "Non è possibile completare la sottoscrizione/checkout senza aver compilato il questionario quando previsto per P-Q."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il testo dei messaggi di errore: si valida la presenza di un errore di validazione e l'impossibilità di proseguire/completare."
+  },
+  {
+    "test_id": "REQ-F-021.TC03",
+    "title": "Completamento del checkout con questionario compilato per prodotto che lo richiede (E2E web)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-Q marcato nel catalogo come 'richiede questionario'.",
+      "Il questionario associato a P-Q è disponibile e compilabile.",
+      "Le fasi finali del checkout (es. riepilogo/conferma) sono operative in ambiente di test."
+    ],
+    "test_data": [
+      "Prodotto: P-Q (flag 'richiede questionario' = true)",
+      "Risposte questionario (esempio): 'Data di nascita: 15/03/1988', 'Cittadinanza: IT', 'Conferma condizioni: Sì'"
+    ],
+    "steps": [
+      "Aprire il canale web e selezionare il prodotto P-Q.",
+      "Avviare il checkout e raggiungere lo step del questionario.",
+      "Compilare tutti i campi obbligatori del questionario con i dati di test.",
+      "Proseguire alle fasi finali del checkout.",
+      "Completare la sottoscrizione/checkout fino alla schermata di conferma."
+    ],
+    "expected_results": [
+      "Il sistema consente di proseguire oltre lo step del questionario dopo la compilazione dei campi obbligatori.",
+      "Il checkout procede alle fasi finali senza blocchi legati al questionario.",
+      "La sottoscrizione/checkout risulta completata e viene mostrata una conferma di esito positivo."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è verificato lungo il flusso E2E assicurando continuità del funnel (nessuna deviazione verso schermate esterne)."
+  },
+  {
+    "test_id": "REQ-F-021.TC04",
+    "title": "Assenza del questionario nel checkout per prodotto non contrassegnato come 'richiede questionario' (web)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-NQ marcato nel catalogo come 'richiede questionario' = false.",
+      "Il checkout/funnel è attivo e raggiungibile dalla selezione prodotto."
+    ],
+    "test_data": [
+      "Prodotto: P-NQ (flag 'richiede questionario' = false)"
+    ],
+    "steps": [
+      "Aprire il canale web e selezionare il prodotto P-NQ.",
+      "Avviare il checkout per il prodotto selezionato.",
+      "Scorrere i passi del checkout fino alle fasi finali."
+    ],
+    "expected_results": [
+      "Il sistema non mostra alcuno step di questionario durante il checkout per P-NQ.",
+      "Il checkout procede direttamente alle fasi successive previste senza richiedere informazioni di questionario."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito definisce il comportamento per prodotti che richiedono questionario; questo test verifica l'assenza dello step quando il flag non è presente, come controllo di non regressione del funnel."
+  },
+  {
+    "test_id": "REQ-F-021.TC05",
+    "title": "Integrazione del questionario nel funnel: navigazione avanti/indietro mantiene il contesto di checkout (web)",
+    "type": "UI",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-Q marcato nel catalogo come 'richiede questionario'.",
+      "Il checkout presenta controlli di navigazione tra step (es. 'Indietro'/'Avanti' o stepper)."
+    ],
+    "test_data": [
+      "Prodotto: P-Q (flag 'richiede questionario' = true)"
+    ],
+    "steps": [
+      "Selezionare il prodotto P-Q e avviare il checkout.",
+      "Raggiungere lo step del questionario.",
+      "Cliccare su 'Indietro' (o step precedente) per tornare allo step precedente del checkout.",
+      "Cliccare su 'Avanti' per tornare allo step del questionario."
+    ],
+    "expected_results": [
+      "Il passaggio 'Indietro' porta allo step precedente del checkout (non a una pagina esterna/scollegata).",
+      "Il passaggio 'Avanti' riporta allo step del questionario all'interno del funnel di checkout.",
+      "Il contesto del checkout (prodotto selezionato) rimane coerente durante la navigazione tra step."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è stato interpretato come requisito di continuità di navigazione nel funnel (avanti/indietro) e mantenimento del contesto."
+  },
+  {
+    "test_id": "REQ-F-021.TC06",
+    "title": "Gestione indisponibilità del servizio/dati questionario: il checkout non consente di completare la vendita senza questionario (web)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile.",
+      "Esiste un prodotto P-Q marcato nel catalogo come 'richiede questionario'.",
+      "Il questionario è fornito da un componente/servizio (o endpoint) che può essere simulato in errore/timeout in ambiente di test."
+    ],
+    "test_data": [
+      "Prodotto: P-Q (flag 'richiede questionario' = true)",
+      "Simulazione: endpoint/questionario in timeout oppure risposta 5xx"
+    ],
+    "steps": [
+      "Configurare la simulazione di errore/timeout del componente/servizio che fornisce il questionario per P-Q.",
+      "Selezionare il prodotto P-Q e avviare il checkout.",
+      "Attendere il caricamento dello step del questionario.",
+      "Tentare di proseguire nel checkout e completare la sottoscrizione."
+    ],
+    "expected_results": [
+      "Il sistema segnala chiaramente l'impossibilità di caricare/mostrare il questionario (errore gestito).",
+      "Il sistema non consente di procedere alle fasi finali del checkout né di completare la sottoscrizione in assenza del questionario richiesto.",
+      "Non viene creato alcun ordine/sottoscrizione completata per P-Q in questo scenario."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna implicita: componente/servizio di erogazione questionario non descritto nel requisito; il test valida la gestione robusta coerente con l'obbligatorietà (AC-2)."
+  }
+]

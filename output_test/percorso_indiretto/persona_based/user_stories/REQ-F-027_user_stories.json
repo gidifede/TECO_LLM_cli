@@ -1,0 +1,85 @@
+[
+  {
+    "story_id": "REQ-F-027.US01",
+    "title": "Applicare vincolo di abilitazione prodotti per ruolo operatore nella generazione proposte",
+    "persona": "Motore di Offerte",
+    "goal": "consultare una matrice prodotti-vs-ruoli (OSP, OFE, consulente sala) prima di generare proposte sui canali operatore, per escludere i prodotti non vendibili dal ruolo",
+    "benefit": "garantire che le proposte siano sempre coerenti con le abilitazioni di vendita della figura professionale che sta eseguendo la vendita",
+    "user_story": "Come Motore di Offerte\nVoglio consultare una matrice di abilitazione prodotti per ruolo operatore prima di generare proposte sui canali operatore\nIn modo che non vengano mai proposti prodotti non consentiti alla figura professionale che esegue la vendita",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte deve generare proposte per un canale operatore e riceve/ricava il ruolo dell'operatore (OSP, OFE, consulente sala) ALLORA consulta la matrice prodotti-vs-ruoli prima di determinare l'elenco dei prodotti proponibili",
+      "QUANDO un prodotto non risulta abilitato nella matrice per il ruolo dell'operatore ALLORA il Motore di Offerte esclude quel prodotto dalle proposte generate per quel ruolo",
+      "QUANDO vengono eseguiti test end-to-end con profili operatore differenti (OSP, OFE, consulente sala) ALLORA il Motore di Offerte non propone prodotti non abilitati per ciascun profilo"
+    ],
+    "business_rules": [
+      "La matrice di abilitazione definisce, per ogni ruolo operatore (OSP, OFE, consulente sala), l'insieme dei prodotti vendibili",
+      "Il vincolo di abilitazione è applicato esclusivamente in fase di generazione proposte per canali operatore"
+    ],
+    "edge_cases": [
+      "Ruolo operatore mancante/non riconosciuto: il Motore di Offerte non deve proporre prodotti e deve gestire l'errore secondo le regole di integrazione (es. risposta di errore o lista vuota)",
+      "Matrice non disponibile/non raggiungibile: il Motore di Offerte deve gestire l'indisponibilità senza proporre prodotti non autorizzati (comportamento fail-safe)",
+      "Prodotto presente nel catalogo ma assente dalla matrice: il Motore di Offerte deve considerarlo non abilitato per default"
+    ],
+    "assumptions": [
+      "Il requisito non specifica il canale di accesso alla matrice (DB/API/configurazione): si assume che il Motore di Offerte disponga di un meccanismo di consultazione coerente con l'architettura di progetto",
+      "Il requisito non specifica il comportamento in caso di errore/indisponibilità della matrice: si assume un comportamento conservativo (non proporre prodotti non verificati)"
+    ],
+    "notes": "L'AC relativo ai test end-to-end è condiviso implicitamente con l'esperienza dell'operatore su canale fisico; tuttavia il requisito descrive esplicitamente l'applicazione del vincolo lato Motore. Il campo channels per la persona 'Motore di Offerte' non è esplicitato nel contesto personas."
+  },
+  {
+    "story_id": "REQ-F-027.US02",
+    "title": "Visualizzare solo prodotti proponibili in base al proprio ruolo operatore",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "ricevere proposte che includano esclusivamente prodotti abilitati al proprio ruolo (OSP, OFE, consulente sala)",
+    "benefit": "evitare proposte non vendibili e ridurre errori operativi durante la vendita assistita",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare e poter proporre solo prodotti abilitati al mio ruolo\nIn modo che le offerte presentate al cliente siano effettivamente vendibili dalla mia figura professionale",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo al flusso di proposta offerte sul front-end commerciale con il mio profilo operatore ALLORA le proposte ricevute/mostrate includono solo prodotti abilitati al mio ruolo (OSP, OFE, consulente sala)",
+      "QUANDO vengono eseguiti test end-to-end con profili operatore differenti ALLORA per ciascun profilo non risultano visualizzati prodotti non abilitati al relativo ruolo"
+    ],
+    "business_rules": [
+      "L'operatore può proporre esclusivamente i prodotti che il Motore di Offerte determina come abilitati per il ruolo associato al profilo operatore"
+    ],
+    "edge_cases": [
+      "Profilo operatore privo di ruolo o con ruolo non valido: l'operatore non deve ricevere proposte non autorizzate e deve essere gestito un messaggio/errore dal canale secondo le regole del front-end",
+      "Cambio ruolo/utenza durante la sessione: le proposte devono essere ricalcolate in base al ruolo effettivo corrente"
+    ],
+    "assumptions": [
+      "Il requisito non specifica come il ruolo venga trasmesso al Motore: si assume che il front-end commerciale invii o renda disponibile un identificativo di ruolo operatore coerente (OSP/OFE/consulente sala)"
+    ],
+    "notes": "AC condiviso con REQ-F-027.US01 (test end-to-end con profili differenti) riscritto dal punto di vista dell'operatore."
+  },
+  {
+    "story_id": "REQ-F-027.US03",
+    "title": "Esportare e verificare la matrice di abilitazione per audit",
+    "persona": "Team Compliance",
+    "goal": "ottenere un report esportabile della matrice prodotti-vs-ruoli per verificarla a fini di audit",
+    "benefit": "abilitare controlli di conformità e tracciabilità delle regole di abilitazione alla vendita per ruolo",
+    "user_story": "Come Team Compliance\nVoglio esportare e verificare in un report la matrice di abilitazione prodotti per ruolo\nIn modo che possa svolgere attività di audit e controllo sulla correttezza delle abilitazioni di vendita",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un profilo Compliance autorizzato ALLORA posso ottenere un report verificabile della matrice prodotti-vs-ruoli (OSP, OFE, consulente sala)",
+      "QUANDO eseguo l'export del report della matrice ALLORA il file esportato contiene l'associazione prodotti-vs-ruoli necessaria per la verifica di audit"
+    ],
+    "business_rules": [
+      "Solo utenti con ruolo/permessi Compliance possono accedere alle funzionalità di consultazione/esportazione per audit, secondo il modello autorizzativo di progetto"
+    ],
+    "edge_cases": [
+      "Utente Compliance non autorizzato all'export: l'azione di esportazione deve essere inibita/negata",
+      "Report non generabile (errore di sistema): la dashboard deve segnalare l'errore e non produrre output parziali non verificabili"
+    ],
+    "assumptions": [
+      "Il requisito non specifica formato e contenuto minimo del report: si assume che includa almeno l'elenco prodotti e, per ciascun ruolo (OSP/OFE/consulente sala), l'indicazione di abilitato/non abilitato"
+    ],
+    "notes": "Il requisito menziona l'export e la verificabilità per audit senza dettagliare UI, permessi e formato; tali aspetti sono stati resi testabili tramite assunzioni minime sul contenuto del report."
+  }
+]

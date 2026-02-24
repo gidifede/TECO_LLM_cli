@@ -1,0 +1,174 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-004",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-004.TC01",
+        "detail": "Introduce canale 'web' e attore 'utente cliente autenticato' non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC01",
+        "detail": "Specifica prodotti/ID concreti (A-1001, B-2001) e una regola configurata su quella combinazione: dettagli non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC01",
+        "detail": "Atteso 'Non viene creato alcun ordine/pratica di acquisto in stato confermato': il requisito non parla di creazione ordine/stati."
+      },
+      {
+        "test_id": "REQ-V-004.TC02",
+        "detail": "Atteso completamento acquisto con 'ordine/pratica in stato confermato (o equivalente)': concetto di ordine/stato non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC03",
+        "detail": "Assume schema minimo dei log (correlationId/traceId, timestamp, codice regola) e modalità di recupero tramite correlation id: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC04",
+        "detail": "Introduce concetto di 'profilo cliente' e 'flag cliente non idoneo' come causa di non sottoscrivibilità: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC05",
+        "detail": "Assume indisponibilità/timeout del servizio di verifica e una policy 'fail-closed' (blocco se non validabile): il requisito non definisce comportamento in caso di errore tecnico."
+      },
+      {
+        "test_id": "REQ-V-004.TC05",
+        "detail": "Assume dettagli specifici errore (TIMEOUT, 30s) e campi log 'codice eccezione': non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.TC06",
+        "detail": "Richiede riesecuzione verifiche dopo modifica carrello e sblocco conseguente: il requisito non menziona rivalutazione post-modifica."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-004.TC03",
+          "REQ-V-004.TC05"
+        ],
+        "detail": "Entrambi verificano tracciamento nei decision logs con campi minimi; differiscono solo per causa (combinazione vietata vs errore sottoscrivibilità)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 19,
+    "coherence_score": 23,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-004.US01.TC01",
+        "detail": "Introduce canali 'App' e concetto 'Cliente digitale': non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC01",
+        "detail": "Introduce 'Motore di Offerte' come componente/servizio specifico e invocazione della verifica: il requisito parla genericamente di 'motore' e di verifiche, non di un servizio/invocazione."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC02",
+        "detail": "Richiede che la segnalazione sia 'senza dettagli tecnici': vincolo di UX non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC03",
+        "detail": "Introduce esito 'esclusione sottoscrivibilità' come risposta del Motore di Offerte e vincolo 'senza dettagli tecnici': non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC04",
+        "detail": "Assume indisponibilità tecnica (timeout/5xx) del servizio di verifica e comportamento di blocco: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC05",
+        "detail": "Richiede riesecuzione verifica dopo modifica carrello e mezzi di osservabilità (mock/spia/telemetria): non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US01.TC06",
+        "detail": "Gestisce caso 'più motivi di esclusione' e vincolo di presentazione 'non tecnica': non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC01",
+        "detail": "Introduce canale 'front-end commerciale' e attore 'operatore': non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC02",
+        "detail": "Vincolo 'segnalazione senza dettagli tecnici' e contesto vendita/proposta: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC04",
+        "detail": "Assume indisponibilità servizio (timeout/5xx) e messaggistica specifica: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC05",
+        "detail": "Richiede riesecuzione verifica dopo modifica proposta/varianti: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US02.TC06",
+        "detail": "Introduce concetti 'vendita registrata/chiusa', enforcement UI/azione non eseguibile: il requisito non parla di vendita né di stati/registrazioni."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC01",
+        "detail": "Specifica esposizione via API/servizio, payload con validation_id e risposta con flag/enum: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC04",
+        "detail": "Introduce vincolo temporale 'entro 60s' per presenza log: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC05",
+        "detail": "Introduce scenario 'regola incoerente/non valutabile' e comportamento d'errore: il requisito cita errori nei log ma non definisce questo caso specifico."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC06",
+        "detail": "Introduce requisito di 'ordine/rappresentazione ripetibile' dei motivi nei log: non nel requisito."
+      },
+      {
+        "test_id": "REQ-V-004.US03.TC07",
+        "detail": "Introduce gestione indisponibilità del logging (retry/coda/fallback) e 'non perdita di tracciabilità': non nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-004.US01.TC01",
+          "REQ-V-004.US02.TC01"
+        ],
+        "detail": "Stesso scenario 'happy path' di verifica pre-finalizzazione; cambia solo il canale (digitale vs commerciale), non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-V-004.US01.TC02",
+          "REQ-V-004.US02.TC02",
+          "REQ-V-004.US03.TC02"
+        ],
+        "detail": "Ripetono il blocco per combinazione non permessa con segnalazione/esito di blocco su più livelli/canali non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-V-004.US01.TC03",
+          "REQ-V-004.US02.TC03",
+          "REQ-V-004.US03.TC03"
+        ],
+        "detail": "Ripetono il blocco/esito per sottoscrivibilità non valida su più livelli/canali non richiesti dal requisito."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili al requisito (meno assunzioni su canali/attori/architettura e meno vincoli extra come 'no dettagli tecnici', API/payload, retry logging), e presenta meno ridondanze complessive. Per questo ottiene un punteggio di coerenza superiore (55 vs 23)."
+  }
+}

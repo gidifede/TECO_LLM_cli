@@ -1,0 +1,70 @@
+[
+  {
+    "story_id": "REQ-D-009.US01",
+    "title": "Esportazione manuale dei dati dalla dashboard (Marketing) con regole di accesso",
+    "persona": "Team Marketing",
+    "goal": "esportare manualmente i dati visualizzati nella dashboard e, opzionalmente, configurare export automatici programmati se abilitati",
+    "benefit": "analizzare e condividere i risultati delle campagne e delle configurazioni in modo controllato e tracciabile",
+    "user_story": "Come Team Marketing\nVoglio esportare manualmente i dati dalla dashboard (e, se disponibile, configurare export automatici programmati)\nIn modo che io possa analizzare e condividere i dati nel rispetto delle autorizzazioni previste",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un ruolo che abilita l’export ALLORA visualizzo un’azione di export manuale dei dati (es. download del dataset visualizzato) ed eseguo l’esportazione con successo.",
+      "QUANDO accedo alla dashboard con un ruolo che non abilita l’export ALLORA non posso avviare l’export manuale (azione non visibile o bloccata) e ricevo un messaggio coerente con i permessi.",
+      "QUANDO consulto una vista dati in dashboard ALLORA i dati risultano consultabili e completi nella rappresentazione prima di avviare l’export.",
+      "QUANDO la funzionalità di export automatico programmato è abilitata nel sistema ALLORA posso accedere alla relativa configurazione solo se autorizzato e posso salvare una configurazione di export programmato.",
+      "QUANDO la funzionalità di export automatico programmato non è presente nel rilascio iniziale ALLORA la dashboard non presenta blocchi funzionali sull’export manuale e l’assenza dell’automazione risulta documentata come opzionale."
+    ],
+    "business_rules": [
+      "L’export manuale dalla dashboard è consentito solo a ruoli/utenti autorizzati.",
+      "L’eventuale configurazione di export automatici programmati è soggetta alle stesse (o più restrittive) regole di autorizzazione dei ruoli.",
+      "La rappresentazione dei dati in dashboard ha priorità rispetto alle funzionalità di export: l’export non sostituisce la consultazione in UI."
+    ],
+    "edge_cases": [
+      "Tentativo di export manuale con sessione scaduta: l’utente deve essere richiesto di autenticarsi nuovamente e l’export non deve partire.",
+      "Dataset vuoto o filtri che producono zero risultati: l’export deve gestire il caso (file vuoto/solo header o messaggio) senza errore applicativo.",
+      "Errore durante la generazione del file di export: l’utente riceve un errore e può riprovare senza duplicare configurazioni o corrompere lo stato.",
+      "Cambio permessi durante la sessione (revoca autorizzazione export): l’azione deve essere bloccata al momento dell’esecuzione."
+    ],
+    "assumptions": [
+      "Il requisito non specifica formato, contenuto e granularità dell’export (es. CSV/XLSX/JSON): saranno definiti in refinement.",
+      "Il requisito non specifica quali viste/dataset della dashboard siano esportabili: si assume esportabile almeno il dataset visualizzato nella vista corrente.",
+      "Non sono definiti i dettagli di configurazione dell’export automatico (schedulazione, destinazione, notifiche): si rimanda a requisito/analisi dedicata se la funzionalità viene attivata."
+    ],
+    "notes": "Gli AC del requisito sono stati resi testabili esplicitando il controllo autorizzativo (permesso export) e la condizione di optionalità dell’export automatico (presente/assente nel rilascio). La story copre sia export manuale (obbligatorio) sia configurazione export automatico (opzionale) dal punto di vista Marketing."
+  },
+  {
+    "story_id": "REQ-D-009.US02",
+    "title": "Esportazione manuale e consultazione dati per audit (Compliance) con controllo autorizzazioni",
+    "persona": "Team Compliance",
+    "goal": "consultare i dati in dashboard ed esportarli manualmente per finalità di controllo, e opzionalmente accedere alla configurazione di export automatici se abilitata e consentita",
+    "benefit": "svolgere verifiche e audit in modo conforme, con accessi coerenti ai ruoli autorizzati",
+    "user_story": "Come Team Compliance\nVoglio consultare i dati in dashboard ed esportarli manualmente (e, se disponibile, accedere alla configurazione di export automatici programmati)\nIn modo che io possa effettuare controlli e audit nel rispetto delle autorizzazioni previste",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un ruolo Compliance autorizzato ALLORA posso consultare i dati rappresentati in modo completo prima di qualsiasi export.",
+      "QUANDO sono autorizzato all’export ALLORA posso eseguire un export manuale dei dati dalla dashboard (es. download del dataset visualizzato).",
+      "QUANDO non sono autorizzato all’export ALLORA non posso avviare l’export manuale e ricevo un messaggio coerente con i permessi.",
+      "QUANDO la funzionalità di export automatico programmato è abilitata nel sistema ALLORA posso accedere alla relativa configurazione solo se previsto dalle autorizzazioni.",
+      "QUANDO la funzionalità di export automatico programmato non è presente nel rilascio iniziale ALLORA l’export manuale rimane disponibile (se autorizzato) e l’assenza dell’automazione risulta documentata come opzionale."
+    ],
+    "business_rules": [
+      "L’accesso all’export (manuale e/o automatico) è governato da regole di autorizzazione per ruoli; utenti non autorizzati non devono poter esportare.",
+      "La consultazione dei dati in dashboard deve essere possibile prima dell’export (priorità alla rappresentazione)."
+    ],
+    "edge_cases": [
+      "Accesso a dati non consentiti dal ruolo (dettaglio vs aggregato): la UI deve impedire l’accesso non autorizzato e l’export deve rispettare lo stesso perimetro dati visibile.",
+      "Timeout o indisponibilità temporanea del servizio di export: l’utente riceve errore gestito e non ottiene file parziali/corrotti."
+    ],
+    "assumptions": [
+      "Il requisito non specifica la distinzione tra dati aggregati e dettagliati per ruolo: si assume che l’export non possa includere dati non visibili in dashboard per quel ruolo.",
+      "Non sono definiti log/audit trail dell’azione di export: se richiesto per Compliance, servirà requisito dedicato."
+    ],
+    "notes": "AC condivisi con REQ-D-009.US01 (Team Marketing): disponibilità export manuale con autorizzazioni; priorità alla consultazione completa in dashboard; export automatico come opzionale/non obbligatorio. Replicati e riscritti dal punto di vista Compliance."
+  }
+]

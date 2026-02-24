@@ -1,0 +1,61 @@
+[
+  {
+    "story_id": "REQ-F-030.US01",
+    "title": "Esposizione flag 'questionario richiesto' nella proposta generata",
+    "persona": "Motore di Offerte",
+    "goal": "includere nel payload della proposta un’indicazione chiara che il prodotto richiede un questionario obbligatorio",
+    "benefit": "permettere ai canali/verticali di attivare il corretto workflow di questionario senza demandare al Motore gestione e logiche non di sua competenza",
+    "user_story": "Come Motore di Offerte\nVoglio includere nel payload della proposta un flag/metadato che indichi quando un prodotto richiede un questionario obbligatorio\nIn modo che il verticale di prodotto possa gestire interamente il questionario e i canali possano instradare correttamente l’utente",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte genera una proposta che include un prodotto per cui è previsto un questionario obbligatorio ALLORA il payload della proposta contiene un’indicazione chiara (es. flag/metadato) che il questionario è richiesto",
+      "QUANDO il Motore di Offerte genera una proposta che include un prodotto per cui NON è previsto un questionario obbligatorio ALLORA il payload della proposta non contiene il flag 'questionario richiesto' (oppure lo valorizza in modo coerente a 'false', se previsto dallo standard di payload)",
+      "QUANDO un prodotto richiede il questionario ALLORA il Motore di Offerte si limita a segnalare la condizione nel payload e non espone nel payload campi/strutture dati del questionario (domande/risposte) né informazioni operative di validazione o salvataggio"
+    ],
+    "business_rules": [
+      "Il Motore di Offerte deve limitarsi a segnalare l’obbligo di questionario tramite un flag/metadato nella proposta per i prodotti che lo prevedono",
+      "Il Motore di Offerte non deve implementare logiche di validazione, salvataggio, ripristino, gestione input incompleti o workflow di correzione relativi al questionario",
+      "In presenza di anomalie del questionario, la gestione è esclusiva dell’applicativo verticale di prodotto e non del Motore di Offerte"
+    ],
+    "edge_cases": [
+      "Prodotto non configurato correttamente (manca l’informazione se il questionario è richiesto): il Motore non può dedurre il requisito e deve comportarsi secondo la configurazione disponibile (da chiarire)",
+      "Proposta con più prodotti di cui solo alcuni richiedono questionario: il flag/metadato deve permettere di identificare chiaramente per quali prodotti vale l’obbligo (da chiarire se a livello proposta o a livello item/prodotto)",
+      "Errore tecnico nel recupero dell’informazione 'questionario richiesto' dal dominio/configurazione: il Motore deve evitare di introdurre logiche di fallback che implichino gestione del questionario (gestione errore tecnica da chiarire)"
+    ],
+    "assumptions": [
+      "Il requisito non specifica il formato esatto del payload: si assume che esista un payload di proposta con metadati estendibili e che il flag possa essere rappresentato come booleano o enumerazione",
+      "Non è specificato se l’indicazione sia a livello proposta o a livello singolo prodotto nella proposta: si assume che debba essere almeno determinabile per ciascun prodotto proposto"
+    ],
+    "notes": "US focalizzata sul comportamento del Motore. AC condivisi concettualmente con la US del 'Verticali di vendita' (responsabilità del questionario), ma riscritti per il punto di vista del Motore."
+  },
+  {
+    "story_id": "REQ-F-030.US02",
+    "title": "Gestione end-to-end del questionario obbligatorio nel verticale di prodotto",
+    "persona": "Verticali di vendita",
+    "goal": "gestire presentazione, validazione, salvataggio e correzione del questionario obbligatorio quando segnalato nella proposta",
+    "benefit": "assicurare che gli errori e gli stati intermedi del questionario siano gestiti nel sistema responsabile del prodotto senza dipendere dal Motore di Offerte",
+    "user_story": "Come Verticali di vendita\nVoglio gestire interamente la realizzazione, presentazione, validazione e salvataggio del questionario obbligatorio quando la proposta indica che è richiesto\nIn modo che le anomalie e i workflow di correzione siano gestiti nel verticale di prodotto e non nel Motore di Offerte",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il verticale riceve/consuma una proposta con indicazione 'questionario richiesto' per un prodotto ALLORA avvia il proprio workflow di questionario (presentazione e raccolta dati) senza richiedere al Motore di Offerte operazioni di validazione o salvataggio del questionario",
+      "QUANDO l’utente fornisce input incompleti o non validi nel questionario ALLORA il verticale gestisce validazioni, messaggi di errore e workflow di correzione senza inviare eventi/feedback operativi al Motore di Offerte relativi allo stato del questionario",
+      "QUANDO si verificano anomalie nel questionario (es. errori di salvataggio temporaneo o recupero dati) ALLORA la gestione e la risoluzione sono effettuate esclusivamente dal verticale di prodotto e non dal Motore di Offerte",
+      "QUANDO si produce documentazione di responsabilità operative ALLORA è esplicitato che gestione errori e salvataggi temporanei del questionario appartengono al verticale di prodotto"
+    ],
+    "business_rules": [
+      "La responsabilità operativa di gestione errori, salvataggi temporanei e workflow di correzione del questionario è del verticale di prodotto",
+      "Il Motore di Offerte non deve essere coinvolto in validazione/salvataggio/ripristino del questionario: eventuali integrazioni con il Motore devono limitarsi al consumo del flag/metadato di obbligatorietà"
+    ],
+    "edge_cases": [
+      "Il verticale riceve una proposta senza flag 'questionario richiesto' ma il prodotto lo richiede: incoerenza dati/configurazione da gestire nel verticale (es. blocco sottoscrizione e logging) senza demandare al Motore la gestione del questionario",
+      "Interruzione del flusso (utente abbandona): il verticale gestisce eventuale salvataggio temporaneo e ripresa, se previsto, senza coinvolgere il Motore",
+      "Errore tecnico di persistenza del questionario: il verticale gestisce retry/rollback e messaggistica utente secondo le proprie regole"
+    ],
+    "assumptions": [
+      "Nel contesto personas non esiste una persona esplicita 'Applicativo verticale di prodotto': si assume che la responsabilità ricada nella persona 'Verticali di vendita' come rappresentazione dei sistemi verticali coinvolti nella sottoscrizione e nei workflow di prodotto"
+    ],
+    "notes": "Questa US copre l’AC del requisito relativo alla responsabilità del verticale per errori e salvataggi temporanei. La parte 'il Motore non implementa logiche di validazione/salvataggio' è correlata e complementare alla US01."
+  }
+]

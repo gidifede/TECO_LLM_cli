@@ -1,0 +1,100 @@
+[
+  {
+    "story_id": "REQ-F-025.US01",
+    "title": "Applicare la frequenza minima di riproposizione dello stesso prodotto al cliente",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "non ricevere la stessa proposta di prodotto in modo ravvicinato, secondo un intervallo minimo configurato",
+    "benefit": "avere un'esperienza meno ripetitiva e più pertinente nelle proposte ricevute",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio non ricevere la riproposizione ravvicinata dello stesso prodotto\nIn modo che le proposte siano meno ripetitive e più rilevanti",
+    "channels": [
+      "digital (App, Web)",
+      "fisico (UP)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO ho già ricevuto una proposta per un determinato prodotto ALLORA il sistema non mi ripropone lo stesso prodotto prima che sia trascorso l'intervallo minimo configurato per quel prodotto.",
+      "QUANDO per un prodotto esistono eccezioni configurate ALLORA il sistema può riproporre il prodotto anche prima della scadenza dell'intervallo minimo, secondo quanto previsto dall'eccezione.",
+      "QUANDO ricevo proposte su canali differenti (digitale e fisico) ALLORA la regola di non riproposizione prima dell'intervallo minimo è applicata in modo coerente su tutti i canali."
+    ],
+    "business_rules": [
+      "La non riproposizione è valutata per coppia (cliente, prodotto).",
+      "L'intervallo minimo di riproposizione è un parametro configurabile a livello di prodotto (o regola equivalente) definito dal motore.",
+      "Le eccezioni alla regola sono applicabili solo se configurate."
+    ],
+    "edge_cases": [
+      "Cliente senza storico di presentazioni: il prodotto può essere proposto.",
+      "Intervallo configurato a 0 o valore non valido: comportamento da definire (es. trattare come 0 o rifiutare la configurazione).",
+      "Cambio canale immediato (es. proposta vista in digitale e poi in UP): la riproposizione deve risultare bloccata se l'intervallo non è trascorso.",
+      "Dati di storico presentazioni non disponibili/errore di lettura: comportamento da definire (fail-safe vs fail-open)."
+    ],
+    "assumptions": [
+      "Si assume che esista un concetto di 'presentazione' della proposta tracciato dal Motore e utilizzabile per calcolare l'intervallo.",
+      "Si assume che 'stesso prodotto' sia identificato da un identificativo univoco di prodotto condiviso tra canali."
+    ],
+    "notes": "AC condivisi con US02 (Motore di Offerte) e US03 (Team Marketing (persona)) relativamente all'applicazione coerente su canali differenti e alla gestione di eccezioni configurate."
+  },
+  {
+    "story_id": "REQ-F-025.US02",
+    "title": "Gestire e far rispettare nel Motore la regola configurabile di frequenza di riproposizione",
+    "persona": "Motore di Offerte",
+    "goal": "applicare una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente",
+    "benefit": "garantire coerenza delle proposte e controllo centralizzato della frequenza su tutti i canali",
+    "user_story": "Come Motore di Offerte\nVoglio applicare una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente\nIn modo che le presentazioni generate siano coerenti su tutti i canali e rispettino i vincoli di frequenza",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO è definito un parametro configurabile di intervallo minimo di riproposizione per prodotto (es. X giorni) ALLORA il Motore utilizza tale parametro per valutare l'eleggibilità alla riproposizione del prodotto per uno specifico cliente.",
+      "QUANDO il Motore deve generare una presentazione per un cliente e un prodotto già presentato ALLORA il Motore esclude quel prodotto se non è trascorso l'intervallo minimo configurato, salvo eccezioni configurate.",
+      "QUANDO il Motore genera presentazioni per canali differenti ALLORA la stessa regola e gli stessi parametri di intervallo/eccezioni sono applicati coerentemente a tutte le presentazioni generate.",
+      "QUANDO vengono eseguiti test automatici end-to-end/multi-canale ALLORA i risultati dimostrano che la riproposizione dello stesso prodotto prima dell'intervallo minimo non avviene."
+    ],
+    "business_rules": [
+      "La regola è configurabile e deve essere applicata centralmente dal Motore a tutte le presentazioni che esso genera.",
+      "La logica prevede eccezioni configurabili che possono derogare al blocco di riproposizione.",
+      "Il calcolo dell'intervallo minimo è basato su una misura temporale (es. giorni) definita dal parametro."
+    ],
+    "edge_cases": [
+      "Più presentazioni dello stesso prodotto nello stesso giorno: la prima è ammessa, le successive devono essere bloccate se l'intervallo minimo > 0.",
+      "Aggiornamento del parametro mentre sono in corso generazioni: comportamento atteso da definire (es. applicazione immediata vs dopo propagazione).",
+      "Timezone/cambio data: rischio di calcolo errato dell'intervallo ai bordi (fine giornata).",
+      "Eccezione configurata in conflitto con intervallo (es. eccezione più permissiva): prevalenza da definire."
+    ],
+    "assumptions": [
+      "Si assume che il Motore disponga (o possa consultare) uno storico delle presentazioni per (cliente, prodotto) necessario a valutare l'intervallo minimo.",
+      "Si assume che l'unità dell'intervallo (giorni) sia configurabile o comunque definita in modo univoco nel sistema."
+    ],
+    "notes": "AC multi-canale condiviso con US01 (Cliente (fisico o digitale)). Le modalità tecniche di storage/lettura dello storico e la semantica esatta di 'presentazione' non sono specificate nel requisito e richiedono dettaglio in refinement."
+  },
+  {
+    "story_id": "REQ-F-025.US03",
+    "title": "Configurare l'intervallo minimo di riproposizione e tracciarne le modifiche",
+    "persona": "Team Marketing (persona)",
+    "goal": "modificare il parametro di intervallo minimo di riproposizione per prodotto (e relative eccezioni) tramite i meccanismi di configurazione previsti, con tracciamento audit",
+    "benefit": "controllare la pressione commerciale e ottimizzare la customer experience in modo governato e verificabile",
+    "user_story": "Come Team Marketing (persona)\nVoglio configurare l'intervallo minimo di riproposizione dello stesso prodotto (ed eventuali eccezioni) e tracciarne le modifiche\nIn modo che la frequenza delle proposte sia governabile e verificabile tramite audit",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo ai meccanismi di configurazione previsti con autorizzazioni adeguate ALLORA posso visualizzare e modificare il parametro che definisce l'intervallo minimo di riproposizione per prodotto (es. X giorni).",
+      "QUANDO salvo una modifica al parametro di intervallo minimo (o alle eccezioni configurate) ALLORA la modifica è tracciata con audit trail.",
+      "QUANDO il parametro viene modificato ALLORA le presentazioni generate dal Motore applicano il nuovo valore in modo coerente su tutti i canali."
+    ],
+    "business_rules": [
+      "Solo utenti/team autorizzati possono modificare il parametro di intervallo minimo e le eventuali eccezioni.",
+      "Ogni modifica deve generare una traccia di audit (almeno: chi, cosa, quando)."
+    ],
+    "edge_cases": [
+      "Utente non autorizzato tenta la modifica: accesso negato e nessuna variazione applicata.",
+      "Valore inserito non valido (non numerico/negativo): la configurazione non deve essere salvata (dettaglio validazione da definire).",
+      "Concorrenza: due utenti modificano lo stesso parametro in tempi ravvicinati (gestione conflitto/versioning da definire).",
+      "Audit trail non disponibile/errore di scrittura audit: comportamento da definire (blocco salvataggio vs salvataggio con alert)."
+    ],
+    "assumptions": [
+      "Si assume che il Team Marketing (persona) rientri tra i 'team autorizzati' citati dal requisito e che disponga di un'interfaccia di configurazione (dashboard) già prevista dal programma.",
+      "Si assume che l'audit trail sia consultabile almeno da ruoli preposti (non necessariamente dal Team Marketing) anche se il requisito richiede solo la tracciatura."
+    ],
+    "notes": "Il requisito non specifica quali 'team autorizzati' oltre a Marketing possano modificare il parametro; in caso di ulteriori ruoli (es. Compliance) serviranno storie dedicate. AC di applicazione coerente multi-canale condiviso con US01 e US02."
+  }
+]

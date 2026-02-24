@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-UI-008</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-UI-008</h1>
+  <div class="subtitle">Contenuto obbligatorio del pop-up: nome, immagine e prezzo scontato con sconto suggerito</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:42</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-UI-008</div>
+  <div class="req-field"><strong>Titolo:</strong> Contenuto obbligatorio del pop-up: nome, immagine e prezzo scontato con sconto suggerito</div>
+  <div class="req-field"><strong>Categoria:</strong> INTERFACCIA</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il pop-up deve mostrare obbligatoriamente il nome del prodotto suggerito, l&#x27;immagine del prodotto, il prezzo scontato e il valore dello sconto suggerito. Queste informazioni sono state esplicitamente indicate dall&#x27;utente come contenuto minimo necessario per la proposta e devono essere chiaramente visibili e leggibili all&#x27;interno del pop-up.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Ogni pop-up di proposta mostra il nome del prodotto, un&#x27;immagine rappresentativa, il prezzo scontato e l&#x27;indicazione del valore dello sconto.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>I testi e i prezzi sono leggibili e conformi alle linee guida grafiche (dimensioni, contrasto) nelle versioni APP e web.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Test funzionali verificano la presenza e la correttezza dei valori mostrati.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#16a34a">80</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">58</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct introduce meno informazioni non tracciabili (4 elementi) rispetto all&#x27;indirect_persona (8 elementi, inclusi assunti su payload/log, feature flag/deep link, gestione placeholder/blocco, no-crash e matrice device/browser). Anche le ridondanze sono comparabili ma il direct resta piu aderente al requisito, ottenendo un punteggio superiore (80 vs 58).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#dcfce7;color:#16a34a">
+          <div class="score-value">80</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.TC01</td><td>Introduzione di vincoli non richiesti dal requisito: verifica che l&#x27;immagine &#x27;punta all&#x27;asset atteso&#x27; e riferimenti a CDN/URL specifici; il requisito richiede solo che l&#x27;immagine sia mostrata e leggibile.</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC03</td><td>Inserite soglie numeriche esemplificative (es. 14px, 4.5:1) non presenti nel requisito; il requisito parla di conformità alle linee guida ma non fornisce valori.</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC04</td><td>Scenario negativo di &#x27;non conformità&#x27; in caso di nome mancante: il requisito non definisce scenari negativi né comportamento/valutazione di conformità in presenza di dati mancanti.</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC05</td><td>Scenario negativo su immagine 404/timeout: il requisito non menziona CDN, errori di caricamento o gestione immagine mancante.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.TC01, REQ-UI-008.TC02</td><td>Scenari quasi identici (presenza e correttezza dei 4 contenuti obbligatori) duplicati per Web e App; differiscono solo per canale.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">58</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.US01.TC01</td><td>Assunzione di meccanismi non citati (configurazione QA, deep link, feature flag) e disponibilità di payload/DTO/log ispezionabili per validare i valori.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC01</td><td>Ambiguità introdotta sul formato dello sconto (percentuale vs importo) non indicata dal requisito, che parla genericamente di &#x27;valore dello sconto suggerito&#x27;.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC02</td><td>Assunzione di strumenti di debug/proxy/log per App non menzionati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC05</td><td>Introduce regole alternative non richieste (&#x27;placeholder o blocco visualizzazione&#x27;) e richiede una &#x27;decisione di prodotto documentata&#x27; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC05</td><td>Aggiunge requisiti di robustezza (&#x27;no crash&#x27;, &#x27;pagina web in errore&#x27;) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC06</td><td>Introduce molteplici comportamenti di fallback (blocco, fallback, mostrare 0,00) e vincoli su placeholder tecnici (&#x27;null&#x27;, &#x27;NaN&#x27;) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC08</td><td>Introduce matrice di compatibilità e test multi-device/browser come requisito implicito; il requisito richiede solo leggibilità su versioni App e Web, non su una lista di device/browser.</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC03</td><td>Aggiunge &#x27;regole di formattazione prezzi&#x27; nel perimetro delle linee guida; nel requisito si citano solo dimensioni e contrasto.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.US01.TC03, REQ-UI-008.US01.TC04</td><td>Scenari quasi identici di verifica leggibilità/linee guida duplicati per Web e App.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-UI-008&quot;,
+  &quot;title&quot;: &quot;Contenuto obbligatorio del pop-up: nome, immagine e prezzo scontato con sconto suggerito&quot;,
+  &quot;description&quot;: &quot;Il pop-up deve mostrare obbligatoriamente il nome del prodotto suggerito, l&#x27;immagine del prodotto, il prezzo scontato e il valore dello sconto suggerito. Queste informazioni sono state esplicitamente indicate dall&#x27;utente come contenuto minimo necessario per la proposta e devono essere chiaramente visibili e leggibili all&#x27;interno del pop-up.&quot;,
+  &quot;category&quot;: &quot;INTERFACCIA&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Ogni pop-up di proposta mostra il nome del prodotto, un&#x27;immagine rappresentativa, il prezzo scontato e l&#x27;indicazione del valore dello sconto.&quot;,
+    &quot;I testi e i prezzi sono leggibili e conformi alle linee guida grafiche (dimensioni, contrasto) nelle versioni APP e web.&quot;,
+    &quot;Test funzionali verificano la presenza e la correttezza dei valori mostrati.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.TC01</td><td>Web - Visualizzazione contenuti minimi obbligatori nel pop-up proposta (nome, immagine, prezzo scontato, sconto)</td><td>UI</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC02</td><td>APP - Visualizzazione contenuti minimi obbligatori nel pop-up proposta (nome, immagine, prezzo scontato, sconto)</td><td>UI</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC03</td><td>Web+APP - Leggibilità testi e prezzi nel pop-up conforme a dimensioni e contrasto (linee guida grafiche)</td><td>UI</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC04</td><td>Negativo - Web - Mancanza nome prodotto: il pop-up non deve risultare conforme (contenuto obbligatorio assente)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC05</td><td>Negativo - APP - Immagine prodotto non disponibile: il pop-up non deve risultare conforme (contenuto obbligatorio assente)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC06</td><td>Negativo - Prezzo scontato o valore sconto non valorizzati: il pop-up non deve risultare conforme (web e app)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-008.TC07</td><td>Edge case - Nome prodotto lungo: contenuti obbligatori restano visibili e leggibili nel pop-up (web e app)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-008.US01.TC01</td><td>Pop-up proposta: visualizzazione contenuti minimi e correttezza valori (Web)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC02</td><td>Pop-up proposta: visualizzazione contenuti minimi e correttezza valori (App)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC03</td><td>Pop-up proposta: conformità leggibilità e linee guida grafiche (Web)</td><td>UI</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC04</td><td>Pop-up proposta: conformità leggibilità e linee guida grafiche (App)</td><td>UI</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC05</td><td>Pop-up proposta: immagine prodotto non disponibile (gestione placeholder o blocco visualizzazione)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC06</td><td>Pop-up proposta: prezzo scontato o valore sconto non valorizzati (gestione dati incompleti)</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC07</td><td>Pop-up proposta: nome prodotto molto lungo (wrapping/troncamento e leggibilità)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-008.US01.TC08</td><td>Pop-up proposta: rendering e leggibilità su risoluzioni/browser/device supportati (smoke multi-ambiente)</td><td>E2E</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 4, 0, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 8, 0, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

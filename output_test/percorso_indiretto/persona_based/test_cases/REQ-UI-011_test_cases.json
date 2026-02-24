@@ -1,0 +1,532 @@
+[
+  {
+    "story_id": "REQ-UI-011.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-011.US01.TC01",
+        "title": "Visualizzazione controlli filtro (cluster, periodo, canale) all’accesso dashboard",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard REQ-UI-011 disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Osservare l’area dei controlli di filtro"
+        ],
+        "expected_results": [
+          "Sono presenti controlli di filtro per 'Cluster di clientela'",
+          "È presente un controllo di filtro per 'Periodo' che consente la selezione di un intervallo temporale (data inizio e data fine, o selettore equivalente)",
+          "È presente un controllo di filtro per 'Canale di vendita'",
+          "I controlli risultano utilizzabili (non disabilitati senza motivo) e visibili nella UI"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica il tipo di controllo (dropdown, multiselect, datepicker). Il test verifica la presenza e l’utilizzabilità dei controlli, non la specifica implementazione."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC02",
+        "title": "Aggiornamento interattivo delle visualizzazioni alla modifica di un singolo filtro (Cluster)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente con dati disponibili",
+          "Esistono almeno 2 cluster selezionabili (es. 'Cluster A' e 'Cluster B') con dati differenti nel periodo di default"
+        ],
+        "test_data": [
+          "Cluster: 'Cluster A'",
+          "Cluster alternativo: 'Cluster B'"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Selezionare il filtro 'Cluster di clientela' = 'Cluster A'",
+          "Attendere il completamento dell’aggiornamento interattivo delle visualizzazioni",
+          "Selezionare il filtro 'Cluster di clientela' = 'Cluster B'",
+          "Attendere il completamento dell’aggiornamento interattivo delle visualizzazioni"
+        ],
+        "expected_results": [
+          "Dopo la selezione di 'Cluster A' le visualizzazioni si aggiornano senza richiedere consultazione di tabelle statiche come unico output",
+          "Dopo la selezione di 'Cluster B' le visualizzazioni si ri-aggiornano in modo interattivo",
+          "Le visualizzazioni mostrate dopo 'Cluster B' sono coerenti con il nuovo cluster selezionato (non rimangono i dati del cluster precedente)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce KPI/grafici specifici: la verifica di coerenza si applica a tutte le visualizzazioni presenti. Per automazione, identificare almeno 1 elemento numerico (KPI) o serie grafica che cambi tra cluster."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC03",
+        "title": "Applicazione combinata filtri (Cluster + Periodo + Canale) con verifica coerenza dati",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente",
+          "Dataset di test noto disponibile con record tracciabili per combinazioni di cluster/periodo/canale",
+          "È disponibile un meccanismo di verifica dell’aggregato (es. KPI 'Totale vendite' o 'Numero transazioni') confrontabile con query/estrazione di riferimento"
+        ],
+        "test_data": [
+          "Cluster: 'Cluster A'",
+          "Canale: 'Online'",
+          "Periodo: 2025-01-01 .. 2025-01-31",
+          "Valore atteso di riferimento (esempio): 'Numero transazioni' = 125 per (Cluster A, Online, Gennaio 2025) calcolato da sorgente dati di test"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Impostare il filtro 'Cluster di clientela' = 'Cluster A'",
+          "Impostare il filtro 'Canale di vendita' = 'Online'",
+          "Impostare il filtro 'Periodo' con data inizio = 2025-01-01",
+          "Impostare il filtro 'Periodo' con data fine = 2025-01-31",
+          "Attendere il completamento dell’aggiornamento interattivo delle visualizzazioni",
+          "Rilevare il valore del KPI/indicatore scelto per la verifica (es. 'Numero transazioni')"
+        ],
+        "expected_results": [
+          "Le visualizzazioni si aggiornano in modo interattivo dopo l’applicazione congiunta dei filtri",
+          "I dati visualizzati risultano coerenti con TUTTI i filtri selezionati (Cluster A + Online + periodo 2025-01-01..2025-01-31)",
+          "Il KPI/indicatore verificato corrisponde al valore di riferimento atteso (es. 'Numero transazioni' = 125) per la combinazione applicata"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il valore atteso numerico richiede un dataset controllato o una query di riferimento. Se non disponibile, sostituire con confronto tra due combinazioni note (A vs B) mantenendo verifiche misurabili."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC04",
+        "title": "Cambio di uno o più filtri aggiorna correttamente le visualizzazioni (nessuna persistenza di dati precedenti)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente con dati disponibili",
+          "Esistono valori selezionabili per cluster e canale con risultati differenti"
+        ],
+        "test_data": [
+          "Cluster iniziale: 'Cluster A'",
+          "Canale iniziale: 'Online'",
+          "Periodo iniziale: 2025-01-01 .. 2025-01-31",
+          "Nuovo canale: 'Retail'",
+          "Nuovo periodo: 2025-02-01 .. 2025-02-28"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Impostare 'Cluster di clientela' = 'Cluster A'",
+          "Impostare 'Canale di vendita' = 'Online'",
+          "Impostare 'Periodo' = 2025-01-01 .. 2025-01-31",
+          "Attendere l’aggiornamento interattivo",
+          "Modificare il filtro 'Canale di vendita' = 'Retail'",
+          "Modificare il filtro 'Periodo' = 2025-02-01 .. 2025-02-28",
+          "Attendere l’aggiornamento interattivo"
+        ],
+        "expected_results": [
+          "Dopo il primo set di filtri, le visualizzazioni mostrano dati coerenti con (Cluster A, Online, Gennaio 2025)",
+          "Dopo la modifica di canale e periodo, le visualizzazioni riflettono i nuovi filtri (Cluster A, Retail, Febbraio 2025)",
+          "Non sono presenti elementi di UI che mostrino dati palesemente riferiti al set precedente (es. etichette, periodi, serie o KPI non aggiornati) rispetto ai filtri correnti"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Per automazione, validare almeno: (1) chip/label filtri correnti, (2) un KPI o metrica che cambi al cambio filtri."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC05",
+        "title": "Zero risultati: stato 'nessun dato' e assenza di dati non filtrati",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente",
+          "Esiste una combinazione di filtri nota che produce 0 record (o un dataset di test predisposto)"
+        ],
+        "test_data": [
+          "Cluster: 'Cluster A'",
+          "Canale: 'Online'",
+          "Periodo: 1999-01-01 .. 1999-01-31 (o altra finestra che garantisca 0 risultati)"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Impostare 'Cluster di clientela' = 'Cluster A'",
+          "Impostare 'Canale di vendita' = 'Online'",
+          "Impostare 'Periodo' = 1999-01-01 .. 1999-01-31",
+          "Attendere l’aggiornamento interattivo"
+        ],
+        "expected_results": [
+          "La dashboard mostra uno stato coerente di assenza dati (es. messaggio 'Nessun dato' o visualizzazione vuota) per le visualizzazioni interessate",
+          "Non vengono mostrati dati non filtrati o relativi a filtri precedenti",
+          "I controlli di filtro rimangono visibili e modificabili per cambiare selezione"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce il testo esatto dello stato 'nessun dato': verificare presenza di uno stato vuoto coerente e assenza di dati incongruenti."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC06",
+        "title": "Validazione periodo non valido (fine < inizio): blocco UI o errore e filtro non applicato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente",
+          "Il controllo periodo consente input manuale o selezione che potrebbe generare fine < inizio (se la UI lo supporta)"
+        ],
+        "test_data": [
+          "Data inizio: 2025-03-10",
+          "Data fine: 2025-03-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Aprire il controllo filtro 'Periodo'",
+          "Impostare data inizio = 2025-03-10",
+          "Impostare data fine = 2025-03-01",
+          "Tentare di applicare/chiudere il filtro periodo"
+        ],
+        "expected_results": [
+          "La UI impedisce l’applicazione del periodo non valido oppure mostra un messaggio di validazione visibile",
+          "Il filtro periodo non valido non viene applicato (la selezione non viene accettata o viene ripristinata a un valore valido)",
+          "Le visualizzazioni non si aggiornano verso uno stato incoerente basato su un intervallo non valido"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L’edge case è condizionato a 'se supportato dalla UI'. Se la UI impedisce nativamente la selezione (es. datepicker che non consente fine < inizio), adattare la verifica al comportamento di blocco."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC07",
+        "title": "Errore tecnico durante refresh interattivo: messaggio errore e mantenimento ultimo stato valido",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Marketing' autenticato",
+          "Dashboard caricata correttamente con uno stato iniziale valido",
+          "Possibilità di simulare errore del servizio dati/refresh (es. mock API, interruzione rete, risposta 500/timeout)"
+        ],
+        "test_data": [
+          "Simulazione: API dati dashboard risponde 500 o timeout > soglia configurata",
+          "Filtro da modificare durante la simulazione: Canale = 'Online'"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Verificare che le visualizzazioni mostrino dati in uno stato valido iniziale",
+          "Abilitare la simulazione di errore del servizio di refresh dati",
+          "Modificare il filtro 'Canale di vendita' = 'Online'",
+          "Attendere l’esito del tentativo di aggiornamento"
+        ],
+        "expected_results": [
+          "La UI mostra un messaggio di errore relativo al fallimento di caricamento/aggiornamento",
+          "La dashboard mantiene l’ultimo stato valido visualizzato oppure mostra uno stato vuoto coerente (senza dati incongruenti con i filtri selezionati)",
+          "Non vengono visualizzati dati parziali o palesemente non allineati ai filtri correnti"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story indica 'mantiene l’ultimo stato valido visualizzato (o uno stato vuoto)': accettare una delle due strategie purché coerente e non incongruente. Richiede capacità di fault injection/mocking."
+      },
+      {
+        "test_id": "REQ-UI-011.US01.TC08",
+        "title": "Autorizzazione: accesso alla dashboard e utilizzo filtri per ruolo Team Marketing",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Team Marketing' attivo",
+          "Esiste un utente senza permesso di accesso alla dashboard (ruolo generico senza entitlement), se previsto dall’IAM"
+        ],
+        "test_data": [
+          "Utente autorizzato: marketing.user01",
+          "Utente non autorizzato: basic.user01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011 con l’utente autorizzato 'marketing.user01'",
+          "Verificare la presenza e l’utilizzo dei controlli filtro",
+          "Effettuare logout",
+          "Tentare di accedere alla dashboard REQ-UI-011 con l’utente non autorizzato 'basic.user01'"
+        ],
+        "expected_results": [
+          "Con utente autorizzato la dashboard è accessibile e i controlli filtro sono disponibili",
+          "Con utente non autorizzato l’accesso alla dashboard è negato (es. pagina di errore/403 o redirect coerente con la policy) e non sono visibili dati della dashboard"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non definisce una matrice permessi; questo test verifica almeno la protezione di accesso base. Se tutti gli utenti autenticati devono accedere, adattare rimuovendo il caso 'non autorizzato'."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-011.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-011.US02.TC01",
+        "title": "Visualizzazione controlli filtro all’accesso dashboard per Team Compliance",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard REQ-UI-011 disponibile e raggiungibile"
+        ],
+        "test_data": [
+          "Utente: compliance.user01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Osservare l’area dei controlli di filtro"
+        ],
+        "expected_results": [
+          "Sono presenti controlli di filtro per 'Cluster di clientela', 'Periodo' (intervallo temporale) e 'Canale di vendita'",
+          "I controlli risultano visibili e utilizzabili in consultazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione dalla user story: Compliance ha accesso almeno in lettura alle medesime funzionalità di filtro."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC02",
+        "title": "Aggiornamento interattivo delle visualizzazioni alla modifica filtro (Canale) per audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard caricata correttamente con dati disponibili",
+          "Esistono almeno 2 canali selezionabili (es. 'Online' e 'Retail') con risultati differenti"
+        ],
+        "test_data": [
+          "Canale: 'Online'",
+          "Canale alternativo: 'Retail'"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Selezionare il filtro 'Canale di vendita' = 'Online'",
+          "Attendere il completamento dell’aggiornamento interattivo",
+          "Selezionare il filtro 'Canale di vendita' = 'Retail'",
+          "Attendere il completamento dell’aggiornamento interattivo"
+        ],
+        "expected_results": [
+          "Le visualizzazioni si aggiornano in modo interattivo dopo ciascun cambio canale",
+          "I dati visualizzati risultano coerenti con il canale selezionato corrente e non con quello precedente"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce quali visualizzazioni: validare almeno 1 KPI/valore numerico e la label del filtro applicato."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC03",
+        "title": "Combinazione filtri (Cluster + Periodo + Canale) restituisce solo record coerenti per verifica compliance",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard caricata correttamente",
+          "Dataset di test noto disponibile con record tracciabili per combinazioni di cluster/periodo/canale",
+          "Disponibile un indicatore verificabile (KPI) o una vista riepilogativa confrontabile con sorgente di riferimento"
+        ],
+        "test_data": [
+          "Cluster: 'Cluster B'",
+          "Canale: 'Retail'",
+          "Periodo: 2025-04-01 .. 2025-04-30",
+          "Valore atteso di riferimento (esempio): 'Totale operazioni' = 42 per (Cluster B, Retail, Aprile 2025)"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Impostare 'Cluster di clientela' = 'Cluster B'",
+          "Impostare 'Canale di vendita' = 'Retail'",
+          "Impostare 'Periodo' = 2025-04-01 .. 2025-04-30",
+          "Attendere l’aggiornamento interattivo",
+          "Rilevare il valore del KPI/indicatore scelto per la verifica"
+        ],
+        "expected_results": [
+          "Le visualizzazioni si aggiornano in modo interattivo dopo l’applicazione dei filtri",
+          "I dati visualizzati risultano coerenti con tutti i filtri selezionati",
+          "Il KPI/indicatore verificato corrisponde al valore di riferimento atteso (es. 'Totale operazioni' = 42)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Richiede dataset di test o query di riferimento per rendere la verifica misurabile."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC04",
+        "title": "Zero risultati: stato 'nessun dato' senza esposizione di dati non filtrati (Compliance)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard caricata correttamente",
+          "Esiste una combinazione di filtri nota che produce 0 record"
+        ],
+        "test_data": [
+          "Cluster: 'Cluster B'",
+          "Canale: 'Retail'",
+          "Periodo: 1999-02-01 .. 1999-02-28 (o altra finestra che garantisca 0 risultati)"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Impostare 'Cluster di clientela' = 'Cluster B'",
+          "Impostare 'Canale di vendita' = 'Retail'",
+          "Impostare 'Periodo' = 1999-02-01 .. 1999-02-28",
+          "Attendere l’aggiornamento interattivo"
+        ],
+        "expected_results": [
+          "La dashboard mostra uno stato coerente di assenza dati per le visualizzazioni",
+          "Non vengono mostrati dati non filtrati o relativi a selezioni precedenti"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo dello stato vuoto non è specificato: verificare la coerenza dello stato e l’assenza di dati incongruenti."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC05",
+        "title": "Periodo non valido (fine < inizio): validazione e mancata applicazione del filtro (Compliance)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard caricata correttamente",
+          "Il controllo periodo consente input che potrebbe generare fine < inizio (se la UI lo supporta)"
+        ],
+        "test_data": [
+          "Data inizio: 2025-05-10",
+          "Data fine: 2025-05-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Aprire il controllo filtro 'Periodo'",
+          "Impostare data inizio = 2025-05-10",
+          "Impostare data fine = 2025-05-01",
+          "Tentare di applicare/chiudere il filtro periodo"
+        ],
+        "expected_results": [
+          "La UI impedisce la selezione del periodo non valido oppure mostra un errore di validazione",
+          "Il periodo non valido non viene applicato",
+          "Le visualizzazioni non mostrano dati incoerenti derivanti da un intervallo temporale non valido"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case condizionato a 'se supportato dalla UI'. Adattare il test al comportamento effettivo del datepicker."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC06",
+        "title": "Errore tecnico durante refresh: messaggio errore e assenza di dati incoerenti (Compliance)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo 'Team Compliance' autenticato",
+          "Dashboard caricata correttamente con uno stato iniziale valido",
+          "Possibilità di simulare errore del servizio dati/refresh (mock API, rete, 500/timeout)"
+        ],
+        "test_data": [
+          "Simulazione: timeout del servizio dati",
+          "Filtro da modificare durante la simulazione: Cluster = 'Cluster A'"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011",
+          "Verificare che le visualizzazioni mostrino dati in uno stato valido iniziale",
+          "Abilitare la simulazione di timeout del servizio di refresh dati",
+          "Modificare il filtro 'Cluster di clientela' = 'Cluster A'",
+          "Attendere l’esito del tentativo di aggiornamento"
+        ],
+        "expected_results": [
+          "La UI mostra un messaggio di errore relativo al fallimento di caricamento/aggiornamento",
+          "La dashboard non visualizza dati incoerenti con i filtri selezionati (nessun mix di dati vecchi/nuovi non spiegato)",
+          "I controlli filtro rimangono utilizzabili per consentire un nuovo tentativo o la modifica dei filtri"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "A differenza di US01, qui non è esplicitato il mantenimento dell’ultimo stato valido; il test verifica almeno l’assenza di dati incoerenti e la presenza di un messaggio d’errore."
+      },
+      {
+        "test_id": "REQ-UI-011.US02.TC07",
+        "title": "Autorizzazione: accesso in sola consultazione alla dashboard per ruolo Team Compliance",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Team Compliance' attivo",
+          "Esiste un utente senza permesso di accesso alla dashboard (ruolo generico senza entitlement), se previsto dall’IAM"
+        ],
+        "test_data": [
+          "Utente autorizzato: compliance.user01",
+          "Utente non autorizzato: basic.user01"
+        ],
+        "steps": [
+          "Accedere alla dashboard REQ-UI-011 con l’utente 'compliance.user01'",
+          "Verificare che i controlli filtro siano disponibili e modificabili",
+          "Effettuare logout",
+          "Tentare di accedere alla dashboard REQ-UI-011 con l’utente 'basic.user01'"
+        ],
+        "expected_results": [
+          "Con utente Compliance la dashboard è accessibile e i filtri sono utilizzabili per la consultazione",
+          "Con utente non autorizzato l’accesso è negato e non sono visibili dati della dashboard"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non descrive i permessi; questo test formalizza un controllo minimo di accesso. Se tutti gli utenti autenticati possono accedere, adeguare di conseguenza."
+      }
+    ]
+  }
+]

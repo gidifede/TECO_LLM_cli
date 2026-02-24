@@ -1,0 +1,212 @@
+[
+  {
+    "test_id": "REQ-V-007.TC01",
+    "title": "Blocco della combinazione in caso di incertezza: non proposta né a clienti né a operatori",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una combinazione commerciale 'COMBO-REG-001' configurata come proponibile in condizioni normali",
+      "Sono disponibili due canali di proposta: canale cliente (es. portale web) e canale operatore (es. console operatore)",
+      "È disponibile un meccanismo di simulazione/forzatura dello scenario di incertezza sul vincolo regolatorio per 'COMBO-REG-001' (es. set di test, feature flag o evento di errore controllato)"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Scenario di incertezza simulato: 'conflitto tra override manuale e configurazione standard' associato a COMBO-REG-001",
+      "Cliente: CL-10001 (utente autenticato sul canale cliente)",
+      "Operatore: OP-20001 (utente autenticato sul canale operatore)"
+    ],
+    "steps": [
+      "Attivare lo scenario di incertezza simulato per la combinazione 'COMBO-REG-001'",
+      "Accedere al canale cliente con l'utente 'CL-10001'",
+      "Navigare alla sezione in cui vengono presentate le proposte commerciali",
+      "Verificare la presenza della combinazione 'COMBO-REG-001' tra le proposte disponibili",
+      "Accedere al canale operatore con l'utente 'OP-20001'",
+      "Ricercare la combinazione 'COMBO-REG-001' tra le combinazioni proponibili/selezionabili per proposta"
+    ],
+    "expected_results": [
+      "La combinazione 'COMBO-REG-001' non è visibile né selezionabile come proposta nel canale cliente",
+      "La combinazione 'COMBO-REG-001' non è visibile né selezionabile come proposta nel canale operatore",
+      "Non viene generata alcuna proposta commerciale associata a 'COMBO-REG-001' (nessun esito di proposta creato/registrato) durante il test"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "operatore"
+    ],
+    "notes": "I canali 'web' e 'operatore' sono stati inferiti dalla dicitura 'clienti' e 'operatori' negli AC; il requisito non specifica i nomi dei canali/applicazioni. La simulazione dell'incertezza è una dipendenza di test (feature flag o strumento di test) non dettagliata nel requisito."
+  },
+  {
+    "test_id": "REQ-V-007.TC02",
+    "title": "Marcatura di stato: combinazione incertezza impostata a 'in attesa di revisione manuale'",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste la combinazione 'COMBO-REG-001'",
+      "È disponibile lo scenario di incertezza simulato per 'COMBO-REG-001'",
+      "È disponibile una vista/servizio di consultazione dello stato della combinazione (UI backoffice o API di lettura stato)"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Scenario di incertezza simulato: 'flag vietato rimosso accidentalmente' associato a COMBO-REG-001"
+    ],
+    "steps": [
+      "Attivare lo scenario di incertezza simulato per la combinazione 'COMBO-REG-001'",
+      "Aprire la vista (o invocare l'API) di consultazione stato per 'COMBO-REG-001'",
+      "Leggere il campo di stato della combinazione"
+    ],
+    "expected_results": [
+      "Lo stato della combinazione 'COMBO-REG-001' risulta 'in attesa di revisione manuale'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "backoffice"
+    ],
+    "notes": "Il canale 'backoffice' (UI o API) è inferito poiché il requisito richiede una marcatura di stato ma non specifica dove venga consultata. La modalità di consultazione (UI vs API) è una dipendenza esterna non risolta."
+  },
+  {
+    "test_id": "REQ-V-007.TC03",
+    "title": "Riabilitazione dopo revisione/approvazione esplicita da ruolo autorizzato: combinazione torna proponibile",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "La combinazione 'COMBO-REG-001' è in stato 'in attesa di revisione manuale'",
+      "Esiste un utente con ruolo autorizzato alla revisione/approvazione (es. 'COMPLIANCE-30001')",
+      "Esiste un canale/strumento per eseguire l'azione esplicita di revisione/approvazione (UI backoffice o API)",
+      "Esistono canali di proposta verso cliente e operatore"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Revisore autorizzato: COMPLIANCE-30001",
+      "Cliente: CL-10001",
+      "Operatore: OP-20001"
+    ],
+    "steps": [
+      "Accedere allo strumento di revisione con l'utente 'COMPLIANCE-30001'",
+      "Aprire il dettaglio della combinazione 'COMBO-REG-001'",
+      "Eseguire l'azione esplicita di 'approvazione/riabilitazione' della combinazione",
+      "Verificare lo stato aggiornato della combinazione 'COMBO-REG-001'",
+      "Accedere al canale cliente con l'utente 'CL-10001'",
+      "Navigare alla sezione proposte commerciali e cercare 'COMBO-REG-001'",
+      "Accedere al canale operatore con l'utente 'OP-20001'",
+      "Ricercare 'COMBO-REG-001' tra le combinazioni proponibili"
+    ],
+    "expected_results": [
+      "L'azione di approvazione viene registrata con esito positivo",
+      "Lo stato della combinazione non è più 'in attesa di revisione manuale'",
+      "La combinazione 'COMBO-REG-001' risulta nuovamente proponibile/visibile e selezionabile nel canale cliente",
+      "La combinazione 'COMBO-REG-001' risulta nuovamente proponibile/visibile e selezionabile nel canale operatore"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "backoffice",
+      "web",
+      "operatore"
+    ],
+    "notes": "Il requisito non definisce lo stato post-approvazione (es. 'attiva', 'approvata'); la verifica è impostata come 'diverso da in attesa di revisione manuale' e come ripristino della proponibilità. I ruoli autorizzati (compliance/marketing) sono citati come esempio e sono stati usati come riferimento."
+  },
+  {
+    "test_id": "REQ-V-007.TC04",
+    "title": "Tentativo di proposta durante stato 'in attesa di revisione manuale' deve essere impedito anche via accesso diretto",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "La combinazione 'COMBO-REG-001' è in stato 'in attesa di revisione manuale'",
+      "È possibile tentare la proposta tramite un'azione diretta (es. endpoint/API di proposta, o azione UI con deep link) anche se non presente in lista"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Richiesta di proposta diretta: payload contenente id combinazione 'COMBO-REG-001' e id cliente 'CL-10001'"
+    ],
+    "steps": [
+      "Eseguire un tentativo di proposta diretta della combinazione 'COMBO-REG-001' (API o UI con accesso diretto)",
+      "Raccogliere l'esito dell'operazione (codice risposta, messaggio, eventuale id proposta)"
+    ],
+    "expected_results": [
+      "L'operazione di proposta viene rifiutata dal sistema",
+      "Non viene creato alcun record di proposta commerciale per 'COMBO-REG-001'",
+      "L'esito restituisce un messaggio/causale che indica blocco per revisione manuale o vincolo regolatorio incerto (testo esatto dipendente dall'implementazione)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il canale 'api' è inferito come modalità tipica per un tentativo di accesso diretto; il requisito non lo esplicita. Il testo esatto del messaggio di errore non è definito nel requisito: la verifica è basata sulla causale e sull'assenza di proposta creata."
+  },
+  {
+    "test_id": "REQ-V-007.TC05",
+    "title": "Azione di approvazione negata a utente non autorizzato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "La combinazione 'COMBO-REG-001' è in stato 'in attesa di revisione manuale'",
+      "Esiste un utente non autorizzato alla revisione/approvazione (es. 'OP-20001' o altro ruolo standard)",
+      "È disponibile lo strumento di revisione/approvazione (UI backoffice o API)"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Utente non autorizzato: OP-20001"
+    ],
+    "steps": [
+      "Accedere allo strumento di revisione con l'utente 'OP-20001'",
+      "Aprire il dettaglio della combinazione 'COMBO-REG-001'",
+      "Tentare di eseguire l'azione esplicita di 'approvazione/riabilitazione'"
+    ],
+    "expected_results": [
+      "Il sistema nega l'azione di approvazione/riabilitazione per mancanza di permessi",
+      "Lo stato della combinazione 'COMBO-REG-001' rimane 'in attesa di revisione manuale'",
+      "La combinazione continua a non essere proponibile a clienti e operatori"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "backoffice"
+    ],
+    "notes": "Il requisito non elenca formalmente i ruoli autorizzati; sono stati dedotti dagli esempi (team compliance o marketing)."
+  },
+  {
+    "test_id": "REQ-V-007.TC06",
+    "title": "Gestione errore di propagazione: incertezza attivata da errore/timeout e conseguente blocco della proposta",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste la combinazione 'COMBO-REG-001'",
+      "Il sistema dipende da un componente/servizio di propagazione/configurazione vincoli regolatori (componente esterno o interno)",
+      "È possibile simulare un errore di propagazione (es. timeout/500) per la valutazione del vincolo regolatorio della combinazione"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-REG-001",
+      "Simulazione errore: timeout nella propagazione vincolo regolatorio per COMBO-REG-001",
+      "Cliente: CL-10001"
+    ],
+    "steps": [
+      "Configurare la simulazione di errore/timeout del componente di propagazione per la combinazione 'COMBO-REG-001'",
+      "Accedere al canale cliente con l'utente 'CL-10001'",
+      "Navigare alla sezione proposte commerciali e forzare il caricamento/valutazione delle proposte"
+    ],
+    "expected_results": [
+      "Il sistema tratta l'errore di propagazione come condizione di incertezza sul vincolo regolatorio",
+      "La combinazione 'COMBO-REG-001' non viene proposta al cliente",
+      "La combinazione risulta in stato 'in attesa di revisione manuale' (o viene impostata/permane tale a seguito dell'errore)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il servizio/componente di propagazione è citato solo come esempio nella descrizione; la sua simulazione richiede strumenti di test (stub/chaos). Se l'implementazione non prevede un servizio separato, il test va adattato al punto di guasto equivalente."
+  }
+]

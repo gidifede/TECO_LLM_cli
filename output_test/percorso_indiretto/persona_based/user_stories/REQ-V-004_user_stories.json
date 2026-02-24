@@ -1,0 +1,96 @@
+[
+  {
+    "story_id": "REQ-V-004.US01",
+    "title": "Blocco combinazioni non permesse e verifica sottoscrivibilità prima dell’acquisto (canale digitale)",
+    "persona": "Cliente digitale",
+    "goal": "essere bloccato prima del completamento dell’acquisto quando una combinazione di prodotti non è permessa o non è sottoscrivibile",
+    "benefit": "evitare di procedere con un acquisto non valido e ricevere un feedback tempestivo",
+    "user_story": "Come Cliente digitale\nVoglio che il sistema verifichi prima del pagamento se la combinazione scelta è permessa e sottoscrivibile\nIn modo che io non possa completare un acquisto non valido e riceva un feedback immediato",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO sto per completare l’acquisto di una combinazione di prodotti ALLORA il sistema esegue le verifiche di sottoscrivibilità prima della conferma finale dell’acquisto",
+      "QUANDO la combinazione selezionata rientra tra quelle non permesse dalla business logic ALLORA il sistema blocca il completamento dell’acquisto e segnala che la combinazione non è consentita",
+      "QUANDO le verifiche di sottoscrivibilità non risultano soddisfatte (esito di esclusione) ALLORA il sistema blocca il completamento dell’acquisto e segnala che l’offerta non è sottoscrivibile"
+    ],
+    "business_rules": [
+      "Le combinazioni non permesse devono essere bloccate secondo la business logic configurata nel Motore di Offerte",
+      "Le verifiche di sottoscrivibilità devono avvenire prima della finalizzazione dell’acquisto (pre-acquisto)"
+    ],
+    "edge_cases": [
+      "Se la verifica pre-acquisto non è eseguibile per indisponibilità del servizio, l’acquisto non deve essere completabile e deve essere mostrata una segnalazione di errore",
+      "Se l’utente modifica il carrello (aggiunge/rimuove prodotti) dopo una verifica positiva, la verifica deve essere rieseguita prima del completamento dell’acquisto",
+      "Se la stessa combinazione risulta non permessa e anche non sottoscrivibile, il sistema deve comunque bloccare l’acquisto e fornire una segnalazione coerente (senza esporre dettagli tecnici)"
+    ],
+    "assumptions": [
+      "Il requisito non specifica il testo/UI del messaggio di segnalazione: si assume che venga mostrato un messaggio comprensibile all’utente sul canale digitale",
+      "Il requisito non dettaglia tutte le condizioni di sottoscrivibilità: si assume che siano determinate dalla business logic del Motore di Offerte"
+    ],
+    "notes": "Gli AC relativi a blocco/segnalazione e verifica pre-acquisto sono condivisi anche con l’US del canale fisico (Operatore in ufficio postale (sportello/sala)). L’AC sui log è coperto nella story del Motore di offerte."
+  },
+  {
+    "story_id": "REQ-V-004.US02",
+    "title": "Blocco combinazioni non permesse e verifica sottoscrivibilità prima della vendita (canale fisico)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "vedere bloccate e segnalate le combinazioni non permesse/non sottoscrivibili prima di procedere con la vendita assistita",
+    "benefit": "ridurre errori operativi e tentativi di vendita non validi verso il cliente",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio che il sistema verifichi prima della vendita se la combinazione proposta è permessa e sottoscrivibile\nIn modo che io non proceda con una vendita non valida e possa informare correttamente il cliente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO sto per procedere con la vendita di una combinazione di prodotti ALLORA il sistema esegue le verifiche di sottoscrivibilità prima della finalizzazione della vendita",
+      "QUANDO la combinazione proposta rientra tra quelle non permesse dalla business logic ALLORA il sistema blocca la prosecuzione della vendita e segnala che la combinazione non è consentita",
+      "QUANDO le verifiche di sottoscrivibilità non risultano soddisfatte (esito di esclusione) ALLORA il sistema blocca la prosecuzione della vendita e segnala che l’offerta non è sottoscrivibile"
+    ],
+    "business_rules": [
+      "Le combinazioni non permesse devono essere bloccate secondo la business logic configurata nel Motore di Offerte",
+      "Le verifiche di sottoscrivibilità devono avvenire prima della finalizzazione della vendita (pre-acquisto/pre-sottoscrizione)"
+    ],
+    "edge_cases": [
+      "Se la verifica pre-vendita non è eseguibile per indisponibilità del servizio, la vendita non deve essere finalizzabile e deve essere mostrata una segnalazione di errore",
+      "Se l’operatore modifica la proposta (cambia prodotti/varianti) dopo una verifica positiva, la verifica deve essere rieseguita prima della finalizzazione",
+      "Se la segnalazione è presente ma non impedisce l’azione di finalizzazione, deve essere considerato un malfunzionamento (il blocco è obbligatorio)"
+    ],
+    "assumptions": [
+      "Il requisito non specifica dove e come venga mostrata la segnalazione nel front-end commerciale: si assume che sia visibile all’operatore prima dell’azione di finalizzazione",
+      "Il requisito non specifica se l’operatore possa 'forzare' il blocco: si assume di no, dato che il requisito richiede enforcement"
+    ],
+    "notes": "Gli AC relativi a blocco/segnalazione e verifica pre-acquisto sono condivisi anche con l’US del Cliente digitale. L’AC sui log è coperto nella story del Motore di offerte."
+  },
+  {
+    "story_id": "REQ-V-004.US03",
+    "title": "Applicazione regole di combinazioni non permesse, verifiche pre-acquisto e tracciamento esiti nei log",
+    "persona": "Motore di offerte",
+    "goal": "applicare l’enforcement delle combinazioni vietate, eseguire/verificare la sottoscrivibilità prima dell’acquisto e tracciare gli esiti nei log decisionali",
+    "benefit": "garantire coerenza delle decisioni, prevenire acquisti non validi e assicurare auditabilità",
+    "user_story": "Come Motore di offerte\nVoglio applicare le regole che vietano combinazioni di prodotti ed eseguire le verifiche di sottoscrivibilità prima dell’acquisto\nIn modo che le offerte non valide siano bloccate e gli esiti siano tracciati nei log delle decisioni",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO ricevo una richiesta di validazione/pre-finalizzazione di una combinazione di prodotti ALLORA valuto la combinazione rispetto alle regole di business che proibiscono specifiche combinazioni",
+      "QUANDO la combinazione è non permessa secondo la business logic ALLORA restituisco un esito di blocco che impedisce il completamento dell’acquisto/vendita e include una segnalazione dell’esclusione",
+      "QUANDO eseguo le verifiche di sottoscrivibilità pre-acquisto ALLORA restituisco un esito valido/non valido prima che l’utente completi l’acquisto/vendita",
+      "QUANDO l’esito è di esclusione o di errore ALLORA traccio l’esito nei log delle decisioni includendo almeno: identificativo richiesta/contesto, regola o motivo di esclusione, timestamp ed esito (esclusione/errore)"
+    ],
+    "business_rules": [
+      "Le regole di combinazioni non permesse sono vincolanti (enforcement) e devono produrre un blocco",
+      "Le verifiche di sottoscrivibilità devono essere eseguite in fase pre-acquisto/pre-sottoscrizione",
+      "Ogni esito di esclusione o errore deve essere registrato nei log delle decisioni"
+    ],
+    "edge_cases": [
+      "Se una regola risulta configurata in modo incoerente o non valutabile, l’esito deve essere considerato errore e deve essere loggato",
+      "Se la stessa richiesta produce più motivi di esclusione, il log deve registrare i motivi in modo ripetibile e consultabile",
+      "Se il logging non è disponibile, l’esito deve comunque essere gestito (blocco/errore) e deve essere prevista una gestione dell’errore di logging (es. coda/ritentativo) senza perdere tracciabilità (da definire)"
+    ],
+    "assumptions": [
+      "Il requisito non specifica lo schema dei log: si assume un contenuto minimo per rendere verificabile l’AC di tracciamento",
+      "Il requisito non specifica il punto tecnico di invocazione della verifica pre-acquisto: si assume che esista una chiamata/operazione di validazione prima della finalizzazione sui canali"
+    ],
+    "notes": "Questa US copre l’AC 'Eventuali esiti di esclusione o errore sono tracciati nei log delle decisioni', condiviso implicitamente con le US di canale (Cliente digitale, Operatore in ufficio postale (sportello/sala)) che dipendono dall’esito restituito dal Motore."
+  }
+]

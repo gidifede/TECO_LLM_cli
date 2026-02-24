@@ -1,0 +1,67 @@
+[
+  {
+    "story_id": "REQ-NF-001.US01",
+    "title": "Accesso autorizzato del Team Marketing alle configurazioni critiche e gestione eccezioni",
+    "persona": "Team Marketing",
+    "goal": "accedere alla dashboard ed eseguire, solo se autorizzato, modifiche alle configurazioni critiche (es. matrice) e operazioni di inserimento/approvazione eccezioni manuali",
+    "benefit": "gestire in sicurezza le configurazioni del Motore di Offerte riducendo rischi di modifiche non autorizzate e garantendo governance",
+    "user_story": "Come Team Marketing\nVoglio accedere alla dashboard ed eseguire solo le operazioni per cui sono autorizzato (modifica configurazioni critiche e inserimento/approvazione eccezioni)\nIn modo che la gestione del Motore di Offerte avvenga in modo controllato e conforme alle policy aziendali",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un utente appartenente a un ruolo autorizzato alla modifica ALLORA posso accedere alle funzioni di modifica delle configurazioni critiche (inclusa la matrice) ed eseguire salvataggi con esito positivo",
+      "QUANDO accedo alla dashboard con un utente appartenente a un ruolo autorizzato all'inserimento eccezioni ALLORA posso accedere alla funzione di inserimento eccezioni ed eseguire l'inserimento con esito positivo",
+      "QUANDO accedo alla dashboard con un utente appartenente a un ruolo autorizzato all'approvazione eccezioni ALLORA posso accedere alla funzione di approvazione eccezioni ed eseguire l'approvazione con esito positivo",
+      "QUANDO un utente autorizzato tenta un'operazione non compresa nei propri permessi (es. approvare eccezioni senza permesso) ALLORA l'operazione è bloccata e viene segnalata secondo le policy aziendali"
+    ],
+    "business_rules": [
+      "L'accesso alle funzioni di configurazione critiche della dashboard (inclusa la modifica della matrice) è consentito solo a ruoli autorizzati",
+      "Le funzioni di inserimento eccezioni e di approvazione eccezioni sono protette da permessi RBAC distinti (inserimento vs approvazione) se previsti dalla definizione ruoli",
+      "Ogni tentativo di accesso/azione non autorizzata deve essere bloccato e registrato/seg nalato secondo le policy aziendali"
+    ],
+    "edge_cases": [
+      "Utente con sessione scaduta che tenta di salvare una modifica: l'operazione deve fallire e richiedere nuova autenticazione",
+      "Utente con permessi revocati mentre è in sessione: al successivo accesso alla funzione o al salvataggio l'operazione deve essere bloccata",
+      "Errore del sistema di identity/authorization: l'accesso alle funzioni protette deve essere negato (fail-safe) e l'evento segnalato secondo policy"
+    ],
+    "assumptions": [
+      "La definizione puntuale dei ruoli e dei permessi (inclusi i ruoli specifici per inserimento/approvazione eccezioni) è disponibile in un catalogo ruoli aziendale o in un requisito dedicato",
+      "La “dashboard del marketing” è il canale unico per le funzionalità coperte dal requisito"
+    ],
+    "notes": "Requisito non funzionale applicato alle funzionalità di configurazione del Motore di Offerte in dashboard. Alcuni AC sono trasversali (definizione ruoli, blocco accessi non autorizzati, segnalazione secondo policy) e sono condivisi con la US del Team Compliance (REQ-NF-001.US02)."
+  },
+  {
+    "story_id": "REQ-NF-001.US02",
+    "title": "Audit e verificabilità dei tentativi di accesso non autorizzato alle funzioni di configurazione",
+    "persona": "Team Compliance",
+    "goal": "disporre di evidenze verificabili che i tentativi di accesso non autorizzato alle funzioni critiche siano bloccati e segnalati secondo le policy aziendali",
+    "benefit": "supportare audit, controlli regolatori e verifica dell'efficacia dei controlli di accesso (RBAC)",
+    "user_story": "Come Team Compliance\nVoglio poter verificare che i tentativi di accesso non autorizzato alle funzioni critiche della dashboard siano bloccati e segnalati secondo le policy aziendali\nIn modo che siano garantite tracciabilità e conformità durante audit e controlli",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente non appartenente ai ruoli autorizzati tenta di accedere alle funzioni di inserimento eccezioni ALLORA l'accesso è negato e il tentativo è segnalato secondo le policy aziendali con evidenza verificabile in test di sicurezza",
+      "QUANDO un utente non appartenente ai ruoli autorizzati tenta di accedere alle funzioni di approvazione eccezioni ALLORA l'accesso è negato e il tentativo è segnalato secondo le policy aziendali con evidenza verificabile in test di sicurezza",
+      "QUANDO un utente non appartenente ai ruoli autorizzati tenta di modificare le configurazioni critiche (inclusa la matrice) ALLORA l'operazione è bloccata e il tentativo è segnalato secondo le policy aziendali con evidenza verificabile in test di sicurezza",
+      "QUANDO vengono eseguiti test di sicurezza sui controlli RBAC ALLORA l'esito negativo dei tentativi non autorizzati risulta verificabile (blocco + segnalazione) secondo quanto previsto dalle policy aziendali"
+    ],
+    "business_rules": [
+      "Qualsiasi accesso/azione non autorizzata sulle funzioni protette deve essere bloccata",
+      "I tentativi non autorizzati devono essere segnalati secondo le policy aziendali (es. logging/auditing/alerting) in modo da renderli verificabili"
+    ],
+    "edge_cases": [
+      "Elevato numero di tentativi non autorizzati (scenario di attacco): la segnalazione deve comunque avvenire secondo policy senza perdere eventi rilevanti",
+      "Utente non autenticato che tenta accesso diretto a URL/endpoint di funzioni protette: accesso negato e segnalazione secondo policy",
+      "Disallineamento tra ruoli assegnati e permessi effettivi: i test devono evidenziare il blocco e la segnalazione dell'accesso non autorizzato"
+    ],
+    "assumptions": [
+      "Il Team Compliance dispone di strumenti/visibilità (diretta o tramite report) per verificare le segnalazioni generate, coerentemente con le autorizzazioni a loro assegnate",
+      "Le “policy aziendali” di segnalazione (cosa loggare, dove, retention, alert) sono definite esternamente al requisito e rese disponibili al team di delivery"
+    ],
+    "notes": "AC condivisi con REQ-NF-001.US01: blocco accessi non autorizzati e segnalazione secondo policy aziendali. Il requisito non specifica il dettaglio della segnalazione (log vs alert vs SIEM): mantenuto come dipendenza dalle policy aziendali; necessario chiarimento in refinement per rendere i test completamente deterministici."
+  }
+]
