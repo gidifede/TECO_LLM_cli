@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "interview-evaluator"
+version = "0.1.0"
+description = "CLI per simulazione e valutazione qualità interviste di raccolta requisiti via LLM"
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.30.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+interview-evaluator = "interview_eval.interactive:main"
+
+[tool.setuptools.packages.find]
+include = ["interview_eval*"]

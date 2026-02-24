@@ -1,0 +1,7 @@
+{
+  "id": "ecommerce-01",
+  "name": "Piattaforma e-commerce artigianale",
+  "project_idea": "Una piattaforma e-commerce per la vendita di prodotti artigianali italiani. Gli artigiani possono registrarsi, creare il loro negozio virtuale, caricare prodotti con foto e descrizioni, gestire ordini e spedizioni. I clienti possono cercare prodotti per categoria, artigiano o zona geografica, aggiungere al carrello, pagare con carta o PayPal, e lasciare recensioni.",
+  "topic": "gestione catalogo prodotti",
+  "extracted_reqs": []
+}

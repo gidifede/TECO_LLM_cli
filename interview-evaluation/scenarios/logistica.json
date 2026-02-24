@@ -1,0 +1,7 @@
+{
+  "id": "realtimetracking",
+  "name": "Piattaforma di tracking real time con notifica utente",
+  "project_idea": "L'obiettivo del progetto è mettere a disposizione dei clienti di Poste Italiane una piattaforma che sia in grado di offire agli utenti visibilità real-time dei pacchi in arrivo da parte di Poste Italiane",
+  "topic": "notifiche e tracking",
+  "extracted_reqs": []
+}
