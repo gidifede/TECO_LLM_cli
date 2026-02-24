@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisi Added Info — Valore vs Rumore</title>
+<script src="chart.umd.min.js"></script>
+<style>
+    :root {
+        --green: #16a34a; --green-light: #bbf7d0;
+        --blue: #2563eb; --blue-light: #bfdbfe;
+        --red: #dc2626; --red-light: #fecaca;
+        --amber: #f59e0b; --amber-light: #fde68a;
+        --gray-50: #f9fafb; --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb; --gray-600: #4b5563;
+        --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--gray-50); color: var(--gray-800); line-height: 1.6;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--gray-900); }
+    h2 {
+        font-size: 20px; font-weight: 600; margin: 32px 0 16px;
+        color: var(--gray-900); border-bottom: 2px solid var(--gray-200); padding-bottom: 8px;
+    }
+    h3 { font-size: 16px; font-weight: 600; margin: 12px 0 6px; color: var(--gray-700); }
+    h4 { font-size: 14px; font-weight: 600; margin: 12px 0 4px; color: var(--gray-600); }
+    .subtitle { color: var(--gray-600); font-size: 14px; margin-bottom: 24px; }
+    .kpi-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px; margin-bottom: 32px;
+    }
+    .kpi-card {
+        background: white; border-radius: 12px; padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-600); margin-bottom: 4px; }
+    .kpi-value { font-size: 28px; font-weight: 700; }
+    .kpi-sub { font-size: 12px; color: var(--gray-600); margin-top: 4px; }
+    .chart-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+        gap: 24px; margin-bottom: 32px;
+    }
+    .chart-card {
+        background: white; border-radius: 12px; padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .chart-card h3 { margin-top: 0; }
+    .chart-container { position: relative; height: 350px; }
+    .chart-container-tall { position: relative; height: 500px; }
+    table {
+        width: 100%; border-collapse: collapse; font-size: 13px;
+        background: white; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th {
+        background: var(--gray-100); padding: 10px 8px; text-align: left;
+        font-weight: 600; color: var(--gray-700); font-size: 11px;
+        text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    td { padding: 8px; border-top: 1px solid var(--gray-100); }
+    tr:hover td { background: var(--gray-50); }
+    .positive { color: var(--green); font-weight: 600; }
+    .negative { color: var(--red); font-weight: 600; }
+    .tier-section {
+        background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid;
+    }
+    .tier-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 12px; }
+    .example {
+        background: var(--gray-50); border-radius: 8px; padding: 12px;
+        margin-bottom: 8px; font-size: 13px;
+    }
+    .example-req {
+        display: inline-block; background: var(--gray-200); border-radius: 4px;
+        padding: 1px 6px; font-size: 11px; font-weight: 600; margin-right: 6px;
+    }
+    .example-tc {
+        display: inline-block; color: var(--gray-600); font-size: 11px;
+    }
+    .example p { margin-top: 4px; color: var(--gray-700); }
+    .more { font-size: 12px; color: var(--gray-600); font-style: italic; }
+    .insight-box {
+        background: white; border-radius: 12px; padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
+    }
+    .insight-box ul { margin-left: 20px; }
+    .insight-box li { margin-bottom: 8px; font-size: 14px; }
+    @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Analisi delle Informazioni Aggiunte</h1>
+<p class="subtitle">
+    Classificazione di <strong>785</strong> added_info del percorso
+    <strong style="color:var(--amber)">persona-based</strong> e
+    <strong>472</strong> del percorso
+    <strong style="color:var(--blue)">diretto</strong> in base al valore
+    che apportano alla qualita del testing, su 66 requisiti valutati.
+</p>
+
+<!-- KPI -->
+<h2>Panoramica</h2>
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-label">Added info Persona</div>
+        <div class="kpi-value">785</div>
+        <div class="kpi-sub">11.9 medie per requisito</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Added info Diretto</div>
+        <div class="kpi-value">472</div>
+        <div class="kpi-sub">7.2 medie per requisito</div>
+    </div>
+    <div class="kpi-card" style="border-left: 4px solid var(--green)">
+        <div class="kpi-label">Valore concreto + utile (Persona)</div>
+        <div class="kpi-value" style="color:var(--green)">206 (26.2%)</div>
+        <div class="kpi-sub">Diretto: 120 (25.4%)</div>
+    </div>
+    <div class="kpi-card" style="border-left: 4px solid var(--red)">
+        <div class="kpi-label">Rumore (Persona)</div>
+        <div class="kpi-value" style="color:var(--red)">156 (19.9%)</div>
+        <div class="kpi-sub">Diretto: 108 (22.9%)</div>
+    </div>
+</div>
+
+<!-- CHARTS -->
+<h2>Distribuzione per Livello di Valore</h2>
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Persona-based vs Diretto — composizione</h3>
+        <div class="chart-container"><canvas id="chartTierCompare"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Persona-based — distribuzione per tier</h3>
+        <div class="chart-container"><canvas id="chartPie"></canvas></div>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Composizione per categoria di requisito</h3>
+        <div class="chart-container"><canvas id="chartCatStack"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Sottocategorie (persona-based)</h3>
+        <div class="chart-container-tall"><canvas id="chartSubcat"></canvas></div>
+    </div>
+</div>
+
+<!-- CATEGORY TABLE -->
+<h2>Riepilogo per Categoria</h2>
+<div style="overflow-x:auto; margin-bottom:32px;">
+<table>
+    <thead>
+        <tr>
+            <th>Categoria</th><th>Totale</th>
+            <th>Valore (concreto + utile)</th><th>Rumore</th>
+            <th>Estensione + altro</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>REQ-D</strong> — Dati</td>
+            <td>114</td>
+            <td class="positive">33 (29%)</td>
+            <td class="negative">24 (21%)</td>
+            <td>57</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-F</strong> — Funzionali</td>
+            <td>321</td>
+            <td class="positive">84 (26%)</td>
+            <td class="negative">67 (21%)</td>
+            <td>170</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-I</strong> — Integrazione</td>
+            <td>81</td>
+            <td class="positive">23 (28%)</td>
+            <td class="negative">13 (16%)</td>
+            <td>45</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-NF</strong> — Non-Funzionali</td>
+            <td>45</td>
+            <td class="positive">14 (31%)</td>
+            <td class="negative">7 (16%)</td>
+            <td>24</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-UI</strong> — Interfaccia</td>
+            <td>125</td>
+            <td class="positive">29 (23%)</td>
+            <td class="negative">20 (16%)</td>
+            <td>76</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-V</strong> — Validazione</td>
+            <td>99</td>
+            <td class="positive">23 (23%)</td>
+            <td class="negative">25 (25%)</td>
+            <td>51</td>
+        </tr></tbody>
+</table>
+</div>
+
+<!-- INSIGHT -->
+<h2>Analisi Qualitativa</h2>
+<div class="insight-box">
+    <h3>Il persona-based aggiunge valore?</h3>
+    <ul>
+        <li><strong>Il 25% delle aggiunte ha valore reale</strong>: 206 su 785 added_info riguardano scenari di resilienza, validazione dati, concorrenza, audit e recovery. Sono test che un QA esperto scriverebbe indipendentemente.</li>
+        <li><strong>Ma il diretto ha un rapporto simile</strong>: il percorso diretto produce 25.4% di aggiunte di valore vs 26.2% del persona — la differenza non e significativa. Il vantaggio del persona non sta nella qualita delle aggiunte ma nella quantita complessiva.</li>
+        <li><strong>Il 19% e rumore puro</strong>: 156 aggiunte inventano dashboard, endpoint, workflow, componenti e stati che non esistono nel requisito ne nel sistema. Questi scenari distraggono il tester e possono generare test cases non eseguibili.</li>
+        <li><strong>Il 40% e estensione di scope</strong>: non errato, ma non richiesto. Queste aggiunte espandono il perimetro del test oltre quanto validato dal business, creando un gap tra cosa e stato approvato e cosa viene testato.</li>
+    </ul>
+</div>
+
+<div class="insight-box">
+    <h3>Perche il persona-based produce piu rumore?</h3>
+    <ul>
+        <li><strong>Amplificazione a catena</strong>: il passaggio requisito → user stories → test cases ha due trasformazioni. Ogni passaggio introduce interpretazioni. Il modello LLM, per rendere le user stories concrete, inventa attori, canali, interfacce e workflow che poi diventano prerequisiti dei test cases.</li>
+        <li><strong>Concretizzazione forzata</strong>: il formato persona-based richiede un attore specifico ("Come operatore di backoffice..."). Per requisiti astratti (dati, non-funzionali, integrazione), il modello e costretto a inventare un contesto operativo che non esiste nel requisito.</li>
+        <li><strong>Esplosione per canale/persona</strong>: lo stesso scenario viene spesso replicato per persona diversa (marketing, operatore, cliente) o canale diverso (app, web, sportello), moltiplicando le aggiunte senza aggiungere copertura reale.</li>
+        <li><strong>Edge case creativi</strong>: il modello, ragionando dal punto di vista dell'utente, tende a immaginare scenari negativi (cosa succede se il servizio e giu? se i dati sono corrotti? se la sessione scade?) che sono utili in assoluto ma non tracciabili al requisito.</li>
+    </ul>
+</div>
+
+<div class="insight-box">
+    <h3>Raccomandazione operativa</h3>
+    <ul>
+        <li><strong>Usare il percorso diretto come base</strong> per i test cases tracciabili al requisito (coerenza alta, meno rumore).</li>
+        <li><strong>Usare il persona-based come fonte complementare</strong>: le aggiunte di tipo "valuable" (resilienza, data quality, concorrenza) possono essere estratte e aggiunte come test cases supplementari, con un tag esplicito "non tracciabile al requisito".</li>
+        <li><strong>Filtrare il rumore</strong>: le aggiunte di tipo "noise" (UI inventata, endpoint specifici, workflow fittizi) dovrebbero essere scartate automaticamente o revisionare il prompt per ridurle.</li>
+        <li><strong>Separare "core" da "extended"</strong>: un possibile miglioramento della pipeline e generare due set: test cases core (strettamente tracciabili) e test cases estesi (scenari aggiuntivi di valore), etichettandoli diversamente.</li>
+    </ul>
+</div>
+
+<!-- DETAIL BY TIER -->
+<h2>Dettaglio per Livello di Valore</h2>
+
+        <div class="tier-section" style="border-left-color: #16a34a">
+            <h3>Valore concreto — 160 occorrenze (20.4%)</h3>
+            <p class="tier-desc">Scenari che un QA esperto aggiungerebbe indipendentemente dal requisito: resilienza, input invalidi, concorrenza, sicurezza, stati vuoti.</p>
+            <div class="examples">
+                <h4>Resilienza / Error handling (97)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US02.TC04</span>
+                    <p>Introduce gestione errore del servizio cluster e 'fallback (da definire)'; il requisito non prevede scenari di errore né fallback.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US02.TC05</span>
+                    <p>Introduce scenario 'cliente senza cluster' e fallback (da definire); il requisito non specifica comportamento quando il cliente non appartiene a cluster.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC10</span>
+                    <p>Scenario prestazionale/volume (>=50.000) e assenza di timeout: il requisito non definisce requisiti di performance o SLA.</p>
+                </div>
+                <p class="more">... e altri 94</p>
+                <h4>Concorrenza / Race conditions (22)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US01.TC05</span>
+                    <p>Introduce gestione conflitti di modifica concorrente (lock, ETag/versione) e audit/log di chi ha salvato cosa; non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-004</span>
+                    <span class="example-tc">REQ-D-004.US01.TC12</span>
+                    <p>Scenario di concorrenza e ordine temporale dei log; non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-006</span>
+                    <span class="example-tc">REQ-D-006.US01.TC09</span>
+                    <p>Introduce idempotenza/deduplica delle transizioni duplicate; non presente nel requisito.</p>
+                </div>
+                <p class="more">... e altri 19</p>
+                <h4>Qualità dati / Input validation (17)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC09</span>
+                    <p>Validazione input del filtro temporale (inizio > fine) e comportamento 'non applica filtro': non previsto dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US02.TC05</span>
+                    <p>Introduce gestione esplicita di 'dato inconsistente: scadenza nel passato' come edge case; non menzionato nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US03.TC03</span>
+                    <p>Introduce regole di validazione input (durata 0 o negativa rifiutata) non presenti nel requisito.</p>
+                </div>
+                <p class="more">... e altri 14</p>
+                <h4>Test negativi / Stati vuoti (13)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC08</span>
+                    <p>Comportamento per filtro con valore inesistente (lista vuota senza errori): non esplicitato dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US04.TC05</span>
+                    <p>Introduce scenario 'lista offerte vuota' e relativo comportamento; non richiesto dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-001</span>
+                    <span class="example-tc">REQ-F-001.US01.TC04</span>
+                    <p>Introduce gestione input mancante/vuoto come caso negativo con esiti alternativi (errore vs lista vuota): il requisito non richiede questo comportamento.</p>
+                </div>
+                <p class="more">... e altri 10</p>
+                <h4>Sicurezza / Session management (11)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-004</span>
+                    <span class="example-tc">REQ-D-004.US01.TC10</span>
+                    <p>Gestione fault logging e requisito di segnalazione/rollback 'da definire'; il requisito non tratta error handling/atomicità.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-009</span>
+                    <span class="example-tc">REQ-D-009.US01.TC07</span>
+                    <p>Introduce gestione sessione scaduta/re-auth e assenza stack trace; non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-I-007</span>
+                    <span class="example-tc">REQ-I-007.US01.TC02</span>
+                    <p>Assume regole di presenza nell'elenco offerte e richiede assenza di 'stati intermedi/parziali' (consistenza/atomicità di esposizione) non definite nel requisito.</p>
+                </div>
+                <p class="more">... e altri 8</p>
+            </div>
+        </div>
+        <div class="tier-section" style="border-left-color: #2563eb">
+            <h3>Potenzialmente utile — 46 occorrenze (5.9%)</h3>
+            <p class="tier-desc">Estensioni ragionevoli che coprono aspetti spesso necessari in produzione: audit, cross-channel, backward compatibility, recovery.</p>
+            <div class="examples">
+                <h4>Audit / Tracciamento (35)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US04.TC04</span>
+                    <p>Introduce requisito 'Loyalty read-only' e verifica che non modifichi lo stato dell’offerta sul motore (audit log/chiamate update); non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-006</span>
+                    <span class="example-tc">REQ-D-006.US01.TC05</span>
+                    <p>Richiede tracciamento/audit delle operazioni rifiutate su proposta inesistente; il requisito parla di audit dei cambiamenti di stato, non dei tentativi falliti.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-006</span>
+                    <span class="example-tc">REQ-D-006.US01.TC06</span>
+                    <p>Introduce regola di autorizzazione/ownership (proposta non associata al cliente richiedente) e relativo tracciamento; non presente nel requisito.</p>
+                </div>
+                <p class="more">... e altri 32</p>
+                <h4>Recovery / Ripristino (5)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US02.TC04</span>
+                    <p>Aggiunge aspettative di recupero post-ripristino e assenza di stati intermedi corrotti dal motore; non descritto nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-011</span>
+                    <span class="example-tc">REQ-F-011.US01.TC06</span>
+                    <p>Ripresa da 'area pratiche/in corso o entry-point equivalente' e gestione recovery sessione: non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-019</span>
+                    <span class="example-tc">REQ-F-019.US01.TC03</span>
+                    <p>Include prezzo (19,90 EUR) e vincoli di consistenza come 'nessun articolo parzialmente creato'; non presenti nel requisito.</p>
+                </div>
+                <p class="more">... e altri 2</p>
+                <h4>Backward compatibility (4)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US03.TC04</span>
+                    <p>Introduce comportamento retroattivo/non retroattivo della modifica configurazione su offerte già persistite; non trattato dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-002</span>
+                    <span class="example-tc">REQ-F-002.US02.TC04</span>
+                    <p>Introduce gestione di touchpoint deprecati ('KIOSK_OLD') e backward compatibility del registry non menzionate.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-033</span>
+                    <span class="example-tc">REQ-F-033.US03.TC05</span>
+                    <p>Introduce scenario di change management/versioning delle regole (Regola A/B) e requisiti di non regressione/migrazione dati storici, non presenti nel requisito.</p>
+                </div>
+                <p class="more">... e altri 1</p>
+                <h4>Coerenza cross-canale (2)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US02.TC03</span>
+                    <p>Estende la regola a comportamento uniforme su App e Web e verifica cross-canale; non richiesto dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-005</span>
+                    <span class="example-tc">REQ-D-005.US01.TC04</span>
+                    <p>Assume che APP e web consumino la stessa sorgente dati/servizio e che la scadenza sia 'la stessa su entrambi i canali'; il requisito dice solo che l’offerta sarà disponibile su APP e sito, non specifica architettura né vincolo di identica scadenza cross-canale.</p>
+                </div>
+            </div>
+        </div>
+        <div class="tier-section" style="border-left-color: #dc2626">
+            <h3>Rumore — 156 occorrenze (19.9%)</h3>
+            <p class="tier-desc">Dettagli inventati dal modello senza base nel requisito: componenti UI fittizi, scelte implementative specifiche, attori/workflow inesistenti.</p>
+            <div class="examples">
+                <h4>UI/UX inventata (70)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US01.TC02</span>
+                    <p>Assume che la dashboard mostri in UI un SLA/ETA del tempo di applicazione; il requisito richiede tempo prevedibile e documentato, non che sia visualizzato in dashboard.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US01.TC01</span>
+                    <p>Introduce canale 'dashboard' come 'channels' distinto e dettagli di permessi/credenziali; il requisito cita solo 'dashboard marketing' senza specifiche operative.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US02.TC02</span>
+                    <p>Introduce esplicitamente il canale 'Web' come canale distinto (oltre a 'dashboard'); il requisito non distingue canali di fruizione.</p>
+                </div>
+                <p class="more">... e altri 67</p>
+                <h4>Dettagli tecnici implementativi (36)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-007</span>
+                    <span class="example-tc">REQ-D-007.US01.TC04</span>
+                    <p>Confronto di coerenza tra consultazione ed export (conteggio/sottoinsieme) e formato JSON: il requisito non richiede coerenza quantitativa né formati.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-003</span>
+                    <span class="example-tc">REQ-F-003.US01.TC06</span>
+                    <p>Dettagli di comportamento (redirect/403, enforcement lato server su deep link URL): non presenti nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-004</span>
+                    <span class="example-tc">REQ-F-004.US01.TC03</span>
+                    <p>Dettaglia modalità di negazione accesso (pagina non raggiungibile/HTTP 403) non richieste dal requisito.</p>
+                </div>
+                <p class="more">... e altri 33</p>
+                <h4>Componenti/servizi inventati (27)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US02.TC03</span>
+                    <p>Introduce una regola: il motore rifiuta configurazioni con campi mancanti e registra anomalia; il requisito richiede che i campi esistano negli oggetti, non definisce comportamento del motore con dati malformati.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US02.TC01</span>
+                    <p>Introduce 'meccanismo/servizio di determinazione cluster' come componente esplicito; il requisito non menziona servizi di determinazione né requisiti di disponibilità.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC01</span>
+                    <p>Introduce attore/ruolo 'Team Marketing' e permessi di accesso; non menzionati nel requisito.</p>
+                </div>
+                <p class="more">... e altri 24</p>
+                <h4>Workflow/stati inventati (14)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-006</span>
+                    <span class="example-tc">REQ-D-006.US01.TC02</span>
+                    <p>Introduce lo stato 'acquistata' (e naming 'aggiunta_al_carrello') non presente nel requisito, che cita come esempi 'aggiunta al carrello' e 'accettata/completata'.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-002</span>
+                    <span class="example-tc">REQ-F-002.US01.TC14</span>
+                    <p>Introduce una regola di coerenza tra stato 'vietata' e attivazione ON (blocco o avviso). Il requisito non definisce interazione tra 'vietata' e attivazione/spegnimento.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-008</span>
+                    <span class="example-tc">REQ-F-008.US01.TC01</span>
+                    <p>Introduce motivazioni/USP specifiche ('Promo USP X', 'Eligible segment A') e stato esito 'pending/non disponibile'; il requisito cita messaggi promozionali/USP ma non definisce stati 'pending'.</p>
+                </div>
+                <p class="more">... e altri 11</p>
+                <h4>Scelte implementative (flag, config) (9)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-004</span>
+                    <span class="example-tc">REQ-D-004.US02.TC03</span>
+                    <p>Introduzione di flag_critico trasmesso in richiesta; non definito nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-007</span>
+                    <span class="example-tc">REQ-D-007.US01.TC07</span>
+                    <p>Scenario user_id non risolvibile e richiesta di flag/nota di anomalia: non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-F-001</span>
+                    <span class="example-tc">REQ-F-001.US01.TC01</span>
+                    <p>Introduce feature flag e segmentazione cliente (Retail) con regole per segmento: non menzionati nel requisito.</p>
+                </div>
+                <p class="more">... e altri 6</p>
+            </div>
+        </div>
+        <div class="tier-section" style="border-left-color: #f59e0b">
+            <h3>Estensione di scope — 301 occorrenze (38.3%)</h3>
+            <p class="tier-desc">Informazioni non errate ma fuori dal perimetro del requisito: assunzioni ragionevoli, scenari nuovi, estensioni di funzionalità.</p>
+            <div class="examples">
+                <h4>Fuori perimetro (esplicito) (137)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US02.TC01</span>
+                    <p>Introduce il concetto di 'vista consistente/snapshot' durante un calcolo e verifica di versioni/timestamp; non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US01.TC04</span>
+                    <p>Introduce validazione 'testo obbligatorio' e messaggio di errore, non presente nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-004</span>
+                    <span class="example-tc">REQ-D-004.US01.TC11</span>
+                    <p>Scenario su stati non serializzabili o troppo grandi e policy di truncation/errore; non presente nel requisito.</p>
+                </div>
+                <p class="more">... e altri 134</p>
+                <h4>Scenari nuovi estesi (113)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US01.TC01</span>
+                    <p>Introduce chiavi e canali specifici (Prodotto=P1, Canale=WEB) e formati/valori target (NUOVI_CLIENTI) non presenti nel requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US01.TC05</span>
+                    <p>Introduce regola di validazione di 'cluster non valido' (blocco salvataggio + messaggio) non richiesta dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-002</span>
+                    <span class="example-tc">REQ-D-002.US01.TC06</span>
+                    <p>Introduce funzionalità di modifica/rimozione associazioni cluster (update parziale) non descritta nel requisito.</p>
+                </div>
+                <p class="more">... e altri 110</p>
+                <h4>Assunzioni non tracciabili (51)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US02.TC02</span>
+                    <p>Aggiunge l'assunzione che 'prima dell'applicazione effettiva il motore può continuare a usare la configurazione precedente senza errori'; il requisito non definisce questo comportamento transitorio.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC05</span>
+                    <p>Assume formato ISO-8601 e estremi inclusi nel filtro temporale; non specificato dal requisito.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-004</span>
+                    <span class="example-tc">REQ-D-004.US01.TC04</span>
+                    <p>Assunzione di enforcement: blocco salvataggio e messaggio errore per motivazione mancante; il requisito non definisce il comportamento applicativo in caso di mancanza motivazione.</p>
+                </div>
+                <p class="more">... e altri 48</p>
+            </div>
+        </div>
+        <div class="tier-section" style="border-left-color: #6b7280">
+            <h3>Non classificato — 122 occorrenze (15.5%)</h3>
+            <p class="tier-desc">Aggiunte non rientrate nelle categorie precedenti.</p>
+            <div class="examples">
+                <h4>Altro (122)</h4>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US01.TC04</span>
+                    <p>Impone che il motore usi la configurazione precedente quando il salvataggio fallisce; il requisito non definisce la gestione funzionale in questo caso.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-001</span>
+                    <span class="example-tc">REQ-D-001.US02.TC05</span>
+                    <p>Aggiunge business rule: il motore non applica configurazioni scadute/non ancora valide e seleziona quella attiva; il requisito richiede il campo 'periodo di validità' ma non specifica l'uso di selezione/applicazione temporale.</p>
+                </div>
+                <div class="example">
+                    <span class="example-req">REQ-D-003</span>
+                    <span class="example-tc">REQ-D-003.US01.TC07</span>
+                    <p>Test di autorizzazione/accesso negato (403, utente non autorizzato): il requisito non tratta sicurezza/permessi.</p>
+                </div>
+                <p class="more">... e altri 119</p>
+            </div>
+        </div>
+
+<!-- PER-REQUIREMENT TABLE -->
+<h2>Dettaglio per Requisito</h2>
+<div style="overflow-x:auto;">
+<table>
+    <thead>
+        <tr>
+            <th>Requisito</th><th>Totale</th>
+            <th>Valore</th><th>Rumore</th><th>Estensione</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>REQ-D-001</code></td>
+            <td>9</td>
+            <td style="background:rgba(22, 163, 74, 0.066)">2 (22%)</td>
+            <td style="background:rgba(220, 38, 38, 0.066)">2 (22%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-002</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.09)">3 (30%)</td>
+            <td style="background:rgba(220, 38, 38, 0.09)">3 (30%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-003</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.11399999999999999)">3 (38%)</td>
+            <td style="background:rgba(220, 38, 38, 0.075)">2 (25%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-004</code></td>
+            <td>25</td>
+            <td style="background:rgba(22, 163, 74, 0.036)">3 (12%)</td>
+            <td style="background:rgba(220, 38, 38, 0.072)">6 (24%)</td>
+            <td>16</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-005</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.22499999999999998)">9 (75%)</td>
+            <td style="background:rgba(220, 38, 38, 0.024)">1 (8%)</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-006</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.15)">5 (50%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-007</code></td>
+            <td>16</td>
+            <td style="background:rgba(22, 163, 74, 0.056999999999999995)">3 (19%)</td>
+            <td style="background:rgba(220, 38, 38, 0.093)">5 (31%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-008</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.06)">2 (20%)</td>
+            <td style="background:rgba(220, 38, 38, 0.03)">1 (10%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-009</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.063)">3 (21%)</td>
+            <td style="background:rgba(220, 38, 38, 0.042)">2 (14%)</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-001</code></td>
+            <td>5</td>
+            <td style="background:rgba(22, 163, 74, 0.18)">3 (60%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">1 (20%)</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-002</code></td>
+            <td>15</td>
+            <td style="background:rgba(22, 163, 74, 0.039)">2 (13%)</td>
+            <td style="background:rgba(220, 38, 38, 0.099)">5 (33%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-003</code></td>
+            <td>5</td>
+            <td style="background:rgba(22, 163, 74, 0.0)">0 (0%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">1 (20%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-004</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.12)">4 (40%)</td>
+            <td style="background:rgba(220, 38, 38, 0.09)">3 (30%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-005</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.11399999999999999)">3 (38%)</td>
+            <td style="background:rgba(220, 38, 38, 0.075)">2 (25%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-006</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.192)">7 (64%)</td>
+            <td style="background:rgba(220, 38, 38, 0.0)">0 (0%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-007</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.03)">1 (10%)</td>
+            <td style="background:rgba(220, 38, 38, 0.12)">4 (40%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-008</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.06)">2 (20%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-009</code></td>
+            <td>16</td>
+            <td style="background:rgba(22, 163, 74, 0.093)">5 (31%)</td>
+            <td style="background:rgba(220, 38, 38, 0.056999999999999995)">3 (19%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-010</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.051000000000000004)">2 (17%)</td>
+            <td style="background:rgba(220, 38, 38, 0.024)">1 (8%)</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-011</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.087)">4 (29%)</td>
+            <td style="background:rgba(220, 38, 38, 0.042)">2 (14%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-012</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.11399999999999999)">3 (38%)</td>
+            <td style="background:rgba(220, 38, 38, 0.0)">0 (0%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-013</code></td>
+            <td>15</td>
+            <td style="background:rgba(22, 163, 74, 0.06)">3 (20%)</td>
+            <td style="background:rgba(220, 38, 38, 0.081)">4 (27%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-015</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.087)">4 (29%)</td>
+            <td style="background:rgba(220, 38, 38, 0.087)">4 (29%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-017</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.03)">1 (10%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-018</code></td>
+            <td>9</td>
+            <td style="background:rgba(22, 163, 74, 0.132)">4 (44%)</td>
+            <td style="background:rgba(220, 38, 38, 0.099)">3 (33%)</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-019</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.075)">2 (25%)</td>
+            <td style="background:rgba(220, 38, 38, 0.036)">1 (12%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-021</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.051000000000000004)">2 (17%)</td>
+            <td style="background:rgba(220, 38, 38, 0.024)">1 (8%)</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-022</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.09)">3 (30%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-023</code></td>
+            <td>13</td>
+            <td style="background:rgba(22, 163, 74, 0.138)">6 (46%)</td>
+            <td style="background:rgba(220, 38, 38, 0.093)">4 (31%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-024</code></td>
+            <td>17</td>
+            <td style="background:rgba(22, 163, 74, 0.018)">1 (6%)</td>
+            <td style="background:rgba(220, 38, 38, 0.036)">2 (12%)</td>
+            <td>14</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-025</code></td>
+            <td>9</td>
+            <td style="background:rgba(22, 163, 74, 0.099)">3 (33%)</td>
+            <td style="background:rgba(220, 38, 38, 0.033)">1 (11%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-026</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.09)">3 (30%)</td>
+            <td style="background:rgba(220, 38, 38, 0.09)">3 (30%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-027</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.081)">3 (27%)</td>
+            <td style="background:rgba(220, 38, 38, 0.027)">1 (9%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-028</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.075)">2 (25%)</td>
+            <td style="background:rgba(220, 38, 38, 0.11399999999999999)">3 (38%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-029</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.051000000000000004)">2 (17%)</td>
+            <td style="background:rgba(220, 38, 38, 0.15)">6 (50%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-030</code></td>
+            <td>9</td>
+            <td style="background:rgba(22, 163, 74, 0.066)">2 (22%)</td>
+            <td style="background:rgba(220, 38, 38, 0.033)">1 (11%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-031</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.063)">3 (21%)</td>
+            <td style="background:rgba(220, 38, 38, 0.063)">3 (21%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-033</code></td>
+            <td>16</td>
+            <td style="background:rgba(22, 163, 74, 0.075)">4 (25%)</td>
+            <td style="background:rgba(220, 38, 38, 0.036)">2 (12%)</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-001</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.11399999999999999)">3 (38%)</td>
+            <td style="background:rgba(220, 38, 38, 0.0)">0 (0%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-002</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.021)">1 (7%)</td>
+            <td style="background:rgba(220, 38, 38, 0.129)">6 (43%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-003</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.0)">0 (0%)</td>
+            <td style="background:rgba(220, 38, 38, 0.12)">4 (40%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-004</code></td>
+            <td>17</td>
+            <td style="background:rgba(22, 163, 74, 0.072)">4 (24%)</td>
+            <td style="background:rgba(220, 38, 38, 0.018)">1 (6%)</td>
+            <td>12</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-006</code></td>
+            <td>20</td>
+            <td style="background:rgba(22, 163, 74, 0.12)">8 (40%)</td>
+            <td style="background:rgba(220, 38, 38, 0.0)">0 (0%)</td>
+            <td>12</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-007</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.174)">7 (58%)</td>
+            <td style="background:rgba(220, 38, 38, 0.051000000000000004)">2 (17%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-001</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.165)">6 (55%)</td>
+            <td style="background:rgba(220, 38, 38, 0.054)">2 (18%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-002</code></td>
+            <td>7</td>
+            <td style="background:rgba(22, 163, 74, 0.213)">5 (71%)</td>
+            <td style="background:rgba(220, 38, 38, 0.042)">1 (14%)</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-005</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.081)">3 (27%)</td>
+            <td style="background:rgba(220, 38, 38, 0.054)">2 (18%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-006</code></td>
+            <td>16</td>
+            <td style="background:rgba(22, 163, 74, 0.0)">0 (0%)</td>
+            <td style="background:rgba(220, 38, 38, 0.036)">2 (12%)</td>
+            <td>14</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-001</code></td>
+            <td>15</td>
+            <td style="background:rgba(22, 163, 74, 0.081)">4 (27%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">3 (20%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-002</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.0)">0 (0%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-003</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.036)">1 (12%)</td>
+            <td style="background:rgba(220, 38, 38, 0.036)">1 (12%)</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-004</code></td>
+            <td>12</td>
+            <td style="background:rgba(22, 163, 74, 0.024)">1 (8%)</td>
+            <td style="background:rgba(220, 38, 38, 0.0)">0 (0%)</td>
+            <td>11</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-005</code></td>
+            <td>18</td>
+            <td style="background:rgba(22, 163, 74, 0.084)">5 (28%)</td>
+            <td style="background:rgba(220, 38, 38, 0.033)">2 (11%)</td>
+            <td>11</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-006</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.135)">5 (45%)</td>
+            <td style="background:rgba(220, 38, 38, 0.027)">1 (9%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-007</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.075)">2 (25%)</td>
+            <td style="background:rgba(220, 38, 38, 0.11399999999999999)">3 (38%)</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-008</code></td>
+            <td>8</td>
+            <td style="background:rgba(22, 163, 74, 0.036)">1 (12%)</td>
+            <td style="background:rgba(220, 38, 38, 0.075)">2 (25%)</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-009</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.054)">2 (18%)</td>
+            <td style="background:rgba(220, 38, 38, 0.054)">2 (18%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-010</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.12)">4 (40%)</td>
+            <td style="background:rgba(220, 38, 38, 0.06)">2 (20%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-011</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.087)">4 (29%)</td>
+            <td style="background:rgba(220, 38, 38, 0.042)">2 (14%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-001</code></td>
+            <td>14</td>
+            <td style="background:rgba(22, 163, 74, 0.063)">3 (21%)</td>
+            <td style="background:rgba(220, 38, 38, 0.063)">3 (21%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-002</code></td>
+            <td>10</td>
+            <td style="background:rgba(22, 163, 74, 0.0)">0 (0%)</td>
+            <td style="background:rgba(220, 38, 38, 0.03)">1 (10%)</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-003</code></td>
+            <td>11</td>
+            <td style="background:rgba(22, 163, 74, 0.108)">4 (36%)</td>
+            <td style="background:rgba(220, 38, 38, 0.081)">3 (27%)</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-004</code></td>
+            <td>17</td>
+            <td style="background:rgba(22, 163, 74, 0.054)">3 (18%)</td>
+            <td style="background:rgba(220, 38, 38, 0.072)">4 (24%)</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-005</code></td>
+            <td>18</td>
+            <td style="background:rgba(22, 163, 74, 0.084)">5 (28%)</td>
+            <td style="background:rgba(220, 38, 38, 0.084)">5 (28%)</td>
+            <td>8</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-006</code></td>
+            <td>13</td>
+            <td style="background:rgba(22, 163, 74, 0.069)">3 (23%)</td>
+            <td style="background:rgba(220, 38, 38, 0.069)">3 (23%)</td>
+            <td>7</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-007</code></td>
+            <td>16</td>
+            <td style="background:rgba(22, 163, 74, 0.093)">5 (31%)</td>
+            <td style="background:rgba(220, 38, 38, 0.11399999999999999)">6 (38%)</td>
+            <td>5</td>
+        </tr></tbody>
+</table>
+</div>
+
+<p style="margin-top:32px; font-size:12px; color:var(--gray-600);">
+    Report generato da <code>generate_added_info_analysis.py</code> — test-evaluator
+</p>
+</div>
+
+<!-- CHARTS -->
+<script>
+// Tier comparison
+(() => {
+    new Chart(document.getElementById('chartTierCompare'), {
+        type: 'bar',
+        data: {
+            labels: ["Valore concreto", "Potenzialmente utile", "Rumore", "Estensione di scope", "Non classificato"],
+            datasets: [
+                { label: 'Persona', data: [160, 46, 156, 301, 122], backgroundColor: '#f59e0b', borderRadius: 4 },
+                { label: 'Diretto', data: [88, 32, 108, 184, 60], backgroundColor: '#2563eb', borderRadius: 4 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'Occorrenze' } } }
+        }
+    });
+})();
+
+// Pie chart persona
+(() => {
+    new Chart(document.getElementById('chartPie'), {
+        type: 'doughnut',
+        data: {
+            labels: ["Valore concreto", "Potenzialmente utile", "Rumore", "Estensione di scope", "Non classificato"],
+            datasets: [{ data: [160, 46, 156, 301, 122], backgroundColor: ["#16a34a", "#2563eb", "#dc2626", "#f59e0b", "#6b7280"] }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'right' } }
+        }
+    });
+})();
+
+// Category stacked
+(() => {
+    new Chart(document.getElementById('chartCatStack'), {
+        type: 'bar',
+        data: {
+            labels: ["REQ-D", "REQ-F", "REQ-I", "REQ-NF", "REQ-UI", "REQ-V"],
+            datasets: [{"label": "Valore concreto", "data": [26, 65, 18, 7, 26, 18], "backgroundColor": "#16a34a"}, {"label": "Potenzialmente utile", "data": [7, 19, 5, 7, 3, 5], "backgroundColor": "#2563eb"}, {"label": "Rumore", "data": [24, 67, 13, 7, 20, 25], "backgroundColor": "#dc2626"}, {"label": "Estensione di scope", "data": [40, 126, 28, 17, 47, 43], "backgroundColor": "#f59e0b"}, {"label": "Non classificato", "data": [17, 44, 17, 7, 29, 8], "backgroundColor": "#6b7280"}]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+        }
+    });
+})();
+
+// Subcategory horizontal bar
+(() => {
+    new Chart(document.getElementById('chartSubcat'), {
+        type: 'bar',
+        data: {
+            labels: ["Fuori perimetro (esplicito)", "Altro", "Scenari nuovi estesi", "Resilienza / Error handling", "UI/UX inventata", "Assunzioni non tracciabili", "Dettagli tecnici implementativi", "Audit / Tracciamento", "Componenti/servizi inventati", "Concorrenza / Race conditions", "Qualit\u00e0 dati / Input validation", "Workflow/stati inventati", "Test negativi / Stati vuoti", "Sicurezza / Session management", "Scelte implementative (flag, config)", "Recovery / Ripristino", "Backward compatibility", "Coerenza cross-canale"],
+            datasets: [{ data: [137, 122, 113, 97, 70, 51, 36, 35, 27, 22, 17, 14, 13, 11, 9, 5, 4, 2], backgroundColor: ["#f59e0b", "#6b7280", "#f59e0b", "#16a34a", "#dc2626", "#f59e0b", "#dc2626", "#2563eb", "#dc2626", "#16a34a", "#16a34a", "#dc2626", "#16a34a", "#16a34a", "#dc2626", "#2563eb", "#2563eb", "#2563eb"], borderRadius: 4 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, title: { display: true, text: 'Occorrenze' } } }
+        }
+    });
+})();
+</script>
+</body>
+</html>
