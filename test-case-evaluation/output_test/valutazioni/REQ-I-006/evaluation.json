@@ -1,0 +1,225 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-006",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 0,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 3,
+      "uncovered_ac": [
+        "AC-4"
+      ]
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-006.TC01",
+        "detail": "Scenario e dati relativi a 'offerte', 'validità', 'presentazione', clienti e canali (web/app/operatore) non presenti nel requisito, che parla di esportazione log verso sistemi di audit esterni."
+      },
+      {
+        "test_id": "REQ-I-006.TC02",
+        "detail": "Test su offerte scadute e API elenco offerte: contenuto non tracciabile al requisito (export log)."
+      },
+      {
+        "test_id": "REQ-I-006.TC03",
+        "detail": "Test su limiti start/end validità offerte e time mocking: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.TC04",
+        "detail": "Introduzione attore/sistema 'Loyalty', permessi READ_ONLY e regole authZ (es. HTTP 403): non menzionati dal requisito; inoltre lo scenario riguarda scrittura/lettura offerte, non export log."
+      },
+      {
+        "test_id": "REQ-I-006.TC05",
+        "detail": "Propagazione aggiornamenti su interfacce (web/app/operatore), caching/TTL e coerenza offerte: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.TC06",
+        "detail": "Verifica campi di presentazione offerta (titolo, descrizione, immagine, categoria, ecc.): non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.TC07",
+        "detail": "Resilienza UI e messaggi di errore per indisponibilità Motore durante lettura offerte: non tracciabile al requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description + AC-1",
+        "detail": "Nessun test verifica l'esistenza della funzionalità di esportazione dei log dal Motore verso sistemi di audit esterni."
+      },
+      {
+        "source": "AC-2",
+        "detail": "Nessun test verifica l'esecuzione dell'export in modalità manuale tramite interfaccia o API (nel contesto export log)."
+      },
+      {
+        "source": "AC-3",
+        "detail": "Nessun test verifica che i file/artefatti di export siano in formati importabili/accettati dai sistemi di audit esterni."
+      },
+      {
+        "source": "Description",
+        "detail": "Nessun test copre le 'modalità di selezione dei dati (filtri)' per l'export dei log."
+      },
+      {
+        "source": "Description",
+        "detail": "Nessun test copre i 'requisiti di sicurezza generali' applicati all'export (in modo tracciabile al requisito)."
+      },
+      {
+        "source": "AC-4",
+        "detail": "Nessun test verifica che le operazioni di export siano registrate nei log del sistema (audit trail dell'export)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-006.TC02",
+          "REQ-I-006.TC03"
+        ],
+        "detail": "Entrambi testano variazioni del medesimo scenario di validità temporale/offerte (scaduta/limiti), non pertinente al requisito."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 20,
+    "coherence_score": 0,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 3,
+      "uncovered_ac": [
+        "AC-4"
+      ]
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-006.US01.TC01",
+        "detail": "Scenario di creazione/persistenza offerte e repository primario: non tracciabile al requisito (export log)."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC02",
+        "detail": "Ricalcolo validità offerte, stati 'VALIDA/NON_VALIDA' e meccanismi job/evento: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC03",
+        "detail": "Regole su offerte applicabili/in corso di validità e timestamp richiesta: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC04",
+        "detail": "Payload e campi obbligatori di presentazione (callToAction, categoria, enumerazioni, vincoli formato): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC05",
+        "detail": "Gestione cliente inesistente (lista vuota vs errore) per lettura offerte: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC06",
+        "detail": "Validazione input offerte (fine < inizio) e regole di rifiuto/persistenza: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC07",
+        "detail": "Consistenza letture concorrenti durante aggiornamento offerte e livelli di consistenza (read-your-writes/eventuale): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC08",
+        "detail": "Offerta che scade durante tempo di risposta e definizione timestamp di valutazione: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC01",
+        "detail": "Persona/canali 'Loyalty', APP e sito, tracciamento chiamate GET/POST e assenza scritture: non menzionati dal requisito e non riguarda export log."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC02",
+        "detail": "Aggiornamenti offerte e caching/TTL su canali Loyalty: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC03",
+        "detail": "Gestione timeout Motore su canali e standard osservabilità del canale: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC04",
+        "detail": "Risposta lista offerte vuota e comportamento UI: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC01",
+        "detail": "Front-end commerciale operatore e visualizzazione offerte valide/scadute: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC02",
+        "detail": "Refresh/acquisizione dati offerte e aggiornamento titolo: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC03",
+        "detail": "Campi necessari presentazione su canale operatore (condizioni, canaleProposta): non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC04",
+        "detail": "Cliente inesistente/senza offerte su UI operatore: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC05",
+        "detail": "Errore gestito su UI operatore per indisponibilità Motore e comportamento cache: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC01",
+        "detail": "Canali digitali App/Web e visualizzazione offerte valide/scadute: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC03",
+        "detail": "Contratto payload e campi presentazione digitale (idCampagna, condizioniSintetiche): non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC05",
+        "detail": "Gestione indisponibilità Motore su canali digitali e logging canale: non tracciabile al requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description + AC-1",
+        "detail": "Nessun test valida l'esportazione dei log dal Motore verso sistemi di audit esterni."
+      },
+      {
+        "source": "AC-2",
+        "detail": "Nessun test valida l'export manuale tramite interfaccia o API (nel contesto export log)."
+      },
+      {
+        "source": "AC-3",
+        "detail": "Nessun test valida che gli artefatti di export siano in formati importabili dai sistemi di audit esterni."
+      },
+      {
+        "source": "Description",
+        "detail": "Nessun test copre filtri/modalità di selezione dei dati per l'export dei log."
+      },
+      {
+        "source": "Description",
+        "detail": "Nessun test copre i requisiti di sicurezza generali applicati all'export (es. controllo accessi, protezione dati) in modo tracciabile al requisito."
+      },
+      {
+        "source": "AC-4",
+        "detail": "Nessun test valida l'audit trail delle operazioni di export nei log del sistema."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-006.US02.TC03",
+          "REQ-I-006.US03.TC05",
+          "REQ-I-006.US04.TC05"
+        ],
+        "detail": "Scenari molto simili di indisponibilità Motore/timeout e gestione errore su diversi canali; tutti comunque non pertinenti al requisito di export log."
+      },
+      {
+        "test_ids": [
+          "REQ-I-006.US02.TC02",
+          "REQ-I-006.US03.TC02",
+          "REQ-I-006.US04.TC02"
+        ],
+        "detail": "Scenari ripetuti di 'successiva lettura vede aggiornamenti' su canali diversi, non pertinenti al requisito."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set sono sostanzialmente fuori tema rispetto al requisito (export dei log verso sistemi di audit esterni) e non coprono AC-4 né gli aspetti chiave (export, formati, filtri, audit trail). Il set direct introduce meno scenari/persona/canali e ha meno informazioni aggiunte e ridondanze complessive rispetto all'indirect_persona (7 TC vs 20), risultando marginalmente piu coerente a parita di gravi mancanze."
+  }
+}

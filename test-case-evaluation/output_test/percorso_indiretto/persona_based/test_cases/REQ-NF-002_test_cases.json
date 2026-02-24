@@ -1,0 +1,222 @@
+[
+  {
+    "story_id": "REQ-NF-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-002.US01.TC01",
+        "title": "Inconsistenza tra canali: proposizione continua con regola locale e logging dell'evento",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo e accesso ai log tecnici (es. log aggregator/console/endpoint di consultazione log)",
+          "Esiste una regola R-LOCAL v1 disponibile localmente al Motore di Offerte per la proposizione dell'offerta O-1001",
+          "È possibile simulare un'inconsistenza tra canali sulla visibilità/applicazione della stessa regola o proposta (feature flag o tool di test)",
+          "Clock di sistema sincronizzato (NTP) per verifiche su timestamp nei log"
+        ],
+        "test_data": [
+          "ID regola: R-LOCAL (versione locale: v1)",
+          "ID offerta/proposta: O-1001",
+          "Canale A: WEB",
+          "Canale B: APP",
+          "Tipo anomalia simulata: incoerenza visibilità proposta tra canali (WEB=visibile, APP=non visibile)"
+        ],
+        "steps": [
+          "Configurare il Motore di Offerte affinché la regola R-LOCAL v1 sia la regola localmente disponibile per la valutazione di O-1001",
+          "Attivare la simulazione di inconsistenza tra canali per O-1001 (WEB visibile, APP non visibile)",
+          "Richiedere la proposizione dell'offerta O-1001 sul canale WEB",
+          "Richiedere la proposizione dell'offerta O-1001 sul canale APP",
+          "Recuperare dai log tecnici gli eventi generati nel timeframe dell'esecuzione del test"
+        ],
+        "expected_results": [
+          "La richiesta di proposizione su WEB completa con esito di proposizione determinato applicando la regola localmente disponibile R-LOCAL v1 (nessun errore/blocco dovuto all'inconsistenza)",
+          "La richiesta di proposizione su APP completa con esito di proposizione determinato applicando la regola localmente disponibile R-LOCAL v1 (nessun errore/blocco dovuto all'inconsistenza)",
+          "Nei log tecnici è presente almeno un evento relativo all'anomalia di sincronizzazione/inconsistenza tra canali occorsa durante le richieste",
+          "Per l'evento di anomalia nei log sono presenti: un timestamp valorizzato e una descrizione testuale dell'anomalia"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "web",
+          "app"
+        ],
+        "notes": "La user story non specifica come determinare in modo oggettivo quale regola sia stata applicata; il test assume che il sistema esponga un audit/telemetria o un output verificabile (es. campo 'regolaApplicata' o tracciamento interno) per confermare l'uso di R-LOCAL v1. Il formato del log oltre a timestamp e descrizione non è vincolato."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC02",
+        "title": "Evento anomalo di sincronizzazione: creazione di un log per ciascun evento con timestamp e descrizione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo e accesso ai log tecnici",
+          "Meccanismo di simulazione eventi anomali disponibile (es. generator, stub, chaos testing controllato)",
+          "Clock di sistema sincronizzato (NTP)"
+        ],
+        "test_data": [
+          "Numero eventi anomali da generare: 3",
+          "Tipi evento: (1) incoerenza temporanea tra canali, (2) race condition aggiornamento regola, (3) evento generico 'sync anomaly'",
+          "Finestra temporale generazione eventi: 60 secondi"
+        ],
+        "steps": [
+          "Avviare la generazione controllata di 3 eventi di sincronizzazione anomali distinti entro 60 secondi",
+          "Recuperare dai log tecnici gli eventi generati nel timeframe del test",
+          "Per ciascun evento recuperato, ispezionare i campi disponibili nel log"
+        ],
+        "expected_results": [
+          "Nei log tecnici risultano presenti 3 eventi di log (uno per ciascun evento anomalo generato) senza aggregazioni che impediscano la tracciabilità 1:1",
+          "Ogni evento di log contiene un timestamp valorizzato",
+          "Ogni evento di log contiene una descrizione testuale dell'anomalia valorizzata",
+          "Ogni evento di log è distinguibile dagli altri (es. per timestamp o contenuto della descrizione) in modo da poter correlare i 3 eventi generati"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La user story richiede 'log tecnico dettagliato' ma specifica solo timestamp e descrizione come minimi; il test verifica i minimi e la tracciabilità 1:1. Eventuali campi aggiuntivi (id regola, canale, correlation id) non sono richiesti."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC03",
+        "title": "Incidente di sincronizzazione simulato: nessuna funzionalità di proposizione viene bloccata o sospesa",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo",
+          "È possibile simulare un 'incidente di sincronizzazione' in corso (flag o scenario di test che mantenga l'incidente attivo per alcuni minuti)",
+          "Esiste un set di offerte/proposte valutabili dal Motore di Offerte (almeno 5) con regole localmente disponibili"
+        ],
+        "test_data": [
+          "Durata incidente simulato: 5 minuti",
+          "Numero richieste di proposizione durante l'incidente: 20",
+          "Offerte/proposte: O-2001, O-2002, O-2003, O-2004, O-2005"
+        ],
+        "steps": [
+          "Attivare l'incidente di sincronizzazione simulato e mantenerlo attivo per 5 minuti",
+          "Durante i 5 minuti, inviare 20 richieste di proposizione distribuite sulle offerte O-2001..O-2005",
+          "Raccogliere gli esiti delle 20 richieste (successo/fallimento e eventuali errori)",
+          "Disattivare l'incidente simulato"
+        ],
+        "expected_results": [
+          "Durante l'incidente simulato, nessuna delle 20 richieste risulta bloccata o sospesa a causa dell'incidente (nessun timeout imputabile a blocco funzionale e nessun errore che indichi sospensione della proposizione)",
+          "Le richieste di proposizione continuano a produrre un esito (proposta/offerta determinata) basato sulle regole localmente disponibili",
+          "Eventuali anomalie di sincronizzazione occorse durante il periodo sono tracciate nei log tecnici (se consultabili) senza impattare il completamento delle richieste"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non definisce soglie prestazionali o codici errore specifici; il test interpreta 'non bloccata o sospesa' come completamento delle richieste senza errori/timeout attribuibili all'incidente. Se esistono SLO/timeout applicativi standard, usarli come riferimento operativo."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC04",
+        "title": "Edge case: errori di sincronizzazione ad alta frequenza non interrompono la proposizione e generano un log per ciascuna anomalia",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo e accesso ai log tecnici",
+          "Meccanismo di simulazione di errori di sincronizzazione ripetuti disponibile",
+          "Esiste almeno una proposta/offerta valutabile con regola localmente disponibile"
+        ],
+        "test_data": [
+          "Durata test: 2 minuti",
+          "Frequenza anomalie: 10 eventi/minuto (totale atteso: 20)",
+          "Offerta/proposta: O-3001",
+          "Regola locale: R-LOCAL v1"
+        ],
+        "steps": [
+          "Configurare la proposizione di O-3001 con regola localmente disponibile R-LOCAL v1",
+          "Avviare la simulazione di errori di sincronizzazione a 10 eventi/minuto per 2 minuti",
+          "Durante i 2 minuti, inviare una richiesta di proposizione per O-3001 ogni 10 secondi",
+          "Recuperare dai log tecnici gli eventi nel timeframe del test",
+          "Contare il numero di eventi di log relativi alle anomalie generate"
+        ],
+        "expected_results": [
+          "Tutte le richieste di proposizione inviate durante il test completano senza blocchi/sospensioni dovuti alle anomalie di sincronizzazione",
+          "Nei log tecnici è presente un evento per ciascuna anomalia generata (conteggio eventi log = 20 nel timeframe del test)",
+          "Ogni evento di log contiene timestamp e descrizione dell'anomalia"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica meccanismi di rate limiting o deduplicazione dei log; il test assume tracciamento 1:1 come da user story. Se il sistema implementa deduplica, questo test potrebbe fallire e richiede chiarimento in refinement."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC05",
+        "title": "Edge case: race condition durante modifica regola - logging anomalia e proposizione con regola locale al momento della valutazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo e accesso ai log tecnici",
+          "È possibile eseguire un aggiornamento di regola concorrente mentre è in corso una valutazione (strumento di test o API di amministrazione regole)",
+          "Esistono due versioni della regola: R-LOCAL v1 (attiva) e R-LOCAL v2 (nuova)"
+        ],
+        "test_data": [
+          "ID regola: R-LOCAL",
+          "Versioni: v1 (attiva), v2 (da pubblicare)",
+          "Offerta/proposta: O-4001",
+          "Momento update: durante la valutazione della richiesta (concorrenza controllata)"
+        ],
+        "steps": [
+          "Impostare R-LOCAL v1 come versione localmente attiva",
+          "Avviare una richiesta di proposizione per O-4001",
+          "Durante l'elaborazione della richiesta, avviare in parallelo la pubblicazione/aggiornamento della regola a R-LOCAL v2",
+          "Attendere il completamento della richiesta di proposizione",
+          "Recuperare dai log tecnici gli eventi generati nel timeframe del test"
+        ],
+        "expected_results": [
+          "La richiesta di proposizione completa senza blocchi/sospensioni dovuti alla race condition",
+          "Nei log tecnici è presente un evento che descrive l'anomalia di sincronizzazione/race condition con timestamp e descrizione",
+          "L'esito della proposizione risulta coerente con una singola versione della regola applicata localmente al momento della valutazione (v1 oppure v2), senza esiti incoerenti o errori applicativi dovuti al cambio versione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La user story non definisce quale versione debba prevalere in race condition; il test verifica che venga applicata una versione localmente consistente e che l'anomalia sia loggata. Per automazione è necessario un modo osservabile di determinare la versione regola effettivamente applicata."
+      },
+      {
+        "test_id": "REQ-NF-002.US01.TC06",
+        "title": "Negative: log sink non disponibile - la proposizione non viene interrotta (comportamento logging non specificato)",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di test con Motore di Offerte attivo",
+          "È possibile rendere temporaneamente non disponibile il sottosistema di logging (es. blocco rete verso log aggregator o arresto del servizio di log)",
+          "È possibile simulare un evento di sincronizzazione anomalo durante la proposizione",
+          "Esiste una regola localmente disponibile per almeno una proposta/offerta"
+        ],
+        "test_data": [
+          "Offerta/proposta: O-5001",
+          "Regola locale: R-LOCAL v1",
+          "Tipo anomalia simulata: incoerenza temporanea tra canali",
+          "Durata indisponibilità log sink: 2 minuti"
+        ],
+        "steps": [
+          "Rendere non disponibile il log sink per 2 minuti",
+          "Durante l'indisponibilità, attivare la simulazione di un evento di sincronizzazione anomalo",
+          "Inviare una richiesta di proposizione per O-5001",
+          "Attendere il completamento della richiesta",
+          "Ripristinare la disponibilità del log sink",
+          "Verificare se sono presenti errori applicativi o blocchi legati al logging durante l'esecuzione"
+        ],
+        "expected_results": [
+          "La richiesta di proposizione per O-5001 completa senza essere bloccata o sospesa a causa dell'indisponibilità del log sink",
+          "L'esito della proposizione è determinato applicando la regola localmente disponibile R-LOCAL v1",
+          "Non si verifica un'interruzione del servizio di proposizione imputabile al tentativo di logging fallito (es. crash o stop funzionale)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito esplicita che il comportamento in caso di impossibilità di scrittura dei log non è specificato: questo test valida solo la continuità operativa. La verifica della persistenza/recupero dei log persi richiede chiarimento."
+      }
+    ]
+  }
+]

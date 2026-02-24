@@ -1,0 +1,77 @@
+[
+  {
+    "story_id": "REQ-F-002.US01",
+    "title": "Configurare bundle (coppie prodotto) e parametri commerciali da dashboard",
+    "persona": "Team Marketing",
+    "goal": "definire e modificare da dashboard le combinazioni (bundle) tra prodotti e i relativi parametri (stato regolatorio, flag marketing, sconto, validità, target) includendo attivazione/spegnimento",
+    "benefit": "governare rapidamente le offerte proposte dal Motore di Offerte assicurando coerenza commerciale e rispetto dei vincoli regolatori",
+    "user_story": "Come Team Marketing\nVoglio configurare e modificare da dashboard i bundle tra prodotti (coppie A,B) e i relativi parametri commerciali e regolatori\nIn modo che il Motore di Offerte generi proposte aggiornate, corrette e conformi",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard con un profilo Marketing autorizzato ALLORA posso creare una nuova combinazione/bundle selezionando una coppia di prodotti (A,B) senza dover inserire tutte le combinazioni teoriche possibili (matrice NxN logica).",
+      "QUANDO visualizzo un bundle (A,B) ALLORA posso impostare per quella combinazione lo stato regolatorio (vietata / consentita) e salvare la modifica.",
+      "QUANDO visualizzo un bundle (A,B) ALLORA posso impostare un flag di interesse marketing (es. disponibile/interessante) e salvare la modifica.",
+      "QUANDO visualizzo un bundle (A,B) ALLORA posso associare uno sconto applicabile (se previsto) e salvare la modifica.",
+      "QUANDO visualizzo un bundle (A,B) ALLORA posso definire un periodo di validità con data inizio e data fine e salvare la modifica.",
+      "QUANDO visualizzo un bundle (A,B) ALLORA posso definire un target di applicazione e salvare la modifica.",
+      "QUANDO un bundle (A,B) è definito in dashboard ALLORA posso attivarlo o spegnerlo per sospendere/cessare l’offerta senza cancellarne la definizione e le parametrizzazioni.",
+      "QUANDO salvo una modifica a un bundle (A,B) o ai suoi parametri ALLORA la modifica è persistita e resta disponibile nelle successive consultazioni della dashboard.",
+      "QUANDO le modifiche sono persistite ALLORA esse hanno effetto sulle proposte generate dal Motore di Offerte entro i tempi di propagazione concordati."
+    ],
+    "business_rules": [
+      "La matrice NxN è un concetto logico: l’interfaccia deve consentire l’inserimento solo dei bundle effettivamente ideati (coppie A,B), non il data entry di tutte le combinazioni teoriche.",
+      "Ogni bundle deve supportare almeno: stato regolatorio (vietata/consentita), flag marketing, eventuale sconto, validità (inizio/fine), target, stato di attivazione (on/off).",
+      "Lo spegnimento di un bundle non elimina la configurazione: ne sospende l’applicazione alle proposte del motore."
+    ],
+    "edge_cases": [
+      "Tentativo di salvare un bundle con data fine precedente alla data inizio.",
+      "Tentativo di attivare un bundle marcato come vietato per motivi regolatori.",
+      "Modifica concorrente dello stesso bundle da parte di due utenti Marketing (gestione conflitti/ultimo salvataggio).",
+      "Propagazione verso il Motore di Offerte non completata entro i tempi concordati (stato e messaggio in dashboard).",
+      "Bundle duplicato (stessa coppia A,B già presente) inserito nuovamente."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il formato/struttura del 'target': si assume esista un selettore o campo coerente con i segmenti/cluster disponibili a sistema.",
+      "Il requisito non dettaglia vincoli numerici/valuta dello 'sconto': si assume che la dashboard applichi le validazioni previste dal dominio (da definire).",
+      "I 'tempi di propagazione concordati' non sono indicati: si assume siano definiti esternamente (SLA) e verificabili tramite test/instrumentation."
+    ],
+    "notes": "Gli acceptance criteria del requisito sono stati resi testabili esplicitando azioni di creazione/modifica/salvataggio e l’effetto sulle proposte del Motore entro un SLA non specificato. Il requisito include anche la configurazione dei touchpoint di vendita (PUÒ/NON PUÒ): tale parte è coperta in una user story separata per la stessa persona Marketing (US02) per mantenere tracciabilità e chiarezza di backlog."
+  },
+  {
+    "story_id": "REQ-F-002.US02",
+    "title": "Associare ai bundle i touchpoint di vendita consentiti/vietati per motivi regolatori",
+    "persona": "Team Marketing",
+    "goal": "configurare per ciascuna offerta/bundle i touchpoint su cui può o non può essere venduta (web/app e ruoli operatori abilitati)",
+    "benefit": "garantire che le offerte siano proposte e vendute solo sui canali/ruoli consentiti, riducendo rischi di non conformità",
+    "user_story": "Come Team Marketing\nVoglio associare a ciascun bundle i touchpoint su cui l’offerta può o non può essere venduta\nIn modo che la vendita sia limitata ai soli canali e ruoli consentiti per motivi regolatori",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla configurazione di un bundle/offerta in dashboard ALLORA posso associare una lista di touchpoint consentiti e/o una lista di touchpoint non consentiti.",
+      "QUANDO configuro i touchpoint ALLORA posso includere touchpoint digitali (Web, App) e touchpoint ‘umani’/ruoli operativi (es. OSP, OFE, consulenti in sala UP, consulenti remoti) come previsti dal requisito.",
+      "QUANDO salvo la configurazione dei touchpoint per un bundle ALLORA la modifica è persistita e resta disponibile nelle successive consultazioni della dashboard.",
+      "QUANDO le modifiche ai touchpoint sono persistite ALLORA esse hanno effetto sulle proposte generate dal Motore di Offerte entro i tempi di propagazione concordati."
+    ],
+    "business_rules": [
+      "La configurazione dei touchpoint è motivata da vincoli regolatori: un touchpoint marcato come NON consentito deve impedire l’applicazione/vendibilità dell’offerta su quel touchpoint.",
+      "I touchpoint includono canali digitali (Web/App) e classi di operatori/consulenti come descritto nel requisito."
+    ],
+    "edge_cases": [
+      "Configurazione incoerente: lo stesso touchpoint inserito sia tra consentiti sia tra non consentiti.",
+      "Nessun touchpoint configurato per un bundle (comportamento atteso da chiarire: non vendibile ovunque vs vendibile ovunque).",
+      "Touchpoint non riconosciuto/non più disponibile a sistema selezionato in configurazione.",
+      "Propagazione verso il Motore di Offerte non completata entro i tempi concordati (stato e messaggio in dashboard)."
+    ],
+    "assumptions": [
+      "Il requisito elenca esempi di touchpoint umani (OSP, OFE, consulenti in sala, consulenti remoti) ma il contesto personas aggrega alcuni ruoli: si assume che la dashboard gestisca tali touchpoint come valori configurabili indipendenti dalla modellazione delle personas.",
+      "Non è specificata la regola di precedenza tra lista consentiti e lista non consentiti: si assume che in caso di conflitto prevalga 'NON PUÒ' (da confermare con Compliance/Business).",
+      "I 'tempi di propagazione concordati' non sono indicati: si assume siano definiti esternamente (SLA)."
+    ],
+    "notes": "AC condiviso con REQ-F-002.US01: persistenza modifiche e effetto sul Motore entro tempi di propagazione concordati (ridondanza voluta per tracciabilità). Dipendenza esterna: catalogo/registry dei touchpoint e relativa governance (chi li definisce e come evolvono) non è specificata nel requisito."
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "story_id": "REQ-UI-004.US01",
+    "title": "Evidenziare con colori e icone le offerte con sconti/urgenze per l’operatore",
+    "persona": "Operatore sportello/sala",
+    "goal": "visualizzare sulle card offerte marcature grafiche (colori e/o icone) che indichino sconti significativi e/o scadenze imminenti, inclusi segnali come 'offerta top' e 'scadenza imminente'",
+    "benefit": "identificare immediatamente le offerte che richiedono attenzione speciale e agire di conseguenza durante l’interazione con il cliente",
+    "user_story": "Come Operatore sportello/sala\nVoglio che le card delle offerte mostrino colori e/o icone per evidenziare sconti significativi e urgenze (es. scadenza imminente)\nIn modo che io possa riconoscere subito le offerte che richiedono attenzione speciale e reagire di conseguenza.",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO visualizzo una card offerta con sconto significativo ALLORA la card mostra una marcatura grafica evidente tramite colore e/o icona.",
+      "QUANDO visualizzo una card offerta con scadenza imminente ALLORA la card mostra una marcatura grafica evidente tramite colore e/o icona.",
+      "QUANDO una card deve segnalare lo stato 'offerta top' ALLORA viene mostrata un’icona specifica definita per 'offerta top'.",
+      "QUANDO una card deve segnalare lo stato 'scadenza imminente' ALLORA viene mostrata un’icona specifica definita per 'scadenza imminente'.",
+      "QUANDO vengono eseguiti test di usabilità con operatori sul front-end commerciale ALLORA gli operatori riconoscono correttamente i segnali visivi (colori/icone) e intraprendono l’azione attesa in base allo scenario di test."
+    ],
+    "business_rules": [
+      "Le marcature grafiche (colori/icone) devono essere applicate solo alle offerte che soddisfano le condizioni di 'sconto significativo' e/o 'scadenza imminente' secondo definizioni concordate.",
+      "Le icone per 'offerta top' e 'scadenza imminente' devono essere univocamente riconoscibili e coerenti su tutte le card/elementi UI pertinenti."
+    ],
+    "edge_cases": [
+      "Offerta con sconto significativo e scadenza imminente: la UI deve gestire la compresenza dei segnali (es. priorità/coesistenza di icone e colori) senza ambiguità.",
+      "Offerta senza sconto significativo e senza scadenza imminente: la UI non deve mostrare marcature/icone non pertinenti.",
+      "Icone non caricate o risorse UI mancanti: la UI deve mantenere una resa comprensibile (es. fallback testuale o stile alternativo) senza impedire l’operatività.",
+      "Differenze di resa cromatica su dispositivi/monitor diversi: la marcatura deve restare distinguibile (rischio di bassa leggibilità)."
+    ],
+    "assumptions": [
+      "La definizione di 'sconto significativo' non è specificata nel requisito e deve essere fornita dal business/marketing o da regole di configurazione esistenti.",
+      "La definizione di 'scadenza imminente' (soglia temporale) non è specificata nel requisito e deve essere esplicitata.",
+      "Il requisito non specifica palette colori, linee guida di accessibilità o design system: si assume che esistano standard UX/UI di riferimento del progetto."
+    ],
+    "notes": "Il requisito è focalizzato sugli operatori; non sono esplicitati vincoli di accessibilità (es. daltonismo/contrasto) né le soglie per 'sconto significativo' e 'scadenza imminente'. L’AC sui test di usabilità è stato reso testabile assumendo la definizione di scenari e azioni attese nel protocollo di test."
+  }
+]

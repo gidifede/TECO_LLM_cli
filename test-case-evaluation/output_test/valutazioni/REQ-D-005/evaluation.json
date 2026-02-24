@@ -1,0 +1,147 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-005",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 63,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-005.TC02",
+        "detail": "Assume disponibilità di endpoint/API o log per leggere il record dell’offerta salvata e il campo scadenza; nel requisito non è menzionata alcuna modalità tecnica di ispezione (API/log/backoffice)."
+      },
+      {
+        "test_id": "REQ-D-005.TC02",
+        "detail": "Introduce gestione esplicita di fuso orario/ora locale nel calcolo scadenza; il requisito non cita vincoli di timezone."
+      },
+      {
+        "test_id": "REQ-D-005.TC03",
+        "detail": "Assume possibilità di 'time travel'/avanzamento tempo nell’ambiente; è una scelta di test non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-D-005.TC04",
+        "detail": "Assume possibilità di 'time travel'/avanzamento tempo nell’ambiente; è una scelta di test non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-D-005.TC05",
+        "detail": "Introduce scenario di accesso diretto ai dettagli offerta via deep link/URL e relativo comportamento (schermata 'offerta non disponibile'); non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-005.TC06",
+        "detail": "Introduce gestione errori/timeout/503 del motore offerte e requisiti di UI/UX (messaggio errore, niente dati incompleti); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-005.TC07",
+        "detail": "Richiede esplicitamente coerenza 'cross-canale' (dettagli su web coerenti con pop-up visto su APP); il requisito richiede coerenza con quanto mostrato originariamente, ma non specifica confronto incrociato tra canali."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-2",
+        "detail": "Il requisito richiede che 'ogni offerta salvata contiene un campo di scadenza ... ed è rispettato dal sistema'. I TC verificano scadenza e rispetto, ma non coprono esplicitamente la generalizzazione 'ogni offerta salvata' (campionamento su più offerte/regole): la suite valida solo casi puntuali (una regola di esempio e alcune offerte specifiche)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-005.TC03",
+          "REQ-D-005.TC04"
+        ],
+        "detail": "Stesso scenario (coerenza dettagli col pop-up e rimozione alla scadenza) duplicato per canale APP vs web con passi/attesi quasi identici."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 17,
+    "coherence_score": 28,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-005.US01.TC03",
+        "detail": "Accetta come risultato '404/risorsa non disponibile' o comportamento equivalente per accesso al dettaglio dopo scadenza; il requisito non definisce né accesso diretto né codici/semantica di errore."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC04",
+        "detail": "Assume che APP e web consumino la stessa sorgente dati/servizio e che la scadenza sia 'la stessa su entrambi i canali'; il requisito dice solo che l’offerta sarà disponibile su APP e sito, non specifica architettura né vincolo di identica scadenza cross-canale."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC05",
+        "detail": "Introduce regola di comportamento in caso di incoerenza dettagli (offerta non mostrata o errore di coerenza) e vincolo 'non mostrare mai dettagli incoerenti'; il requisito richiede solo che i dettagli siano coerenti, non definisce handling/mitigazione quando non lo sono."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC03",
+        "detail": "Introduce gestione indisponibilità del motore (503/timeout) e vincolo 'senza dati parziali'; non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC04",
+        "detail": "Assume comportamento di esclusione dell’offerta se la configurazione marketing per la scadenza è mancante/errata ('comportamento più sicuro'); il requisito non definisce fallback né error handling di configurazione."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC05",
+        "detail": "Introduce gestione esplicita di 'dato inconsistente: scadenza nel passato' come edge case; non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC01",
+        "detail": "Introduce canale/attore 'Dashboard marketing' e passi di configurazione UI (utente marketing, permessi, salvataggio/attivazione); il requisito cita configurazioni definite dall’utente marketing ma non richiede né descrive una dashboard né test su UI di configurazione."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC03",
+        "detail": "Introduce regole di validazione input (durata 0 o negativa rifiutata) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC04",
+        "detail": "Introduce comportamento retroattivo/non retroattivo della modifica configurazione su offerte già persistite; non trattato dal requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC04",
+        "detail": "Introduce requisito 'Loyalty read-only' e verifica che non modifichi lo stato dell’offerta sul motore (audit log/chiamate update); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC05",
+        "detail": "Introduce scenario 'lista offerte vuota' e relativo comportamento; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC06",
+        "detail": "Introduce gestione di dati incompleti (immagine NULL) e vincoli di rendering; non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "AC-3 richiede che i test verifichino sia 'non più disponibile alla scadenza' sia 'dettagli coerenti con quanto mostrato originariamente'. Molti TC coprono uno dei due aspetti, ma non c’è una copertura sistematica che, per entrambi i canali, verifichi nello stesso scenario: (a) dettagli originari vs Loyalty e (b) successiva rimozione alla scadenza. La verifica completa end-to-end è presente solo in forma parziale/variabile (es. US03.TC02 verifica presenza/assenza ma non i dettagli; US01.TC01/TC02 verifica dettagli ma non la rimozione a scadenza)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-005.US01.TC01",
+          "REQ-D-005.US01.TC02"
+        ],
+        "detail": "Stesso scenario (offerta non accettata visibile e dettagli coerenti) duplicato per APP vs web con struttura quasi identica."
+      },
+      {
+        "test_ids": [
+          "REQ-D-005.US02.TC02",
+          "REQ-D-005.US02.TC05"
+        ],
+        "detail": "Entrambi verificano che un’offerta con scadenza nel passato/non valida non venga resa disponibile; cambiano solo le premesse (scaduta vs dato inconsistente)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (copertura 3/3). Tuttavia il set indirect_persona introduce molte più informazioni non tracciabili al requisito (dashboard marketing, regole di validazione durata, read-only, gestione incoerenze, edge case e gestione errori), accumulando numerose 'added_info' e alcune ridondanze, con conseguente punteggio più basso (28). Il set direct, pur avendo alcune aggiunte (deep link, gestione errori motore, API/log, time travel) e una ridondanza APP/web, resta più aderente al perimetro del requisito e ottiene un punteggio superiore (63)."
+  }
+}

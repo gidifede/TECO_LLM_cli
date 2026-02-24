@@ -1,0 +1,141 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-006",
+  "direct": {
+    "tc_count": 9,
+    "coherence_score": 67,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-006.TC01",
+        "detail": "Introduce canali specifici 'web' e 'app' nei channels; il requisito parla genericamente di 'controlli lato canale' senza elencare canali."
+      },
+      {
+        "test_id": "REQ-D-006.TC01",
+        "detail": "Assume un meccanismo di generazione proposta 'via API/servizio interno' e un canale di lettura 'API/query DB/servizio interno' non specificati dal requisito (il requisito richiede persistenza e disponibilità, non il mezzo tecnico)."
+      },
+      {
+        "test_id": "REQ-D-006.TC02",
+        "detail": "Assume l'esistenza di un 'endpoint/servizio di canale' per recupero dati; il requisito non definisce un endpoint specifico."
+      },
+      {
+        "test_id": "REQ-D-006.TC03",
+        "detail": "Specifica campi minimi dell'evento audit (stato precedente, stato nuovo, timestamp). Il requisito richiede riproducibilità per audit ma non definisce il contenuto minimo degli eventi."
+      },
+      {
+        "test_id": "REQ-D-006.TC04",
+        "detail": "Introduce dettagli di checkout e dati di pagamento (carta, CVV) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-006.TC05",
+        "detail": "Assume un attore/azione di canale per 'marcare ignorata' via UI/API; il requisito non descrive attori o azioni di UI."
+      },
+      {
+        "test_id": "REQ-D-006.TC06",
+        "detail": "Introduce codici/semantiche di risposta (es. 404) o flag 'scaduta' come opzioni di implementazione: non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-D-006.TC07",
+        "detail": "Richiede capacità di 'time travel/clock control' in ambiente di test: vincolo tecnico non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-006.TC08",
+        "detail": "Impone una regola di validazione/rigetto in creazione per campo mancante (id cliente) e un errore di validazione; il requisito elenca i campi del record ma non esplicita comportamento di validazione o gestione errori."
+      },
+      {
+        "test_id": "REQ-D-006.TC09",
+        "detail": "Introduce gestione fault del 'servizio audit' (timeout/down), assenza di eventi parziali e meccanismi di compensazione: non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'Questi dati devono essere disponibili per controlli lato canale.'",
+        "detail": "Non esiste un TC che verifichi esplicitamente la disponibilità lato canale dello storico/riproduzione per audit (AC-2) attraverso i 'controlli lato canale'; i TC audit verificano un meccanismo di audit generico, non la sua disponibilità ai canali."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-006.TC03",
+          "REQ-D-006.TC04",
+          "REQ-D-006.TC05"
+        ],
+        "detail": "Tre TC molto simili che validano lo stesso requisito (registrazione e riproducibilità dei cambi stato per audit) variando solo la coppia di stati."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 52,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-006.US01.TC01",
+        "detail": "Introduce un componente/attore 'Motore di Offerte' non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC01",
+        "detail": "Introduce modalità tecniche di verifica (topic eventi con payload persistito) non specificate dal requisito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC02",
+        "detail": "Introduce lo stato 'acquistata' (e naming 'aggiunta_al_carrello') non presente nel requisito, che cita come esempi 'aggiunta al carrello' e 'accettata/completata'."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC03",
+        "detail": "Impone rigetto/errore di validazione per id cliente mancante; comportamento non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC04",
+        "detail": "Impone rigetto per scadenza mancante e collega anche AC-3 alla validazione input; il requisito richiede scadenza nel record e l'espirazione post-scadenza, non la gestione input in creazione."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC05",
+        "detail": "Richiede tracciamento/audit delle operazioni rifiutate su proposta inesistente; il requisito parla di audit dei cambiamenti di stato, non dei tentativi falliti."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC06",
+        "detail": "Introduce regola di autorizzazione/ownership (proposta non associata al cliente richiedente) e relativo tracciamento; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC08",
+        "detail": "Assume una regola: dopo scadenza l'aggiornamento stato deve essere impedito o non deve 'riattivare' la proposta; il requisito richiede solo non disponibilità dei record dopo scadenza, non vincoli sugli update."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC09",
+        "detail": "Introduce idempotenza/deduplica delle transizioni duplicate; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC10",
+        "detail": "Introduce gestione guasti del datastore (DB down/timeout), assenza persistenza parziale e osservabilità errori; non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'Questi dati devono essere disponibili per controlli lato canale.'",
+        "detail": "Nessun TC verifica esplicitamente la disponibilità dei dati per 'controlli lato canale' (non vengono esercitati canali/consumatori; i test parlano genericamente di meccanismi di lettura)."
+      },
+      {
+        "source": "AC-1: include 'stato' tra i campi del record persistente",
+        "detail": "Il set non copre esplicitamente uno scenario in cui lo stato 'ignorata' (citato nella descrizione come esempio) venga persistito come stato corrente nel record; copre solo 'presentata' e transizioni verso altri stati."
+      }
+    ],
+    "redundancies": []
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia, il set direct introduce meno informazioni non tracciabili (10 added_info vs 10 ma con minori deviazioni funzionali: nel persona-based compaiono regole nuove su autorizzazione, tracciamento rifiuti, idempotenza e gestione guasti DB) e ha meno lacune rispetto al requisito (1 missing_info vs 2). Pur avendo una ridondanza sui cambi stato, il direct ottiene un punteggio di coerenza superiore (67 vs 52)."
+  }
+}

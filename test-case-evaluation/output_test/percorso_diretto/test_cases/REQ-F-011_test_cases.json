@@ -1,0 +1,259 @@
+[
+  {
+    "test_id": "REQ-F-011.TC01",
+    "title": "E2E web: esecuzione funnel unificato per bundle abilitato (identificazione → sottoscrizione → pagamento)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle marcato come 'abilitato' al funnel unificato (configurazione disponibile in ambiente di test).",
+      "Canale web digitale disponibile e raggiungibile.",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile (es. log applicativi o audit trail).",
+      "Servizio di pagamento disponibile in ambiente di test (es. PSP sandbox) e configurato per esito 'OK'."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001 (abilitato funnel unificato)",
+      "Cliente: Mario Rossi, CF RSSMRA80A01H501U, email mario.rossi@example.com, telefono +393331234567",
+      "Metodo pagamento: Carta test 4111111111111111, scadenza 12/30, CVV 123",
+      "Importo atteso bundle: 49,90 EUR"
+    ],
+    "steps": [
+      "Aprire il canale web e avviare la vendita selezionando il bundle BND-UNI-001.",
+      "Completare la fase di identificazione cliente inserendo i dati anagrafici richiesti e confermare.",
+      "Proseguire alla fase di sottoscrizione e accettare i consensi/condizioni richieste per il bundle.",
+      "Proseguire alla fase di pagamento e inserire i dati della carta di test.",
+      "Confermare il pagamento.",
+      "Verificare l'esito finale del funnel e recuperare la traccia/log degli eventi del funnel per la sessione appena eseguita."
+    ],
+    "expected_results": [
+      "Il sistema presenta un unico percorso (stessa sessione/istanza di funnel) che include in sequenza identificazione cliente, sottoscrizione e pagamento senza richiedere di riavviare o duplicare le stesse attività in funnel separati.",
+      "Al termine del pagamento, il funnel risulta completato con esito 'successo' e il bundle risulta sottoscritto/pagato secondo le regole del sistema.",
+      "Nei log/audit risultano registrate le transizioni di stato del funnel almeno per: avvio, completamento identificazione, completamento sottoscrizione, avvio pagamento, esito pagamento, completamento funnel.",
+      "Ogni transizione loggata include un riferimento univoco alla stessa istanza di funnel (es. funnelId/correlationId) e un timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori e i dettagli di stato sono stati inferiti: il requisito non specifica l'elenco degli stati né il formato dei log. Si assume esista un identificativo di correlazione (funnelId/correlationId) per verificare la tracciabilità end-to-end."
+  },
+  {
+    "test_id": "REQ-F-011.TC02",
+    "title": "E2E app: esecuzione funnel unificato per bundle abilitato (identificazione → sottoscrizione → pagamento)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle marcato come 'abilitato' al funnel unificato (configurazione disponibile in ambiente di test).",
+      "Canale app digitale disponibile e autenticazione/app onboarding non richiesti o già completati (a seconda del prodotto).",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile.",
+      "Servizio di pagamento disponibile in ambiente di test (PSP sandbox) e configurato per esito 'OK'."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001 (abilitato funnel unificato)",
+      "Cliente: Giulia Bianchi, CF BNCGLI85C41F205Z, email giulia.bianchi@example.com, telefono +393339876543",
+      "Metodo pagamento: Carta test 4111111111111111, scadenza 12/30, CVV 123",
+      "Importo atteso bundle: 49,90 EUR"
+    ],
+    "steps": [
+      "Aprire l'app e avviare la vendita selezionando il bundle BND-UNI-001.",
+      "Completare la fase di identificazione cliente inserendo i dati richiesti e confermare.",
+      "Completare la fase di sottoscrizione accettando condizioni/consensi richiesti.",
+      "Completare la fase di pagamento inserendo i dati della carta di test e confermare.",
+      "Recuperare la traccia/log degli eventi del funnel associata alla vendita appena effettuata."
+    ],
+    "expected_results": [
+      "L'app guida l'utente in un unico funnel che include identificazione, sottoscrizione e pagamento senza duplicazioni di task già eseguiti nella stessa istanza.",
+      "Il funnel termina con esito 'successo' e la vendita del bundle risulta completata.",
+      "Nei log/audit risultano tracciate e loggate le transizioni di stato della stessa istanza di funnel (funnelId/correlationId coerente) con timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito indica testabilità da canali digitali; si copre esplicitamente l'app. I dettagli su autenticazione app e schermate non sono specificati e vengono trattati come prerequisiti variabili di prodotto."
+  },
+  {
+    "test_id": "REQ-F-011.TC03",
+    "title": "Canale sportello (se previsto): esecuzione funnel unificato per bundle abilitato",
+    "type": "E2E",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Il canale sportello è previsto per il prodotto e disponibile in ambiente di test (applicazione operatore/CRM).",
+      "Esiste almeno un bundle marcato come 'abilitato' al funnel unificato.",
+      "Operatore di sportello con credenziali valide e abilitazioni per avviare una vendita bundle.",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile.",
+      "Servizio di pagamento disponibile per il canale sportello in ambiente di test (es. POS virtuale o metodo equivalente) con esito 'OK'."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001 (abilitato funnel unificato)",
+      "Operatore: OP-001 (ruolo Sportello)",
+      "Cliente: Luca Verdi, CF VRDLCU90D12H501K",
+      "Metodo pagamento sportello: POS virtuale test, esito 'OK'",
+      "Importo atteso bundle: 49,90 EUR"
+    ],
+    "steps": [
+      "Accedere all'applicativo di sportello come OP-001.",
+      "Avviare la vendita selezionando il bundle BND-UNI-001.",
+      "Eseguire l'identificazione cliente secondo il flusso previsto dal canale e confermare.",
+      "Eseguire la sottoscrizione del bundle e confermare.",
+      "Eseguire il pagamento tramite il metodo sportello configurato e confermare.",
+      "Recuperare la traccia/log degli eventi del funnel associata alla vendita."
+    ],
+    "expected_results": [
+      "Il canale sportello consente di completare identificazione, sottoscrizione e pagamento all'interno di un unico funnel per il bundle abilitato.",
+      "Il funnel termina con esito 'successo' e la vendita risulta completata.",
+      "Nei log/audit risultano tracciate le transizioni di stato del funnel con riferimento univoco alla stessa istanza e timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "sportello"
+    ],
+    "notes": "Il requisito dice 'se previsto, da sportello': questo test è condizionato alla reale disponibilità del canale sportello. Se il canale non è previsto per il prodotto, il test va marcato N/A."
+  },
+  {
+    "test_id": "REQ-F-011.TC04",
+    "title": "Negativo: bundle non abilitato non deve usare il funnel unificato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un bundle marcato come 'non abilitato' al funnel unificato (configurazione disponibile in ambiente di test).",
+      "Canale digitale (web o app) disponibile."
+    ],
+    "test_data": [
+      "Bundle: BND-NOUNI-002 (non abilitato funnel unificato)",
+      "Cliente: Mario Rossi, CF RSSMRA80A01H501U"
+    ],
+    "steps": [
+      "Avviare la vendita dal canale digitale selezionando il bundle BND-NOUNI-002.",
+      "Osservare il percorso proposto dal sistema per completare identificazione, sottoscrizione e pagamento."
+    ],
+    "expected_results": [
+      "Per il bundle non abilitato, il sistema non presenta il funnel unificato (non deve risultare un unico funnel che copra identificazione, sottoscrizione e pagamento).",
+      "Il sistema applica il comportamento alternativo previsto (es. funnel separati o processo non unificato) senza presentare indicatori/identificativi di funnel unificato per quel bundle."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica quale sia il comportamento alternativo per bundle non abilitati; il test verifica solo la non applicazione del funnel unificato."
+  },
+  {
+    "test_id": "REQ-F-011.TC05",
+    "title": "Edge case: refresh/back durante il funnel non deve duplicare task già completati nella stessa istanza",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un bundle abilitato al funnel unificato (BND-UNI-001).",
+      "Canale web disponibile.",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001",
+      "Cliente: Mario Rossi, CF RSSMRA80A01H501U"
+    ],
+    "steps": [
+      "Avviare la vendita web per il bundle BND-UNI-001.",
+      "Completare la fase di identificazione cliente e proseguire alla sottoscrizione.",
+      "Eseguire un refresh della pagina (o riapertura della stessa URL del funnel) durante la fase di sottoscrizione.",
+      "Proseguire fino al pagamento senza reinserire i dati di identificazione se non richiesto esplicitamente dal sistema.",
+      "Recuperare log/audit della sessione e verificare le transizioni."
+    ],
+    "expected_results": [
+      "Dopo refresh/riapertura, il sistema mantiene la stessa istanza di funnel (funnelId/correlationId invariato) oppure ripristina lo stato all'ultimo step completato senza creare una nuova istanza parallela.",
+      "La fase di identificazione non viene ripetuta/duplicata all'interno della stessa vendita (nessuna richiesta di reinserimento dati già confermati, salvo scadenza esplicita della sessione).",
+      "Nei log/audit non risultano transizioni duplicate per 'completamento identificazione' riferite alla stessa istanza di funnel."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La 'riduzione duplicazione dei task' è interpretata come assenza di ripetizione di step già completati nella stessa istanza di funnel; il requisito non definisce metriche UX."
+  },
+  {
+    "test_id": "REQ-F-011.TC06",
+    "title": "Integration negativo: errore/timeout del servizio di pagamento deve essere loggato come transizione/esito del funnel",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un bundle abilitato al funnel unificato (BND-UNI-001).",
+      "Canale digitale (web) disponibile.",
+      "Servizio di pagamento configurabile per simulare timeout/errore (PSP sandbox).",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001",
+      "Cliente: Mario Rossi, CF RSSMRA80A01H501U",
+      "Metodo pagamento: Carta test che simula timeout/errore (es. 4000000000000002 se supportata dal PSP sandbox)",
+      "Importo: 49,90 EUR"
+    ],
+    "steps": [
+      "Avviare il funnel unificato web per BND-UNI-001.",
+      "Completare identificazione e sottoscrizione.",
+      "Arrivare alla fase di pagamento e inserire i dati di pagamento che simulano timeout/errore.",
+      "Confermare il pagamento.",
+      "Recuperare log/audit della sessione e filtrare per funnelId/correlationId."
+    ],
+    "expected_results": [
+      "Il sistema gestisce l'errore/timeout del pagamento senza completare con successo il funnel.",
+      "Il funnel rimane in stato coerente (es. 'pagamento fallito' / 'in attesa pagamento' / 'errore') e consente l'azione prevista dal sistema (es. riprova) senza riavviare identificazione e sottoscrizione nella stessa istanza, se la sessione è ancora valida.",
+      "Nei log/audit risultano tracciate e loggate le transizioni di stato relative all'avvio pagamento e all'esito negativo/timeout, con timestamp e funnelId/correlationId."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica gli stati esatti né il comportamento di retry; il test verifica la non conclusione positiva e la presenza di logging delle transizioni/esiti."
+  },
+  {
+    "test_id": "REQ-F-011.TC07",
+    "title": "Negativo: dati obbligatori mancanti in identificazione impediscono avanzamento e non generano transizioni di completamento errate",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un bundle abilitato al funnel unificato (BND-UNI-001).",
+      "Canale digitale (web) disponibile.",
+      "Ambiente di logging/tracciamento eventi attivo e consultabile."
+    ],
+    "test_data": [
+      "Bundle: BND-UNI-001",
+      "Cliente: CF mancante; email mario.rossi@example.com"
+    ],
+    "steps": [
+      "Avviare il funnel unificato web per BND-UNI-001.",
+      "Nella fase di identificazione, lasciare vuoto un campo obbligatorio (es. Codice Fiscale) e tentare di proseguire.",
+      "Recuperare log/audit della sessione e verificare le transizioni registrate fino a quel punto."
+    ],
+    "expected_results": [
+      "Il sistema blocca l'avanzamento alla fase successiva e mostra un messaggio di validazione per il campo obbligatorio mancante.",
+      "Il funnel non registra una transizione di 'identificazione completata' (o equivalente) finché i dati obbligatori non sono corretti e confermati.",
+      "Nei log/audit risultano al massimo eventi di validazione/errore, con riferimento alla stessa istanza di funnel (funnelId/correlationId) se già creata."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "I campi obbligatori dell'identificazione non sono specificati nel requisito; il test assume almeno un identificativo cliente obbligatorio (es. Codice Fiscale) coerente con contesti tipici."
+  }
+]

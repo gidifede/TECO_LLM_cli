@@ -1,0 +1,145 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-019",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 77,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-019.TC01",
+        "detail": "Assunzione esplicita di canale 'web' e distinzione utente anonimo/autenticato; il requisito non cita canali né stato di login."
+      },
+      {
+        "test_id": "REQ-F-019.TC01",
+        "detail": "Richiede che il prodotto sia 'disponibile a stock' e usa soglie (es. stock >= 10); la disponibilità/stock non è menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.TC01",
+        "detail": "Verifica 'contatore carrello/mini-cart (se presente)' come riflesso dell'aggiunta; il requisito parla di aggiornamento dello stato del carrello ma non di contatori/badge UI."
+      },
+      {
+        "test_id": "REQ-F-019.TC02",
+        "detail": "Aggiunge una verifica di persistenza dopo ricarica pagina carrello; non richiesta dal requisito (che richiede E2E e assenza errori, non persistenza esplicita)."
+      },
+      {
+        "test_id": "REQ-F-019.TC04",
+        "detail": "Scenario out-of-stock e messaggio 'Prodotto non disponibile': non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.TC05",
+        "detail": "Scenario di indisponibilità/timeout del servizio carrello e richiesta di feedback per 'riprovare': non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.TC06",
+        "detail": "Gestione doppio click e prevenzione duplicazioni: robustezza non richiesta dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description",
+        "detail": "Il requisito cita che il trigger è associato a un elemento visivo e testuale che segnala l'opportunità (popup, tasca a comparsa o altro). I test verificano la CTA nel contenitore, ma non validano la presenza/associazione dell'elemento visivo+testuale di segnalazione dell'opportunità."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-019.TC04",
+          "REQ-F-019.TC05"
+        ],
+        "detail": "Entrambi validano (fuori requisito) scenari negativi in cui l'aggiunta non avviene e il carrello resta invariato; differiscono solo per la causa (stock vs servizio)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 9,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-019.US01.TC01",
+        "detail": "Introduce l'attore/persona 'Cliente digitale' e lo stato autenticato/non autenticato; non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC02",
+        "detail": "Introduce il canale 'App' e richiede App installata/avviata; il requisito non cita canali specifici né App."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC03",
+        "detail": "Include prezzo (19,90 EUR) e vincoli di consistenza come 'nessun articolo parzialmente creato'; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC03",
+        "detail": "Richiede esplicitamente carrello iniziale '0 articoli' (dato di test rigido); il requisito non impone uno stato iniziale specifico."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC04",
+        "detail": "Replica lo scenario E2E su App (canale non richiesto dal requisito)."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC07",
+        "detail": "Scenario di fault tecnico con dettagli (HTTP 503, timeout 30s) e gestione messaggio; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC08",
+        "detail": "Scenario di prodotto che diventa 'non vendibile'/stock a 0 al click; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-019.US01.TC09",
+        "detail": "Regola di business aggiunta: 'impedisce la conferma finché le varianti richieste non sono selezionate' e specifica UI di validazione; AC-3 richiede guida senza interruzioni, ma non richiede esplicitamente il blocco conferma/validazioni."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description",
+        "detail": "Come nel set direct, non viene validata esplicitamente la presenza/associazione dell'elemento visivo e testuale che segnala l'opportunità (si testa soprattutto la CTA e il flusso di aggiunta)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-019.US01.TC01",
+          "REQ-F-019.US01.TC02"
+        ],
+        "detail": "Stesso scenario (presenza CTA) duplicato per canale Web vs App, ma il requisito non richiede copertura multi-canale."
+      },
+      {
+        "test_ids": [
+          "REQ-F-019.US01.TC03",
+          "REQ-F-019.US01.TC04"
+        ],
+        "detail": "Stesso scenario E2E duplicato per Web vs App, non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-F-019.US01.TC05",
+          "REQ-F-019.US01.TC06"
+        ],
+        "detail": "Stesso scenario varianti duplicato per Web vs App, non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-F-019.US01.TC07",
+          "REQ-F-019.US01.TC08"
+        ],
+        "detail": "Entrambi (fuori requisito) validano fallimento gestito e carrello invariato; cambia solo la causa (servizio vs disponibilità prodotto)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1/2/3). Il set direct introduce meno informazioni non tracciabili (7 vs 8) e presenta meno ridondanze (1 vs 4), ottenendo un punteggio di coerenza superiore (77 vs 55). Entrambi mostrano la stessa lacuna rispetto alla description: non viene testata esplicitamente la componente visiva+testuale di segnalazione dell'opportunità."
+  }
+}

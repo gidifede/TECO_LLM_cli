@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-D-009</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-D-009</h1>
+  <div class="subtitle">Export dei dati con priorità alla rappresentazione; export automatico programmato opzionale</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 19:01</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-D-009</div>
+  <div class="req-field"><strong>Titolo:</strong> Export dei dati con priorità alla rappresentazione; export automatico programmato opzionale</div>
+  <div class="req-field"><strong>Categoria:</strong> DATI</div>
+  <div class="req-field"><strong>Priorita:</strong> medium</div>
+  <div class="req-desc">L&#x27;utente ha indicato che la priorità è la rappresentazione dei dati nella dashboard e che la funzionalità di export automatico programmato è un&#x27;aggiunta opzionale. In modo esplicito l&#x27;utente ha richiesto &#x27;configurazione combinazioni e monitoraggio, export, gestione regole di accesso&#x27; e successivamente ha dichiarato che l&#x27;export automatico programmato è una funzionalità aggiuntiva. Pertanto il sistema deve almeno fornire la capacità di esportare i dati (manuale) dalla dashboard; la programmazione di export automatici è riconosciuta come funzionalità secondaria/aggiuntiva. Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È disponibile almeno un meccanismo di export manuale dei dati dalla dashboard (es. scarica dataset visualizzato) in base alle autorizzazioni.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>La rappresentazione dei dati nella dashboard è completa e consultabile prima di ogni export.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>La possibilità di configurare export automatici è prevista come funzionalità opzionale/documentata ma non obbligatoria per il rilascio iniziale.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">54</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">32</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set indirect_persona introduce molte piu informazioni non tracciabili al requisito (ruoli/personae Marketing/Compliance, permessi nominati, gestione sessione, revoca permessi, codici errore specifici, sezione UI &#x27;Export programmati&#x27;, regola aggregato/dettaglio), con conseguente penalizzazione maggiore. Il set direct, pur aggiungendo dettagli (formato CSV, feature flag, gestione errori servizio export), resta piu vicino al testo del requisito e presenta meno ridondanze.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">54</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-009.TC01</td><td>Assume canale &#x27;web&#x27;, ruoli specifici (&#x27;Analista&#x27;) e presenza di un comando UI di export in dashboard; il requisito parla genericamente di ruoli/autorizzazioni ma non di canali, ruoli nominati o specifiche UI.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC01</td><td>Introduce formato export &#x27;CSV&#x27;, filtri specifici e aspettative su nome file/metadati; il requisito non specifica formati, filtri, naming o metadati.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC02</td><td>Introduce ruolo &#x27;Viewer&#x27; e dettagli di diniego via URL/azione diretta; il requisito richiede solo rispetto autorizzazioni, non modalità di enforcement.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC03</td><td>Definisce una policy per dataset vuoto (blocco o export vuoto) e richiede comportamento &#x27;deterministico&#x27;; il requisito non tratta dataset vuoti né determinismo.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC04</td><td>Introduce requisiti su paginazione/scroll/ordinamento e su come l&#x27;export debba rifletterli o essere documentato; il requisito parla solo di consultabilità completa prima dell&#x27;export, non di paginazione/ordinamento né di documentazione del comportamento.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC05</td><td>Aggiunge gestione errori/robustezza (HTTP 503/timeout, nessun file corrotto, retry) e presuppone un &#x27;servizio export&#x27;; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC06</td><td>Introduce feature flag, specifiche su presenza UI/documentazione e comportamento di accesso; il requisito dice solo che la configurazione export automatici è opzionale/documentata, senza definire feature flag o punti UI.</td></tr>
+<tr><td class='mono'>REQ-D-009.TC07</td><td>Introduce ruoli &#x27;Admin&#x27; vs &#x27;Analista&#x27;, dettagli schedulazione (giornaliera, ora), formato e destinazione &#x27;area personale&#x27;; il requisito non specifica parametri di schedulazione né destinazioni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &#x27;Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.&#x27;</td><td>I TC coprono autorizzazioni per export manuale e per configurazione export automatico (se presente), ma non verificano che l&#x27;export automatico in sé (esecuzione del job) sia soggetto ad autorizzazioni/ruoli; si testa solo l&#x27;accesso alla configurazione.</td></tr>
+<tr><td class='mono'>Descrizione: richiesta esplicita citata dall&#x27;utente: &#x27;configurazione combinazioni e monitoraggio, export, gestione regole di accesso&#x27;</td><td>I TC non coprono &#x27;monitoraggio&#x27; (es. visibilità/stato delle pianificazioni) come requisito esplicito; viene citato &#x27;se previsto&#x27; ma non validato come obbligo del requisito (anche se la frase nel requisito è ambigua).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-009.TC01, REQ-D-009.TC04</td><td>Entrambi verificano consultabilità dati in dashboard prima dell&#x27;export e coerenza dell&#x27;export con quanto visualizzato (filtri/vista). Differiscono per dettagli (paginazione/ordinamento) ma lo scenario base è sovrapposto.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">32</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">17</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-009.US01.TC01</td><td>Introduce persona/ruolo &#x27;Team Marketing&#x27; e permessi nominati (&#x27;EXPORT_DASHBOARD_MANUALE&#x27;); il requisito non definisce team né codici permesso.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC02</td><td>Richiede messaggio coerente e tentativi via scorciatoia/URL; modalità non definite dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC03</td><td>Aggiunge requisito che l&#x27;export non sostituisca la UI (no redirect/schermata); non esplicitato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC04</td><td>Assume che, se la feature è abilitata, esista una sezione UI &#x27;Export programmati&#x27; e che si possano salvare parametri (nome, frequenza, giorno, ora, dataset); il requisito non specifica UI né campi di configurazione.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC05</td><td>Assume accesso via URL diretto alla configurazione; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC06</td><td>Richiede evidenza di documentazione in UI/help/release notes linkate; il requisito dice &#x27;opzionale/documentata&#x27; ma non vincola canali o modalità di documentazione.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC07</td><td>Introduce gestione sessione scaduta/re-auth e assenza stack trace; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC08</td><td>Definisce comportamento per dataset vuoto (file vuoto/header o messaggio); non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC09</td><td>Aggiunge robustezza su errore export con retry e nessun effetto collaterale; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC10</td><td>Introduce revoca permessi durante sessione e requisito di enforcement immediato; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC01</td><td>Introduce persona/ruolo &#x27;Compliance&#x27; e relative viste dati; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC04</td><td>Aggiunge regola &#x27;export non include dati non visibili&#x27; con distinzione aggregato/dettaglio e colonne/azioni specifiche; il requisito parla di autorizzazioni ma non di equivalenza tra perimetro visibile e perimetro esportato né di record-level/aggregate-only.</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC05</td><td>Aggiunge gestione timeout/504 e stabilità UI; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC06</td><td>Assume permessi nominati &#x27;CONFIG_EXPORT_AUTOMATICO&#x27; e sezione &#x27;Export programmati&#x27;; non definiti dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &#x27;Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.&#x27;</td><td>Come nel set direct, i TC testano soprattutto l&#x27;accesso alla configurazione dell&#x27;export automatico, non l&#x27;esecuzione di export automatici e la relativa enforcement autorizzativa (es. chi può far partire/ottenere i file generati automaticamente).</td></tr>
+<tr><td class='mono'>Acceptance Criteria AC-1: &#x27;meccanismo di export manuale ... (es. scarica dataset visualizzato)&#x27;</td><td>Molti TC verificano solo che &#x27;viene scaricato un file relativo alla vista&#x27;, ma raramente verificano esplicitamente la coerenza contenutistica tra dataset visualizzato e dataset esportato (il &#x27;perimetro dati&#x27; è testato in modo forte solo in US02.TC04, che però introduce assunzioni non richieste).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-009.US01.TC01, REQ-D-009.US02.TC02</td><td>Stesso scenario di base: utente autorizzato esegue export manuale con successo dopo caricamento vista.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC02, REQ-D-009.US02.TC03</td><td>Stesso scenario di base: utente non autorizzato non può eseguire export manuale e non viene generato file.</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC06, REQ-D-009.US02.TC07</td><td>Stesso scenario di base: export automatico non presente nel rilascio, export manuale non bloccato e assenza indicata/documentata.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-D-009&quot;,
+  &quot;title&quot;: &quot;Export dei dati con priorità alla rappresentazione; export automatico programmato opzionale&quot;,
+  &quot;description&quot;: &quot;L&#x27;utente ha indicato che la priorità è la rappresentazione dei dati nella dashboard e che la funzionalità di export automatico programmato è un&#x27;aggiunta opzionale. In modo esplicito l&#x27;utente ha richiesto &#x27;configurazione combinazioni e monitoraggio, export, gestione regole di accesso&#x27; e successivamente ha dichiarato che l&#x27;export automatico programmato è una funzionalità aggiuntiva. Pertanto il sistema deve almeno fornire la capacità di esportare i dati (manuale) dalla dashboard; la programmazione di export automatici è riconosciuta come funzionalità secondaria/aggiuntiva. Sia la funzionalità di esportazione manuale sia quella automatica devono sottostare a specifiche regole di autorizzazione associati ai diversi ruoli utente.&quot;,
+  &quot;category&quot;: &quot;DATI&quot;,
+  &quot;priority&quot;: &quot;medium&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È disponibile almeno un meccanismo di export manuale dei dati dalla dashboard (es. scarica dataset visualizzato) in base alle autorizzazioni.&quot;,
+    &quot;La rappresentazione dei dati nella dashboard è completa e consultabile prima di ogni export.&quot;,
+    &quot;La possibilità di configurare export automatici è prevista come funzionalità opzionale/documentata ma non obbligatoria per il rilascio iniziale.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-009.TC01</td><td>Export manuale del dataset visualizzato dalla dashboard con utente autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.TC02</td><td>Blocco export manuale dalla dashboard per utente non autorizzato</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.TC03</td><td>Export manuale non consentito quando la dashboard non ha dati consultabili (dati mancanti o non caricati)</td><td>Negative</td><td>MEDIUM</td><td>AC-2, AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.TC04</td><td>Verifica presenza e consultabilità completa dei dati in dashboard prima dell&#x27;export (coerenza filtri/viste)</td><td>UI</td><td>MEDIUM</td><td>AC-2, AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.TC05</td><td>Gestione indisponibilità/errore del servizio di export durante export manuale</td><td>Integration</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.TC06</td><td>Funzionalità di export automatico programmato assente nel rilascio iniziale senza impatto sull&#x27;export manuale (opzionale/documentata)</td><td>Functional</td><td>MEDIUM</td><td>AC-3, AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.TC07</td><td>Se presente, configurazione export automatico programmato consentita solo a ruoli autorizzati</td><td>Authorization</td><td>MEDIUM</td><td>AC-3, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 17 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-009.US01.TC01</td><td>Export manuale disponibile ed eseguibile per ruolo Marketing autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC02</td><td>Export manuale non disponibile per ruolo Marketing non autorizzato con messaggio coerente</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC03</td><td>La consultazione dei dati in dashboard ha priorità: export non sostituisce la rappresentazione UI</td><td>UI</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC04</td><td>Export automatico abilitato: accesso alla configurazione consentito solo se autorizzato e salvataggio configurazione</td><td>Functional</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC05</td><td>Export automatico abilitato: accesso alla configurazione negato per utente non autorizzato</td><td>Authorization</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC06</td><td>Export automatico non presente nel rilascio: export manuale non bloccato e assenza documentata come opzionale</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC07</td><td>Sessione scaduta durante export manuale: richiesta nuova autenticazione e export non avviato</td><td>Negative</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC08</td><td>Export manuale con dataset vuoto: gestione senza errore (file vuoto/solo header o messaggio)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC09</td><td>Errore durante generazione export: errore gestito e possibilità di riprovare senza corrompere lo stato</td><td>Negative</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US01.TC10</td><td>Revoca permesso export durante la sessione: export bloccato al momento dell&#x27;esecuzione</td><td>Authorization</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC01</td><td>Consultazione dati completa per ruolo Compliance autorizzato prima dell&#x27;export</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC02</td><td>Export manuale eseguibile per ruolo Compliance autorizzato</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC03</td><td>Export manuale negato per ruolo Compliance non autorizzato con messaggio coerente</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC04</td><td>Perimetro dati Compliance: export non include dati non visibili (dettaglio vs aggregato)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC05</td><td>Indisponibilità/timeout del servizio export: errore gestito e nessun file parziale/corrotto</td><td>Integration</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC06</td><td>Export automatico abilitato: accesso alla configurazione consentito solo se previsto dalle autorizzazioni (Compliance)</td><td>Authorization</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-009.US02.TC07</td><td>Export automatico non presente nel rilascio: export manuale resta disponibile se autorizzato e assenza documentata</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 8, 2, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 14, 2, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

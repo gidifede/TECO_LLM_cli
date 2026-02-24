@@ -1,0 +1,171 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-015",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 57,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-015.TC01",
+        "detail": "Introduce dettagli non presenti nel requisito: uso di 'eventi/log di avvio provisioning', stato ordine 'Completata', canale 'web' e ruolo 'operatore abilitato' come modalità specifiche di verifica."
+      },
+      {
+        "test_id": "REQ-F-015.TC02",
+        "detail": "Assume dettagli di integrazione non specificati: endpoint/queue, credenziali/chiavi, correlation/orderId, campi payload minimi (customerId, orderId), esiti tecnici (HTTP 2xx/ACK)."
+      },
+      {
+        "test_id": "REQ-F-015.TC03",
+        "detail": "Assume esistenza di 'area cliente' (portale/app), meccaniche di attesa fino a stato 'Attivo' e specifica canali (email/SMS/push) non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.TC04",
+        "detail": "Assume una 'console/area operatore' con sezione 'Stato attivazione' e modalità di refresh/polling; il requisito richiede visibilità, ma non la UI/strumento."
+      },
+      {
+        "test_id": "REQ-F-015.TC05",
+        "detail": "Introduce regole non esplicitate: stati 'Fallito/Errore/In lavorazione' e la regola 'non dichiarare attivo se un prodotto fallisce'; il requisito non tratta scenari di errore né regole di aggregazione stato."
+      },
+      {
+        "test_id": "REQ-F-015.TC06",
+        "detail": "Introduce requisiti di 'gestione errore integrazione' e tracciabilità tecnica dettagliata verso Connect (codici 503/timeout) non richiesti esplicitamente dall'AC-2."
+      },
+      {
+        "test_id": "REQ-F-015.TC07",
+        "detail": "Assume comportamento in assenza recapiti (attivazione non dipende dalla notifica, fallimento notifica tracciato). Il requisito non specifica gestione contatti mancanti."
+      },
+      {
+        "test_id": "REQ-F-015.TC08",
+        "detail": "Introduce controllo autorizzativo/ruoli e auditing accessi negati; il requisito non menziona permessi o vincoli di accesso."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: 'i sistemi verticali di vendita (e non il motore di sconti) devono garantire...'",
+        "detail": "Nessun test valida esplicitamente che il motore di sconti NON sia responsabile/coinvolto nel provisioning/attivazione (vincolo 'e non il motore di sconti')."
+      },
+      {
+        "source": "Descrizione: '...devono garantire ... l'attivazione del Framework Connect...'",
+        "detail": "I test verificano l'invio dati a Connect, ma non verificano esplicitamente l''attivazione del Framework Connect' come outcome (es. stato/flag di Connect attivo) distinto dalla sola ricezione informazioni."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-015.TC03",
+          "REQ-F-015.TC04"
+        ],
+        "detail": "Entrambi coprono AC-3 sulla consultabilità dello stato post-attivazione (cliente vs operatore) con logica molto simile; parziale sovrapposizione accettabile ma ridondante."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 16,
+    "coherence_score": 31,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-015.US01.TC01",
+        "detail": "Aggiunge vincoli non richiesti: 'cliente autenticato', inbox/centro notifiche, e soprattutto l'esclusione di un 'canale fisico (UP)' non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC03",
+        "detail": "Introduce stati e regole temporali ('In lavorazione' e nessuna notifica finché non diventa Attivo) non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC04",
+        "detail": "Introduce gestione esplicita di errore provisioning lato cliente e regola di assenza notifica; non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC05",
+        "detail": "Introduce indisponibilità del servizio notifiche e comportamento atteso; il requisito non tratta failure del sistema di notifica."
+      },
+      {
+        "test_id": "REQ-F-015.US01.TC06",
+        "detail": "Introduce requisito di autorizzazione/autenticazione per consultare lo stato; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC01",
+        "detail": "Introduce concetto di 'front-end commerciale sportello/sala' e 'riscontro/notifica' come artefatto UI specifico; il requisito parla di visibilità per operatore, non di canale sportello né di meccanismo."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC05",
+        "detail": "Introduce comportamento di fallback per integrazione stato non raggiungibile (placeholder, non mostrare dati obsoleti); non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US02.TC06",
+        "detail": "Introduce segregazione permessi per consultazione posizione cliente; non citata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC01",
+        "detail": "Introduce evento tecnico 'SubscriptionCompleted(success=true)' ed event-bus driven provisioning; il requisito non impone eventi né messaggistica."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC02",
+        "detail": "Assume set minimo dati loyalty (timestamp, offerta) e meccanismo ack/HTTP 2xx; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC04",
+        "detail": "Introduce requisito di idempotenza su eventi duplicati; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC05",
+        "detail": "Introduce regola di business non richiesta: 'invio a Connect fallito non blocca la sottoscrizione' e concetto di stato non uniforme/flag Connect; il requisito non esplicita tale disaccoppiamento né un modello di stato."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC06",
+        "detail": "Introduce gestione 'provisioning parziale' e granularità per prodotto nello stato; non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-015.US03.TC07",
+        "detail": "Introduce 'retry e/o coda' come obbligo e che provisioning non sia bloccato da Connect down; il requisito non menziona retry/coda né dipendenze tra provisioning e Connect."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: '...notificando il cliente tramite canali digitali...'",
+        "detail": "Molti TC parlano genericamente di 'digital (App/Web)' e inbox/push; non c'è un test che verifichi esplicitamente una notifica su un canale digitale concreto e tracciabile (es. email/SMS/push) senza introdurre assunzioni extra. La copertura resta concettuale ma poco ancorata al requisito."
+      },
+      {
+        "source": "Descrizione: '...i sistemi verticali di vendita (e non il motore di sconti)...'",
+        "detail": "Come nel set direct, nessun test valida esplicitamente l'esclusione del motore di sconti dal flusso di provisioning/attivazione."
+      },
+      {
+        "source": "Descrizione: '...garantire ... l'attivazione del Framework Connect...'",
+        "detail": "I TC coprono bene l'invio informazioni (AC-2), ma non verificano esplicitamente l''attivazione' di Connect come stato/condizione osservabile distinta dall'invio dati."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-015.US01.TC03",
+          "REQ-F-015.US02.TC03"
+        ],
+        "detail": "Stesso scenario concettuale (provisioning in corso, non mostrare 'attivazione completata') replicato per cliente e operatore con variazioni minime."
+      },
+      {
+        "test_ids": [
+          "REQ-F-015.US01.TC04",
+          "REQ-F-015.US02.TC04"
+        ],
+        "detail": "Stesso scenario concettuale (errore provisioning/attivazione, no 'avvenuta attivazione') duplicato cliente/operatore."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3). Tuttavia il set 'direct' introduce meno assunzioni non tracciabili (8 added_info vs 14) e presenta meno ridondanze (1 vs 2). Inoltre nel set 'indirect_persona' compaiono numerosi dettagli architetturali e di processo (eventi SubscriptionCompleted, idempotenza, retry/coda, canali sportello, vincoli su canali fisici) non presenti nel requisito, riducendo maggiormente la coerenza complessiva; per questo il punteggio risulta inferiore (31 vs 57)."
+  }
+}

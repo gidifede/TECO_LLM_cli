@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-I-007</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-I-007</h1>
+  <div class="subtitle">Aggiornamento autonomo dello stato delle proposte basato sui verticali di vendita</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:54</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-I-007</div>
+  <div class="req-field"><strong>Titolo:</strong> Aggiornamento autonomo dello stato delle proposte basato sui verticali di vendita</div>
+  <div class="req-field"><strong>Categoria:</strong> INTEGRAZIONE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il Motore deve aggiornare autonomamente lo stato delle proposte attingendo direttamente dai verticali di vendita: i verticali sono gli unici sistemi che comandano le transizioni di stato (vendita effettiva, altri trigger). Questo requisito definisce il flusso dei dati e gli eventi: il Motore si integra con i verticali di vendita per ricevere eventi che innescano le transizioni di stato delle offerte.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Sono definiti e implementati i canali/endpoint tramite cui i verticali di vendita inviano eventi al Motore e questi eventi aggiornano lo stato della proposta in modo riproducibile.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Test end-to-end mostrano che un evento proveniente da un verticale di vendita causa la transizione di stato attesa nel Motore e che questa transizione è resa disponibile su tutte le interfacce che acquisiscono dal motore l&#x27;elenco delle offerte disponibili per un dato cliente.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">68</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">47</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono AC-1 e AC-2, ma il set direct introduce meno informazioni non tracciabili (8 elementi vs 12) e presenta meno ridondanze (1 vs 3), ottenendo un punteggio di coerenza superiore (68 vs 47). Il set indirect_persona amplia molto oltre il requisito (audit/log, atomicità, state machine, dettagli contrattuali di risposta), aumentando le &#x27;added_info&#x27; e riducendo la fedeltà al testo del requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">68</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2/2</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 2/2 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-007.TC01</td><td>Introduce esempi di interfacce consumer specifiche (&quot;API pubblica&quot; e &quot;portale web interno&quot;) e relativi dettagli operativi (token/credenziali, endpoint GET /offerte) non esplicitati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC01</td><td>Assume un modello di risposta/acknowledgement dell&#x27;endpoint eventi con HTTP 200/202 e riferimento a eventId; il requisito non definisce protocolli/codici di risposta.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC01</td><td>Assume stati e nomenclatura (es. stato iniziale &#x27;CREATA&#x27;) e una &#x27;mappatura configurata&#x27; evento→transizione non descritta nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC02</td><td>Interpreta &#x27;riproducibile&#x27; come idempotenza/deduplica su eventId e richiede comportamento specifico su duplicati; il requisito non menziona gestione duplicati.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC03</td><td>Introduce regole di validazione payload e codici errore (es. HTTP 400) non definiti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC04</td><td>Introduce gestione di eventType non mappato (rifiuto o &#x27;ignored&#x27;); il requisito non specifica cosa accade per trigger/eventi non previsti.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC05</td><td>Introduce requisiti di sicurezza/autorizzazione (mTLS/API key/OAuth, 401/403) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.TC06</td><td>Introduce politiche di retry e assenza di transizioni duplicate in scenari di failure di rete/503; il requisito non parla di retry/affidabilità della consegna.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;i verticali sono gli unici sistemi che comandano le transizioni di stato (vendita effettiva, altri trigger)&quot;</td><td>Non c&#x27;è un test che verifichi esplicitamente che il Motore NON effettui transizioni &#x27;autonome&#x27; senza eventi dai verticali (es. assenza di cambi stato in assenza di eventi / solo-event-driven come vincolo di business). I TC coprono il rifiuto di input non valido/non mappato, ma non l&#x27;assenza di transizioni senza eventi.</td></tr>
+<tr><td class='mono'>AC-2: &quot;resa disponibile su tutte le interfacce che acquisiscono dal motore l&#x27;elenco delle offerte disponibili&quot;</td><td>La verifica su &quot;tutte le interfacce&quot; è implementata come &#x27;almeno due&#x27; interfacce (TC01) oppure una (TC06 non verifica interfacce); non esiste un meccanismo di copertura sistematica di tutte le interfacce esistenti (se &gt;2).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-007.TC01, REQ-I-007.TC06</td><td>Entrambi includono un flusso E2E che porta a transizione e (in parte) verifica visibilità verso consumer; TC06 aggiunge failure+retry ma ripete parte del controllo di transizione/visibilità già in TC01.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">47</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">13</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2/2</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 2/2 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-007.US01.TC01</td><td>Introduce logging/audit come requisito verificabile e come fonte di verità per tracciabilità; il requisito non menziona audit/log.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC01</td><td>Assume esplicitamente una &#x27;regola di mapping evento→transizione&#x27; esterna condivisa e stati astratti S0/S1; il requisito non parla di mapping/stati specifici né di un artefatto esterno.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC02</td><td>Assume regole di presenza nell&#x27;elenco offerte e richiede assenza di &#x27;stati intermedi/parziali&#x27; (consistenza/atomicità di esposizione) non definite nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC03</td><td>Introduce controlli di sicurezza/allowlist/claim e audit del tentativo non autorizzato; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC04</td><td>Introduce comportamento e tracciabilità per proposalId mancante/non valido (errori e audit); il requisito non specifica gestione errori né audit.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC05</td><td>Introduce deduplica/idempotenza basata su eventId come precondizione e atteso; non esplicitata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC06</td><td>Introduce concetto di state machine condivisa, evento fuori sequenza e messaggistica di &#x27;transizione non ammessa&#x27;; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC07</td><td>Introduce atomicità/rollback su DB e simulazioni fault injection; il requisito non menziona transazioni/atomicità.</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC01</td><td>Introduce dettagli di contratto di risposta (correlationId, timestamp, campi risposta) e headers (Content-Type, Authorization) non definiti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC03</td><td>Introduce codici HTTP 400/422 e motivazioni specifiche di validazione/correlazione; non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC04</td><td>Introduce requisito che il verticale possa determinare l&#x27;esito finale del reinvio tramite risposta/meccanismo previsto; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC06</td><td>Introduce indisponibilità endpoint per 2 minuti e deduplica/idempotenza come requisito; non esplicitati dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;i verticali sono gli unici sistemi che comandano le transizioni di stato&quot;</td><td>Come per il set direct, manca un test esplicito che dimostri che in assenza di eventi dai verticali il Motore non effettua transizioni di stato (vincolo &#x27;solo verticali&#x27;). I test coprono rifiuti/non autorizzazioni, ma non l&#x27;assenza di transizioni senza eventi.</td></tr>
+<tr><td class='mono'>AC-2: &quot;resa disponibile su tutte le interfacce&quot;</td><td>I TC (US01.TC02, US02.TC02, US02.TC06) verificano &#x27;almeno un&#x27;interfaccia&#x27; e suggeriscono di replicare su più interfacce, ma non includono un set di verifiche che copra effettivamente &#x27;tutte le interfacce&#x27; esistenti.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-007.US01.TC02, REQ-I-007.US02.TC02</td><td>Entrambi testano lo stesso scenario E2E: evento da verticale → transizione → visibilità su elenco offerte.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC05, REQ-I-007.US02.TC04, REQ-I-007.US02.TC06</td><td>Tutti focalizzati su duplicati/retry/idempotenza (con varianti di failure di rete), sovrapponendo lo stesso rischio funzionale non richiesto esplicitamente dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC04, REQ-I-007.US02.TC03</td><td>Entrambi coprono input incompleti/non validi e attese di KO + nessun aggiornamento, con differenze minori sui campi.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-I-007&quot;,
+  &quot;title&quot;: &quot;Aggiornamento autonomo dello stato delle proposte basato sui verticali di vendita&quot;,
+  &quot;description&quot;: &quot;Il Motore deve aggiornare autonomamente lo stato delle proposte attingendo direttamente dai verticali di vendita: i verticali sono gli unici sistemi che comandano le transizioni di stato (vendita effettiva, altri trigger). Questo requisito definisce il flusso dei dati e gli eventi: il Motore si integra con i verticali di vendita per ricevere eventi che innescano le transizioni di stato delle offerte.&quot;,
+  &quot;category&quot;: &quot;INTEGRAZIONE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Sono definiti e implementati i canali/endpoint tramite cui i verticali di vendita inviano eventi al Motore e questi eventi aggiornano lo stato della proposta in modo riproducibile.&quot;,
+    &quot;Test end-to-end mostrano che un evento proveniente da un verticale di vendita causa la transizione di stato attesa nel Motore e che questa transizione è resa disponibile su tutte le interfacce che acquisiscono dal motore l&#x27;elenco delle offerte disponibili per un dato cliente.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-007.TC01</td><td>E2E: evento da verticale aggiorna lo stato proposta e la transizione è visibile su tutte le interfacce consumer</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-007.TC02</td><td>Integration: validazione contratto endpoint eventi (schema/payload) e aggiornamento stato riproducibile per lo stesso evento</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.TC03</td><td>Negative: evento con payload non valido (campi obbligatori mancanti) non aggiorna lo stato della proposta</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.TC04</td><td>Negative: evento con eventType non riconosciuto non produce transizione di stato</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.TC05</td><td>Authorization: sorgente non autorizzata non può inviare eventi che aggiornano lo stato</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.TC06</td><td>Negative/Integration: indisponibilità del canale/endpoint eventi (timeout/5xx) non produce aggiornamenti di stato e consente retry controllato</td><td>Integration</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 13 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-007.US01.TC01</td><td>Ricezione evento da verticale e aggiornamento stato proposta (happy path, deterministico)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC02</td><td>Visibilità dello stato aggiornato nell&#x27;elenco offerte per cliente dopo elaborazione evento</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC03</td><td>Rifiuto aggiornamento stato se l&#x27;evento non proviene da un verticale di vendita (fonte non autorizzata)</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC04</td><td>Evento con identificativo proposta mancante/non valido: nessun aggiornamento e anomalia tracciata</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC05</td><td>Gestione idempotente di evento duplicato: nessuna transizione incoerente</td><td>Edge Case</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC06</td><td>Evento fuori sequenza/transizione non ammessa: stato non corrotto ed esito tracciabile</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US01.TC07</td><td>Errore di elaborazione/timeout: nessun aggiornamento parziale dello stato (atomicità)</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC01</td><td>Invio evento nel formato concordato verso endpoint del Motore (contratto API)</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC02</td><td>E2E: evento inviato dal verticale causa transizione attesa e visibile su interfacce elenco offerte</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC03</td><td>Invio evento con dati incompleti/non validi: nessun aggiornamento non intenzionale e KO rilevabile</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC04</td><td>Retry su failure di invio: reinvio non causa transizioni multiple (idempotenza)</td><td>Edge Case</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC05</td><td>Invio evento per proposta in stato finale/non transizionabile: esito anomalo rilevabile e stato non corrotto</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-007.US02.TC06</td><td>Interruzione connettività verso endpoint del Motore: evento reinviabile senza perdita di coerenza</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [2, 8, 2, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [2, 12, 2, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

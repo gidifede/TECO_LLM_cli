@@ -1,0 +1,70 @@
+[
+  {
+    "story_id": "REQ-F-006.US01",
+    "title": "Visualizzare descrizioni personalizzate delle proposte in canale fisico",
+    "persona": "Operatore sportello/sala",
+    "goal": "visualizzare, per ogni prodotto suggerito, una descrizione breve e personalizzata con benefici, sconto e motivazione, accanto alla proposta",
+    "benefit": "presentare al cliente una proposta chiara e contestualizzata, aumentando efficacia commerciale e trasparenza",
+    "user_story": "Come Operatore sportello/sala\nVoglio visualizzare accanto a ogni prodotto suggerito una descrizione breve e personalizzata con benefici, sconto e motivazione\nIn modo che possa proporre al cliente offerte chiare e coerenti con il suo contesto",
+    "channels": [
+      "front-end commerciale per OSP/OFE/figure di sala"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo una proposta di prodotto suggerita dal Motore di Offerte nel canale fisico ALLORA vedo un testo breve associato alla proposta che include esplicitamente: benefici del prodotto, valore dello sconto riservato al cliente e motivazione della proposta.",
+      "QUANDO sono presenti più prodotti suggeriti per lo stesso cliente ALLORA per ciascun prodotto vedo la relativa descrizione breve con i tre elementi richiesti.",
+      "QUANDO vengono eseguiti casi di test su diversi prodotti e diversi contesti cliente ALLORA gli esempi di output automatico risultano verificabili e contengono sempre benefici, sconto e motivazione."
+    ],
+    "business_rules": [
+      "La descrizione deve includere obbligatoriamente e in modo esplicito i tre elementi: benefici, valore dello sconto, motivazione della proposta.",
+      "La descrizione deve essere coerente con il contesto cliente/prodotto (personalizzazione basata sui dati disponibili al Motore di Offerte).",
+      "La descrizione deve essere mostrata accanto alla proposta nel canale fisico."
+    ],
+    "edge_cases": [
+      "Il testo generato è mancante di uno dei tre elementi (benefici/sconto/motivazione): la proposta non deve risultare conforme e va gestita come anomalia (es. blocco visualizzazione o fallback) secondo decisione di progetto.",
+      "Lo sconto non è applicabile o non disponibile per il cliente: il sistema non deve esporre un valore di sconto fuorviante; comportamento di fallback da definire.",
+      "Dati di contesto cliente/prodotto insufficienti per personalizzare la motivazione: comportamento di fallback da definire.",
+      "Errore/timeout nella generazione o recupero della descrizione: l’operatore non visualizza la descrizione e deve essere gestito un messaggio/placeholder secondo standard di canale (da definire)."
+    ],
+    "assumptions": [
+      "Si assume che la generazione della descrizione sia effettuata dal Motore di Offerte o da un servizio da esso orchestrato e che il canale fisico la recuperi insieme alla proposta.",
+      "Si assume che 'testo breve' abbia una definizione di lunghezza/limite caratteri che verrà specificata in fase di refinement.",
+      "Si assume che il requisito si applichi alle proposte 'sottoscrivibili/attive' mostrate all’operatore, coerentemente con i requisiti di canale fisico già definiti."
+    ],
+    "notes": "AC condivisi con REQ-F-006.US02: contenuto obbligatorio del testo (benefici/sconto/motivazione) e verificabilità su più casi di test. Dipendenze/ambiguità: il requisito non specifica comportamento in caso di dati mancanti o sconto non disponibile, né i vincoli di lunghezza del testo."
+  },
+  {
+    "story_id": "REQ-F-006.US02",
+    "title": "Visualizzare descrizioni personalizzate delle proposte sui touchpoint digitali self-service",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare, in modalità self-service sui touchpoint digitali, una descrizione breve e personalizzata per ogni prodotto suggerito con benefici, sconto e motivazione",
+    "benefit": "comprendere rapidamente il valore della proposta e decidere in autonomia se procedere",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare sui touchpoint digitali una descrizione breve e personalizzata per ogni prodotto suggerito con benefici, sconto e motivazione\nIn modo che possa capire il valore dell’offerta e scegliere in autonomia",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo un prodotto suggerito sui touchpoint digitali in modalità self-service ALLORA vedo un testo breve associato alla proposta che include esplicitamente: benefici del prodotto, valore dello sconto riservato a me e motivazione della proposta.",
+      "QUANDO sono presenti più prodotti suggeriti ALLORA per ciascun prodotto vedo la relativa descrizione breve con i tre elementi richiesti.",
+      "QUANDO vengono eseguiti casi di test su diversi prodotti e diversi contesti cliente ALLORA gli esempi di output automatico risultano verificabili e contengono sempre benefici, sconto e motivazione."
+    ],
+    "business_rules": [
+      "La descrizione deve includere obbligatoriamente e in modo esplicito i tre elementi: benefici, valore dello sconto, motivazione della proposta.",
+      "La descrizione deve essere coerente con il contesto cliente/prodotto (personalizzazione basata sui dati disponibili al Motore di Offerte).",
+      "Le descrizioni devono essere accessibili al cliente in modalità self sui touchpoint digitali."
+    ],
+    "edge_cases": [
+      "Il testo generato è mancante di uno dei tre elementi (benefici/sconto/motivazione): la proposta non deve risultare conforme e va gestita come anomalia (es. blocco visualizzazione o fallback) secondo decisione di progetto.",
+      "Lo sconto non è applicabile o non disponibile per il cliente: il sistema non deve mostrare un valore di sconto fuorviante; comportamento di fallback da definire.",
+      "Dati di contesto insufficienti per personalizzare la motivazione: comportamento di fallback da definire.",
+      "Errore/timeout nel recupero della descrizione su App/Web: gestione di errore/placeholder secondo standard UX del canale (da definire)."
+    ],
+    "assumptions": [
+      "Si assume che i 'touchpoint digitali' includano almeno App e sito Web, come da definizione persona, ma il requisito non specifica esattamente dove la descrizione venga mostrata (es. pop-up pre-checkout, sezione Loyalty, lista offerte).",
+      "Si assume che 'testo breve' abbia una definizione di lunghezza/limite caratteri che verrà specificata in fase di refinement."
+    ],
+    "notes": "AC condivisi con REQ-F-006.US01: contenuto obbligatorio del testo (benefici/sconto/motivazione) e verificabilità su più casi di test. Dipendenze/ambiguità: il requisito non specifica i touchpoint esatti né le regole di fallback in assenza di sconto/dati o in caso di errore di generazione/recupero."
+  }
+]

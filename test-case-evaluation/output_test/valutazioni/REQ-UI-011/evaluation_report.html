@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-UI-011</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-UI-011</h1>
+  <div class="subtitle">Dashboard interattiva con filtri su cluster, periodi e canali</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:53</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-UI-011</div>
+  <div class="req-field"><strong>Titolo:</strong> Dashboard interattiva con filtri su cluster, periodi e canali</div>
+  <div class="req-field"><strong>Categoria:</strong> INTERFACCIA</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">L&#x27;utente ha richiesto esplicitamente una dashboard interattiva che consenta di applicare filtri su cluster di clientela, intervalli temporali e canali di vendita. L&#x27;interattività deve permettere agli utenti di esplorare i dati, combinare filtri e visualizzare le informazioni rilevanti per analisi rapide e decisioni di marketing. La preferenza dell&#x27;utente è una dashboard interattiva (non solo tabelle statiche).</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>La UI offre controlli di filtro per cluster, periodo e canale.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>L&#x27;applicazione aggiorna le visualizzazioni in modo interattivo quando vengono applicati i filtri.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Le visualizzazioni risultanti riflettono correttamente i filtri selezionati.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">62</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">37</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1..AC-3), ma il set direct introduce meno informazioni non tracciabili (8 added_info vs 14) e molte meno ridondanze (1 vs 6). Il set indirect_persona aggiunge inoltre ruoli/persona e logiche IAM non presenti nel requisito, aumentando significativamente le assunzioni. Per questo il punteggio di coerenza del direct risulta superiore (62 vs 37).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">62</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.TC01</td><td>Introduce canale specifico &#x27;web&#x27; e precondizione &#x27;dashboard disponibile nel canale web&#x27;: il requisito non menziona canali/piattaforme.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC01</td><td>Introduce autenticazione/utente autenticato come precondizione: il requisito non menziona accesso, login o ruoli.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC02</td><td>Assume che l&#x27;aggiornamento avvenga &#x27;senza cambio pagina o refresh manuale&#x27;: il requisito dice &#x27;interattivo&#x27; ma non specifica questa modalità.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC03</td><td>Richiede una &#x27;fonte di verità&#x27; (export/query BI/report back-office) per confronto: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC04</td><td>Introduce regola di validazione periodo (inizio &lt;= fine) e messaggio di errore: non prevista dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC05</td><td>Introduce gestione esplicita dello &#x27;stato vuoto&#x27; (messaggio &#x27;Nessun dato disponibile&#x27; o grafico vuoto): non specificata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC06</td><td>Introduce architettura a servizi/API, fault injection, HTTP 500/timeout e comportamento di error handling: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC07</td><td>Introduce requisiti di autorizzazione (redirect login/401/403) e protezione dashboard: non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;combinare filtri e visualizzare le informazioni rilevanti per analisi rapide e decisioni di marketing&#x27; + &#x27;dashboard interattiva (non solo tabelle statiche)&#x27;</td><td>I test non verificano esplicitamente che la soluzione sia una &#x27;dashboard interattiva&#x27; e non una presentazione solo tabellare/statica (es. presenza/uso di visualizzazioni interattive vs sole tabelle).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.TC02, REQ-UI-011.TC03</td><td>Entrambi verificano aggiornamento interattivo e coerenza dati dopo applicazione filtri; TC03 estende con combinazione e confronto, ma c&#x27;è sovrapposizione sostanziale su AC-2/AC-3.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">37</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.US01.TC01</td><td>Introduce ruoli/persona (&#x27;Team Marketing&#x27;) e autenticazione: non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC01</td><td>Introduce ruoli/persona (&#x27;Team Compliance&#x27;): non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC01</td><td>Campo channels=&#x27;dashboard&#x27; come canale: il requisito non definisce canali (web/app/dashboard come canale).</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC02</td><td>Expected result: &#x27;senza richiedere consultazione di tabelle statiche come unico output&#x27; introduce vincolo non espresso negli AC (il requisito preferisce dashboard interattiva ma non formula un criterio verificabile su tabelle).</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC03</td><td>Introduce valori attesi numerici specifici (es. &#x27;Numero transazioni&#x27;=125) e necessità dataset controllato: non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC03</td><td>Introduce valori attesi numerici specifici (es. &#x27;Totale operazioni&#x27;=42) e dataset controllato: non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC05</td><td>Introduce gestione esplicita dello stato &#x27;nessun dato&#x27;: non specificata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC04</td><td>Introduce gestione esplicita dello stato &#x27;nessun dato&#x27;: non specificata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC06</td><td>Introduce regola di validazione periodo (fine &lt; inizio) e comportamento UI di blocco/errore: non prevista dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC05</td><td>Introduce regola di validazione periodo (fine &lt; inizio) e comportamento UI di blocco/errore: non prevista dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC07</td><td>Introduce error handling tecnico (mock API, 500/timeout) e strategia &#x27;mantiene ultimo stato valido o stato vuoto&#x27;: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC06</td><td>Introduce error handling tecnico (timeout) e requisiti di resilienza/ri-tentativo: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC08</td><td>Introduce matrice permessi/entitlement IAM e scenario utente non autorizzato: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC07</td><td>Introduce matrice permessi/entitlement IAM e scenario utente non autorizzato: non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;dashboard interattiva (non solo tabelle statiche)&#x27;</td><td>Non c&#x27;è un test che verifichi in modo diretto che l&#x27;output non sia limitato a tabelle statiche (il riferimento compare in un expected result, ma non come verifica strutturata/oggettiva della presenza di componenti di dashboard/visualizzazioni interattive).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.US01.TC01, REQ-UI-011.US02.TC01</td><td>Stesso scenario (presenza controlli filtro) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC03, REQ-UI-011.US02.TC03</td><td>Stesso scenario (combinazione filtri + verifica coerenza tramite KPI/valore di riferimento) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC05, REQ-UI-011.US02.TC04</td><td>Stesso scenario (zero risultati/stato vuoto) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC06, REQ-UI-011.US02.TC05</td><td>Stesso scenario (periodo non valido) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC07, REQ-UI-011.US02.TC06</td><td>Stesso scenario (errore tecnico durante refresh) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC08, REQ-UI-011.US02.TC07</td><td>Stesso scenario (autorizzazione/utente non autorizzato) duplicato per due ruoli non richiesti dal requisito.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-UI-011&quot;,
+  &quot;title&quot;: &quot;Dashboard interattiva con filtri su cluster, periodi e canali&quot;,
+  &quot;description&quot;: &quot;L&#x27;utente ha richiesto esplicitamente una dashboard interattiva che consenta di applicare filtri su cluster di clientela, intervalli temporali e canali di vendita. L&#x27;interattività deve permettere agli utenti di esplorare i dati, combinare filtri e visualizzare le informazioni rilevanti per analisi rapide e decisioni di marketing. La preferenza dell&#x27;utente è una dashboard interattiva (non solo tabelle statiche).&quot;,
+  &quot;category&quot;: &quot;INTERFACCIA&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;La UI offre controlli di filtro per cluster, periodo e canale.&quot;,
+    &quot;L&#x27;applicazione aggiorna le visualizzazioni in modo interattivo quando vengono applicati i filtri.&quot;,
+    &quot;Le visualizzazioni risultanti riflettono correttamente i filtri selezionati.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.TC01</td><td>Presenza dei controlli filtro per cluster, periodo e canale nella dashboard</td><td>UI</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC02</td><td>Aggiornamento interattivo delle visualizzazioni applicando un singolo filtro (cluster)</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC03</td><td>Combinazione di filtri (cluster + periodo + canale) e coerenza dei risultati mostrati</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC04</td><td>Filtro periodo con intervallo non valido (data inizio successiva a data fine)</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC05</td><td>Edge case: filtri combinati producono zero risultati e la dashboard gestisce correttamente lo stato vuoto</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC06</td><td>Gestione errore: servizio dati non disponibile durante l&#x27;applicazione dei filtri</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-011.TC07</td><td>Autorizzazione: utente non autenticato/non autorizzato non può accedere alla dashboard</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 15 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-011.US01.TC01</td><td>Visualizzazione controlli filtro (cluster, periodo, canale) all’accesso dashboard</td><td>UI</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC02</td><td>Aggiornamento interattivo delle visualizzazioni alla modifica di un singolo filtro (Cluster)</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC03</td><td>Applicazione combinata filtri (Cluster + Periodo + Canale) con verifica coerenza dati</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC04</td><td>Cambio di uno o più filtri aggiorna correttamente le visualizzazioni (nessuna persistenza di dati precedenti)</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC05</td><td>Zero risultati: stato &#x27;nessun dato&#x27; e assenza di dati non filtrati</td><td>Edge Case</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC06</td><td>Validazione periodo non valido (fine &lt; inizio): blocco UI o errore e filtro non applicato</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC07</td><td>Errore tecnico durante refresh interattivo: messaggio errore e mantenimento ultimo stato valido</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US01.TC08</td><td>Autorizzazione: accesso alla dashboard e utilizzo filtri per ruolo Team Marketing</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC01</td><td>Visualizzazione controlli filtro all’accesso dashboard per Team Compliance</td><td>UI</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC02</td><td>Aggiornamento interattivo delle visualizzazioni alla modifica filtro (Canale) per audit</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC03</td><td>Combinazione filtri (Cluster + Periodo + Canale) restituisce solo record coerenti per verifica compliance</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC04</td><td>Zero risultati: stato &#x27;nessun dato&#x27; senza esposizione di dati non filtrati (Compliance)</td><td>Edge Case</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC05</td><td>Periodo non valido (fine &lt; inizio): validazione e mancata applicazione del filtro (Compliance)</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC06</td><td>Errore tecnico durante refresh: messaggio errore e assenza di dati incoerenti (Compliance)</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-011.US02.TC07</td><td>Autorizzazione: accesso in sola consultazione alla dashboard per ruolo Team Compliance</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 8, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 14, 1, 6], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

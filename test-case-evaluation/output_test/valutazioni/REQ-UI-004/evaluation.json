@@ -1,0 +1,160 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-004",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 70,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-004.TC01",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC01",
+        "detail": "Introduce precondizioni di autenticazione/abilitazioni dell'operatore e di navigazione a una 'sezione lista offerte' non specificate nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC01",
+        "detail": "Assume una regola/implementazione tecnica per 'sconto significativo' tramite flag (flagScontoSignificativo=true) e dati percentuali (30%) non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC02",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC02",
+        "detail": "Assume una regola/implementazione tecnica per 'scadenza imminente' tramite flag (flagScadenzaImminente=true) e soglia (1 giorno) non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC03",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC03",
+        "detail": "Aggiunge requisiti di rendering non esplicitati (no placeholder/fallback, non sovrapposte) come criteri di accettazione del test."
+      },
+      {
+        "test_id": "REQ-UI-004.TC04",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC05",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC05",
+        "detail": "Aggiunge vincoli su leggibilità di elementi specifici della card (titolo, prezzo/valore, CTA) e assenza di indicatori 'contraddittori', non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC06",
+        "detail": "Introduce vincoli di ambiente (no refresh automatico, ordine stabile), compito temporizzato (30 secondi), dimensione campione (>=5) e soglia quantitativa di successo (>=80%) non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.TC06",
+        "detail": "Introduce la categoria 'offerta top' anche nella parte di usabilità come se fosse sempre parte del set di segnali richiesti dall'AC-3; nel requisito è un esempio in AC-2, non un obbligo esplicito per la prova di usabilità."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'Le card e gli elementi dell'interfaccia...'",
+        "detail": "I test validano solo le card nella lista offerte; non coprono altri 'elementi dell'interfaccia' che potrebbero usare gli stessi segnali visivi."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-004.TC01",
+          "REQ-UI-004.TC02"
+        ],
+        "detail": "Stesso flusso (accesso, lista card, osservazione marcatura) su due condizioni diverse; parzialmente ridondanti nella struttura."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 9,
+    "coherence_score": 48,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-004.US01.TC01",
+        "detail": "Introduce canale/contesto 'front-end commerciale' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC01",
+        "detail": "Introduce precondizioni di autenticazione/profilo abilitato non specificate nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC01",
+        "detail": "Aggiunge un vincolo negativo specifico: 'Non è mostrata l’icona di scadenza imminente' per un’offerta con sconto; il requisito non richiede esplicitamente esclusività tra segnali."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC02",
+        "detail": "Introduce canale/contesto 'front-end commerciale' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC02",
+        "detail": "Aggiunge un vincolo negativo specifico: 'Non è mostrata marcatura di sconto significativo' per un’offerta urgente; il requisito non richiede esplicitamente esclusività tra segnali."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC03",
+        "detail": "Introduce precondizione 'risorse UI (set icone) distribuite e disponibili' e riferimento a design system/documentazione per assert puntuale: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC04",
+        "detail": "Introduce precondizione 'risorse UI (set icone) distribuite e disponibili' e dettagli per automazione (selettore UI/attributo accessibile): non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC05",
+        "detail": "Introduce la possibilità di 'rappresentazione combinata prevista' come alternativa e dettagli su coesistenza/assenza artefatti grafici oltre quanto richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC06",
+        "detail": "Estende la negativa includendo l’assenza delle icone specifiche 'offerta top' e 'scadenza imminente' anche quando la condizione è neutra; il requisito non definisce quando 'offerta top' debba o non debba comparire (non è legata a sconto/urgenza)."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC07",
+        "detail": "Scenario di fallback quando le icone non sono disponibili (CDN, 404, timeout) e requisiti di continuità operativa: non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC08",
+        "detail": "Test su rese cromatiche diverse/leggibilità minima su configurazioni display: il requisito non menziona accessibilità/contrasto o variabilità hardware."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC09",
+        "detail": "Introduce 'protocollo di usabilità approvato' con azioni attese e scenario operativo dettagliato; il requisito richiede solo conferma da test di usabilità, senza prescrivere protocollo/azioni."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'Le card e gli elementi dell'interfaccia...'",
+        "detail": "Come nel set direct, i test sono focalizzati sulle card; non coprono altri elementi UI che dovrebbero usare colori/icone."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-004.US01.TC03",
+          "REQ-UI-004.US01.TC04"
+        ],
+        "detail": "Stesso scenario di verifica icona specifica, duplicato per due stati diversi; ridondanza strutturale."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set direct introduce meno informazioni non tracciabili (meno assunzioni extra come fallback asset, variabilità display, esclusività tra segnali) e quindi ottiene un punteggio di coerenza più alto (70 vs 48). Entrambi mancano la copertura esplicita di 'altri elementi dell'interfaccia' oltre alle card, ma l'indirect_persona aggiunge più scenari non richiesti dal requisito, penalizzando maggiormente la coerenza."
+  }
+}

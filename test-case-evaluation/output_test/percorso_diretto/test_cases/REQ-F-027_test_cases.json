@@ -1,0 +1,259 @@
+[
+  {
+    "test_id": "REQ-F-027.TC01",
+    "title": "Consultazione matrice abilitazioni da parte del Motore prima della generazione proposta (canale operatore)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con Motore di generazione proposte deployato e raggiungibile",
+      "Canale 'operatore' abilitato per la generazione proposte",
+      "Matrice di abilitazione prodotti vs ruoli configurata e pubblicata in un repository accessibile dal Motore (es. DB/servizio di configurazione)",
+      "Logging/telemetria del Motore attiva per tracciare la consultazione della matrice (es. log applicativi o audit tecnico)"
+    ],
+    "test_data": [
+      "Ruoli: OSP, OFE, CONSULENTE_SALA",
+      "Prodotti: PRODOTTO_A, PRODOTTO_B, PRODOTTO_C",
+      "Matrice abilitazioni configurata: OSP -> [PRODOTTO_A]; OFE -> [PRODOTTO_A, PRODOTTO_B]; CONSULENTE_SALA -> [PRODOTTO_B]",
+      "Operatore test: op_osp (ruolo OSP), op_ofe (ruolo OFE), op_cs (ruolo CONSULENTE_SALA)",
+      "Cliente test: cliente_001 (anagrafica valida e idonea alla generazione proposta)"
+    ],
+    "steps": [
+      "Impostare la matrice abilitazioni come da test data e salvarla nel repository previsto",
+      "Autenticarsi sul canale operatore come op_osp",
+      "Avviare la generazione di una proposta per cliente_001",
+      "Raccogliere evidenze tecniche (log/trace) dell'esecuzione del Motore per la richiesta effettuata",
+      "Ripetere la generazione proposta autenticandosi come op_ofe",
+      "Raccogliere evidenze tecniche (log/trace) dell'esecuzione del Motore per la richiesta effettuata",
+      "Ripetere la generazione proposta autenticandosi come op_cs",
+      "Raccogliere evidenze tecniche (log/trace) dell'esecuzione del Motore per la richiesta effettuata"
+    ],
+    "expected_results": [
+      "Per ciascuna generazione proposta su canale operatore, il Motore effettua una consultazione della matrice abilitazioni prima di calcolare/ritornare l'elenco prodotti proponibili (evidenza in log/trace con riferimento a ruolo e versione/timestamp della matrice)",
+      "La consultazione della matrice avviene con il ruolo dell'operatore autenticato (OSP/OFE/CONSULENTE_SALA) e non con un ruolo generico",
+      "Non risultano errori di accesso al repository della matrice durante le tre esecuzioni"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Gli attori (operatore con ruolo) e il canale 'operatore' sono inferiti dagli AC e dalla descrizione. Il requisito non specifica dove risiede la matrice né il formato: il test richiede evidenze tecniche (log/trace) per dimostrare la consultazione 'prima di generare proposte'."
+  },
+  {
+    "test_id": "REQ-F-027.TC02",
+    "title": "E2E: il Motore propone solo prodotti abilitati per ruolo OSP",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale operatore disponibile (UI o API) per generazione proposte",
+      "Matrice abilitazioni configurata: OSP -> [PRODOTTO_A]; OFE -> [PRODOTTO_A, PRODOTTO_B]; CONSULENTE_SALA -> [PRODOTTO_B]",
+      "Catalogo prodotti attivo contenente PRODOTTO_A, PRODOTTO_B, PRODOTTO_C e tutti tecnicamente proponibili per cliente_001 (salvo vincolo di ruolo)",
+      "Operatore op_osp esistente e associato al ruolo OSP",
+      "Cliente cliente_001 valido"
+    ],
+    "test_data": [
+      "Operatore: op_osp (ruolo OSP)",
+      "Cliente: cliente_001",
+      "Aspettativa prodotti proponibili per OSP: solo PRODOTTO_A"
+    ],
+    "steps": [
+      "Accedere al canale operatore come op_osp",
+      "Selezionare cliente_001",
+      "Richiedere la generazione di una nuova proposta",
+      "Visualizzare l'elenco dei prodotti proposti dal Motore"
+    ],
+    "expected_results": [
+      "L'elenco prodotti proposti contiene PRODOTTO_A",
+      "L'elenco prodotti proposti non contiene PRODOTTO_B",
+      "L'elenco prodotti proposti non contiene PRODOTTO_C"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Il requisito non definisce come il Motore esponga i prodotti (UI/API). Il test è eseguibile su UI o via API purché l'output contenga l'elenco prodotti proposti."
+  },
+  {
+    "test_id": "REQ-F-027.TC03",
+    "title": "E2E: il Motore propone solo prodotti abilitati per ruolo OFE",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale operatore disponibile (UI o API) per generazione proposte",
+      "Matrice abilitazioni configurata: OSP -> [PRODOTTO_A]; OFE -> [PRODOTTO_A, PRODOTTO_B]; CONSULENTE_SALA -> [PRODOTTO_B]",
+      "Catalogo prodotti attivo contenente PRODOTTO_A, PRODOTTO_B, PRODOTTO_C e tutti tecnicamente proponibili per cliente_001 (salvo vincolo di ruolo)",
+      "Operatore op_ofe esistente e associato al ruolo OFE",
+      "Cliente cliente_001 valido"
+    ],
+    "test_data": [
+      "Operatore: op_ofe (ruolo OFE)",
+      "Cliente: cliente_001",
+      "Aspettativa prodotti proponibili per OFE: PRODOTTO_A e PRODOTTO_B"
+    ],
+    "steps": [
+      "Accedere al canale operatore come op_ofe",
+      "Selezionare cliente_001",
+      "Richiedere la generazione di una nuova proposta",
+      "Visualizzare l'elenco dei prodotti proposti dal Motore"
+    ],
+    "expected_results": [
+      "L'elenco prodotti proposti contiene PRODOTTO_A",
+      "L'elenco prodotti proposti contiene PRODOTTO_B",
+      "L'elenco prodotti proposti non contiene PRODOTTO_C"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": ""
+  },
+  {
+    "test_id": "REQ-F-027.TC04",
+    "title": "E2E: il Motore propone solo prodotti abilitati per ruolo Consulente di sala",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale operatore disponibile (UI o API) per generazione proposte",
+      "Matrice abilitazioni configurata: OSP -> [PRODOTTO_A]; OFE -> [PRODOTTO_A, PRODOTTO_B]; CONSULENTE_SALA -> [PRODOTTO_B]",
+      "Catalogo prodotti attivo contenente PRODOTTO_A, PRODOTTO_B, PRODOTTO_C e tutti tecnicamente proponibili per cliente_001 (salvo vincolo di ruolo)",
+      "Operatore op_cs esistente e associato al ruolo CONSULENTE_SALA",
+      "Cliente cliente_001 valido"
+    ],
+    "test_data": [
+      "Operatore: op_cs (ruolo CONSULENTE_SALA)",
+      "Cliente: cliente_001",
+      "Aspettativa prodotti proponibili per CONSULENTE_SALA: solo PRODOTTO_B"
+    ],
+    "steps": [
+      "Accedere al canale operatore come op_cs",
+      "Selezionare cliente_001",
+      "Richiedere la generazione di una nuova proposta",
+      "Visualizzare l'elenco dei prodotti proposti dal Motore"
+    ],
+    "expected_results": [
+      "L'elenco prodotti proposti contiene PRODOTTO_B",
+      "L'elenco prodotti proposti non contiene PRODOTTO_A",
+      "L'elenco prodotti proposti non contiene PRODOTTO_C"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": ""
+  },
+  {
+    "test_id": "REQ-F-027.TC05",
+    "title": "Negativo: blocco proposta prodotti non abilitati quando la matrice non contiene l'associazione prodotto-ruolo",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale operatore disponibile (UI o API) per generazione proposte",
+      "Catalogo prodotti attivo contenente PRODOTTO_C",
+      "Matrice abilitazioni configurata senza alcuna abilitazione di PRODOTTO_C per i ruoli OSP/OFE/CONSULENTE_SALA",
+      "Operatore op_ofe esistente e associato al ruolo OFE",
+      "Cliente cliente_001 valido"
+    ],
+    "test_data": [
+      "Operatore: op_ofe (ruolo OFE)",
+      "Cliente: cliente_001",
+      "Prodotto non abilitato per nessun ruolo: PRODOTTO_C"
+    ],
+    "steps": [
+      "Accedere al canale operatore come op_ofe",
+      "Selezionare cliente_001",
+      "Richiedere la generazione di una nuova proposta",
+      "Verificare l'elenco dei prodotti proposti dal Motore"
+    ],
+    "expected_results": [
+      "PRODOTTO_C non compare tra i prodotti proposti dal Motore",
+      "Non viene mostrato alcun meccanismo di override che consenta di proporre PRODOTTO_C con il ruolo corrente"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Il requisito non specifica messaggi/UX quando un prodotto è escluso: il controllo è effettuato verificando l'assenza del prodotto dall'elenco proposto."
+  },
+  {
+    "test_id": "REQ-F-027.TC06",
+    "title": "Negativo/Resilienza: repository matrice non disponibile durante generazione proposta su canale operatore",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale operatore disponibile (UI o API) per generazione proposte",
+      "Operatore op_osp esistente e associato al ruolo OSP",
+      "Cliente cliente_001 valido",
+      "Possibilità di simulare indisponibilità del repository della matrice (es. stop servizio di configurazione, firewall, DB down) o di forzare timeout"
+    ],
+    "test_data": [
+      "Operatore: op_osp (ruolo OSP)",
+      "Cliente: cliente_001",
+      "Simulazione errore: timeout 30s o HTTP 503 dal servizio matrice"
+    ],
+    "steps": [
+      "Rendere indisponibile il repository/servizio della matrice abilitazioni (o configurare la simulazione di timeout)",
+      "Accedere al canale operatore come op_osp",
+      "Selezionare cliente_001",
+      "Richiedere la generazione di una nuova proposta",
+      "Ripristinare la disponibilità del repository/servizio della matrice"
+    ],
+    "expected_results": [
+      "La generazione proposta non restituisce prodotti non vincolati (non deve comparire un elenco completo non filtrato)",
+      "Il sistema segnala un errore di generazione proposta o restituisce una risposta di errore coerente (es. 'impossibile generare proposta' con codice/errore tecnico tracciabile)",
+      "Nei log/trace è presente evidenza dell'errore di consultazione della matrice (timeout/503) associato alla richiesta"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Il requisito non specifica il comportamento in fault (fail-open vs fail-closed). Per garantire il vincolo di vendita, l'atteso assume comportamento fail-closed: in assenza matrice, non deve essere possibile proporre prodotti potenzialmente non consentiti."
+  },
+  {
+    "test_id": "REQ-F-027.TC07",
+    "title": "Export matrice abilitazioni in report per audit (contenuto e tracciabilità)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Funzionalità di esportazione/report audit disponibile (UI o API) per la matrice abilitazioni",
+      "Matrice abilitazioni configurata: OSP -> [PRODOTTO_A]; OFE -> [PRODOTTO_A, PRODOTTO_B]; CONSULENTE_SALA -> [PRODOTTO_B]",
+      "Presenza di almeno un identificativo/versione o timestamp di pubblicazione della matrice nel sistema di reporting (se previsto)"
+    ],
+    "test_data": [
+      "Formato export previsto: CSV o XLSX o PDF (selezionare quello disponibile in ambiente)",
+      "Filtri report (se disponibili): nessun filtro (export completo)",
+      "Mappature attese nel report: (OSP, PRODOTTO_A), (OFE, PRODOTTO_A), (OFE, PRODOTTO_B), (CONSULENTE_SALA, PRODOTTO_B)"
+    ],
+    "steps": [
+      "Accedere alla sezione/report di audit della matrice abilitazioni (o invocare l'endpoint di export)",
+      "Richiedere l'esportazione completa della matrice",
+      "Scaricare il file/ottenere l'output del report",
+      "Aprire il file/analizzare l'output del report",
+      "Verificare la presenza delle righe di mapping attese"
+    ],
+    "expected_results": [
+      "Il report/export contiene tutte le associazioni ruolo-prodotto presenti nella matrice configurata",
+      "Il report/export consente la verifica auditabile della matrice (almeno: ruolo e identificativo prodotto per ogni riga; eventuale versione/timestamp se disponibile)",
+      "Il file esportato è scaricabile/ottenibile senza corruzione e risulta leggibile nel formato previsto"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Il requisito non specifica formato, filtri, né permessi di accesso al report: il test verifica la possibilità di esportare e confrontare contenuto con la matrice configurata. Se esistono più formati, replicare il test per ciascun formato supportato."
+  }
+]

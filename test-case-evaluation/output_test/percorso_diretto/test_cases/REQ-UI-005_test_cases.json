@@ -1,0 +1,287 @@
+[
+  {
+    "test_id": "REQ-UI-005.TC01",
+    "title": "Dashboard log: ricerca, filtri e visualizzazione per utente Marketing",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' attivo e abilitato all'accesso alla dashboard log",
+      "La dashboard interna dei log è raggiungibile dall'applicazione (ambiente di test)",
+      "Sono presenti log indicizzati con timestamp e livello (es. INFO/ERROR) nel periodo degli ultimi 7 giorni"
+    ],
+    "test_data": [
+      "Credenziali utente Marketing: marketing.user1 / Password valida",
+      "Intervallo data/ora: ultimi 2 giorni",
+      "Filtro livello log: ERROR",
+      "Parola chiave ricerca: \"consenso\""
+    ],
+    "steps": [
+      "Accedere all'applicazione con l'utente Marketing",
+      "Navigare alla sezione interna 'Dashboard log'",
+      "Impostare l'intervallo data/ora sugli ultimi 2 giorni",
+      "Impostare il filtro 'Livello' su 'ERROR'",
+      "Inserire la parola chiave \"consenso\" nel campo di ricerca",
+      "Avviare la ricerca/applicare i filtri",
+      "Aprire il dettaglio di un record log restituito (se presente)"
+    ],
+    "expected_results": [
+      "La sezione 'Dashboard log' è accessibile e viene visualizzata correttamente",
+      "I risultati mostrati rispettano l'intervallo temporale selezionato",
+      "I risultati mostrati hanno livello 'ERROR'",
+      "I risultati mostrati contengono la parola chiave \"consenso\" nel messaggio/campo ricercabile",
+      "Il dettaglio del record selezionato è visualizzato con le informazioni del log (almeno timestamp, livello, messaggio)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Canale dedotto come dashboard interna (web). I campi minimi del log (timestamp/livello/messaggio) sono assunti per rendere verificabile la visualizzazione; il requisito non specifica lo schema dei log."
+  },
+  {
+    "test_id": "REQ-UI-005.TC02",
+    "title": "Dashboard log: ricerca, filtri e visualizzazione per utente Compliance",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Compliance' attivo e abilitato all'accesso alla dashboard log",
+      "La dashboard interna dei log è raggiungibile dall'applicazione (ambiente di test)",
+      "Sono presenti log indicizzati con timestamp e livello (es. INFO/WARN/ERROR) nel periodo degli ultimi 30 giorni"
+    ],
+    "test_data": [
+      "Credenziali utente Compliance: compliance.user1 / Password valida",
+      "Intervallo data/ora: ultimi 30 giorni",
+      "Filtro livello log: WARN",
+      "Parola chiave ricerca: \"audit\""
+    ],
+    "steps": [
+      "Accedere all'applicazione con l'utente Compliance",
+      "Navigare alla sezione interna 'Dashboard log'",
+      "Impostare l'intervallo data/ora sugli ultimi 30 giorni",
+      "Impostare il filtro 'Livello' su 'WARN'",
+      "Inserire la parola chiave \"audit\" nel campo di ricerca",
+      "Avviare la ricerca/applicare i filtri"
+    ],
+    "expected_results": [
+      "La sezione 'Dashboard log' è accessibile e viene visualizzata correttamente",
+      "I risultati mostrati rispettano l'intervallo temporale selezionato",
+      "I risultati mostrati hanno livello 'WARN'",
+      "I risultati mostrati contengono la parola chiave \"audit\" nel messaggio/campo ricercabile"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Canale dedotto come dashboard interna (web). Il requisito non specifica differenze funzionali tra Marketing e Compliance oltre alla segregazione dei ruoli."
+  },
+  {
+    "test_id": "REQ-UI-005.TC03",
+    "title": "Autorizzazioni: utente non appartenente a Marketing/Compliance non può accedere alla dashboard log",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo diverso da Marketing/Compliance (es. 'Sales') attivo",
+      "La dashboard interna dei log è raggiungibile dall'applicazione (ambiente di test)"
+    ],
+    "test_data": [
+      "Credenziali utente non autorizzato: sales.user1 / Password valida"
+    ],
+    "steps": [
+      "Accedere all'applicazione con l'utente non autorizzato",
+      "Tentare di navigare alla sezione 'Dashboard log' tramite menu",
+      "Tentare di aprire direttamente l'URL della dashboard log (deep link)"
+    ],
+    "expected_results": [
+      "La voce di menu della 'Dashboard log' non è visibile oppure è disabilitata per l'utente non autorizzato",
+      "L'accesso via URL diretto è negato con messaggio di autorizzazione insufficiente e/o reindirizzamento a pagina di errore/landing consentita",
+      "Nessun dato di log è mostrato all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La segregazione dei ruoli è interpretata come accesso consentito solo a Marketing e Compliance; il requisito non specifica altri ruoli ammessi."
+  },
+  {
+    "test_id": "REQ-UI-005.TC04",
+    "title": "Dashboard log: gestione input non valido nei filtri (intervallo date invertito)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Compliance' attivo e abilitato all'accesso alla dashboard log",
+      "La dashboard interna dei log è raggiungibile dall'applicazione (ambiente di test)"
+    ],
+    "test_data": [
+      "Credenziali utente Compliance: compliance.user1 / Password valida",
+      "Data/ora inizio: 2026-02-20 10:00",
+      "Data/ora fine: 2026-02-19 10:00"
+    ],
+    "steps": [
+      "Accedere all'applicazione con l'utente Compliance",
+      "Navigare alla sezione interna 'Dashboard log'",
+      "Impostare la data/ora di inizio su 2026-02-20 10:00",
+      "Impostare la data/ora di fine su 2026-02-19 10:00",
+      "Avviare la ricerca/applicare i filtri"
+    ],
+    "expected_results": [
+      "Il sistema impedisce l'esecuzione della ricerca oppure mostra un messaggio di validazione che indica che l'intervallo date non è valido",
+      "Nessuna lista risultati incoerente viene mostrata come esito della richiesta non valida"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita le regole di validazione dei filtri; è stata assunta una validazione minima sull'intervallo temporale per garantire ripetibilità e qualità."
+  },
+  {
+    "test_id": "REQ-UI-005.TC05",
+    "title": "Esportazione automatica: configurazione frequenza quotidiana verso sistema di audit e verifica avvenuta consegna",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una configurazione di integrazione con un sistema di audit aziendale di test raggiungibile (endpoint/connessione attiva)",
+      "Sono disponibili credenziali/chiavi valide per l'export verso il sistema di audit",
+      "La funzionalità di esportazione automatica è abilitata in ambiente di test",
+      "Sono presenti log generati nelle ultime 24 ore"
+    ],
+    "test_data": [
+      "Frequenza export: quotidiana",
+      "Orario schedulazione: 02:00",
+      "Destinazione: Sistema Audit TEST (identificativo connessione: AUDIT_TEST_01)",
+      "Finestra dati: ultime 24 ore"
+    ],
+    "steps": [
+      "Accedere al pannello/area di configurazione dell'esportazione log (se disponibile) o impostare la configurazione tramite API/config di sistema prevista",
+      "Impostare la frequenza di esportazione su 'quotidiana' con esecuzione alle 02:00 verso AUDIT_TEST_01",
+      "Salvare/applicare la configurazione",
+      "Attendere l'orario pianificato oppure forzare l'esecuzione del job schedulato secondo le modalità dell'ambiente di test",
+      "Verificare sul sistema di audit la ricezione del file/lotto esportato oppure verificare l'esito tramite log di integrazione/monitoraggio"
+    ],
+    "expected_results": [
+      "La configurazione della frequenza 'quotidiana' viene salvata ed è visibile/recuperabile",
+      "All'esecuzione pianificata, l'esportazione viene avviata e completata senza errori",
+      "Il sistema di audit riceve i log esportati (presenza di artefatto/record di import) relativi alla finestra 'ultime 24 ore'",
+      "È disponibile una traccia di esito (es. stato 'SUCCESS') dell'export per audit/monitoraggio"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica formato, protocollo e meccanismo di verifica della consegna (ack); la verifica è eseguita tramite evidenza lato sistema di audit o log di esecuzione del job, a seconda delle capability disponibili."
+  },
+  {
+    "test_id": "REQ-UI-005.TC06",
+    "title": "Esportazione automatica: configurazione frequenza settimanale e rispetto della pianificazione",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Integrazione con sistema di audit aziendale di test configurata e raggiungibile",
+      "Funzionalità di esportazione automatica abilitata",
+      "Sono presenti log generati nell'ultima settimana"
+    ],
+    "test_data": [
+      "Frequenza export: settimanale",
+      "Giorno esecuzione: domenica",
+      "Orario schedulazione: 03:30",
+      "Destinazione: Sistema Audit TEST (AUDIT_TEST_01)"
+    ],
+    "steps": [
+      "Impostare la frequenza di esportazione su 'settimanale' con giorno 'domenica' e orario 03:30 verso AUDIT_TEST_01",
+      "Salvare/applicare la configurazione",
+      "Verificare che non avvengano esportazioni fuori pianificazione prima del giorno/orario configurato (tramite monitoraggio job o log)",
+      "All'orario pianificato (o simulandolo in ambiente di test), verificare l'esecuzione dell'export"
+    ],
+    "expected_results": [
+      "La configurazione settimanale (giorno e orario) viene salvata ed è visibile/recuperabile",
+      "Non vengono registrate esecuzioni dell'export al di fuori della pianificazione configurata",
+      "All'istante pianificato l'export viene eseguito e risulta completato con esito positivo"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La modalità di 'simulazione del tempo' dipende dall'infrastruttura (es. trigger manuale del job, clock fittizio)."
+  },
+  {
+    "test_id": "REQ-UI-005.TC07",
+    "title": "Esportazione automatica: frequenza personalizzata (ogni 6 ore) e persistenza configurazione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Integrazione con sistema di audit aziendale di test configurata e raggiungibile",
+      "Funzionalità di esportazione automatica abilitata",
+      "Il sistema supporta una modalità di frequenza 'personalizzata' configurabile (come da requisito)"
+    ],
+    "test_data": [
+      "Frequenza export: personalizzata",
+      "Intervallo: ogni 6 ore",
+      "Destinazione: Sistema Audit TEST (AUDIT_TEST_01)"
+    ],
+    "steps": [
+      "Impostare la frequenza di esportazione su 'personalizzata' con intervallo 'ogni 6 ore' verso AUDIT_TEST_01",
+      "Salvare/applicare la configurazione",
+      "Verificare che la configurazione salvata riporti esplicitamente l'intervallo di 6 ore",
+      "Attendere due finestre di esecuzione consecutive (o forzare due esecuzioni) e raccogliere le evidenze di esito"
+    ],
+    "expected_results": [
+      "La configurazione 'personalizzata ogni 6 ore' viene salvata correttamente",
+      "Le esecuzioni avvengono con periodicità coerente con l'intervallo configurato (tolleranza definita dall'infrastruttura di scheduling)",
+      "Ogni esecuzione produce un esito tracciabile (SUCCESS/FAIL) e, in caso di SUCCESS, evidenza di consegna al sistema di audit"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce i limiti min/max della frequenza personalizzata né la tolleranza temporale; il test usa un intervallo realistico (6 ore) per validare la configurabilità."
+  },
+  {
+    "test_id": "REQ-UI-005.TC08",
+    "title": "Esportazione automatica: gestione indisponibilità del sistema di audit (timeout/errore) e tracciamento fallimento",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Funzionalità di esportazione automatica abilitata",
+      "È possibile simulare indisponibilità del sistema di audit (es. endpoint non raggiungibile, DNS errato, firewall, servizio spento)",
+      "È configurata una frequenza di export attiva (es. quotidiana) verso il sistema di audit"
+    ],
+    "test_data": [
+      "Destinazione audit: AUDIT_TEST_01 reso non raggiungibile (simulazione)",
+      "Frequenza export: quotidiana",
+      "Orario schedulazione: esecuzione imminente o job forzabile"
+    ],
+    "steps": [
+      "Rendere non raggiungibile il sistema di audit di test (simulazione indisponibilità)",
+      "Avviare l'esportazione automatica all'orario pianificato o forzare l'esecuzione del job",
+      "Verificare lo stato dell'esecuzione tramite log di integrazione/monitoraggio",
+      "Ripristinare la raggiungibilità del sistema di audit",
+      "Avviare una nuova esecuzione pianificata o forzata"
+    ],
+    "expected_results": [
+      "Durante l'indisponibilità, l'esportazione fallisce con esito 'FAIL' (o equivalente) registrato in modo consultabile",
+      "L'errore riportato è coerente con indisponibilità/timeout e non indica successo",
+      "Dopo il ripristino della raggiungibilità, una nuova esecuzione può completarsi con esito 'SUCCESS'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica retry/backoff, alerting o gestione code; il test verifica almeno la non-silenziosità del fallimento e la tracciabilità dell'esito."
+  }
+]

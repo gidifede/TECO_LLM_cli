@@ -1,0 +1,139 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-006",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 73,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-006.TC01",
+        "detail": "Assunzione che su canale web non debbano essere mostrate azioni di sanatoria eseguibili a sportello (il requisito dice solo che in UP l'operatore può eseguire azioni, non che sul web debbano essere nascoste)."
+      },
+      {
+        "test_id": "REQ-UI-006.TC02",
+        "detail": "Specifica campi minimi del log (operatore, cliente, prodotto, tipo azione, timestamp, esito) non definiti dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.TC03",
+        "detail": "Introduce esempi di condizioni ('Valutazione rischio in corso') e comportamento UI specifico (pulsante disabilitato con motivazione) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.TC04",
+        "detail": "Introduce gestione errori/validazioni e presuppone che i tentativi falliti debbano mostrare messaggio e restare non sanati; il requisito richiede solo tracciamento delle azioni intraprese nei log, non la UX/gestione errore."
+      },
+      {
+        "test_id": "REQ-UI-006.TC05",
+        "detail": "Richiede comportamento UI in assenza di condizioni (nessun elenco o messaggio 'nessuna condizione') non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.TC06",
+        "detail": "Introduce regole di autorizzazione/segregazione (cliente non può avviare workflow UP) non esplicitate nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"Per ciascun cliente il sistema deve mostrare lo stato di proponibilità/sottoscrivibilità di un prodotto\"",
+        "detail": "Nessun TC verifica esplicitamente che lo stato sia mostrato 'per ciascun cliente' in senso generale (es. lista clienti/contesto multi-cliente); i TC lo verificano solo in scenari puntuali per singolo cliente/prodotto."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-006.TC02",
+          "REQ-UI-006.TC04"
+        ],
+        "detail": "Entrambi coprono sanatoria a sportello in UP con consultazione log; differiscono per esito (successo vs fallimento) ma condividono gran parte dello scenario E2E."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 11,
+    "coherence_score": 33,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-006.US01.TC01",
+        "detail": "Introduce canale 'App' non citato nel requisito (che parla di interfaccia cliente/operatore e canale fisico UP)."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC01",
+        "detail": "Richiede corrispondenza 'esattamente' tra condizioni/azioni mostrate e quelle restituite dal servizio a monte; il requisito non definisce vincoli di esattezza né dipendenza da un servizio specifico."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC02",
+        "detail": "Introduce canale 'App' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC03",
+        "detail": "Gestione indisponibilità servizio (timeout/503, 'non determinabile') e messaggistica dedicata non menzionate nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC04",
+        "detail": "Scenario 'elenco lungo >=25' e requisiti di usabilità/performance (scroll/paginazione, assenza blocchi) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC05",
+        "detail": "Introduce concetto di 'consultazione assistita' per cliente fisico in UP e una specifica modalità operativa non descritta dal requisito (che parla di operatore in canale fisico UP)."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC01",
+        "detail": "Introduce canale/strumento 'front-end commerciale' non citato nel requisito (che parla di canale fisico UP)."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC02",
+        "detail": "Specifica struttura dettagliata dei log (cliente/prodotto/condizione/azione/esito/timestamp) e riferimenti a SIEM/audit DB non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC04",
+        "detail": "Introduce gestione errore downstream (HTTP 500) e comportamento UI associato non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC05",
+        "detail": "Introduce regola di idempotenza/gestione azione ripetuta e codifiche esito ('NO-OP/ALREADY_SANITIZED') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC06",
+        "detail": "Introduce scenario permessi insufficienti e tracciamento 'ACCESS DENIED' nei log 'se previsto da policy'; autorizzazioni/policy non sono nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"In canale fisico UP, l'operatore deve poter eseguire direttamente azioni di sanatoria dove previsto.\"",
+        "detail": "Il set parla spesso di 'front-end commerciale' e non verifica esplicitamente il canale fisico UP come tale (terminologia e canale non allineati al requisito), rischiando di non coprire il vincolo di canale richiesto."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-006.US02.TC01",
+          "REQ-UI-006.US02.TC03"
+        ],
+        "detail": "Entrambi verificano che per una condizione non sanabile sia mostrata l'azione ma non il workflow; TC03 è sostanzialmente un sotto-caso del TC01."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-006.US02.TC02",
+          "REQ-UI-006.US02.TC04"
+        ],
+        "detail": "Entrambi verificano sanatoria via workflow e presenza log; differiscono per esito (successo vs errore) ma lo scenario base è molto simile."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct mantiene la terminologia e i canali del requisito (web vs canale fisico UP) e copre tutti gli AC con meno assunzioni estranee; presenta alcune aggiunte (campi log, autorizzazioni, gestione errori) ma limitate. Il set indirect_persona introduce molte informazioni non tracciabili (App, front-end commerciale, gestione indisponibilità, requisiti di usabilità/performance, idempotenza, policy autorizzative/log) e inoltre rischia disallineamento sul vincolo di canale fisico UP, ottenendo un punteggio di coerenza nettamente inferiore (33 vs 73)."
+  }
+}

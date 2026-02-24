@@ -1,0 +1,366 @@
+[
+  {
+    "test_id": "REQ-F-023.TC01",
+    "title": "Rilevamento e categorizzazione: cluster non identificato con fallback configurato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile (API/servizio di calcolo NBO attivo).",
+      "Configurazione attiva per il caso 'cluster non identificato' con strategia di fallback 'DEFAULT_CLUSTER=CL-DEFAULT'.",
+      "Logging/audit abilitato e accessibile (es. indice/DB/stream log consultabile)."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10001",
+      "Input profilo cliente senza attributi necessari al clustering (es. segmento=null, areaGeografica=null)",
+      "Timestamp di esecuzione: acquisito automaticamente dal sistema"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10001 passando l'input profilo con attributi di clustering mancanti.",
+      "Acquisire la risposta del Motore NBO (output NBO e metadati di esecuzione, se presenti).",
+      "Recuperare dal sistema di log/audit l'evento relativo alla stessa esecuzione (correlando per requestId/correlationId se disponibile, altrimenti per CustomerId e finestra temporale)."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione 'cluster non identificato' e la categorizza come caso limite di quel tipo.",
+      "Il sistema applica la strategia di fallback configurata e utilizza il cluster di default 'CL-DEFAULT' per proseguire il calcolo NBO (nessun errore non gestito).",
+      "Nel log/audit è presente un evento di caso limite con: tipo='cluster non identificato', dati in input (almeno i campi rilevanti o loro rappresentazione/estratto), timestamp valorizzato."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Attori e canale inferiti: il requisito parla di 'Motore' e gestione eventi, quindi si assume invocazione via API/servizio. La modalità con cui l'output espone l'uso del fallback può variare; la verifica minima è l'assenza di errore non gestito e la presenza di log/audit."
+  },
+  {
+    "test_id": "REQ-F-023.TC02",
+    "title": "Rilevamento e categorizzazione: modello di propensity assente con fallback configurato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Il repository/servizio dei modelli di propensity non contiene un modello attivo per il contesto richiesto (oppure è configurato per restituire 'not found').",
+      "Configurazione attiva per il caso 'propensity assente' con strategia di fallback 'PROPENSITY_DEFAULT=0.00'.",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10002",
+      "Contesto propensity richiesto: MODEL_KEY='PROP-RETENTION-V1'",
+      "Input profilo cliente valido per tutti gli altri campi"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10002 richiedendo il modello MODEL_KEY='PROP-RETENTION-V1'.",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione 'propensity assente' e la categorizza correttamente.",
+      "Il sistema applica la strategia di fallback configurata impostando la propensity a 0.00 (o equivalente regola di default configurata) e prosegue il calcolo NBO senza eccezioni non gestite.",
+      "Nel log/audit è presente un evento di caso limite con: tipo='propensity assente', dati in input, timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Dipendenza esterna: disponibilità/repository del modello di propensity. La verifica del valore 0.00 richiede che il sistema esponga nei log o metadati il valore applicato; in alternativa si valida l'applicazione del fallback tramite regola configurata e audit."
+  },
+  {
+    "test_id": "REQ-F-023.TC03",
+    "title": "Rilevamento e categorizzazione: modello di propensity incoerente con fallback configurato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "È disponibile un modello di propensity che restituisce valori fuori range (es. -0.20 o 1.30) oppure con schema incoerente rispetto a quanto atteso dal Motore.",
+      "Configurazione attiva per il caso 'propensity incoerente' con strategia di fallback 'CLAMP_0_1' (o regola alternativa definita in configurazione).",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10003",
+      "MODEL_KEY='PROP-UPSELL-V2' (configurato per restituire 1.30)",
+      "Input profilo cliente valido"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10003 con MODEL_KEY='PROP-UPSELL-V2'.",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione 'propensity incoerente' (valore fuori range o incoerenza di schema) e la categorizza correttamente.",
+      "Il sistema applica la strategia di fallback configurata (es. clamp nell'intervallo [0,1] o altra regola configurata) e prosegue il calcolo NBO senza errori non gestiti.",
+      "Nel log/audit è presente un evento di caso limite con: tipo='propensity incoerente', dati in input, timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non definisce esplicitamente i range/validazioni della propensity; si assume un controllo di coerenza minimo (es. range 0..1 o schema atteso) come interpretazione necessaria per rendere verificabile 'incoerente'."
+  },
+  {
+    "test_id": "REQ-F-023.TC04",
+    "title": "Rilevamento e categorizzazione: raccomandazione esterna mancante con fallback configurato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Integrazione con sistema di raccomandazioni esterne attiva.",
+      "Il sistema di raccomandazioni esterne restituisce 'nessun dato' (es. HTTP 204/404 o payload vuoto) per il cliente di test.",
+      "Configurazione attiva per il caso 'raccomandazione esterna mancante' con strategia di fallback 'USA_REGOLE_INTERNE'.",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10004",
+      "Timeout esterno: 2s (se configurabile) mantenuto a default",
+      "Input profilo cliente valido"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10004.",
+      "Verificare che il Motore effettui la chiamata al sistema di raccomandazioni esterne (tramite log di integrazione o mock/spia).",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione 'raccomandazione esterna mancante' e la categorizza correttamente.",
+      "Il sistema applica la strategia di fallback configurata 'USA_REGOLE_INTERNE' (o equivalente) e produce un output NBO senza eccezioni non gestite.",
+      "Nel log/audit è presente un evento di caso limite con: tipo='raccomandazione esterna mancante', dati in input, timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Dipendenza esterna: servizio raccomandazioni. Se non disponibile un ambiente integrato, il test può essere eseguito con mock controllato che simuli risposta vuota."
+  },
+  {
+    "test_id": "REQ-F-023.TC05",
+    "title": "Rilevamento e categorizzazione: raccomandazione esterna contraddittoria/inconsistente con fallback configurato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Integrazione con sistema di raccomandazioni esterne attiva.",
+      "Il sistema esterno restituisce un payload inconsistente/contraddittorio rispetto alle regole di validazione attese dal Motore (es. due offerte mutuamente esclusive o campi obbligatori mancanti).",
+      "Configurazione attiva per il caso 'raccomandazione esterna contraddittoria' con strategia di fallback 'SCARTA_ESTERNO_USA_INTERNO'.",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10005",
+      "Payload esterno simulato: [{offertaId:'OFF-1', categoria:'A'}, {offertaId:'OFF-2', categoria:'A', flagMutuaEsclusioneCon:'OFF-1'}] (o altro esempio di incoerenza supportato dal sistema)",
+      "Input profilo cliente valido"
+    ],
+    "steps": [
+      "Configurare il mock/ambiente del sistema esterno per restituire il payload inconsistente per CustomerId CUST-10005.",
+      "Invocare il calcolo NBO per CustomerId CUST-10005.",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione 'raccomandazione esterna contraddittoria/inconsistente' e la categorizza correttamente.",
+      "Il sistema applica la strategia di fallback configurata (scarto dei dati esterni e uso di regole alternative/default) e produce un output NBO senza errori non gestiti.",
+      "Nel log/audit è presente un evento di caso limite con: tipo='raccomandazione esterna contraddittoria/inconsistente', dati in input, timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica cosa costituisca 'contraddittoria'; l'esempio di incoerenza è un'interpretazione per rendere verificabile l'AC. Adeguare il payload ai controlli effettivamente implementati dal Motore."
+  },
+  {
+    "test_id": "REQ-F-023.TC06",
+    "title": "Input errato: campi obbligatori mancanti e gestione strutturata con fallback configurato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Configurazione attiva per il caso 'input errato' con strategia di fallback 'RITORNA_NBO_VUOTA' (o comportamento alternativo definito in configurazione).",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: null (mancante)",
+      "Payload richiesta con struttura valida ma senza CustomerId",
+      "Altri campi: canale='web' (se presente nel payload), lingua='it-IT'"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO inviando una richiesta senza CustomerId.",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva la condizione di 'input errato' e la categorizza come caso limite pertinente.",
+      "Il sistema applica la strategia di fallback configurata (es. ritorno di NBO vuota o risposta controllata) senza generare eccezioni non gestite.",
+      "Nel log/audit è presente un evento di caso limite con: tipo='input errato', dati in input (inclusa evidenza del campo mancante), timestamp."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito cita 'input errati' in descrizione ma non nell'AC-1; il test valida comunque l'obbligo di gestione strutturata e logging. Il formato della risposta di fallback (errore vs NBO vuota) dipende dalla configurazione reale."
+  },
+  {
+    "test_id": "REQ-F-023.TC07",
+    "title": "Assenza di strategia di fallback: cluster non identificato viene gestito e loggato (nessuna condizione non gestita)",
+    "type": "Edge Case",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Configurazione per il caso 'cluster non identificato' NON presente o disattivata (nessuna strategia esplicita).",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10006",
+      "Input profilo cliente senza attributi necessari al clustering (es. segmento=null, areaGeografica=null)"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10006 con input che impedisce l'identificazione del cluster.",
+      "Acquisire la risposta del Motore NBO (o l'esito controllato).",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva e categorizza la condizione 'cluster non identificato'.",
+      "Il sistema non genera eccezioni non gestite né lascia la condizione senza trattamento (esito controllato secondo implementazione: output degradato, NBO vuota o risposta gestita).",
+      "Nel log/audit è presente un evento di caso limite con: tipo='cluster non identificato', dati in input, timestamp, utile per analisi operativa."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "AC-4 non specifica il comportamento funzionale in assenza di fallback oltre al logging; quindi l'expected result sull'output è verificato come 'esito controllato' e assenza di crash/errore non gestito."
+  },
+  {
+    "test_id": "REQ-F-023.TC08",
+    "title": "Configurazione: attivazione/disattivazione strategia di fallback modifica il comportamento per lo stesso caso limite",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "È possibile aggiornare la configurazione delle strategie di fallback senza modifiche al codice (es. config file, DB, feature flag).",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10007",
+      "Caso limite indotto: 'raccomandazione esterna mancante' (servizio esterno risponde vuoto).",
+      "Strategia A: 'USA_REGOLE_INTERNE' (attiva).",
+      "Strategia B: 'RITORNA_NBO_VUOTA' (attiva dopo switch)."
+    ],
+    "steps": [
+      "Impostare in configurazione la Strategia A per 'raccomandazione esterna mancante' e attivarla.",
+      "Invocare il calcolo NBO per CustomerId CUST-10007 inducendo 'raccomandazione esterna mancante'.",
+      "Salvare l'esito/risposta come Output_A.",
+      "Aggiornare la configurazione impostando la Strategia B per lo stesso caso limite e attivarla.",
+      "Invocare nuovamente il calcolo NBO per CustomerId CUST-10007 con le stesse condizioni di mancanza raccomandazione esterna.",
+      "Salvare l'esito/risposta come Output_B.",
+      "Recuperare dal log/audit gli eventi di caso limite per entrambe le esecuzioni."
+    ],
+    "expected_results": [
+      "In entrambe le esecuzioni il sistema rileva e categorizza la condizione 'raccomandazione esterna mancante'.",
+      "Con Strategia A attiva, il comportamento osservato è coerente con 'USA_REGOLE_INTERNE' (Output_A differente da NBO vuota, se previsto dalla strategia).",
+      "Con Strategia B attiva, il comportamento osservato è coerente con 'RITORNA_NBO_VUOTA' (Output_B risulta vuota o degradata secondo definizione della strategia).",
+      "Per entrambe le esecuzioni è presente un evento in log/audit con tipo, dati in input e timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica come si gestisce la configurazione (hot-reload vs restart). Adeguare i passi includendo eventuale riavvio del servizio se necessario."
+  },
+  {
+    "test_id": "REQ-F-023.TC09",
+    "title": "Audit/log: verifica completezza campi registrati per un caso limite",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Logging/audit abilitato e consultabile con accesso in lettura al datastore dei log.",
+      "È disponibile un meccanismo di correlazione tra richiesta e log (requestId/correlationId) oppure filtri per CustomerId e timestamp."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10008",
+      "Caso limite indotto: 'propensity assente' (modello non trovato)",
+      "Finestra temporale ricerca log: +/- 2 minuti dall'invocazione"
+    ],
+    "steps": [
+      "Invocare il calcolo NBO per CustomerId CUST-10008 inducendo 'propensity assente'.",
+      "Recuperare l'evento di caso limite dal sistema di log/audit relativo all'esecuzione.",
+      "Verificare la presenza e valorizzazione dei campi richiesti nell'evento."
+    ],
+    "expected_results": [
+      "Nel log/audit è presente esattamente un evento di caso limite associabile all'esecuzione.",
+      "L'evento contiene il tipo del caso limite valorizzato (es. 'propensity assente').",
+      "L'evento contiene i dati in input (almeno CustomerId e i parametri rilevanti alla diagnosi, o un loro estratto/serializzazione).",
+      "L'evento contiene un timestamp valorizzato e coerente con l'ora di esecuzione (dentro la finestra temporale definita)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non definisce formato/sede del log (JSON, DB audit, SIEM). La verifica va adattata al canale di audit effettivo mantenendo i controlli su tipo, input e timestamp."
+  },
+  {
+    "test_id": "REQ-F-023.TC10",
+    "title": "Servizio esterno non disponibile (timeout/errore): gestione strutturata come caso limite e logging",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile.",
+      "Integrazione con sistema di raccomandazioni esterne attiva.",
+      "Il sistema di raccomandazioni esterne è non disponibile (es. timeout > soglia o HTTP 500).",
+      "Configurazione attiva per il caso 'raccomandazione esterna mancante' o equivalente categoria per indisponibilità (fallback definito).",
+      "Logging/audit abilitato e accessibile."
+    ],
+    "test_data": [
+      "CustomerId: CUST-10009",
+      "Simulazione errore esterno: timeout 10s con soglia Motore 2s (oppure HTTP 500)",
+      "Input profilo cliente valido"
+    ],
+    "steps": [
+      "Configurare il sistema esterno (o mock) per simulare timeout/errore per CustomerId CUST-10009.",
+      "Invocare il calcolo NBO per CustomerId CUST-10009.",
+      "Acquisire la risposta del Motore NBO.",
+      "Recuperare l'evento nel log/audit relativo all'esecuzione."
+    ],
+    "expected_results": [
+      "Il sistema rileva l'anomalia di integrazione e la tratta come caso limite categorizzabile (mancanza/indisponibilità raccomandazioni esterne o categoria equivalente).",
+      "Il sistema applica la strategia di fallback configurata e produce un esito controllato senza eccezioni non gestite.",
+      "Nel log/audit è presente un evento di caso limite con: tipo, dati in input, timestamp."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non distingue esplicitamente 'mancante' da 'servizio non disponibile'; si assume che l'indisponibilità rientri nelle condizioni da gestire per non lasciare casi non gestiti."
+  }
+]

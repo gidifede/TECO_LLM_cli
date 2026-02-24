@@ -1,0 +1,176 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-002",
+  "direct": {
+    "tc_count": 13,
+    "coherence_score": 67,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-002.TC05",
+        "detail": "Introduce una regola di validazione non specificata (blocco salvataggio se data fine < data inizio) e l'obbligo di messaggio di errore."
+      },
+      {
+        "test_id": "REQ-F-002.TC06",
+        "detail": "Introduce regole di validazione/formato dello sconto (input non numerico bloccato e messaggio di errore) non descritte nel requisito."
+      },
+      {
+        "test_id": "REQ-F-002.TC07",
+        "detail": "Assume che una regola di NON associabilità impedisca la creazione/salvataggio della combinazione; il requisito dice che si possono associare regole, ma non esplicita il comportamento di enforcement in creazione né messaggi di errore."
+      },
+      {
+        "test_id": "REQ-F-002.TC10",
+        "detail": "Introduce dettagli operativi non presenti: nome azione/API ('generaProposte'), identificativo cliente ('CL-10004567'), uso di timestamp/log come requisito di verifica."
+      },
+      {
+        "test_id": "REQ-F-002.TC11",
+        "detail": "Specifica esiti tecnici (HTTP 403/pagina specifica) e comportamento UI (voce menu nascosta) non definiti; il requisito indica solo accesso ai team marketing."
+      },
+      {
+        "test_id": "REQ-F-002.TC12",
+        "detail": "Introduce una regola di gestione duplicati (blocco o aggiornamento deterministico) non menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-002.TC13",
+        "detail": "Introduce requisiti di resilienza/gestione errori backend (fault injection, assenza di persistenza parziale, timeout/HTTP 500) non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito (touchpoint regolatori: Web, App, OSP, OFE, consulenti in sala UP, consulenti remoti)",
+        "detail": "I touchpoint sono testati (TC09), ma manca la copertura esplicita della distinzione 'PUÒ' vs 'NON PUÒ' come vincolo regolatorio che impatti la vendibilità/proposte del motore (effetto E2E sui touchpoint). TC10 verifica l'effetto sul motore per 'vietata/OFF' ma non per i touchpoint."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-002.TC02",
+          "REQ-F-002.TC04"
+        ],
+        "detail": "Entrambi testano impostazione/modifica degli stessi parametri (stato regolatorio, flag marketing, sconto, date, target) con salvataggio e verifica; differiscono solo nei valori."
+      },
+      {
+        "test_ids": [
+          "REQ-F-002.TC02",
+          "REQ-F-002.TC03"
+        ],
+        "detail": "Entrambi verificano persistenza post-salvataggio; TC03 lo fa tramite logout/login ma copre sostanzialmente la stessa persistenza già verificata in TC02."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 20,
+    "coherence_score": 48,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-002.US01.TC04",
+        "detail": "Assume formato sconto percentuale ('10%') mentre il requisito non definisce formato/valuta; è un dettaglio non tracciabile."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC06",
+        "detail": "Introduce precondizione di esistenza di segmenti/cluster target e un formato specifico di target ('Clienti Retail - Nuovi clienti') non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC08",
+        "detail": "Introduce regola di validazione date (blocco salvataggio se fine < inizio) e messaggio di errore non specificati."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC09",
+        "detail": "Introduce regola di prevenzione duplicati non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC10",
+        "detail": "Introduce comportamento 'sola lettura' per utenti non Marketing come alternativa accettabile; il requisito non menziona modalità read-only né RBAC dettagliato."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC11",
+        "detail": "Introduce gestione concorrenza (conflitto o last-write-wins) non citata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC12",
+        "detail": "Introduce dettagli di verifica sul motore (interrogare fonte dati, modalità API/DB/log) e asserzione di persistenza 'immediata' in dashboard come parte dell'atteso."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC13",
+        "detail": "Introduce requisito di 'stato/indicazione di propagazione' e messaggio in dashboard in caso di SLA superato; il requisito parla di tempi di propagazione concordati ma non di UI di tracking/alert."
+      },
+      {
+        "test_id": "REQ-F-002.US01.TC14",
+        "detail": "Introduce una regola di coerenza tra stato 'vietata' e attivazione ON (blocco o avviso). Il requisito non definisce interazione tra 'vietata' e attivazione/spegnimento."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC01",
+        "detail": "Afferma che il requisito non menziona i touchpoint (ma in realtà li menziona in description) e introduce un modello dati specifico a due liste (consentiti/non consentiti) non esplicitato."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC02",
+        "detail": "Introduce regole di coerenza e precedenza deterministica tra consentito/non consentito per lo stesso touchpoint; non specificato."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC03",
+        "detail": "Introduce comportamento per liste touchpoint vuote (obbligo di almeno un touchpoint o salvataggio consentito) non definito."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC04",
+        "detail": "Introduce gestione di touchpoint deprecati ('KIOSK_OLD') e backward compatibility del registry non menzionate."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC05",
+        "detail": "Introduce un requisito di interrogazione del motore per touchpoint specifici (proposte per Web vs App) e assume che il motore supporti tale dimensione; non descritto nel requisito."
+      },
+      {
+        "test_id": "REQ-F-002.US02.TC06",
+        "detail": "Come US01.TC13, introduce stato/messaggio di propagazione in dashboard per touchpoint; non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'contrassegnare la combinazione come disponibile/interessante per marketing' e 'contrassegnare la combinazione come vietata per motivi regolatori'",
+        "detail": "I test usano valori/etichette ('Interessante', 'Consentita') che non sono nel requisito; manca una verifica che i due concetti siano esattamente quelli richiesti (vietata/regolare e disponibile/interessante) senza introdurre tassonomie alternative."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-002.US01.TC02",
+          "REQ-F-002.US01.TC03",
+          "REQ-F-002.US01.TC04",
+          "REQ-F-002.US01.TC05",
+          "REQ-F-002.US01.TC06"
+        ],
+        "detail": "Serie di test molto simili che verificano singolarmente la persistenza di ciascun campo; coprono lo stesso pattern (imposta valore -> salva -> riapri) con differenze minime."
+      },
+      {
+        "test_ids": [
+          "REQ-F-002.US01.TC12",
+          "REQ-F-002.US02.TC05"
+        ],
+        "detail": "Entrambi verificano propagazione entro SLA al motore; cambiano solo l'oggetto della modifica (stato regolatorio vs touchpoint)."
+      },
+      {
+        "test_ids": [
+          "REQ-F-002.US01.TC13",
+          "REQ-F-002.US02.TC06"
+        ],
+        "detail": "Entrambi verificano gestione di propagazione non completata entro SLA con indicazione in dashboard; duplicazione del medesimo concetto."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili (7 added_info vs 15) e meno ridondanze (2 vs 3), risultando piu aderente al requisito. L'indirect_persona aggiunge molte assunzioni (stati di propagazione in dashboard, gestione concorrenza, regole di precedenza touchpoint, modello a liste consentiti/non consentiti, formati specifici di sconto/target) che non sono deducibili dal requisito."
+  }
+}

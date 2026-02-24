@@ -1,0 +1,220 @@
+[
+  {
+    "story_id": "REQ-F-003.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-003.US01.TC01",
+        "title": "Creazione eccezione manuale con ambito specifico e durata valida (happy path)",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard",
+          "La dashboard espone la funzione/voce per la creazione di una nuova eccezione manuale"
+        ],
+        "test_data": [
+          "Caso specifico 1: Combinazione prodotto/bundle 'BUNDLE-STARTER-2026'",
+          "Caso specifico 2: Cliente 'CLI-100045' (selezionabile tra le opzioni disponibili in dashboard)",
+          "Ambito: selezione di uno dei tipi disponibili in dashboard (es. 'Cliente') e relativo valore 'CLI-100045'",
+          "Durata: Inizio = data/ora corrente + 10 minuti; Fine = data/ora corrente + 7 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente Team Marketing autorizzato",
+          "Navigare alla sezione di gestione delle eccezioni manuali",
+          "Selezionare l'azione 'Crea nuova eccezione'",
+          "Associare l'eccezione ad uno o più casi specifici disponibili (es. selezionare 'BUNDLE-STARTER-2026' e/o 'CLI-100045')",
+          "Configurare l'ambito di applicazione scegliendo una delle opzioni disponibili e valorizzandola (es. ambito 'Cliente' = 'CLI-100045')",
+          "Impostare la durata specificando Inizio e Fine con valori futuri e coerenti",
+          "Salvare l'eccezione"
+        ],
+        "expected_results": [
+          "La dashboard consente di avviare la creazione di una nuova eccezione manuale",
+          "È possibile associare l'eccezione ad almeno un caso specifico selezionabile dalla dashboard",
+          "È possibile configurare l'ambito tramite le opzioni disponibili e salvare un valore specifico (non generico)",
+          "È possibile configurare la durata tramite i campi previsti (Inizio/Fine o equivalente)",
+          "Il salvataggio va a buon fine e l'eccezione risulta creata/visibile in elenco con ambito e durata valorizzati come inseriti"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: la dashboard dispone di controlli per selezionare casi specifici e per impostare durata (inizio/fine o equivalente). Dipendenza: definizione puntuale dei ruoli autorizzati nel requisito RBAC."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC02",
+        "title": "Blocco salvataggio eccezione senza durata impostata",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing con ruolo autorizzato secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard",
+          "La dashboard espone la funzione di creazione eccezione manuale"
+        ],
+        "test_data": [
+          "Caso specifico: Cliente 'CLI-100045'",
+          "Ambito: 'Cliente' = 'CLI-100045'",
+          "Durata: non valorizzata (Inizio e Fine vuoti, o campo durata non selezionato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la funzione 'Crea nuova eccezione'",
+          "Associare l'eccezione al caso specifico 'CLI-100045'",
+          "Configurare l'ambito 'Cliente' = 'CLI-100045'",
+          "Lasciare i campi di durata non compilati",
+          "Tentare di salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio dell'eccezione",
+          "La dashboard mostra un messaggio di validazione che richiede esplicitamente l'impostazione della durata",
+          "Nessuna eccezione viene creata (assenza in elenco e/o assenza di ID/record creato)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Interpretazione AC-2: la durata è obbligatoria per rendere l'eccezione configurabile e limitata nel tempo, coerentemente con gli edge case forniti."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC03",
+        "title": "Blocco salvataggio eccezione senza ambito/caso specifico definito (ambito generico non consentito)",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing con ruolo autorizzato secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard",
+          "La dashboard espone la funzione di creazione eccezione manuale"
+        ],
+        "test_data": [
+          "Caso specifico: non selezionato",
+          "Ambito: non selezionato oppure selezionato in modo non specifico (es. 'Tutti' se presente)",
+          "Durata: Inizio = data/ora corrente + 10 minuti; Fine = data/ora corrente + 7 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la funzione 'Crea nuova eccezione'",
+          "Non selezionare alcun caso specifico e non configurare un ambito specifico (oppure selezionare un'opzione non specifica se disponibile)",
+          "Impostare la durata con valori validi",
+          "Tentare di salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio dell'eccezione",
+          "La dashboard mostra un errore di validazione che richiede la definizione di un ambito/caso specifico",
+          "Non è possibile creare un'eccezione con ambito generico (nessuna eccezione creata)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: il vincolo 'solo casi limitati e specifici' viene implementato come obbligo di selezionare almeno un caso specifico e/o un ambito non generico."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC04",
+        "title": "Creazione eccezione con durata già scaduta: errore e salvataggio impedito",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing con ruolo autorizzato secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard",
+          "La dashboard espone la funzione di creazione eccezione manuale"
+        ],
+        "test_data": [
+          "Caso specifico: Combinazione 'BUNDLE-STARTER-2026'",
+          "Ambito: selezione di un'opzione disponibile e valore specifico coerente con il caso",
+          "Durata: Inizio = data/ora corrente - 10 giorni; Fine = data/ora corrente - 1 giorno (durata interamente nel passato)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente autorizzato",
+          "Aprire la funzione 'Crea nuova eccezione'",
+          "Associare l'eccezione al caso specifico 'BUNDLE-STARTER-2026'",
+          "Configurare un ambito specifico tramite le opzioni disponibili",
+          "Impostare la durata con Inizio e Fine nel passato",
+          "Tentare di salvare l'eccezione"
+        ],
+        "expected_results": [
+          "Il sistema segnala che la durata è già scaduta/non valida",
+          "Il salvataggio viene impedito finché la durata non viene corretta",
+          "Nessuna eccezione viene creata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Interpretazione: 'durata configurabile' implica validazioni minime di coerenza temporale; l'edge case richiede esplicitamente il blocco su durata scaduta."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC05",
+        "title": "RBAC: utente Team Marketing non autorizzato non può creare eccezioni dalla dashboard",
+        "type": "Authorization",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing senza ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard"
+        ],
+        "test_data": [
+          "Utente: 'mk_user_viewer' (ruolo non abilitato alla creazione eccezioni secondo RBAC)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente non autorizzato",
+          "Navigare alla sezione di gestione delle eccezioni manuali (se visibile)",
+          "Verificare la presenza/assenza dell'azione 'Crea nuova eccezione'",
+          "Se l'azione è presente, tentare di avviare la creazione di una nuova eccezione"
+        ],
+        "expected_results": [
+          "La dashboard non consente la creazione di eccezioni manuali all'utente non autorizzato (azione assente o disabilitata)",
+          "Se l'utente tenta comunque l'azione, il sistema nega l'operazione con messaggio di autorizzazione insufficiente",
+          "Nessuna eccezione viene creata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: matrice ruoli/permessi definita dal requisito RBAC (non fornita)."
+      },
+      {
+        "test_id": "REQ-F-003.US01.TC06",
+        "title": "RBAC: accesso diretto via URL alla funzione di creazione eccezioni con utente non autorizzato",
+        "type": "Authorization",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente Team Marketing senza ruolo autorizzato secondo RBAC",
+          "L'utente è autenticato e può accedere alla dashboard",
+          "È noto l'URL/route della pagina o dialog di creazione eccezione (es. deep link)"
+        ],
+        "test_data": [
+          "Utente: 'mk_user_viewer' (non autorizzato)",
+          "URL/route: pagina di creazione eccezione (valore da ambiente QA)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente non autorizzato",
+          "Inserire direttamente nel browser l'URL/route della funzione di creazione eccezione",
+          "Tentare di compilare e inviare il form di creazione (se la pagina viene mostrata)"
+        ],
+        "expected_results": [
+          "L'accesso alla funzione viene negato (redirect a pagina errore/403 o messaggio equivalente)",
+          "Se l'interfaccia viene comunque caricata, l'invio della richiesta di creazione viene rifiutato lato server",
+          "Nessuna eccezione viene creata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Verifica sia UI che enforcement lato backend: l'edge case richiede esplicitamente che non venga creata alcuna eccezione anche con accesso diretto."
+      }
+    ]
+  }
+]

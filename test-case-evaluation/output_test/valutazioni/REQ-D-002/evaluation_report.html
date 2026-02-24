@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-D-002</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-D-002</h1>
+  <div class="subtitle">Gestione varianti di descrizione assegnabili ai cluster di clientela</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:34</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-D-002</div>
+  <div class="req-field"><strong>Titolo:</strong> Gestione varianti di descrizione assegnabili ai cluster di clientela</div>
+  <div class="req-field"><strong>Categoria:</strong> DATI</div>
+  <div class="req-field"><strong>Priorita:</strong> medium</div>
+  <div class="req-desc">Il sistema deve supportare la gestione e l&#x27;assegnazione di varianti testuali delle descrizioni delle offerte in funzione di segmenti o cluster di clientela. Il team marketing deve poter associare specifiche varianti a determinati cluster in modo che, quando il cliente appartiene a quel cluster, venga mostrata la relativa variante della descrizione.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È possibile creare e salvare più varianti testuali per la stessa offerta nella dashboard marketing.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Ogni variante può essere associata a uno o più identificatori di cluster/segmento.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Nei casi di test dove il cliente è contrassegnato con un determinato cluster, l&#x27;interfaccia mostra la variante di descrizione corrispondente.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">75</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">48</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili (6 added_info vs 10) e meno ridondanze (1 vs 2), ottenendo un punteggio di coerenza più alto (75 vs 48). Il set indirect_persona aggiunge numerosi comportamenti non richiesti (validazioni su cluster non valido, update/rimozione associazioni, fallback/gestione errori, distinzione App/Web) che riducono la fedeltà al requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">75</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-002.TC01</td><td>Assume canale &#x27;web&#x27; e dettagli di accesso/ruolo utente (&#x27;Marketing&#x27;) e una sezione UI specifica; il requisito cita solo &#x27;dashboard marketing&#x27; senza canale né dettagli di navigazione/permessi.</td></tr>
+<tr><td class='mono'>REQ-D-002.TC01</td><td>Introduce precondizione &#x27;funzionalità ... abilitata in ambiente di test&#x27; non menzionata nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.TC02</td><td>Introduce formati e valori specifici di identificatori cluster (es. &#x27;CL-RET-01&#x27;, &#x27;CL-VIP-99&#x27;) non definiti nel requisito (ammissibili come dati di test, ma non tracciabili come regola).</td></tr>
+<tr><td class='mono'>REQ-D-002.TC04</td><td>Introduce regola di validazione &#x27;testo variante obbligatorio&#x27; e messaggistica di errore, non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.TC05</td><td>Introduce limite/volume (50 cluster), controllo duplicati e requisiti di robustezza non richiesti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.TC06</td><td>Assume l&#x27;esistenza di endpoint/API e verifica di integrazione a livello servizi; il requisito non menziona API né livelli tecnici.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Parzialmente ridondante rispetto a TC01+TC02 (stessa validazione di creazione variante e associazione cluster) ma su canale/strato diverso (API); scenario funzionale già coperto.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">48</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-002.US01.TC01</td><td>Introduce canale &#x27;dashboard&#x27; come &#x27;channels&#x27; distinto e dettagli di permessi/credenziali; il requisito cita solo &#x27;dashboard marketing&#x27; senza specifiche operative.</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC04</td><td>Introduce validazione &#x27;testo obbligatorio&#x27; e messaggio di errore, non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC05</td><td>Introduce regola di validazione di &#x27;cluster non valido&#x27; (blocco salvataggio + messaggio) non richiesta dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC06</td><td>Introduce funzionalità di modifica/rimozione associazioni cluster (update parziale) non descritta nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC01</td><td>Introduce esplicitamente il canale &#x27;App&#x27; (oltre a Web) e presuppone pubblicazione offerta su App; il requisito parla genericamente di &#x27;interfaccia&#x27; senza canali.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC02</td><td>Introduce esplicitamente il canale &#x27;Web&#x27; come canale distinto (oltre a &#x27;dashboard&#x27;); il requisito non distingue canali di fruizione.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC01</td><td>Introduce &#x27;meccanismo/servizio di determinazione cluster&#x27; come componente esplicito; il requisito non menziona servizi di determinazione né requisiti di disponibilità.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC03</td><td>Estende la regola a comportamento uniforme su App e Web e verifica cross-canale; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC04</td><td>Introduce gestione errore del servizio cluster e &#x27;fallback (da definire)&#x27;; il requisito non prevede scenari di errore né fallback.</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC05</td><td>Introduce scenario &#x27;cliente senza cluster&#x27; e fallback (da definire); il requisito non specifica comportamento quando il cliente non appartiene a cluster.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Ridondante con US01.TC02 rispetto ad AC-1: entrambi verificano presenza/salvataggio/visualizzazione varianti per la stessa offerta con differenze minime di setup.</td></tr>
+<tr><td class='mono'></td><td>Ridondante con US02.TC02: stesso scenario AC-3 replicato per canale (App vs Web), mentre il requisito non richiede distinzione per canale.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-D-002&quot;,
+  &quot;title&quot;: &quot;Gestione varianti di descrizione assegnabili ai cluster di clientela&quot;,
+  &quot;description&quot;: &quot;Il sistema deve supportare la gestione e l&#x27;assegnazione di varianti testuali delle descrizioni delle offerte in funzione di segmenti o cluster di clientela. Il team marketing deve poter associare specifiche varianti a determinati cluster in modo che, quando il cliente appartiene a quel cluster, venga mostrata la relativa variante della descrizione.&quot;,
+  &quot;category&quot;: &quot;DATI&quot;,
+  &quot;priority&quot;: &quot;medium&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È possibile creare e salvare più varianti testuali per la stessa offerta nella dashboard marketing.&quot;,
+    &quot;Ogni variante può essere associata a uno o più identificatori di cluster/segmento.&quot;,
+    &quot;Nei casi di test dove il cliente è contrassegnato con un determinato cluster, l&#x27;interfaccia mostra la variante di descrizione corrispondente.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-002.TC01</td><td>Creazione e salvataggio di più varianti testuali per la stessa offerta (dashboard marketing)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-002.TC02</td><td>Associazione di una variante a più identificatori di cluster/segmento</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-002.TC03</td><td>Visualizzazione della variante corretta in interfaccia per cliente appartenente a un cluster associato</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-002.TC04</td><td>Negativo: creazione variante con testo mancante (campo obbligatorio)</td><td>Negative</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-002.TC05</td><td>Edge case: associazione della stessa variante a un numero elevato di cluster</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-002.TC06</td><td>Integration: persistenza e recupero delle varianti e associazioni cluster nel servizio dati</td><td>Integration</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 11 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-002.US01.TC01</td><td>Creazione e salvataggio di una nuova variante testuale per una specifica offerta</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC02</td><td>Visualizzazione di più varianti salvate per la stessa offerta</td><td>Functional</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC03</td><td>Associazione di una variante a uno o più cluster/segmenti e persistenza dell&#x27;associazione</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC04</td><td>Impossibilità di salvare una variante senza testo (campo obbligatorio)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC05</td><td>Impossibilità di salvare l&#x27;associazione con identificatore cluster/segmento non valido</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-002.US01.TC06</td><td>Modifica/rimozione di un&#x27;associazione cluster senza perdere le altre associazioni della variante</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC01</td><td>Visualizzazione in App della variante descrizione associata al cluster del cliente</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC02</td><td>Visualizzazione in Web della variante descrizione associata al cluster del cliente</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC03</td><td>Se esistono più varianti per la stessa offerta, viene mostrata solo quella associata al cluster del cliente</td><td>Functional</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC04</td><td>Servizio di determinazione cluster non disponibile: gestione errore e applicazione fallback (comportamento da definire)</td><td>Integration</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-002.US02.TC05</td><td>Cliente senza cluster/segmento: applicazione fallback (comportamento da definire)</td><td>Edge Case</td><td>LOW</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 0, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 0, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

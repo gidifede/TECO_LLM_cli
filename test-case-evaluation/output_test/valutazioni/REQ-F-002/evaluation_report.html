@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-002</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-002</h1>
+  <div class="subtitle">Configuratore matrice n x n per combinazioni e parametri commerciali</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:55</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-002</div>
+  <div class="req-field"><strong>Titolo:</strong> Configuratore matrice n x n per combinazioni e parametri commerciali</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Deve essere previsto un configuratore, accessibile tramite dashboard ai team di marketing (come dichiarato dall&#x27;utente), che consenta di definire una matrice n x n delle possibili combinazioni di suggerimenti tra prodotti. Per ogni cella/combinazione la dashboard deve permettere: contrassegnare la combinazione come vietata per motivi regolatori, contrassegnare la combinazione come disponibile/interessante per marketing, associare l&#x27;eventuale sconto applicabile, definire la durata della promozione e il target a cui la promozione si applica. Tutte queste configurazioni devono essere modificabili dalla dashboard dai marketing, come esplicitato dall&#x27;utente.
+
+Sempre per motivi regolatori, deve essere possibile associare a una offerta i touchpoint su cui tale offerta PUÒ oppure NON PUÒ essere venduta (i touchpoint sono sia quelli digitali, ossia Web e app, sia, in senso lato, gli operatori umani che sono oppure non sono abilitati alla vendita di determinati prodotti - OSP, OFE, consulenti in sala UP, consulenti remoti).
+
+Nota bene: il concetto di matrice NxN è un concetto logico, non d&#x27;interfaccia; ciò significa che l&#x27;interfaccia dovrà consentire semplicemente di definire i bundle EFFETTIVAMENTE ideati dalle funzioni di Marketing come coppie (A, B) di prodotti, senza fare data entry di tutte le combinazioni teoricamente possibili di prodotti.
+Per ogni bundle (A,B), fermi restando i parametri di offerta indicati, deve essere possibile l&#x27;attivazione o spegnimento, per consentire la cessazione o sospensione di una offerta senza cancellarne definizione e parametrizzazioni. L&#x27;interfaccia consente quindi di selezionare le coppie (A, B) e di associare a ciascun prodotto A, B, C... regole specifiche di NON associabilità ad altri specifici prodotti.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>La dashboard consente la definizione di una matrice n x n con tutte le combinazioni di prodotti rilevanti.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Per ciascuna combinazione è possibile impostare lo stato (vietata/regolare), flag marketing, sconto, periodo di validità (data inizio/fine) e target di applicazione.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Le modifiche fatte tramite dashboard sono persistenti e hanno effetto sulle proposte generate dal motore entro i tempi di propagazione concordati.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">67</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">48</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili (7 added_info vs 15) e meno ridondanze (2 vs 3), risultando piu aderente al requisito. L&#x27;indirect_persona aggiunge molte assunzioni (stati di propagazione in dashboard, gestione concorrenza, regole di precedenza touchpoint, modello a liste consentiti/non consentiti, formati specifici di sconto/target) che non sono deducibili dal requisito.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">67</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">13</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-002.TC05</td><td>Introduce una regola di validazione non specificata (blocco salvataggio se data fine &lt; data inizio) e l&#x27;obbligo di messaggio di errore.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC06</td><td>Introduce regole di validazione/formato dello sconto (input non numerico bloccato e messaggio di errore) non descritte nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC07</td><td>Assume che una regola di NON associabilità impedisca la creazione/salvataggio della combinazione; il requisito dice che si possono associare regole, ma non esplicita il comportamento di enforcement in creazione né messaggi di errore.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC10</td><td>Introduce dettagli operativi non presenti: nome azione/API (&#x27;generaProposte&#x27;), identificativo cliente (&#x27;CL-10004567&#x27;), uso di timestamp/log come requisito di verifica.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC11</td><td>Specifica esiti tecnici (HTTP 403/pagina specifica) e comportamento UI (voce menu nascosta) non definiti; il requisito indica solo accesso ai team marketing.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC12</td><td>Introduce una regola di gestione duplicati (blocco o aggiornamento deterministico) non menzionata nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC13</td><td>Introduce requisiti di resilienza/gestione errori backend (fault injection, assenza di persistenza parziale, timeout/HTTP 500) non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito (touchpoint regolatori: Web, App, OSP, OFE, consulenti in sala UP, consulenti remoti)</td><td>I touchpoint sono testati (TC09), ma manca la copertura esplicita della distinzione &#x27;PUÒ&#x27; vs &#x27;NON PUÒ&#x27; come vincolo regolatorio che impatti la vendibilità/proposte del motore (effetto E2E sui touchpoint). TC10 verifica l&#x27;effetto sul motore per &#x27;vietata/OFF&#x27; ma non per i touchpoint.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-002.TC02, REQ-F-002.TC04</td><td>Entrambi testano impostazione/modifica degli stessi parametri (stato regolatorio, flag marketing, sconto, date, target) con salvataggio e verifica; differiscono solo nei valori.</td></tr>
+<tr><td class='mono'>REQ-F-002.TC02, REQ-F-002.TC03</td><td>Entrambi verificano persistenza post-salvataggio; TC03 lo fa tramite logout/login ma copre sostanzialmente la stessa persistenza già verificata in TC02.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">48</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">20</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">15</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-002.US01.TC04</td><td>Assume formato sconto percentuale (&#x27;10%&#x27;) mentre il requisito non definisce formato/valuta; è un dettaglio non tracciabile.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC06</td><td>Introduce precondizione di esistenza di segmenti/cluster target e un formato specifico di target (&#x27;Clienti Retail - Nuovi clienti&#x27;) non definito dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC08</td><td>Introduce regola di validazione date (blocco salvataggio se fine &lt; inizio) e messaggio di errore non specificati.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC09</td><td>Introduce regola di prevenzione duplicati non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC10</td><td>Introduce comportamento &#x27;sola lettura&#x27; per utenti non Marketing come alternativa accettabile; il requisito non menziona modalità read-only né RBAC dettagliato.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC11</td><td>Introduce gestione concorrenza (conflitto o last-write-wins) non citata nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC12</td><td>Introduce dettagli di verifica sul motore (interrogare fonte dati, modalità API/DB/log) e asserzione di persistenza &#x27;immediata&#x27; in dashboard come parte dell&#x27;atteso.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC13</td><td>Introduce requisito di &#x27;stato/indicazione di propagazione&#x27; e messaggio in dashboard in caso di SLA superato; il requisito parla di tempi di propagazione concordati ma non di UI di tracking/alert.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC14</td><td>Introduce una regola di coerenza tra stato &#x27;vietata&#x27; e attivazione ON (blocco o avviso). Il requisito non definisce interazione tra &#x27;vietata&#x27; e attivazione/spegnimento.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC01</td><td>Afferma che il requisito non menziona i touchpoint (ma in realtà li menziona in description) e introduce un modello dati specifico a due liste (consentiti/non consentiti) non esplicitato.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC02</td><td>Introduce regole di coerenza e precedenza deterministica tra consentito/non consentito per lo stesso touchpoint; non specificato.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC03</td><td>Introduce comportamento per liste touchpoint vuote (obbligo di almeno un touchpoint o salvataggio consentito) non definito.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC04</td><td>Introduce gestione di touchpoint deprecati (&#x27;KIOSK_OLD&#x27;) e backward compatibility del registry non menzionate.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC05</td><td>Introduce un requisito di interrogazione del motore per touchpoint specifici (proposte per Web vs App) e assume che il motore supporti tale dimensione; non descritto nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC06</td><td>Come US01.TC13, introduce stato/messaggio di propagazione in dashboard per touchpoint; non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;contrassegnare la combinazione come disponibile/interessante per marketing&#x27; e &#x27;contrassegnare la combinazione come vietata per motivi regolatori&#x27;</td><td>I test usano valori/etichette (&#x27;Interessante&#x27;, &#x27;Consentita&#x27;) che non sono nel requisito; manca una verifica che i due concetti siano esattamente quelli richiesti (vietata/regolare e disponibile/interessante) senza introdurre tassonomie alternative.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-002.US01.TC02, REQ-F-002.US01.TC03, REQ-F-002.US01.TC04, REQ-F-002.US01.TC05, REQ-F-002.US01.TC06</td><td>Serie di test molto simili che verificano singolarmente la persistenza di ciascun campo; coprono lo stesso pattern (imposta valore -&gt; salva -&gt; riapri) con differenze minime.</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC12, REQ-F-002.US02.TC05</td><td>Entrambi verificano propagazione entro SLA al motore; cambiano solo l&#x27;oggetto della modifica (stato regolatorio vs touchpoint).</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC13, REQ-F-002.US02.TC06</td><td>Entrambi verificano gestione di propagazione non completata entro SLA con indicazione in dashboard; duplicazione del medesimo concetto.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-002&quot;,
+  &quot;title&quot;: &quot;Configuratore matrice n x n per combinazioni e parametri commerciali&quot;,
+  &quot;description&quot;: &quot;Deve essere previsto un configuratore, accessibile tramite dashboard ai team di marketing (come dichiarato dall&#x27;utente), che consenta di definire una matrice n x n delle possibili combinazioni di suggerimenti tra prodotti. Per ogni cella/combinazione la dashboard deve permettere: contrassegnare la combinazione come vietata per motivi regolatori, contrassegnare la combinazione come disponibile/interessante per marketing, associare l&#x27;eventuale sconto applicabile, definire la durata della promozione e il target a cui la promozione si applica. Tutte queste configurazioni devono essere modificabili dalla dashboard dai marketing, come esplicitato dall&#x27;utente.\n\nSempre per motivi regolatori, deve essere possibile associare a una offerta i touchpoint su cui tale offerta PUÒ oppure NON PUÒ essere venduta (i touchpoint sono sia quelli digitali, ossia Web e app, sia, in senso lato, gli operatori umani che sono oppure non sono abilitati alla vendita di determinati prodotti - OSP, OFE, consulenti in sala UP, consulenti remoti).\n\nNota bene: il concetto di matrice NxN è un concetto logico, non d&#x27;interfaccia; ciò significa che l&#x27;interfaccia dovrà consentire semplicemente di definire i bundle EFFETTIVAMENTE ideati dalle funzioni di Marketing come coppie (A, B) di prodotti, senza fare data entry di tutte le combinazioni teoricamente possibili di prodotti.\nPer ogni bundle (A,B), fermi restando i parametri di offerta indicati, deve essere possibile l&#x27;attivazione o spegnimento, per consentire la cessazione o sospensione di una offerta senza cancellarne definizione e parametrizzazioni. L&#x27;interfaccia consente quindi di selezionare le coppie (A, B) e di associare a ciascun prodotto A, B, C... regole specifiche di NON associabilità ad altri specifici prodotti.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;La dashboard consente la definizione di una matrice n x n con tutte le combinazioni di prodotti rilevanti.&quot;,
+    &quot;Per ciascuna combinazione è possibile impostare lo stato (vietata/regolare), flag marketing, sconto, periodo di validità (data inizio/fine) e target di applicazione.&quot;,
+    &quot;Le modifiche fatte tramite dashboard sono persistenti e hanno effetto sulle proposte generate dal motore entro i tempi di propagazione concordati.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 13 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-002.TC01</td><td>Creazione bundle (A,B) da dashboard senza data entry dell’intera matrice teorica</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-002.TC02</td><td>Impostazione completa dei parametri commerciali e regolatori su una combinazione (vietata/regolare, flag marketing, sconto, validità, target)</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC03</td><td>Persistenza delle modifiche: verifica che le configurazioni restino invariate dopo logout/login</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC04</td><td>Modifica dei parametri di una combinazione esistente da dashboard (update completo)</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC05</td><td>Validazione periodo di validità: data fine precedente alla data inizio</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC06</td><td>Validazione sconto: inserimento valore non numerico o formato non valido</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC07</td><td>Regole di non associabilità: impedire la creazione di una combinazione marcata come non associabile</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC08</td><td>Attivazione/spegnimento di un bundle (sospensione senza cancellazione della definizione)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC09</td><td>Configurazione touchpoint consentiti/non consentiti per un’offerta (web, app, operatori umani)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC10</td><td>Integrazione: propagazione delle modifiche al motore proposte entro il tempo concordato</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC11</td><td>Autorizzazione: accesso alla dashboard negato a utente non Marketing</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-002.TC12</td><td>Edge case: prevenzione duplicati della stessa coppia (A,B) in fase di creazione</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.TC13</td><td>Negative: indisponibilità del servizio di persistenza/configurazione durante il salvataggio</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 20 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-002.US01.TC01</td><td>Creazione bundle (A,B) da dashboard senza data-entry dell’intera matrice NxN</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC02</td><td>Impostazione e salvataggio dello stato regolatorio (consentita/vietata) su un bundle</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC03</td><td>Impostazione e salvataggio del flag marketing su un bundle</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC04</td><td>Associazione e salvataggio dello sconto su un bundle</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC05</td><td>Definizione e salvataggio del periodo di validità (data inizio/fine) su un bundle</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC06</td><td>Definizione e salvataggio del target di applicazione su un bundle</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC07</td><td>Spegnimento e riattivazione di un bundle senza perdita di configurazione</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC08</td><td>Negativo: validazione periodo di validità con data fine precedente alla data inizio</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC09</td><td>Negativo: prevenzione duplicati nella creazione di un bundle con stessa coppia (A,B)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC10</td><td>Authorization: accesso negato alla configurazione bundle per utente non Marketing</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC11</td><td>Edge case: modifica concorrente dello stesso bundle con gestione conflitti/ultimo salvataggio</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC12</td><td>Integration/E2E: propagazione delle modifiche al Motore di Offerte entro SLA concordato</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC13</td><td>Negativo/Integration: propagazione non completata entro SLA con stato e messaggio in dashboard</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US01.TC14</td><td>Negativo: tentativo di attivare un bundle marcato come &#x27;vietata&#x27; per motivi regolatori</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC01</td><td>Configurazione touchpoint consentiti e non consentiti per un bundle (inclusi Web/App e ruoli umani)</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC02</td><td>Negativo: configurazione incoerente con lo stesso touchpoint sia consentito sia non consentito</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC03</td><td>Edge case: nessun touchpoint configurato per un bundle</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC04</td><td>Negativo: selezione di touchpoint non riconosciuto/non più disponibile a sistema</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC05</td><td>Integration: effetto dei touchpoint NON consentiti sulle proposte del Motore di Offerte entro SLA</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-002.US02.TC06</td><td>Negativo/Integration: propagazione touchpoint non completata entro SLA con indicazione in dashboard</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 7, 1, 2], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 15, 1, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

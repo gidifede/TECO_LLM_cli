@@ -1,0 +1,399 @@
+[
+  {
+    "test_id": "REQ-D-004.TC01",
+    "title": "Creazione configurazione: generazione record di log con campi minimi",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT001) con permessi di modifica configurazioni",
+      "Il sistema di logging delle configurazioni è attivo",
+      "Non esiste una regola con nome 'Sconto10_Feb2026'"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT001",
+      "Operazione: creazione",
+      "Oggetto configurazione: regola 'Sconto10_Feb2026'",
+      "After_state atteso (estratto): {\"name\":\"Sconto10_Feb2026\",\"discount\":10,\"active\":true}"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Navigare alla sezione di configurazione (regole/bundle/campagne)",
+      "Avviare la creazione di una nuova regola",
+      "Inserire nome 'Sconto10_Feb2026'",
+      "Impostare sconto 10 e stato attivo",
+      "Salvare la regola",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT001 e per oggetto 'Sconto10_Feb2026'",
+      "Aprire il dettaglio del record di log più recente relativo alla creazione"
+    ],
+    "expected_results": [
+      "Esiste un record di log per l'operazione con user_id = MKT001",
+      "Il record di log contiene operation_type = 'creazione'",
+      "Il record di log contiene un timestamp valorizzato in formato data/ora e coerente con l'istante di salvataggio (non nullo)",
+      "Il record di log contiene before_state valorizzato (es. nullo o oggetto vuoto, secondo implementazione) e after_state valorizzato",
+      "L'after_state del record riflette i valori salvati per la regola (almeno nome e sconto coerenti con l'input)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori e canale (web) inferiti dal contesto: il requisito cita 'marketing' ma non specifica canali o UI/endpoint. La verifica del contenuto 'before_state' in creazione è interpretata come nullo/empty ammesso purché il campo esista e sia tracciabile."
+  },
+  {
+    "test_id": "REQ-D-004.TC02",
+    "title": "Aggiornamento configurazione: log con before_state e after_state coerenti",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT001) con permessi di modifica configurazioni",
+      "Il sistema di logging delle configurazioni è attivo",
+      "Esiste una regola 'Sconto10_Feb2026' con stato iniziale: {\"discount\":10,\"active\":true}"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT001",
+      "Operazione: update",
+      "Modifica: discount da 10 a 15",
+      "Stato atteso prima (estratto): {\"discount\":10}",
+      "Stato atteso dopo (estratto): {\"discount\":15}"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Navigare alla sezione di configurazione regole",
+      "Aprire la regola 'Sconto10_Feb2026' in modifica",
+      "Modificare il valore di sconto da 10 a 15",
+      "Salvare le modifiche",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT001 e per oggetto 'Sconto10_Feb2026'",
+      "Aprire il dettaglio del record di log più recente relativo all'update"
+    ],
+    "expected_results": [
+      "Esiste un record di log con user_id = MKT001 e operation_type = 'update'",
+      "Il record di log contiene timestamp valorizzato (non nullo)",
+      "Il record di log contiene before_state valorizzato che include discount = 10",
+      "Il record di log contiene after_state valorizzato che include discount = 15",
+      "Before_state e after_state risultano differenti almeno per il campo modificato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il formato degli stati: il test valida la coerenza semantica (valori prima/dopo) e la presenza dei campi richiesti."
+  },
+  {
+    "test_id": "REQ-D-004.TC03",
+    "title": "Cancellazione configurazione: log con operation_type 'cancellazione' e stati prima/dopo",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT001) con permessi di modifica configurazioni",
+      "Il sistema di logging delle configurazioni è attivo",
+      "Esiste una regola 'Sconto10_Feb2026' cancellabile"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT001",
+      "Operazione: cancellazione",
+      "Oggetto configurazione: regola 'Sconto10_Feb2026'"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Navigare alla sezione di configurazione regole",
+      "Selezionare la regola 'Sconto10_Feb2026'",
+      "Eseguire l'azione di cancellazione",
+      "Confermare la cancellazione",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT001 e per oggetto 'Sconto10_Feb2026'",
+      "Aprire il dettaglio del record di log più recente relativo alla cancellazione"
+    ],
+    "expected_results": [
+      "Esiste un record di log con user_id = MKT001",
+      "Il record di log contiene operation_type = 'cancellazione'",
+      "Il record di log contiene timestamp valorizzato (non nullo)",
+      "Il record di log contiene before_state valorizzato (stato della regola prima della cancellazione)",
+      "Il record di log contiene after_state valorizzato (es. nullo/empty o stato 'deleted', secondo implementazione) e distinguibile dal before_state"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Interpretazione necessaria: il requisito richiede before_state/after_state anche per cancellazione, ma non definisce la rappresentazione dell'after_state; il test accetta nullo/empty o marker di cancellazione purché tracciato."
+  },
+  {
+    "test_id": "REQ-D-004.TC04",
+    "title": "Modifica critica di regola: motivazione obbligatoria e salvata nel log",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT002) con permessi di modifica configurazioni",
+      "Il sistema di logging delle configurazioni è attivo",
+      "Esiste una regola classificata come 'critica' secondo le regole di business/configurazione (flag o categoria 'critica')",
+      "La UI/servizio richiede la motivazione per modifiche critiche"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT002",
+      "Regola critica: 'Prezzi_BlackFriday'",
+      "Operazione: update",
+      "Motivazione: 'Allineamento sconto a nuova policy approvata il 2026-02-15'",
+      "Modifica: active da true a false"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT002",
+      "Navigare alla sezione di configurazione regole",
+      "Aprire la regola critica 'Prezzi_BlackFriday' in modifica",
+      "Impostare active = false",
+      "Inserire la motivazione 'Allineamento sconto a nuova policy approvata il 2026-02-15'",
+      "Salvare le modifiche",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT002 e per oggetto 'Prezzi_BlackFriday'",
+      "Aprire il dettaglio del record di log più recente relativo all'update"
+    ],
+    "expected_results": [
+      "Il salvataggio della modifica critica va a buon fine",
+      "Esiste un record di log con operation_type = 'update' e timestamp valorizzato",
+      "Il record di log contiene la motivazione valorizzata e uguale al testo inserito",
+      "Il record di log contiene before_state e after_state coerenti con la modifica (active true -> false)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna/ambiguità: il requisito non definisce cosa renda una modifica 'critica' né come sia 'previsto' il campo motivazione. Il test assume esista una classificazione 'regola critica' e un campo motivazione esposto in UI/servizio."
+  },
+  {
+    "test_id": "REQ-D-004.TC05",
+    "title": "Modifica critica di regola: blocco salvataggio se motivazione mancante",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT002) con permessi di modifica configurazioni",
+      "Esiste una regola classificata come 'critica' secondo le regole di business/configurazione",
+      "La UI/servizio richiede la motivazione per modifiche critiche"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT002",
+      "Regola critica: 'Prezzi_BlackFriday'",
+      "Operazione: update",
+      "Motivazione: (vuota)",
+      "Modifica: active da true a false"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT002",
+      "Navigare alla sezione di configurazione regole",
+      "Aprire la regola critica 'Prezzi_BlackFriday' in modifica",
+      "Impostare active = false",
+      "Lasciare vuoto il campo motivazione",
+      "Tentare di salvare le modifiche",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT002 e per oggetto 'Prezzi_BlackFriday' nell'intervallo temporale del tentativo"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della modifica critica e mostra un messaggio di validazione che indica che la motivazione è obbligatoria",
+      "La regola rimane invariata (active resta true)",
+      "Non viene creato alcun record di log relativo a un update riuscito per quel tentativo (nessun nuovo record con timestamp successivo al tentativo)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento in caso di mancata motivazione; questo test interpreta 'obbligatoria' come blocco del salvataggio e assenza di log di modifica applicata."
+  },
+  {
+    "test_id": "REQ-D-004.TC06",
+    "title": "Operazione non critica: motivazione non obbligatoria (se non prevista) e log generato",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT003) con permessi di modifica configurazioni",
+      "Esiste una regola non critica 'Promo_Primavera'",
+      "Il sistema di logging delle configurazioni è attivo"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT003",
+      "Regola non critica: 'Promo_Primavera'",
+      "Operazione: update",
+      "Motivazione: (omessa)",
+      "Modifica: discount da 5 a 6"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT003",
+      "Aprire la regola 'Promo_Primavera' in modifica",
+      "Modificare discount da 5 a 6",
+      "Non inserire alcuna motivazione",
+      "Salvare le modifiche",
+      "Aprire la vista/endpoint di consultazione dei log di configurazione",
+      "Filtrare i log per user_id = MKT003 e per oggetto 'Promo_Primavera'",
+      "Aprire il dettaglio del record di log più recente relativo all'update"
+    ],
+    "expected_results": [
+      "Il salvataggio va a buon fine senza richiedere obbligatoriamente la motivazione",
+      "Esiste un record di log con operation_type = 'update' e campi minimi valorizzati (user_id, timestamp, before_state, after_state)",
+      "Il campo motivazione, se presente nel modello dati, risulta nullo/vuoto oppure assente secondo implementazione, senza impedire la consultazione del record"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Interpretazione: 'Se previsto' implica che la motivazione possa non essere richiesta per modifiche non critiche; il requisito non definisce quando il campo sia esposto o persistito."
+  },
+  {
+    "test_id": "REQ-D-004.TC07",
+    "title": "Consultazione log: disponibilità dei record generati",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono almeno 3 record di log di configurazione generati da operazioni precedenti (creazione/update/cancellazione)",
+      "L'utente Marketing (user_id: MKT001) ha accesso alla consultazione dei log"
+    ],
+    "test_data": [
+      "Filtro: intervallo date = ultimo 1 giorno",
+      "Filtro: operation_type = 'update'"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Aprire la sezione di consultazione dei log di configurazione",
+      "Impostare filtro intervallo date = ultimo 1 giorno",
+      "Impostare filtro operation_type = 'update'",
+      "Eseguire la ricerca",
+      "Aprire il dettaglio di un record restituito"
+    ],
+    "expected_results": [
+      "La lista dei log viene mostrata e contiene record coerenti con i filtri impostati",
+      "Ogni record in lista mostra almeno user_id, operation_type e timestamp",
+      "Il dettaglio del record mostra before_state e after_state (valorizzati secondo quanto registrato)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i filtri disponibili; i filtri per data e tipo operazione sono assunti come tipici per consultazione. Se non presenti, adeguare il test alla modalità di consultazione effettivamente implementata."
+  },
+  {
+    "test_id": "REQ-D-004.TC08",
+    "title": "Esportazione log: export dei record di configurazione",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono record di log di configurazione disponibili in consultazione",
+      "L'utente Marketing (user_id: MKT001) ha accesso alla funzionalità di esportazione log"
+    ],
+    "test_data": [
+      "Formato export: CSV",
+      "Filtro export: intervallo date = ultimo 7 giorni"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Aprire la sezione di consultazione dei log di configurazione",
+      "Impostare filtro intervallo date = ultimo 7 giorni",
+      "Selezionare l'azione di esportazione",
+      "Selezionare il formato CSV",
+      "Avviare l'esportazione",
+      "Scaricare il file generato",
+      "Aprire il file esportato"
+    ],
+    "expected_results": [
+      "Il sistema genera un file di esportazione scaricabile",
+      "Il file contiene almeno le colonne/campi: user_id, operation_type, timestamp, before_state, after_state",
+      "Per i record che prevedono motivazione, il file include anche la motivazione valorizzata oppure una colonna motivazione vuota per gli altri record (secondo implementazione), senza perdita dei campi minimi"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica formato/i di export; il test assume CSV come formato comune. Adeguare a XLSX/JSON se previsto dall'implementazione."
+  },
+  {
+    "test_id": "REQ-D-004.TC09",
+    "title": "Autorizzazione: utente non Marketing non può eseguire modifiche di configurazione (e quindi non genera log di modifica)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente non Marketing (user_id: VIEW001) senza permessi di modifica configurazioni",
+      "Esiste una regola 'Promo_Primavera'",
+      "Il sistema di logging delle configurazioni è attivo"
+    ],
+    "test_data": [
+      "Utente: VIEW001",
+      "Operazione tentata: update discount da 6 a 7"
+    ],
+    "steps": [
+      "Accedere all'applicazione come utente VIEW001",
+      "Navigare alla sezione di configurazione regole",
+      "Aprire la regola 'Promo_Primavera'",
+      "Tentare di modificare discount da 6 a 7",
+      "Tentare di salvare",
+      "Aprire la consultazione log (se accessibile) oppure interrogare il backend/log store tramite strumenti di test",
+      "Ricercare eventuali nuovi record relativi al tentativo dell'utente VIEW001 su 'Promo_Primavera'"
+    ],
+    "expected_results": [
+      "Il sistema nega l'operazione di salvataggio per mancanza di permessi (messaggio di errore o controllo accessi)",
+      "La regola 'Promo_Primavera' non risulta modificata",
+      "Non viene creato alcun record di log di configurazione che indichi un update riuscito per tale tentativo"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita ruoli/permessi; questo test deriva implicitamente che solo il marketing esegue modifiche. Se l'app consente modifiche anche ad altri ruoli, adeguare il controllo Authorization ai ruoli reali."
+  },
+  {
+    "test_id": "REQ-D-004.TC10",
+    "title": "Integrazione: persistenza log fallisce (errore storage) e gestione dell'errore in operazione di configurazione",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente Marketing (user_id: MKT001) con permessi di modifica configurazioni",
+      "È possibile simulare un errore del componente di persistenza log (es. DB/servizio log non disponibile) in ambiente di test",
+      "Esiste una regola 'Promo_Primavera'"
+    ],
+    "test_data": [
+      "Utente Marketing: MKT001",
+      "Operazione: update",
+      "Modifica: discount da 6 a 8",
+      "Simulazione errore: timeout/503 dal servizio di logging"
+    ],
+    "steps": [
+      "Configurare la simulazione di indisponibilità del componente di persistenza log (timeout o risposta 503)",
+      "Accedere all'applicazione come utente Marketing MKT001",
+      "Aprire la regola 'Promo_Primavera' in modifica",
+      "Modificare discount da 6 a 8",
+      "Salvare le modifiche",
+      "Ripristinare la disponibilità del componente di persistenza log",
+      "Aprire la consultazione log e cercare record relativi alla modifica discount 6->8",
+      "Verificare lo stato finale della regola 'Promo_Primavera'"
+    ],
+    "expected_results": [
+      "Il sistema gestisce l'errore di logging in modo controllato (errore esplicito all'utente o fallback definito dall'implementazione, senza crash)",
+      "Se l'implementazione richiede logging obbligatorio: la modifica non viene applicata e non risulta alcun cambiamento sulla regola",
+      "Se l'implementazione consente la modifica anche senza log: la modifica risulta applicata ma viene registrato un evento/errore tracciabile per la mancata scrittura del log (es. alert tecnico) e non risulta un record di configurazione incompleto",
+      "In ogni caso non esistono record di log parziali privi dei campi minimi richiesti (user_id, operation_type, timestamp, before_state, after_state)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna non risolta: il requisito non definisce la policy transazionale tra modifica e logging (fail-close vs fail-open). Il test include entrambe le verifiche come alternative accettabili; chiarire la policy per rendere l'esito univoco."
+  }
+]

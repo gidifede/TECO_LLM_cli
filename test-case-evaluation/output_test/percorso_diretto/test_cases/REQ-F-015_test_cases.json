@@ -1,0 +1,281 @@
+[
+  {
+    "test_id": "REQ-F-015.TC01",
+    "title": "Avvio provisioning prodotti al completamento sottoscrizione (happy path)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un'offerta sottoscrivibile che include almeno 1 prodotto provisionabile",
+      "Il sistema di vendita verticale è operativo e connesso ai sistemi di provisioning",
+      "Il cliente dispone di contatti digitali valorizzati (es. email e/o numero mobile) nel profilo"
+    ],
+    "test_data": [
+      "Cliente: CUST-10001 (email: mario.rossi@example.com, mobile: +393331112233)",
+      "Offerta: OFF-20015 con prodotti: PROD-A (SIM), PROD-B (servizio digitale)",
+      "Canale digitale di notifica configurato: email"
+    ],
+    "steps": [
+      "Accedere al sistema di vendita verticale come operatore abilitato alla sottoscrizione",
+      "Selezionare il cliente CUST-10001",
+      "Selezionare l'offerta OFF-20015",
+      "Completare la sottoscrizione fino alla conferma finale",
+      "Aprire il dettaglio ordine/sottoscrizione generato",
+      "Verificare la presenza di eventi/log di avvio provisioning associati ai prodotti PROD-A e PROD-B"
+    ],
+    "expected_results": [
+      "La sottoscrizione risulta in stato 'Completata' nel sistema di vendita verticale",
+      "Per ciascun prodotto acquisito (PROD-A, PROD-B) risulta creato/avviato un processo di provisioning associato alla sottoscrizione",
+      "Non risultano processi di provisioning mancanti per i prodotti inclusi nell'offerta"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori (operatore/cliente) e canali digitali sono stati inferiti dalla descrizione. Il requisito non specifica quali sistemi/monitoraggi usare per verificare l'avvio del provisioning: si assume disponibilità di stato ordine e/o log/eventi tecnici consultabili."
+  },
+  {
+    "test_id": "REQ-F-015.TC02",
+    "title": "Invio informazioni a Framework Connect per registrazione cashback/points (integrazione)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Framework Connect è raggiungibile dall'ambiente di test ed espone un endpoint/queue per ricezione dati di registrazione",
+      "Sono disponibili credenziali/chiavi di integrazione valide tra sistema di vendita verticale e Framework Connect",
+      "Esiste un'offerta sottoscrivibile che genera diritto a cashback/points (o comunque richiede registrazione su Connect)"
+    ],
+    "test_data": [
+      "Cliente: CUST-10002 (email: lucia.bianchi@example.com, mobile: +393339998877)",
+      "Offerta: OFF-30021 (con regole di cashback/points abilitate)",
+      "Correlation/Order ID atteso: valorizzato nel dettaglio sottoscrizione (es. ORD-778899)"
+    ],
+    "steps": [
+      "Accedere al sistema di vendita verticale come operatore abilitato",
+      "Selezionare il cliente CUST-10002",
+      "Selezionare l'offerta OFF-30021",
+      "Completare la sottoscrizione fino alla conferma finale",
+      "Recuperare il Correlation/Order ID della sottoscrizione (es. ORD-778899)",
+      "Verificare sui log/trace di integrazione o sul consumer di Framework Connect la ricezione del messaggio/chiamata associata a ORD-778899",
+      "Verificare il contenuto del payload inviato a Framework Connect"
+    ],
+    "expected_results": [
+      "Framework Connect riceve una richiesta/messaggio correlato alla sottoscrizione (stesso Correlation/Order ID)",
+      "Il payload contiene almeno gli identificativi necessari per associare la registrazione a cliente e sottoscrizione (es. customerId e orderId) e l'elenco dei prodotti/benefit rilevanti per cashback/points",
+      "La ricezione su Framework Connect risulta con esito tecnico positivo (es. HTTP 2xx o ACK su coda) e senza errori di validazione"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia schema dati e protocollo (API/queue) verso Framework Connect: si assume esistenza di tracciamento tecnico (log/trace) e di campi minimi (customerId, orderId) per rendere verificabile l'AC-2."
+  },
+  {
+    "test_id": "REQ-F-015.TC03",
+    "title": "Notifica digitale al cliente di avvenuta attivazione e consultazione stato lato cliente",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale digitale di notifica (email o SMS/push) è abilitato e funzionante in ambiente di test",
+      "Il cliente dispone di contatti digitali valorizzati nel profilo",
+      "Esiste un canale/area cliente (portale o app) dove consultare lo stato di attivazione delle offerte/prodotti"
+    ],
+    "test_data": [
+      "Cliente: CUST-10003 (email: gianni.verdi@example.com, mobile: +393334445566)",
+      "Offerta: OFF-20015 con prodotti: PROD-A, PROD-B",
+      "Canale digitale atteso: email (in alternativa SMS se configurato)"
+    ],
+    "steps": [
+      "Completare una sottoscrizione dell'offerta OFF-20015 per il cliente CUST-10003",
+      "Attendere il completamento del provisioning/attivazione (fino a stato 'Attivo' o equivalente)",
+      "Verificare la ricezione della notifica digitale al recapito del cliente",
+      "Accedere all'area cliente con le credenziali del cliente CUST-10003",
+      "Navigare alla sezione di stato offerte/prodotti attivi",
+      "Aprire il dettaglio dell'offerta OFF-20015"
+    ],
+    "expected_results": [
+      "Il cliente riceve una notifica digitale di avvenuta attivazione riferita all'offerta/sottoscrizione effettuata",
+      "Nell'area cliente lo stato dell'offerta/prodotti risulta 'Attivo' (o equivalente) e coerente con l'esito del provisioning",
+      "Il dettaglio mostra correttamente i prodotti attivati associati alla sottoscrizione (PROD-A, PROD-B)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica quali canali digitali (email/SMS/push/in-app): il test valida almeno un canale digitale disponibile in ambiente. Si assume esistenza di un'area cliente (web/app) per consultazione stato."
+  },
+  {
+    "test_id": "REQ-F-015.TC04",
+    "title": "Visibilità stato attivazione lato operatore dopo provisioning",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una console/area operatore nel sistema di vendita verticale per consultare lo stato di attivazione delle sottoscrizioni",
+      "Operatore autenticato con permessi di consultazione ordini/sottoscrizioni"
+    ],
+    "test_data": [
+      "Operatore: OP-9001",
+      "Cliente: CUST-10004 (email: sara.neri@example.com, mobile: +393331234567)",
+      "Offerta: OFF-20015"
+    ],
+    "steps": [
+      "Accedere al sistema di vendita verticale come operatore OP-9001",
+      "Eseguire la sottoscrizione dell'offerta OFF-20015 per il cliente CUST-10004",
+      "Aprire il dettaglio della sottoscrizione dalla vista operatore",
+      "Aggiornare/ricaricare la pagina di dettaglio fino al completamento dell'attivazione",
+      "Consultare la sezione 'Stato attivazione' (o equivalente) per offerta e prodotti"
+    ],
+    "expected_results": [
+      "Lo stato di attivazione della sottoscrizione risulta consultabile dall'operatore",
+      "Lo stato visualizzato passa a 'Attivo' (o equivalente) al completamento del provisioning",
+      "Lo stato mostrato per offerta e prodotti è coerente (nessun prodotto risulta 'Non attivo' a provisioning completato)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La modalità di aggiornamento stato (polling/eventi) non è specificata: si valida la consultabilità e coerenza dello stato in console operatore."
+  },
+  {
+    "test_id": "REQ-F-015.TC05",
+    "title": "Errore provisioning: notifica non inviata come 'avvenuta attivazione' e stato consultabile come fallito/in lavorazione",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "È possibile simulare un errore di provisioning per almeno un prodotto (es. indisponibilità sistema downstream o risposta di errore controllata)",
+      "Sono abilitati log e stati di avanzamento della sottoscrizione visibili a operatore e cliente"
+    ],
+    "test_data": [
+      "Cliente: CUST-10005 (email: paolo.gialli@example.com, mobile: +393338887766)",
+      "Offerta: OFF-20015 con prodotti: PROD-A, PROD-B",
+      "Simulazione errore: provisioning PROD-B ritorna errore tecnico (es. HTTP 500) o timeout"
+    ],
+    "steps": [
+      "Configurare la simulazione di errore sul provisioning del prodotto PROD-B",
+      "Completare la sottoscrizione dell'offerta OFF-20015 per il cliente CUST-10005",
+      "Aprire il dettaglio sottoscrizione lato operatore e verificare lo stato dei prodotti",
+      "Accedere all'area cliente del cliente CUST-10005 e consultare lo stato della sottoscrizione",
+      "Verificare eventuali notifiche inviate al cliente durante/alla fine del processo"
+    ],
+    "expected_results": [
+      "Il provisioning risulta avviato ma non completato con successo per PROD-B (stato 'Fallito'/'Errore'/'In lavorazione' o equivalente, secondo implementazione)",
+      "Lo stato consultabile da operatore e cliente riflette l'anomalia (non risulta 'Attivo' per l'intera offerta se un prodotto è fallito, salvo regole esplicitate che qui non sono presenti)",
+      "Non viene inviata al cliente una notifica che dichiari 'avvenuta attivazione' quando l'attivazione non è completata con successo"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non definisce stati/terminologia in caso di errore né se sia prevista una notifica di errore: il test verifica almeno che non venga comunicata un'attivazione avvenuta se non vera e che lo stato sia consultabile e coerente."
+  },
+  {
+    "test_id": "REQ-F-015.TC06",
+    "title": "Framework Connect non disponibile: gestione errore integrazione e tracciabilità esito",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "È possibile simulare indisponibilità di Framework Connect (timeout, DNS, HTTP 503 o mancato ACK su coda)",
+      "Il sistema di vendita verticale espone log/monitoraggio degli errori di integrazione"
+    ],
+    "test_data": [
+      "Cliente: CUST-10006 (email: elena.blu@example.com, mobile: +393337771122)",
+      "Offerta: OFF-30021 (richiede invio dati a Framework Connect)",
+      "Simulazione: Framework Connect risponde HTTP 503 o non risponde (timeout 30s)"
+    ],
+    "steps": [
+      "Abilitare la simulazione di indisponibilità di Framework Connect",
+      "Completare la sottoscrizione dell'offerta OFF-30021 per il cliente CUST-10006",
+      "Verificare sui log/trace del sistema di vendita verticale l'esito del tentativo di invio a Framework Connect",
+      "Verificare che l'evento di errore sia correlato alla sottoscrizione (orderId/correlationId)"
+    ],
+    "expected_results": [
+      "Il sistema registra un errore di integrazione verso Framework Connect con dettaglio tecnico (es. codice 503/timeout)",
+      "L'errore è tracciabile e correlato univocamente alla sottoscrizione (orderId/correlationId)",
+      "Non risultano invii 'con esito positivo' verso Framework Connect per la stessa sottoscrizione durante l'indisponibilità simulata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica retry, code di compensazione o impatto sul provisioning/notifiche: il test si limita a verificare gestione e tracciabilità del fallimento di invio a Connect."
+  },
+  {
+    "test_id": "REQ-F-015.TC07",
+    "title": "Dati contatto digitali mancanti: attivazione visibile ma notifica cliente non inviabile",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "È possibile creare/avere un cliente senza email e senza numero mobile valorizzati",
+      "Lo stato di attivazione è consultabile lato cliente (accesso con credenziali) e lato operatore"
+    ],
+    "test_data": [
+      "Cliente: CUST-10007 (email: null, mobile: null)",
+      "Offerta: OFF-20015"
+    ],
+    "steps": [
+      "Accedere come operatore e selezionare il cliente CUST-10007",
+      "Completare la sottoscrizione dell'offerta OFF-20015",
+      "Attendere il completamento dell'attivazione/provisioning",
+      "Verificare sui log/centro notifiche l'esito dell'invio notifica al cliente",
+      "Accedere all'area cliente (login) del cliente CUST-10007 e consultare lo stato dell'offerta"
+    ],
+    "expected_results": [
+      "L'attivazione/provisioning procede e risulta completata (stato 'Attivo' o equivalente) e consultabile",
+      "Non risulta alcuna notifica cliente inviata su canali digitali non disponibili; l'eventuale fallimento di notifica è tracciato (es. 'recapito mancante')",
+      "Lo stato consultabile dal cliente riflette correttamente l'attivazione anche in assenza di notifica"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica comportamento in assenza di recapiti: si assume che l'attivazione non dipenda dalla notifica e che l'assenza recapiti impedisca l'invio, mantenendo la consultabilità dello stato."
+  },
+  {
+    "test_id": "REQ-F-015.TC08",
+    "title": "Autorizzazioni: utente non operatore non può consultare la vista operatore di stato attivazione",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono almeno due ruoli: operatore abilitato e utente non operatore (es. operatore senza permessi o profilo generico backoffice)",
+      "Esiste una sottoscrizione per cui lo stato attivazione è consultabile in vista operatore"
+    ],
+    "test_data": [
+      "Utente non autorizzato: OP-LIMIT-01 (ruolo senza permesso 'CONSULTA_STATO_ATTIVAZIONE')",
+      "Sottoscrizione esistente: ORD-889900 (in stato Attivo o In lavorazione)"
+    ],
+    "steps": [
+      "Accedere al sistema di vendita verticale con l'utente OP-LIMIT-01",
+      "Tentare di aprire il dettaglio della sottoscrizione ORD-889900 in vista operatore",
+      "Tentare di accedere direttamente (via URL o funzione menu) alla sezione di consultazione stato attivazione"
+    ],
+    "expected_results": [
+      "L'utente OP-LIMIT-01 non può accedere alla vista/azione di consultazione dello stato attivazione (blocco con messaggio di autorizzazione o schermata di accesso negato)",
+      "Non vengono mostrati dati di stato attivazione riservati all'operatore non autorizzato",
+      "L'evento di accesso negato è tracciato (se previsto dagli standard di auditing dell'applicazione)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona visibilità per operatore e cliente ma non definisce ruoli/permessi: i ruoli sono stati inferiti per coprire il controllo di accesso minimo coerente con la consultazione in area operatore."
+  }
+]

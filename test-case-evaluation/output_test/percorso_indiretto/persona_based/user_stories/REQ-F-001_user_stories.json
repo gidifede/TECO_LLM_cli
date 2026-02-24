@@ -1,0 +1,32 @@
+[
+  {
+    "story_id": "REQ-F-001.US01",
+    "title": "Generare output NBO con offerte rilevanti per il cross-selling",
+    "persona": "Motore di Offerte",
+    "goal": "applicare la logica Next Best Offer per filtrare e restituire offerte rilevanti rispetto a raccomandazioni esterne e regole configurate",
+    "benefit": "massimizzare il cross-selling riducendo la proposta di offerte irrilevanti",
+    "user_story": "Come Motore di Offerte\nVoglio applicare una logica Next Best Offer (NBO) per filtrare e restituire offerte rilevanti\nIn modo che le proposte massimizzino il cross-selling e minimizzino le offerte non pertinenti",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la funzionalità NBO è abilitata nel Motore di Offerte ALLORA la logica di proposta utilizza NBO come obiettivo primario per l'output delle offerte.",
+      "QUANDO il Motore di Offerte riceve in input raccomandazioni esterne e dispone di regole configurate ALLORA espone in output solo offerte filtrate/rilevanti coerenti con tali input e regole.",
+      "QUANDO vengono eseguiti test funzionali sugli scenari di prova forniti dall'utente ALLORA il Motore di Offerte non propone offerte manifestamente non pertinenti nei casi previsti dagli scenari."
+    ],
+    "business_rules": [
+      "La logica NBO deve perseguire come obiettivo primario l'ottimizzazione del cross-selling riducendo le offerte irrilevanti.",
+      "Il filtraggio di rilevanza deve basarsi sugli input di raccomandazioni esterne e sulle regole configurate (configuratore), senza richiedere in questo requisito la specifica del calcolo delle propensioni."
+    ],
+    "edge_cases": [
+      "Input di raccomandazioni esterne assente o vuoto: il comportamento di output (es. nessuna offerta vs fallback su sole regole) deve essere definito.",
+      "Regole configurate non disponibili/non caricate: il Motore non deve produrre output incoerente; deve gestire l'errore secondo standard di integrazione.",
+      "Raccomandazioni esterne in conflitto con regole configurate: deve essere definita la precedenza (es. regole vincolanti prevalgono).",
+      "Scenario di test non definisce in modo oggettivo cosa sia “manifestamente non pertinente”: rischio di non verificabilità."
+    ],
+    "assumptions": [
+      "Le modalità di abilitazione/configurazione della funzionalità NBO (feature flag, parametro di configurazione, ecc.) sono definite nei criteri di integrazione/configuratore citati ma non inclusi qui.",
+      "La definizione operativa e misurabile di “manifestamente non pertinente” sarà fornita negli scenari di prova dell'utente o in regole configurate verificabili."
+    ],
+    "notes": "Il requisito dipende da dettagli esterni non forniti: “criteri di integrazione e configuratore” e “scenari di prova forniti dall’utente”. L’AC su “offerte manifestamente non pertinenti” è parzialmente non verificabile senza una definizione oggettiva nei test; è stato interpretato come verifica tramite scenari con attesi espliciti (offerte da escludere)."
+  }
+]

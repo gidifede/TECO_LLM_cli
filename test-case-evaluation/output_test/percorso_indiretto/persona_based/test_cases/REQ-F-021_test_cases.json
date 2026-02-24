@@ -1,0 +1,276 @@
+[
+  {
+    "story_id": "REQ-F-021.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-021.US01.TC01",
+        "title": "Visualizzazione del questionario subito dopo la selezione di un prodotto che lo richiede (Web/App)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1",
+          "Utente Cliente autenticato (o identificato) e abilitato al checkout sul canale digitale"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Canali: Web e App",
+          "Questionario associato a P1: contiene almeno 1 campo obbligatorio"
+        ],
+        "steps": [
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P1",
+          "Osservare la schermata/step mostrato immediatamente dopo la selezione del prodotto",
+          "Ripetere i passi 1-3 sul canale App"
+        ],
+        "expected_results": [
+          "Dopo la selezione di P1, il sistema mostra il questionario prima delle fasi finali del checkout (es. riepilogo/conferma/pagamento/firma, se presenti)",
+          "Il questionario risulta compilabile (campi editabili e azioni di salvataggio/continua disponibili) su Web e App"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "digital (App, Web)"
+        ],
+        "notes": "Si assume che esista un concetto di 'fasi finali del checkout' identificabile nel funnel (es. riepilogo/conferma)."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC02",
+        "title": "Blocco completamento sottoscrizione se questionario obbligatorio non compilato (Web/App)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1",
+          "Utente Cliente autenticato (o identificato) e abilitato al checkout sul canale digitale"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Questionario associato a P1: almeno 1 campo obbligatorio non compilato"
+        ],
+        "steps": [
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P1",
+          "Lasciare il questionario non compilato (o con almeno un campo obbligatorio non valorizzato)",
+          "Tentare di proseguire fino al completamento della sottoscrizione (azione finale di conferma/completa, se presente nel funnel)",
+          "Ripetere i passi 1-4 sul canale App"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il completamento della sottoscrizione finché il questionario non risulta compilato secondo le regole di completezza del questionario",
+          "Il sistema mostra un messaggio/blocco che indica che il questionario è obbligatorio e deve essere completato per continuare"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)"
+        ],
+        "notes": "Le regole di completezza del questionario non sono specificate: si verifica il blocco lasciando almeno un campo obbligatorio non valorizzato."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC03",
+        "title": "Questionario integrato nel funnel di checkout (non schermata separata non collegata) (Web/App)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1",
+          "Utente Cliente autenticato (o identificato) e abilitato al checkout sul canale digitale"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Questionario associato a P1: compilabile e completabile"
+        ],
+        "steps": [
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P1",
+          "Compilare il questionario con valori validi fino a completarlo",
+          "Proseguire agli step successivi del checkout fino alle fasi finali (es. riepilogo/conferma)",
+          "Verificare la continuità del percorso (stessa sessione/funnel, possibilità di tornare indietro allo step precedente del checkout)",
+          "Ripetere i passi 1-5 sul canale App"
+        ],
+        "expected_results": [
+          "Il questionario è presentato come uno step del checkout e il passaggio agli step successivi avviene nello stesso funnel (senza uscire in un percorso non collegato)",
+          "È possibile navigare avanti/indietro nel funnel mantenendo il contesto del checkout (prodotto selezionato e avanzamento del flusso)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "digital (App, Web)"
+        ],
+        "notes": "La definizione tecnica di 'schermata separata non collegata' viene verificata tramite continuità di sessione e navigazione coerente nel funnel."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC04",
+        "title": "Canale front-end commerciale: visualizzazione e compilazione questionario dopo selezione prodotto",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Postazione front-end commerciale disponibile (sportello/sala) con operatore abilitato a gestire il checkout per conto del Cliente",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Questionario associato a P1: contiene almeno 1 campo obbligatorio"
+        ],
+        "steps": [
+          "Avviare il checkout sul front-end commerciale (sportello/sala)",
+          "Selezionare il prodotto P1",
+          "Osservare la schermata/step mostrato immediatamente dopo la selezione del prodotto",
+          "Verificare che sia possibile inserire risposte nel questionario e proseguire nel checkout"
+        ],
+        "expected_results": [
+          "Dopo la selezione di P1, il sistema mostra il questionario prima delle fasi finali del checkout anche sul front-end commerciale",
+          "Il questionario risulta compilabile nel medesimo percorso di checkout"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale (ufficio postale: sportello/sala)"
+        ],
+        "notes": "Attori/ruoli sul canale fisico non sono dettagliati: si assume che l'operatore esegua il flusso per conto del Cliente mantenendo le stesse regole di obbligatorietà."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC05",
+        "title": "Canale front-end commerciale: blocco completamento sottoscrizione se questionario non compilato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Postazione front-end commerciale disponibile (sportello/sala) con operatore abilitato a gestire il checkout per conto del Cliente",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Questionario associato a P1: almeno 1 campo obbligatorio non compilato"
+        ],
+        "steps": [
+          "Avviare il checkout sul front-end commerciale (sportello/sala)",
+          "Selezionare il prodotto P1",
+          "Lasciare il questionario non compilato (o con almeno un campo obbligatorio non valorizzato)",
+          "Tentare di proseguire fino al completamento della sottoscrizione (azione finale di conferma/completa, se presente nel funnel)"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il completamento della sottoscrizione finché il questionario non risulta compilato secondo le regole di completezza del questionario",
+          "Il sistema segnala chiaramente che il questionario è obbligatorio e blocca il processo"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale (ufficio postale: sportello/sala)"
+        ],
+        "notes": "Le regole di completezza del questionario non sono specificate: si verifica il blocco lasciando almeno un campo obbligatorio non valorizzato."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC06",
+        "title": "Prodotto senza flag 'richiede questionario': il questionario non viene mostrato e il checkout non è bloccato",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un prodotto P2 configurato con flag 'richiede questionario' = false",
+          "Utente Cliente autenticato (o identificato) e abilitato al checkout sul canale digitale e/o front-end commerciale"
+        ],
+        "test_data": [
+          "Prodotto: P2 (richiede questionario = false)"
+        ],
+        "steps": [
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P2",
+          "Proseguire nel checkout fino alle fasi finali e tentare il completamento della sottoscrizione",
+          "Ripetere il test sul canale App oppure sul front-end commerciale (almeno uno dei due)"
+        ],
+        "expected_results": [
+          "Dopo la selezione di P2, il sistema non mostra alcun questionario",
+          "Il checkout procede senza blocchi legati al questionario e consente il completamento della sottoscrizione (salvo altri vincoli non oggetto del requisito)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "front-end commerciale (ufficio postale: sportello/sala)"
+        ],
+        "notes": "Copertura edge case: prodotto non contrassegnato come 'richiede questionario'. Se non possibile eseguire su tutti i canali, indicare il canale effettivamente testato."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC07",
+        "title": "Interruzione del flusso dopo apertura questionario: al rientro viene riproposto prima delle fasi finali",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "Il servizio/componente di questionario è disponibile e restituisce un questionario valido per P1",
+          "Il checkout supporta ripresa sessione (o ripristino carrello) dopo refresh/riapertura app"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Azione di interruzione: refresh pagina (Web) / chiusura e riapertura app (App)"
+        ],
+        "steps": [
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P1",
+          "Attendere la visualizzazione del questionario",
+          "Eseguire un refresh della pagina (o chiudere e riaprire la sessione del browser, se previsto)",
+          "Rientrare nel checkout ripreso",
+          "Ripetere i passi 1-5 sul canale App chiudendo e riaprendo l'app dopo la visualizzazione del questionario"
+        ],
+        "expected_results": [
+          "Al rientro nel checkout, il sistema ripropone il questionario prima delle fasi finali del checkout",
+          "Il sistema non consente di saltare il questionario e arrivare alle fasi finali senza completarlo"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital (App, Web)"
+        ],
+        "notes": "La persistenza delle risposte non è specificata: il test verifica almeno la riproposizione del questionario e il blocco del completamento finché non risulta completato."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC08",
+        "title": "Errore tecnico nel caricamento del questionario: blocco del processo e messaggio di errore coerente",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un prodotto P1 configurato con flag 'richiede questionario' = true",
+          "È possibile simulare un errore del servizio/componente di questionario (es. HTTP 500/timeout) in ambiente di test",
+          "Utente Cliente autenticato (o identificato) e abilitato al checkout"
+        ],
+        "test_data": [
+          "Prodotto: P1 (richiede questionario = true)",
+          "Simulazione errore: timeout del servizio questionario (es. > 30s) oppure risposta HTTP 500"
+        ],
+        "steps": [
+          "Configurare la simulazione di errore del servizio questionario per il prodotto P1",
+          "Avviare il checkout sul canale Web",
+          "Selezionare il prodotto P1",
+          "Osservare il comportamento del sistema durante il tentativo di caricamento del questionario",
+          "Tentare di proseguire fino al completamento della sottoscrizione",
+          "Ripetere i passi 2-5 sul canale App oppure sul front-end commerciale (almeno uno dei due)"
+        ],
+        "expected_results": [
+          "Il sistema mostra un messaggio di errore relativo all'impossibilità di caricare il questionario (messaggio coerente con il blocco del processo)",
+          "Il sistema non consente di completare la sottoscrizione in assenza del questionario richiesto"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "digital (App, Web)",
+          "front-end commerciale (ufficio postale: sportello/sala)"
+        ],
+        "notes": "Dipendenza esterna non dettagliata: il sistema che eroga il questionario non è specificato. Il test richiede strumenti di fault injection o mock del servizio questionario."
+      }
+    ]
+  }
+]

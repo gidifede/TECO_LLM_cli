@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report Valutazione Coerenza — TECO LLM CLI</title>
+<script src="chart.umd.min.js"></script>
+<style>
+    :root {
+        --blue: #2563eb;
+        --blue-light: #93c5fd;
+        --amber: #f59e0b;
+        --amber-light: #fde68a;
+        --green: #16a34a;
+        --red: #dc2626;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-800);
+        line-height: 1.6;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    h1 {
+        font-size: 28px; font-weight: 700; margin-bottom: 8px;
+        color: var(--gray-900);
+    }
+    h2 {
+        font-size: 20px; font-weight: 600; margin: 32px 0 16px;
+        color: var(--gray-900); border-bottom: 2px solid var(--gray-200);
+        padding-bottom: 8px;
+    }
+    h3 { font-size: 16px; font-weight: 600; margin: 16px 0 8px; color: var(--gray-700); }
+    .subtitle { color: var(--gray-600); font-size: 14px; margin-bottom: 24px; }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    .kpi-card {
+        background: white; border-radius: 12px; padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-600); margin-bottom: 4px; }
+    .kpi-value { font-size: 28px; font-weight: 700; }
+    .kpi-sub { font-size: 12px; color: var(--gray-600); margin-top: 4px; }
+    .kpi-blue .kpi-value { color: var(--blue); }
+    .kpi-amber .kpi-value { color: var(--amber); }
+    .kpi-green .kpi-value { color: var(--green); }
+    .kpi-red .kpi-value { color: var(--red); }
+
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+    .chart-card {
+        background: white; border-radius: 12px; padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .chart-card h3 { margin-top: 0; }
+    .chart-container { position: relative; height: 350px; }
+    .chart-container-small { position: relative; height: 280px; }
+
+    table {
+        width: 100%; border-collapse: collapse; font-size: 13px;
+        background: white; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th {
+        background: var(--gray-100); padding: 10px 8px; text-align: left;
+        font-weight: 600; color: var(--gray-700); font-size: 11px;
+        text-transform: uppercase; letter-spacing: 0.3px;
+        position: sticky; top: 0;
+    }
+    td { padding: 8px; border-top: 1px solid var(--gray-100); }
+    tr:hover td { background: var(--gray-50); }
+    .positive { color: var(--green); font-weight: 600; }
+    .negative { color: var(--red); font-weight: 600; }
+
+    .badge {
+        display: inline-block; padding: 2px 8px; border-radius: 12px;
+        font-size: 11px; font-weight: 600;
+    }
+    .badge-direct { background: var(--blue-light); color: #1e40af; }
+    .badge-indirect { background: var(--amber-light); color: #92400e; }
+
+    .reasoning-card {
+        background: white; border-radius: 8px; padding: 16px;
+        margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border-left: 4px solid var(--gray-300);
+    }
+    .reasoning-header { font-size: 13px; margin-bottom: 8px; color: var(--gray-600); }
+    .reasoning-card p { font-size: 13px; color: var(--gray-700); }
+
+    .insights-box {
+        background: white; border-radius: 12px; padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
+    }
+    .insights-box ul { margin-left: 20px; }
+    .insights-box li { margin-bottom: 8px; font-size: 14px; }
+    .insights-box strong { color: var(--gray-900); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) {
+        .two-col { grid-template-columns: 1fr; }
+        .chart-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Report Valutazione Coerenza</h1>
+<p class="subtitle">
+    Confronto tra percorso <strong style="color:var(--blue)">diretto</strong> (requisito → test cases) e
+    <strong style="color:var(--amber)">indiretto persona-based</strong> (requisito → user stories → test cases)
+    su 66 requisiti valutati.
+</p>
+
+<!-- ═══════════════ KPI ═══════════════ -->
+<h2>Panoramica</h2>
+<div class="kpi-grid">
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Valutazioni totali</div>
+        <div class="kpi-value">66</div>
+        <div class="kpi-sub">6 categorie di requisiti</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Vittorie Diretto</div>
+        <div class="kpi-value">63 (95%)</div>
+        <div class="kpi-sub">Score medio: 66.2</div>
+    </div>
+    <div class="kpi-card kpi-amber">
+        <div class="kpi-label">Vittorie Persona</div>
+        <div class="kpi-value">3 (5%)</div>
+        <div class="kpi-sub">Score medio: 40.6</div>
+    </div>
+    <div class="kpi-card kpi-green">
+        <div class="kpi-label">Gap medio (D - P)</div>
+        <div class="kpi-value">+25.6</div>
+        <div class="kpi-sub">Mediana: +25.0 | Max: +70</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Score Diretto</div>
+        <div class="kpi-value">66.2</div>
+        <div class="kpi-sub">Min 0 — Max 90 — &sigma; 12.4</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Score Persona</div>
+        <div class="kpi-value">40.6</div>
+        <div class="kpi-sub">Min 0 — Max 70 — &sigma; 16.6</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">TC medi Diretto</div>
+        <div class="kpi-value">7.1</div>
+        <div class="kpi-sub">Added info medio: 7.2</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">TC medi Persona</div>
+        <div class="kpi-value">13.2</div>
+        <div class="kpi-sub">Added info medio: 11.9</div>
+    </div>
+</div>
+
+<!-- ═══════════════ GRAFICI PRINCIPALI ═══════════════ -->
+<h2>Distribuzione Score di Coerenza</h2>
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Score per requisito (ordinato per gap)</h3>
+        <div class="chart-container"><canvas id="chartScores"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Distribuzione frequenze score</h3>
+        <div class="chart-container"><canvas id="chartDist"></canvas></div>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Gap (Diretto - Persona) per requisito</h3>
+        <div class="chart-container"><canvas id="chartGap"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Vincitore per categoria</h3>
+        <div class="chart-container"><canvas id="chartCatWins"></canvas></div>
+    </div>
+</div>
+
+<!-- ═══════════════ ANALISI PER CATEGORIA ═══════════════ -->
+<h2>Analisi per Categoria</h2>
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Score medio per categoria</h3>
+        <div class="chart-container-small"><canvas id="chartCatAvg"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Test cases medi per categoria</h3>
+        <div class="chart-container-small"><canvas id="chartCatTC"></canvas></div>
+    </div>
+</div>
+
+<div style="overflow-x:auto; margin-bottom: 32px;">
+<table>
+    <thead>
+        <tr>
+            <th>Categoria</th><th>N.</th>
+            <th>Avg D</th><th>Avg P</th><th>Gap</th>
+            <th>Vince D</th><th>Vince P</th>
+            <th>TC D</th><th>TC P</th>
+            <th>Added D</th><th>Added P</th>
+            <th>Redund. D</th><th>Redund. P</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>REQ-D</strong> — Dati</td>
+            <td>9</td>
+            <td>62.3</td>
+            <td>34.3</td>
+            <td>+28.0</td>
+            <td>9 (100%)</td>
+            <td>0 (0%)</td>
+            <td>7.9</td>
+            <td>14</td>
+            <td>8.2</td>
+            <td>12.7</td>
+            <td>1</td>
+            <td>1.9</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-F</strong> — Funzionali</td>
+            <td>29</td>
+            <td>67.2</td>
+            <td>42.3</td>
+            <td>+24.9</td>
+            <td>27 (93%)</td>
+            <td>2 (7%)</td>
+            <td>7.5</td>
+            <td>12.9</td>
+            <td>6.7</td>
+            <td>11.1</td>
+            <td>1.0</td>
+            <td>2.2</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-I</strong> — Integrazione</td>
+            <td>6</td>
+            <td>55</td>
+            <td>39.3</td>
+            <td>+15.7</td>
+            <td>5 (83%)</td>
+            <td>1 (17%)</td>
+            <td>6.5</td>
+            <td>15.2</td>
+            <td>6.7</td>
+            <td>13.5</td>
+            <td>1</td>
+            <td>2.2</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-NF</strong> — Non-Funzionali</td>
+            <td>4</td>
+            <td>73</td>
+            <td>49.2</td>
+            <td>+23.8</td>
+            <td>4 (100%)</td>
+            <td>0 (0%)</td>
+            <td>6.2</td>
+            <td>12.5</td>
+            <td>6.2</td>
+            <td>11.2</td>
+            <td>0.8</td>
+            <td>3.2</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-UI</strong> — Interfaccia</td>
+            <td>11</td>
+            <td>72.7</td>
+            <td>46.1</td>
+            <td>+26.6</td>
+            <td>11 (100%)</td>
+            <td>0 (0%)</td>
+            <td>6.4</td>
+            <td>11.6</td>
+            <td>6.7</td>
+            <td>11.4</td>
+            <td>1</td>
+            <td>2.5</td>
+        </tr>
+        <tr>
+            <td><strong>REQ-V</strong> — Validazione</td>
+            <td>7</td>
+            <td>62.7</td>
+            <td>29</td>
+            <td>+33.7</td>
+            <td>7 (100%)</td>
+            <td>0 (0%)</td>
+            <td>6.6</td>
+            <td>14.7</td>
+            <td>9.3</td>
+            <td>14.1</td>
+            <td>1.1</td>
+            <td>2.6</td>
+        </tr></tbody>
+</table>
+</div>
+
+<!-- ═══════════════ CORRELAZIONI ═══════════════ -->
+<h2>Correlazioni</h2>
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Numero TC vs Score di coerenza</h3>
+        <div class="chart-container"><canvas id="chartTcVsScore"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Added Info vs Score di coerenza</h3>
+        <div class="chart-container"><canvas id="chartAddedVsScore"></canvas></div>
+    </div>
+</div>
+
+<!-- ═══════════════ ADDED INFO / RIDONDANZE ═══════════════ -->
+<h2>Informazioni Aggiunte e Ridondanze</h2>
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Added Info per requisito</h3>
+        <div class="chart-container"><canvas id="chartAdded"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Ridondanze per requisito</h3>
+        <div class="chart-container"><canvas id="chartRedund"></canvas></div>
+    </div>
+</div>
+
+<!-- ═══════════════ INSIGHT E MOTIVAZIONI ═══════════════ -->
+<h2>Analisi Qualitativa: Perche il Diretto Tende a Vincere</h2>
+<div class="insights-box">
+    <h3>Pattern ricorrenti nelle valutazioni</h3>
+    <ul>
+        <li><strong>Esplosione dei test cases</strong>: il percorso persona genera in media 13.2 TC contro 7.1 del diretto (86% in piu). Piu TC non significa piu copertura ma piu assunzioni.</li>
+        <li><strong>Informazioni non tracciabili</strong>: il persona aggiunge in media 11.9 elementi non presenti nel requisito originale contro 7.2 del diretto. Ogni assunzione e una penalita di coerenza.</li>
+        <li><strong>Ridondanze</strong>: il persona produce 2.3 ridondanze medie contro 1.0 del diretto — scenari simili replicati per ogni persona/canale generano sovrapposizioni.</li>
+        <li><strong>Scenari inventati</strong>: il passaggio per le user stories tende a introdurre scenari edge-case, gestione errori, dettagli UI/UX e vincoli tecnici non richiesti dal requisito.</li>
+        <li><strong>Riformulazione e drift semantico</strong>: ogni layer di trasformazione (requisito → US → TC) aggiunge un margine di interpretazione. Il percorso diretto ha un solo passaggio, il persona ne ha due.</li>
+        <li><strong>Copertura AC invariata</strong>: entrambi i percorsi coprono sempre tutti gli acceptance criteria — il vantaggio del persona non sta nella copertura ma nella prospettiva utente.</li>
+    </ul>
+</div>
+
+<div class="insights-box">
+    <h3>Quando il percorso persona vince</h3>
+    <ul>
+        <li>Su 3 requisiti (5%) il persona ottiene un punteggio migliore.</li>
+        <li>Tipicamente si tratta di requisiti dove il diretto introduce piu assunzioni tecniche (codici HTTP, API, correlazione, timeout) mentre il persona resta piu focalizzato sull'esperienza utente osservabile.</li>
+        <li>Il vantaggio del persona e marginale: nei casi di vittoria, il gap medio e inferiore rispetto alle vittorie del diretto.</li>
+    </ul>
+</div>
+
+<div class="two-col">
+    <div>
+        <h3>Top 5 — Maggiori vittorie del Diretto</h3>
+        
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-V-007</code> — Gap: <strong>+70</strong>
+                (Diretto: 70 vs Persona: 0)
+            </div>
+            <p>Il set 'direct' mantiene copertura completa degli AC con un numero contenuto di assunzioni aggiuntive (7 added_info) e ridondanza limitata (1). Il set 'indirect_persona' pur coprendo gli AC introduce molte informazioni non tracciabili al requisito (architettura 'Motore di Offerte', detection booleana, canali App/Web, dashboard, caching, concorrenza, versionamento, idempotenza, fault injection), totalizzando numerose added_info e varie ridondanze, riducendo drasticamente la coerenza complessiva.</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-F-017</code> — Gap: <strong>+62</strong>
+                (Diretto: 90 vs Persona: 28)
+            </div>
+            <p>Il set direct copre tutti gli AC (4/4) con poche informazioni aggiunte (2) e una sola ridondanza, mantenendosi aderente alla natura documentale degli AC. Il set indirect_persona introduce molte assunzioni non tracciabili (canali App/Web, Motore di Offerte, dettagli tecnici di integrazione/HTTP/TTL) e presenta anche una lacuna sulla copertura effettiva di AC-4 secondo quanto richiesto, oltre a diverse ridondanze; per questo risulta meno coerente col requisito.</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-F-013</code> — Gap: <strong>+55</strong>
+                (Diretto: 75 vs Persona: 20)
+            </div>
+            <p>Il set direct mantiene copertura completa degli AC (3/3) con un numero più contenuto di assunzioni extra-requisito; le principali aggiunte riguardano esempi di touchpoint/canali e dettagli tecnici di integrazione/logging (7 added_info) e una sola mancanza non-AC legata al riferimento a REQ-F-005. Il set indirect_persona, pur coprendo gli AC, introduce molte più informazioni non tracciabili (dashboard, componenti/endpoint, autorizzazioni, conflitti, determinismo, tie-break, logica di combinazione) con 15 added_info, più ridondanze e una lacuna interpretativa su AC-1 (priorità 'per touchpoint' come entità). Di conseguenza il punteggio di coerenza è superiore per direct (75 vs 20).</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-D-004</code> — Gap: <strong>+51</strong>
+                (Diretto: 51 vs Persona: 0)
+            </div>
+            <p>Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3), ma il set direct introduce meno elementi non tracciabili al requisito (10 added_info vs 25) e meno ridondanze (1 vs 3). Inoltre il set indirect_persona aggiunge molta architettura e ruoli (dashboard, Motore di Offerte, Compliance, permessi) non menzionati nel requisito, abbassando drasticamente la coerenza. Per questo direct ottiene un punteggio superiore (51 vs 0).</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-D-007</code> — Gap: <strong>+49</strong>
+                (Diretto: 64 vs Persona: 15)
+            </div>
+            <p>Il set 'direct' mantiene copertura completa degli AC con un numero contenuto di assunzioni; le principali deviazioni sono dettagli di canale/formato e alcuni negativi non richiesti. Il set 'indirect_persona' introduce molte informazioni non tracciabili (dashboard, schemi log specifici, deduplica/retry, rollback, permessi, meccanismi di gap) e presenta anche una parziale non-aderenza all'AC-3 tramite scenari con user_id assente; per questo il punteggio di coerenza risulta nettamente inferiore.</p>
+        </div>
+    </div>
+    <div>
+        <h3>Top 5 — Maggiori vittorie del Persona</h3>
+        
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-F-003</code> — Gap: <strong>-15</strong>
+                (Diretto: 55 vs Persona: 70)
+            </div>
+            <p>Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce piu informazioni non tracciabili (es. canali WEB/APP, stati 'Attiva', HTTP 500/timeout, servizio 'ExceptionService', regole di validazione specifiche) e include uno scenario di integrazione fuori requisito, ottenendo piu penalita per 'added_info' e una ridondanza. Il set indirect_persona aggiunge comunque assunzioni (persona Team Marketing, validazioni su durata/ambito) ma in misura minore e resta piu aderente al perimetro 'creazione da dashboard + ambito/durata configurabili + ruoli autorizzati', risultando nel punteggio piu alto (70 vs 55).</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-I-001</code> — Gap: <strong>-10</strong>
+                (Diretto: 55 vs Persona: 65)
+            </div>
+            <p>Entrambi i set coprono tutti gli AC (AC-1..AC-3). Il set direct introduce meno casi 'inventati' in termini di regole di business (ma aggiunge security/resilienza e vincoli di validazione) e presenta una ridondanza E2E vs integrazione (TC03/TC08). Il set indirect_persona aggiunge piu scenari extra (lista vuota, scarto elemento, fallback cluster/motivazione), ma nel complesso mantiene una tracciabilita piu aderente agli AC senza imporre obbligatorieta forti su campi (es. non introduce un rifiuto totale del payload come TC04 del set direct) e ha una ridondanza meno impattante. Per questo ottiene un punteggio di coerenza superiore (65 vs 55).</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-F-001</code> — Gap: <strong>-1</strong>
+                (Diretto: 62 vs Persona: 63)
+            </div>
+            <p>Entrambi i set coprono tutti gli AC (3/3). Tuttavia il set indirect_persona introduce una lacuna più rilevante ma circoscritta (manca la verifica della 'documentazione' richiesta da AC-1), mentre il set direct aggiunge più assunzioni tecniche specifiche (HTTP code, correlation id, timeout, metadati output, canale web) e presenta una ridondanza più marcata sui negativi di integrazione (TC03/TC04). Con la formula richiesta, indirect_persona ottiene un punteggio leggermente superiore (63 vs 62) grazie a minori penalità complessive.</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-I-006</code> — Gap: <strong>+0</strong>
+                (Diretto: 0 vs Persona: 0)
+            </div>
+            <p>Entrambi i set sono sostanzialmente fuori tema rispetto al requisito (export dei log verso sistemi di audit esterni) e non coprono AC-4 né gli aspetti chiave (export, formati, filtri, audit trail). Il set direct introduce meno scenari/persona/canali e ha meno informazioni aggiunte e ridondanze complessive rispetto all'indirect_persona (7 TC vs 20), risultando marginalmente piu coerente a parita di gravi mancanze.</p>
+        </div>
+        <div class="reasoning-card">
+            <div class="reasoning-header">
+                <code>REQ-V-002</code> — Gap: <strong>+3</strong>
+                (Diretto: 58 vs Persona: 55)
+            </div>
+            <p>Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct risulta leggermente più coerente perché, pur introducendo molte assunzioni (es. canale web, flag promoFlag, strumenti di review), include una verifica esplicita della conformità grafica delle icone alle linee guida (TC03) aderente ad AC-2. Il set indirect_persona aggiunge più contesto non tracciabile (persona/ruoli, front-end commerciale, offerte e set icone approvate) e lascia parzialmente scoperta una validazione diretta della conformità grafica delle icone (missing_info su AC-2). Punteggi: direct 58 vs indirect_persona 55.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ TABELLA DETTAGLIO ═══════════════ -->
+<h2>Dettaglio per Requisito</h2>
+<div style="overflow-x:auto;">
+<table>
+    <thead>
+        <tr>
+            <th>Requisito</th><th>Categoria</th>
+            <th>Score D</th><th>Score P</th><th>Gap</th><th>Vincitore</th>
+            <th>TC D</th><th>TC P</th>
+            <th>Added D</th><th>Added P</th>
+            <th>Red. D</th><th>Red. P</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>REQ-D-001</code></td>
+            <td>Dati</td>
+            <td>58</td>
+            <td>37</td>
+            <td class="positive">+21</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>11</td>
+            <td>9</td>
+            <td>9</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-002</code></td>
+            <td>Dati</td>
+            <td>75</td>
+            <td>48</td>
+            <td class="positive">+27</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>11</td>
+            <td>6</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-003</code></td>
+            <td>Dati</td>
+            <td>61</td>
+            <td>49</td>
+            <td class="positive">+12</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>9</td>
+            <td>10</td>
+            <td>8</td>
+            <td>8</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-004</code></td>
+            <td>Dati</td>
+            <td>51</td>
+            <td>0</td>
+            <td class="positive">+51</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>10</td>
+            <td>24</td>
+            <td>10</td>
+            <td>25</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-005</code></td>
+            <td>Dati</td>
+            <td>63</td>
+            <td>28</td>
+            <td class="positive">+35</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>17</td>
+            <td>7</td>
+            <td>12</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-006</code></td>
+            <td>Dati</td>
+            <td>67</td>
+            <td>52</td>
+            <td class="positive">+15</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>9</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+            <td>1</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-007</code></td>
+            <td>Dati</td>
+            <td>64</td>
+            <td>15</td>
+            <td class="positive">+49</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>16</td>
+            <td>7</td>
+            <td>16</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-008</code></td>
+            <td>Dati</td>
+            <td>68</td>
+            <td>48</td>
+            <td class="positive">+20</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>10</td>
+            <td>9</td>
+            <td>10</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-D-009</code></td>
+            <td>Dati</td>
+            <td>54</td>
+            <td>32</td>
+            <td class="positive">+22</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>17</td>
+            <td>8</td>
+            <td>14</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-001</code></td>
+            <td>Funzionali</td>
+            <td>62</td>
+            <td>63</td>
+            <td class="negative">-1</td>
+            <td><span class="badge badge-indirect">Persona</span></td>
+            <td>6</td>
+            <td>6</td>
+            <td>5</td>
+            <td>5</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-002</code></td>
+            <td>Funzionali</td>
+            <td>67</td>
+            <td>48</td>
+            <td class="positive">+19</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>13</td>
+            <td>20</td>
+            <td>7</td>
+            <td>15</td>
+            <td>2</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-003</code></td>
+            <td>Funzionali</td>
+            <td>55</td>
+            <td>70</td>
+            <td class="negative">-15</td>
+            <td><span class="badge badge-indirect">Persona</span></td>
+            <td>6</td>
+            <td>6</td>
+            <td>7</td>
+            <td>5</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-004</code></td>
+            <td>Funzionali</td>
+            <td>48</td>
+            <td>35</td>
+            <td class="positive">+13</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>12</td>
+            <td>5</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-005</code></td>
+            <td>Funzionali</td>
+            <td>78</td>
+            <td>65</td>
+            <td class="positive">+13</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>12</td>
+            <td>16</td>
+            <td>7</td>
+            <td>8</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-006</code></td>
+            <td>Funzionali</td>
+            <td>65</td>
+            <td>55</td>
+            <td class="positive">+10</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>12</td>
+            <td>6</td>
+            <td>11</td>
+            <td>0</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-007</code></td>
+            <td>Funzionali</td>
+            <td>68</td>
+            <td>40</td>
+            <td class="positive">+28</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>11</td>
+            <td>14</td>
+            <td>9</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-008</code></td>
+            <td>Funzionali</td>
+            <td>56</td>
+            <td>31</td>
+            <td class="positive">+25</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>10</td>
+            <td>15</td>
+            <td>6</td>
+            <td>10</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-009</code></td>
+            <td>Funzionali</td>
+            <td>58</td>
+            <td>17</td>
+            <td class="positive">+41</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>15</td>
+            <td>7</td>
+            <td>16</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-010</code></td>
+            <td>Funzionali</td>
+            <td>64</td>
+            <td>43</td>
+            <td class="positive">+21</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>10</td>
+            <td>9</td>
+            <td>11</td>
+            <td>12</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-011</code></td>
+            <td>Funzionali</td>
+            <td>60</td>
+            <td>24</td>
+            <td class="positive">+36</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>19</td>
+            <td>7</td>
+            <td>14</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-012</code></td>
+            <td>Funzionali</td>
+            <td>65</td>
+            <td>56</td>
+            <td class="positive">+9</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>8</td>
+            <td>6</td>
+            <td>8</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-013</code></td>
+            <td>Funzionali</td>
+            <td>75</td>
+            <td>20</td>
+            <td class="positive">+55</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>13</td>
+            <td>7</td>
+            <td>15</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-015</code></td>
+            <td>Funzionali</td>
+            <td>57</td>
+            <td>31</td>
+            <td class="positive">+26</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>16</td>
+            <td>8</td>
+            <td>14</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-017</code></td>
+            <td>Funzionali</td>
+            <td>90</td>
+            <td>28</td>
+            <td class="positive">+62</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>19</td>
+            <td>2</td>
+            <td>10</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-018</code></td>
+            <td>Funzionali</td>
+            <td>61</td>
+            <td>47</td>
+            <td class="positive">+14</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>12</td>
+            <td>6</td>
+            <td>9</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-019</code></td>
+            <td>Funzionali</td>
+            <td>77</td>
+            <td>55</td>
+            <td class="positive">+22</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>9</td>
+            <td>7</td>
+            <td>8</td>
+            <td>1</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-021</code></td>
+            <td>Funzionali</td>
+            <td>81</td>
+            <td>44</td>
+            <td class="positive">+37</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>8</td>
+            <td>5</td>
+            <td>12</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-022</code></td>
+            <td>Funzionali</td>
+            <td>53</td>
+            <td>36</td>
+            <td class="positive">+17</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>14</td>
+            <td>7</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-023</code></td>
+            <td>Funzionali</td>
+            <td>64</td>
+            <td>19</td>
+            <td class="positive">+45</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>10</td>
+            <td>17</td>
+            <td>8</td>
+            <td>13</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-024</code></td>
+            <td>Funzionali</td>
+            <td>59</td>
+            <td>35</td>
+            <td class="positive">+24</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>20</td>
+            <td>7</td>
+            <td>17</td>
+            <td>2</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-025</code></td>
+            <td>Funzionali</td>
+            <td>65</td>
+            <td>46</td>
+            <td class="positive">+19</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>15</td>
+            <td>6</td>
+            <td>9</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-026</code></td>
+            <td>Funzionali</td>
+            <td>80</td>
+            <td>52</td>
+            <td class="positive">+28</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>10</td>
+            <td>6</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-027</code></td>
+            <td>Funzionali</td>
+            <td>81</td>
+            <td>43</td>
+            <td class="positive">+38</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>13</td>
+            <td>7</td>
+            <td>11</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-028</code></td>
+            <td>Funzionali</td>
+            <td>66</td>
+            <td>53</td>
+            <td class="positive">+13</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>8</td>
+            <td>9</td>
+            <td>8</td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-029</code></td>
+            <td>Funzionali</td>
+            <td>83</td>
+            <td>55</td>
+            <td class="positive">+28</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>10</td>
+            <td>9</td>
+            <td>12</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-030</code></td>
+            <td>Funzionali</td>
+            <td>82</td>
+            <td>55</td>
+            <td class="positive">+27</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>10</td>
+            <td>5</td>
+            <td>9</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-031</code></td>
+            <td>Funzionali</td>
+            <td>68</td>
+            <td>47</td>
+            <td class="positive">+21</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>13</td>
+            <td>7</td>
+            <td>14</td>
+            <td>0</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-F-033</code></td>
+            <td>Funzionali</td>
+            <td>60</td>
+            <td>13</td>
+            <td class="positive">+47</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>15</td>
+            <td>5</td>
+            <td>16</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-001</code></td>
+            <td>Integrazione</td>
+            <td>55</td>
+            <td>65</td>
+            <td class="negative">-10</td>
+            <td><span class="badge badge-indirect">Persona</span></td>
+            <td>8</td>
+            <td>9</td>
+            <td>7</td>
+            <td>8</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-002</code></td>
+            <td>Integrazione</td>
+            <td>62</td>
+            <td>25</td>
+            <td class="positive">+37</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>22</td>
+            <td>6</td>
+            <td>14</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-003</code></td>
+            <td>Integrazione</td>
+            <td>68</td>
+            <td>54</td>
+            <td class="positive">+14</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>10</td>
+            <td>6</td>
+            <td>10</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-004</code></td>
+            <td>Integrazione</td>
+            <td>77</td>
+            <td>45</td>
+            <td class="positive">+32</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>17</td>
+            <td>6</td>
+            <td>17</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-006</code></td>
+            <td>Integrazione</td>
+            <td>0</td>
+            <td>0</td>
+            <td class="">+0</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>20</td>
+            <td>7</td>
+            <td>20</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-I-007</code></td>
+            <td>Integrazione</td>
+            <td>68</td>
+            <td>47</td>
+            <td class="positive">+21</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>13</td>
+            <td>8</td>
+            <td>12</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-001</code></td>
+            <td>Non-Funzionali</td>
+            <td>78</td>
+            <td>56</td>
+            <td class="positive">+22</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>14</td>
+            <td>7</td>
+            <td>11</td>
+            <td>0</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-002</code></td>
+            <td>Non-Funzionali</td>
+            <td>67</td>
+            <td>60</td>
+            <td class="positive">+7</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>6</td>
+            <td>7</td>
+            <td>7</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-005</code></td>
+            <td>Non-Funzionali</td>
+            <td>71</td>
+            <td>32</td>
+            <td class="positive">+39</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>10</td>
+            <td>6</td>
+            <td>11</td>
+            <td>1</td>
+            <td>5</td>
+        </tr>
+        <tr>
+            <td><code>REQ-NF-006</code></td>
+            <td>Non-Funzionali</td>
+            <td>76</td>
+            <td>49</td>
+            <td class="positive">+27</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>20</td>
+            <td>5</td>
+            <td>16</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-001</code></td>
+            <td>Interfaccia</td>
+            <td>73</td>
+            <td>47</td>
+            <td class="positive">+26</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>15</td>
+            <td>7</td>
+            <td>15</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-002</code></td>
+            <td>Interfaccia</td>
+            <td>71</td>
+            <td>53</td>
+            <td class="positive">+18</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>10</td>
+            <td>6</td>
+            <td>10</td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-003</code></td>
+            <td>Interfaccia</td>
+            <td>83</td>
+            <td>58</td>
+            <td class="positive">+25</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>8</td>
+            <td>6</td>
+            <td>8</td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-004</code></td>
+            <td>Interfaccia</td>
+            <td>70</td>
+            <td>48</td>
+            <td class="positive">+22</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>9</td>
+            <td>12</td>
+            <td>12</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-005</code></td>
+            <td>Interfaccia</td>
+            <td>60</td>
+            <td>16</td>
+            <td class="positive">+44</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>17</td>
+            <td>9</td>
+            <td>18</td>
+            <td>1</td>
+            <td>4</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-006</code></td>
+            <td>Interfaccia</td>
+            <td>73</td>
+            <td>33</td>
+            <td class="positive">+40</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>11</td>
+            <td>6</td>
+            <td>11</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-007</code></td>
+            <td>Interfaccia</td>
+            <td>73</td>
+            <td>53</td>
+            <td class="positive">+20</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>8</td>
+            <td>7</td>
+            <td>8</td>
+            <td>2</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-008</code></td>
+            <td>Interfaccia</td>
+            <td>80</td>
+            <td>58</td>
+            <td class="positive">+22</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>8</td>
+            <td>4</td>
+            <td>8</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-009</code></td>
+            <td>Interfaccia</td>
+            <td>77</td>
+            <td>59</td>
+            <td class="positive">+18</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>16</td>
+            <td>5</td>
+            <td>11</td>
+            <td>2</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-010</code></td>
+            <td>Interfaccia</td>
+            <td>78</td>
+            <td>45</td>
+            <td class="positive">+33</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>5</td>
+            <td>12</td>
+            <td>4</td>
+            <td>10</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-UI-011</code></td>
+            <td>Interfaccia</td>
+            <td>62</td>
+            <td>37</td>
+            <td class="positive">+25</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>14</td>
+            <td>8</td>
+            <td>14</td>
+            <td>1</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-001</code></td>
+            <td>Validazione</td>
+            <td>75</td>
+            <td>45</td>
+            <td class="positive">+30</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>12</td>
+            <td>8</td>
+            <td>14</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-002</code></td>
+            <td>Validazione</td>
+            <td>58</td>
+            <td>55</td>
+            <td class="positive">+3</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>7</td>
+            <td>6</td>
+            <td>16</td>
+            <td>10</td>
+            <td>2</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-003</code></td>
+            <td>Validazione</td>
+            <td>58</td>
+            <td>15</td>
+            <td class="positive">+43</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>11</td>
+            <td>7</td>
+            <td>11</td>
+            <td>1</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-004</code></td>
+            <td>Validazione</td>
+            <td>55</td>
+            <td>23</td>
+            <td class="positive">+32</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>19</td>
+            <td>9</td>
+            <td>17</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-005</code></td>
+            <td>Validazione</td>
+            <td>67</td>
+            <td>38</td>
+            <td class="positive">+29</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>8</td>
+            <td>17</td>
+            <td>9</td>
+            <td>18</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-006</code></td>
+            <td>Validazione</td>
+            <td>56</td>
+            <td>27</td>
+            <td class="positive">+29</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>12</td>
+            <td>9</td>
+            <td>13</td>
+            <td>1</td>
+            <td>3</td>
+        </tr>
+        <tr>
+            <td><code>REQ-V-007</code></td>
+            <td>Validazione</td>
+            <td>70</td>
+            <td>0</td>
+            <td class="positive">+70</td>
+            <td><span class="badge badge-direct">Diretto</span></td>
+            <td>6</td>
+            <td>26</td>
+            <td>7</td>
+            <td>16</td>
+            <td>1</td>
+            <td>3</td>
+        </tr></tbody>
+</table>
+</div>
+
+<p style="margin-top:32px; font-size:12px; color:var(--gray-600);">
+    Report generato automaticamente da <code>generate_eval_report.py</code> — TECO LLM CLI
+</p>
+</div>
+
+<!-- ═══════════════ CHART.JS ═══════════════ -->
+<script>
+const blue = '#2563eb';
+const blueLight = '#93c5fd33';
+const amber = '#f59e0b';
+const amberLight = '#fde68a33';
+
+// --- Scores per requisito (sorted by gap) ---
+(() => {
+    const labels = ["REQ-D-001", "REQ-D-002", "REQ-D-003", "REQ-D-004", "REQ-D-005", "REQ-D-006", "REQ-D-007", "REQ-D-008", "REQ-D-009", "REQ-F-001", "REQ-F-002", "REQ-F-003", "REQ-F-004", "REQ-F-005", "REQ-F-006", "REQ-F-007", "REQ-F-008", "REQ-F-009", "REQ-F-010", "REQ-F-011", "REQ-F-012", "REQ-F-013", "REQ-F-015", "REQ-F-017", "REQ-F-018", "REQ-F-019", "REQ-F-021", "REQ-F-022", "REQ-F-023", "REQ-F-024", "REQ-F-025", "REQ-F-026", "REQ-F-027", "REQ-F-028", "REQ-F-029", "REQ-F-030", "REQ-F-031", "REQ-F-033", "REQ-I-001", "REQ-I-002", "REQ-I-003", "REQ-I-004", "REQ-I-006", "REQ-I-007", "REQ-NF-001", "REQ-NF-002", "REQ-NF-005", "REQ-NF-006", "REQ-UI-001", "REQ-UI-002", "REQ-UI-003", "REQ-UI-004", "REQ-UI-005", "REQ-UI-006", "REQ-UI-007", "REQ-UI-008", "REQ-UI-009", "REQ-UI-010", "REQ-UI-011", "REQ-V-001", "REQ-V-002", "REQ-V-003", "REQ-V-004", "REQ-V-005", "REQ-V-006", "REQ-V-007"];
+    const dScores = [58, 75, 61, 51, 63, 67, 64, 68, 54, 62, 67, 55, 48, 78, 65, 68, 56, 58, 64, 60, 65, 75, 57, 90, 61, 77, 81, 53, 64, 59, 65, 80, 81, 66, 83, 82, 68, 60, 55, 62, 68, 77, 0, 68, 78, 67, 71, 76, 73, 71, 83, 70, 60, 73, 73, 80, 77, 78, 62, 75, 58, 58, 55, 67, 56, 70];
+    const ipScores = [37, 48, 49, 0, 28, 52, 15, 48, 32, 63, 48, 70, 35, 65, 55, 40, 31, 17, 43, 24, 56, 20, 31, 28, 47, 55, 44, 36, 19, 35, 46, 52, 43, 53, 55, 55, 47, 13, 65, 25, 54, 45, 0, 47, 56, 60, 32, 49, 47, 53, 58, 48, 16, 33, 53, 58, 59, 45, 37, 45, 55, 15, 23, 38, 27, 0];
+    const gaps = [21, 27, 12, 51, 35, 15, 49, 20, 22, -1, 19, -15, 13, 13, 10, 28, 25, 41, 21, 36, 9, 55, 26, 62, 14, 22, 37, 17, 45, 24, 19, 28, 38, 13, 28, 27, 21, 47, -10, 37, 14, 32, 0, 21, 22, 7, 39, 27, 26, 18, 25, 22, 44, 40, 20, 22, 18, 33, 25, 30, 3, 43, 32, 29, 29, 70];
+    // Sort by gap descending
+    const indices = gaps.map((g, i) => i).sort((a, b) => gaps[b] - gaps[a]);
+    new Chart(document.getElementById('chartScores'), {
+        type: 'bar',
+        data: {
+            labels: indices.map(i => labels[i]),
+            datasets: [
+                { label: 'Diretto', data: indices.map(i => dScores[i]), backgroundColor: blue, borderRadius: 2 },
+                { label: 'Persona', data: indices.map(i => ipScores[i]), backgroundColor: amber, borderRadius: 2 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { ticks: { display: false } },
+                y: { min: 0, max: 100, title: { display: true, text: 'Score coerenza' } }
+            }
+        }
+    });
+})();
+
+// --- Distribution histogram ---
+(() => {
+    const bucketLabels = ['0-9','10-19','20-29','30-39','40-49','50-59','60-69','70-79','80-89','90-100'];
+    new Chart(document.getElementById('chartDist'), {
+        type: 'bar',
+        data: {
+            labels: bucketLabels,
+            datasets: [
+                { label: 'Diretto', data: [1, 0, 0, 0, 1, 14, 25, 17, 7, 1], backgroundColor: blue, borderRadius: 4 },
+                { label: 'Persona', data: [3, 6, 7, 11, 18, 16, 4, 1, 0, 0], backgroundColor: amber, borderRadius: 4 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { title: { display: true, text: 'Frequenza' }, beginAtZero: true } }
+        }
+    });
+})();
+
+// --- Gap chart ---
+(() => {
+    const labels = ["REQ-D-001", "REQ-D-002", "REQ-D-003", "REQ-D-004", "REQ-D-005", "REQ-D-006", "REQ-D-007", "REQ-D-008", "REQ-D-009", "REQ-F-001", "REQ-F-002", "REQ-F-003", "REQ-F-004", "REQ-F-005", "REQ-F-006", "REQ-F-007", "REQ-F-008", "REQ-F-009", "REQ-F-010", "REQ-F-011", "REQ-F-012", "REQ-F-013", "REQ-F-015", "REQ-F-017", "REQ-F-018", "REQ-F-019", "REQ-F-021", "REQ-F-022", "REQ-F-023", "REQ-F-024", "REQ-F-025", "REQ-F-026", "REQ-F-027", "REQ-F-028", "REQ-F-029", "REQ-F-030", "REQ-F-031", "REQ-F-033", "REQ-I-001", "REQ-I-002", "REQ-I-003", "REQ-I-004", "REQ-I-006", "REQ-I-007", "REQ-NF-001", "REQ-NF-002", "REQ-NF-005", "REQ-NF-006", "REQ-UI-001", "REQ-UI-002", "REQ-UI-003", "REQ-UI-004", "REQ-UI-005", "REQ-UI-006", "REQ-UI-007", "REQ-UI-008", "REQ-UI-009", "REQ-UI-010", "REQ-UI-011", "REQ-V-001", "REQ-V-002", "REQ-V-003", "REQ-V-004", "REQ-V-005", "REQ-V-006", "REQ-V-007"];
+    const gaps = [21, 27, 12, 51, 35, 15, 49, 20, 22, -1, 19, -15, 13, 13, 10, 28, 25, 41, 21, 36, 9, 55, 26, 62, 14, 22, 37, 17, 45, 24, 19, 28, 38, 13, 28, 27, 21, 47, -10, 37, 14, 32, 0, 21, 22, 7, 39, 27, 26, 18, 25, 22, 44, 40, 20, 22, 18, 33, 25, 30, 3, 43, 32, 29, 29, 70];
+    const indices = gaps.map((g, i) => i).sort((a, b) => gaps[b] - gaps[a]);
+    const colors = indices.map(i => gaps[i] >= 0 ? blue : amber);
+    new Chart(document.getElementById('chartGap'), {
+        type: 'bar',
+        data: {
+            labels: indices.map(i => labels[i]),
+            datasets: [{ label: 'Gap (D - P)', data: indices.map(i => gaps[i]), backgroundColor: colors, borderRadius: 2 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { display: false } },
+                y: { title: { display: true, text: 'Gap score' } }
+            }
+        }
+    });
+})();
+
+// --- Category wins ---
+(() => {
+    new Chart(document.getElementById('chartCatWins'), {
+        type: 'bar',
+        data: {
+            labels: ["Dati", "Funzionali", "Integrazione", "Non-Funzionali", "Interfaccia", "Validazione"],
+            datasets: [
+                { label: 'Vince Diretto', data: [9, 27, 5, 4, 11, 7], backgroundColor: blue, borderRadius: 4 },
+                { label: 'Vince Persona', data: [0, 2, 1, 0, 0, 0], backgroundColor: amber, borderRadius: 4 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Requisiti' } } }
+        }
+    });
+})();
+
+// --- Category avg score ---
+(() => {
+    new Chart(document.getElementById('chartCatAvg'), {
+        type: 'bar',
+        data: {
+            labels: ["Dati", "Funzionali", "Integrazione", "Non-Funzionali", "Interfaccia", "Validazione"],
+            datasets: [
+                { label: 'Diretto', data: [62.3, 67.2, 55, 73, 72.7, 62.7], backgroundColor: blue, borderRadius: 4 },
+                { label: 'Persona', data: [34.3, 42.3, 39.3, 49.2, 46.1, 29], backgroundColor: amber, borderRadius: 4 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { position: 'top' } },
+            scales: { x: { min: 0, max: 100, title: { display: true, text: 'Score medio' } } }
+        }
+    });
+})();
+
+// --- Category avg TC ---
+(() => {
+    const catLabels = ["Dati", "Funzionali", "Integrazione", "Non-Funzionali", "Interfaccia", "Validazione"];
+    const dTC = [7.9, 7.5, 6.5, 6.2, 6.4, 6.6];
+    const ipTC = [14, 12.9, 15.2, 12.5, 11.6, 14.7];
+    new Chart(document.getElementById('chartCatTC'), {
+        type: 'bar',
+        data: {
+            labels: catLabels,
+            datasets: [
+                { label: 'TC Diretto', data: dTC, backgroundColor: blue, borderRadius: 4 },
+                { label: 'TC Persona', data: ipTC, backgroundColor: amber, borderRadius: 4 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { position: 'top' } },
+            scales: { x: { beginAtZero: true, title: { display: true, text: 'TC medi' } } }
+        }
+    });
+})();
+
+// --- TC vs Score scatter ---
+(() => {
+    new Chart(document.getElementById('chartTcVsScore'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                { label: 'Diretto', data: [{"x": 7, "y": 58}, {"x": 6, "y": 75}, {"x": 9, "y": 61}, {"x": 10, "y": 51}, {"x": 7, "y": 63}, {"x": 9, "y": 67}, {"x": 8, "y": 64}, {"x": 8, "y": 68}, {"x": 7, "y": 54}, {"x": 6, "y": 62}, {"x": 13, "y": 67}, {"x": 6, "y": 55}, {"x": 7, "y": 48}, {"x": 12, "y": 78}, {"x": 7, "y": 65}, {"x": 11, "y": 68}, {"x": 10, "y": 56}, {"x": 6, "y": 58}, {"x": 10, "y": 64}, {"x": 7, "y": 60}, {"x": 7, "y": 65}, {"x": 6, "y": 75}, {"x": 8, "y": 57}, {"x": 6, "y": 90}, {"x": 8, "y": 61}, {"x": 6, "y": 77}, {"x": 6, "y": 81}, {"x": 8, "y": 53}, {"x": 10, "y": 64}, {"x": 7, "y": 59}, {"x": 8, "y": 65}, {"x": 6, "y": 80}, {"x": 7, "y": 81}, {"x": 6, "y": 66}, {"x": 5, "y": 83}, {"x": 6, "y": 82}, {"x": 7, "y": 68}, {"x": 5, "y": 60}, {"x": 8, "y": 55}, {"x": 7, "y": 62}, {"x": 5, "y": 68}, {"x": 6, "y": 77}, {"x": 7, "y": 0}, {"x": 6, "y": 68}, {"x": 7, "y": 78}, {"x": 5, "y": 67}, {"x": 5, "y": 71}, {"x": 8, "y": 76}, {"x": 7, "y": 73}, {"x": 5, "y": 71}, {"x": 6, "y": 83}, {"x": 6, "y": 70}, {"x": 8, "y": 60}, {"x": 6, "y": 73}, {"x": 6, "y": 73}, {"x": 7, "y": 80}, {"x": 7, "y": 77}, {"x": 5, "y": 78}, {"x": 7, "y": 62}, {"x": 7, "y": 75}, {"x": 7, "y": 58}, {"x": 6, "y": 58}, {"x": 6, "y": 55}, {"x": 8, "y": 67}, {"x": 6, "y": 56}, {"x": 6, "y": 70}], backgroundColor: blue + '99', pointRadius: 5 },
+                { label: 'Persona', data: [{"x": 11, "y": 37}, {"x": 11, "y": 48}, {"x": 10, "y": 49}, {"x": 24, "y": 0}, {"x": 17, "y": 28}, {"x": 10, "y": 52}, {"x": 16, "y": 15}, {"x": 10, "y": 48}, {"x": 17, "y": 32}, {"x": 6, "y": 63}, {"x": 20, "y": 48}, {"x": 6, "y": 70}, {"x": 12, "y": 35}, {"x": 16, "y": 65}, {"x": 12, "y": 55}, {"x": 14, "y": 40}, {"x": 15, "y": 31}, {"x": 15, "y": 17}, {"x": 9, "y": 43}, {"x": 19, "y": 24}, {"x": 8, "y": 56}, {"x": 13, "y": 20}, {"x": 16, "y": 31}, {"x": 19, "y": 28}, {"x": 12, "y": 47}, {"x": 9, "y": 55}, {"x": 8, "y": 44}, {"x": 14, "y": 36}, {"x": 17, "y": 19}, {"x": 20, "y": 35}, {"x": 15, "y": 46}, {"x": 10, "y": 52}, {"x": 13, "y": 43}, {"x": 8, "y": 53}, {"x": 10, "y": 55}, {"x": 10, "y": 55}, {"x": 13, "y": 47}, {"x": 15, "y": 13}, {"x": 9, "y": 65}, {"x": 22, "y": 25}, {"x": 10, "y": 54}, {"x": 17, "y": 45}, {"x": 20, "y": 0}, {"x": 13, "y": 47}, {"x": 14, "y": 56}, {"x": 6, "y": 60}, {"x": 10, "y": 32}, {"x": 20, "y": 49}, {"x": 15, "y": 47}, {"x": 10, "y": 53}, {"x": 8, "y": 58}, {"x": 9, "y": 48}, {"x": 17, "y": 16}, {"x": 11, "y": 33}, {"x": 8, "y": 53}, {"x": 8, "y": 58}, {"x": 16, "y": 59}, {"x": 12, "y": 45}, {"x": 14, "y": 37}, {"x": 12, "y": 45}, {"x": 6, "y": 55}, {"x": 11, "y": 15}, {"x": 19, "y": 23}, {"x": 17, "y": 38}, {"x": 12, "y": 27}, {"x": 26, "y": 0}], backgroundColor: amber + '99', pointRadius: 5 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { title: { display: true, text: 'Numero Test Cases' }, beginAtZero: true },
+                y: { title: { display: true, text: 'Score coerenza' }, min: 0, max: 100 }
+            }
+        }
+    });
+})();
+
+// --- Added Info vs Score scatter ---
+(() => {
+    new Chart(document.getElementById('chartAddedVsScore'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                { label: 'Diretto', data: [{"x": 9, "y": 58}, {"x": 6, "y": 75}, {"x": 8, "y": 61}, {"x": 10, "y": 51}, {"x": 7, "y": 63}, {"x": 10, "y": 67}, {"x": 7, "y": 64}, {"x": 9, "y": 68}, {"x": 8, "y": 54}, {"x": 5, "y": 62}, {"x": 7, "y": 67}, {"x": 7, "y": 55}, {"x": 5, "y": 48}, {"x": 7, "y": 78}, {"x": 6, "y": 65}, {"x": 9, "y": 68}, {"x": 6, "y": 56}, {"x": 7, "y": 58}, {"x": 11, "y": 64}, {"x": 7, "y": 60}, {"x": 6, "y": 65}, {"x": 7, "y": 75}, {"x": 8, "y": 57}, {"x": 2, "y": 90}, {"x": 6, "y": 61}, {"x": 7, "y": 77}, {"x": 5, "y": 81}, {"x": 7, "y": 53}, {"x": 8, "y": 64}, {"x": 7, "y": 59}, {"x": 6, "y": 65}, {"x": 6, "y": 80}, {"x": 7, "y": 81}, {"x": 9, "y": 66}, {"x": 9, "y": 83}, {"x": 5, "y": 82}, {"x": 7, "y": 68}, {"x": 5, "y": 60}, {"x": 7, "y": 55}, {"x": 6, "y": 62}, {"x": 6, "y": 68}, {"x": 6, "y": 77}, {"x": 7, "y": 0}, {"x": 8, "y": 68}, {"x": 7, "y": 78}, {"x": 7, "y": 67}, {"x": 6, "y": 71}, {"x": 5, "y": 76}, {"x": 7, "y": 73}, {"x": 6, "y": 71}, {"x": 6, "y": 83}, {"x": 12, "y": 70}, {"x": 9, "y": 60}, {"x": 6, "y": 73}, {"x": 7, "y": 73}, {"x": 4, "y": 80}, {"x": 5, "y": 77}, {"x": 4, "y": 78}, {"x": 8, "y": 62}, {"x": 8, "y": 75}, {"x": 16, "y": 58}, {"x": 7, "y": 58}, {"x": 9, "y": 55}, {"x": 9, "y": 67}, {"x": 9, "y": 56}, {"x": 7, "y": 70}], backgroundColor: blue + '99', pointRadius: 5 },
+                { label: 'Persona', data: [{"x": 9, "y": 37}, {"x": 10, "y": 48}, {"x": 8, "y": 49}, {"x": 25, "y": 0}, {"x": 12, "y": 28}, {"x": 10, "y": 52}, {"x": 16, "y": 15}, {"x": 10, "y": 48}, {"x": 14, "y": 32}, {"x": 5, "y": 63}, {"x": 15, "y": 48}, {"x": 5, "y": 70}, {"x": 10, "y": 35}, {"x": 8, "y": 65}, {"x": 11, "y": 55}, {"x": 10, "y": 40}, {"x": 10, "y": 31}, {"x": 16, "y": 17}, {"x": 12, "y": 43}, {"x": 14, "y": 24}, {"x": 8, "y": 56}, {"x": 15, "y": 20}, {"x": 14, "y": 31}, {"x": 10, "y": 28}, {"x": 9, "y": 47}, {"x": 8, "y": 55}, {"x": 12, "y": 44}, {"x": 10, "y": 36}, {"x": 13, "y": 19}, {"x": 17, "y": 35}, {"x": 9, "y": 46}, {"x": 10, "y": 52}, {"x": 11, "y": 43}, {"x": 8, "y": 53}, {"x": 12, "y": 55}, {"x": 9, "y": 55}, {"x": 14, "y": 47}, {"x": 16, "y": 13}, {"x": 8, "y": 65}, {"x": 14, "y": 25}, {"x": 10, "y": 54}, {"x": 17, "y": 45}, {"x": 20, "y": 0}, {"x": 12, "y": 47}, {"x": 11, "y": 56}, {"x": 7, "y": 60}, {"x": 11, "y": 32}, {"x": 16, "y": 49}, {"x": 15, "y": 47}, {"x": 10, "y": 53}, {"x": 8, "y": 58}, {"x": 12, "y": 48}, {"x": 18, "y": 16}, {"x": 11, "y": 33}, {"x": 8, "y": 53}, {"x": 8, "y": 58}, {"x": 11, "y": 59}, {"x": 10, "y": 45}, {"x": 14, "y": 37}, {"x": 14, "y": 45}, {"x": 10, "y": 55}, {"x": 11, "y": 15}, {"x": 17, "y": 23}, {"x": 18, "y": 38}, {"x": 13, "y": 27}, {"x": 16, "y": 0}], backgroundColor: amber + '99', pointRadius: 5 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { title: { display: true, text: 'Added Info (count)' }, beginAtZero: true },
+                y: { title: { display: true, text: 'Score coerenza' }, min: 0, max: 100 }
+            }
+        }
+    });
+})();
+
+// --- Added info per requisito ---
+(() => {
+    const labels = ["REQ-D-001", "REQ-D-002", "REQ-D-003", "REQ-D-004", "REQ-D-005", "REQ-D-006", "REQ-D-007", "REQ-D-008", "REQ-D-009", "REQ-F-001", "REQ-F-002", "REQ-F-003", "REQ-F-004", "REQ-F-005", "REQ-F-006", "REQ-F-007", "REQ-F-008", "REQ-F-009", "REQ-F-010", "REQ-F-011", "REQ-F-012", "REQ-F-013", "REQ-F-015", "REQ-F-017", "REQ-F-018", "REQ-F-019", "REQ-F-021", "REQ-F-022", "REQ-F-023", "REQ-F-024", "REQ-F-025", "REQ-F-026", "REQ-F-027", "REQ-F-028", "REQ-F-029", "REQ-F-030", "REQ-F-031", "REQ-F-033", "REQ-I-001", "REQ-I-002", "REQ-I-003", "REQ-I-004", "REQ-I-006", "REQ-I-007", "REQ-NF-001", "REQ-NF-002", "REQ-NF-005", "REQ-NF-006", "REQ-UI-001", "REQ-UI-002", "REQ-UI-003", "REQ-UI-004", "REQ-UI-005", "REQ-UI-006", "REQ-UI-007", "REQ-UI-008", "REQ-UI-009", "REQ-UI-010", "REQ-UI-011", "REQ-V-001", "REQ-V-002", "REQ-V-003", "REQ-V-004", "REQ-V-005", "REQ-V-006", "REQ-V-007"];
+    new Chart(document.getElementById('chartAdded'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Diretto', data: [9, 6, 8, 10, 7, 10, 7, 9, 8, 5, 7, 7, 5, 7, 6, 9, 6, 7, 11, 7, 6, 7, 8, 2, 6, 7, 5, 7, 8, 7, 6, 6, 7, 9, 9, 5, 7, 5, 7, 6, 6, 6, 7, 8, 7, 7, 6, 5, 7, 6, 6, 12, 9, 6, 7, 4, 5, 4, 8, 8, 16, 7, 9, 9, 9, 7], backgroundColor: blue, borderRadius: 2 },
+                { label: 'Persona', data: [9, 10, 8, 25, 12, 10, 16, 10, 14, 5, 15, 5, 10, 8, 11, 10, 10, 16, 12, 14, 8, 15, 14, 10, 9, 8, 12, 10, 13, 17, 9, 10, 11, 8, 12, 9, 14, 16, 8, 14, 10, 17, 20, 12, 11, 7, 11, 16, 15, 10, 8, 12, 18, 11, 8, 8, 11, 10, 14, 14, 10, 11, 17, 18, 13, 16], backgroundColor: amber, borderRadius: 2 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { ticks: { display: false } },
+                y: { beginAtZero: true, title: { display: true, text: 'Added Info' } }
+            }
+        }
+    });
+})();
+
+// --- Redundancies per requisito ---
+(() => {
+    const labels = ["REQ-D-001", "REQ-D-002", "REQ-D-003", "REQ-D-004", "REQ-D-005", "REQ-D-006", "REQ-D-007", "REQ-D-008", "REQ-D-009", "REQ-F-001", "REQ-F-002", "REQ-F-003", "REQ-F-004", "REQ-F-005", "REQ-F-006", "REQ-F-007", "REQ-F-008", "REQ-F-009", "REQ-F-010", "REQ-F-011", "REQ-F-012", "REQ-F-013", "REQ-F-015", "REQ-F-017", "REQ-F-018", "REQ-F-019", "REQ-F-021", "REQ-F-022", "REQ-F-023", "REQ-F-024", "REQ-F-025", "REQ-F-026", "REQ-F-027", "REQ-F-028", "REQ-F-029", "REQ-F-030", "REQ-F-031", "REQ-F-033", "REQ-I-001", "REQ-I-002", "REQ-I-003", "REQ-I-004", "REQ-I-006", "REQ-I-007", "REQ-NF-001", "REQ-NF-002", "REQ-NF-005", "REQ-NF-006", "REQ-UI-001", "REQ-UI-002", "REQ-UI-003", "REQ-UI-004", "REQ-UI-005", "REQ-UI-006", "REQ-UI-007", "REQ-UI-008", "REQ-UI-009", "REQ-UI-010", "REQ-UI-011", "REQ-V-001", "REQ-V-002", "REQ-V-003", "REQ-V-004", "REQ-V-005", "REQ-V-006", "REQ-V-007"];
+    new Chart(document.getElementById('chartRedund'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Diretto', data: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1], backgroundColor: blue, borderRadius: 2 },
+                { label: 'Persona', data: [2, 2, 1, 3, 2, 0, 3, 1, 3, 1, 3, 1, 2, 2, 2, 2, 3, 2, 2, 2, 1, 3, 2, 3, 1, 4, 2, 2, 2, 5, 2, 2, 2, 1, 2, 1, 5, 3, 1, 2, 2, 3, 2, 3, 3, 2, 5, 3, 2, 1, 1, 1, 4, 2, 3, 1, 3, 3, 6, 2, 2, 2, 3, 3, 3, 3], backgroundColor: amber, borderRadius: 2 },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                x: { ticks: { display: false } },
+                y: { beginAtZero: true, title: { display: true, text: 'Ridondanze' } }
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+[
+  {
+    "story_id": "REQ-UI-009.US01",
+    "title": "Visualizzare e riaprire offerte personali in Sezione Loyalty (App/Web)",
+    "persona": "Cliente digitale",
+    "goal": "vedere nella Sezione Loyalty le offerte personali (incluse le proposte non accettate dal pop-up), riaprire la proposta e procedere all’acquisto entro la scadenza",
+    "benefit": "recuperare facilmente una proposta e completare l’acquisto in autonomia senza perdere lo sconto",
+    "user_story": "Come Cliente digitale\nVoglio vedere nella Sezione Loyalty di Gruppo le mie offerte personali e poter riaprire una proposta non accettata per procedere all’acquisto entro la scadenza\nIn modo che possa recuperare l’offerta e completare l’acquisto in autonomia senza perdere il prezzo scontato",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla Sezione Loyalty di Gruppo da App o da sito Web ALLORA visualizzo l’elenco delle mie offerte personali.",
+      "QUANDO una proposta generata dal pop-up non è stata accettata ALLORA la proposta è presente nell’elenco delle offerte personali in Sezione Loyalty.",
+      "QUANDO seleziono (riapro) una proposta dall’elenco in Sezione Loyalty ALLORA visualizzo i dettagli della proposta.",
+      "QUANDO visualizzo una proposta in Sezione Loyalty ALLORA vedo almeno nome offerta, immagine e prezzo scontato coerenti con quanto mostrato nell’interazione iniziale (pop-up).",
+      "QUANDO riapro una proposta dalla Sezione Loyalty entro il periodo di validità ALLORA posso procedere all’acquisto (ad es. aggiungere al carrello).",
+      "QUANDO provo a procedere all’acquisto di una proposta dalla Sezione Loyalty oltre la scadenza ALLORA non posso completare l’azione di acquisto e la proposta risulta non più utilizzabile."
+    ],
+    "business_rules": [
+      "La proposta è acquistabile dalla Sezione Loyalty solo entro il periodo di validità/scadenza della proposta.",
+      "La proposta non accettata nel pop-up deve essere inclusa tra le offerte personali in Sezione Loyalty."
+    ],
+    "edge_cases": [
+      "Proposta assente in Sezione Loyalty nonostante non sia stata accettata nel pop-up.",
+      "Proposta presente ma con dati incompleti (manca immagine/nome/prezzo scontato).",
+      "Scadenza imminente: l’utente riapre la proposta e al momento dell’azione di acquisto la proposta risulta scaduta.",
+      "Errore tecnico nel caricamento dell’elenco offerte in Sezione Loyalty (es. lista vuota o errore di rete) che impedisce la riapertura della proposta."
+    ],
+    "assumptions": [
+      "Si assume che 'Cliente digitale' sia autenticato per accedere alla Sezione Loyalty e visualizzare offerte personali.",
+      "Si assume che 'procedere all’acquisto' includa almeno l’azione di aggiunta al carrello, come indicato nell’esempio del requisito."
+    ],
+    "notes": "Il requisito cita App e sito Web; la story copre entrambi i canali. Non sono specificati comportamento UI per offerte scadute (es. rimozione vs stato visibile): è stato reso testabile assumendo che l’acquisto non sia consentito oltre scadenza."
+  },
+  {
+    "story_id": "REQ-UI-009.US02",
+    "title": "Mostrare in Sezione Loyalty le offerte personali con dati coerenti e azione di riapertura",
+    "persona": "Persona: Sezione Loyalty di Gruppo (APP e sito)",
+    "goal": "presentare l’elenco delle offerte personali includendo le proposte non accettate e consentire l’apertura dei dettagli per avviare l’acquisto entro validità",
+    "benefit": "garantire una visualizzazione consistente e una navigazione efficace verso l’acquisto senza alterare lo stato delle proposte",
+    "user_story": "Come Persona: Sezione Loyalty di Gruppo (APP e sito)\nVoglio mostrare l’elenco delle offerte personali includendo le proposte non accettate e permettere l’apertura dei dettagli per avviare l’acquisto entro validità\nIn modo che l’utente possa recuperare l’offerta in modo consistente su App e Web senza che la Loyalty modifichi lo stato della proposta",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la Sezione Loyalty di Gruppo carica l’elenco delle offerte personali ALLORA include anche la proposta generata dal pop-up se non accettata.",
+      "QUANDO l’utente apre una proposta dall’elenco in Sezione Loyalty ALLORA la UI mostra nome, immagine e prezzo scontato coerenti con l’interazione iniziale (pop-up).",
+      "QUANDO l’utente riapre una proposta entro il periodo di validità ALLORA la UI rende disponibile un’azione per procedere all’acquisto (ad es. aggiungere al carrello).",
+      "QUANDO l’utente tenta di procedere all’acquisto oltre la scadenza ALLORA la UI non consente l’azione di acquisto e comunica che la proposta non è più valida."
+    ],
+    "business_rules": [
+      "La Sezione Loyalty di Gruppo opera in modalità read-only rispetto allo stato delle proposte (non aggiorna/chiude/accetta la proposta).",
+      "La Sezione Loyalty deve esporre all’utente solo informazioni coerenti con la proposta (nome, immagine, prezzo scontato) e rispettarne la validità temporale."
+    ],
+    "edge_cases": [
+      "Incoerenza dati tra quanto mostrato nel pop-up e quanto mostrato in Sezione Loyalty (prezzo scontato differente).",
+      "Offerta presente in elenco ma dettaglio non disponibile (errore di recupero dettaglio).",
+      "Offerta scaduta: la UI la mostra ancora come acquistabile.",
+      "Differenze di rendering tra App e Web (immagine mancante o formattazione prezzo errata)."
+    ],
+    "assumptions": [
+      "Non sono definiti nel requisito i messaggi/label UI; si assume solo la necessità di impedire l’acquisto oltre scadenza e informare l’utente.",
+      "Non è specificato se le offerte scadute debbano essere nascoste o mostrate: si assume che, se mostrate, non siano acquistabili."
+    ],
+    "notes": "AC condivisi con REQ-UI-009.US01 (Cliente digitale) relativamente a: inclusione proposta non accettata, riapertura proposta, acquisto entro scadenza, campi mostrati (nome/immagine/prezzo scontato). Questa story esplicita il vincolo 'read-only' della Loyalty coerentemente con la persona di contesto."
+  }
+]

@@ -1,0 +1,501 @@
+[
+  {
+    "story_id": "REQ-NF-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-001.US01.TC01",
+        "title": "Accesso e salvataggio modifica configurazione critica (matrice) con ruolo autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_CONF' autenticabile con ruolo autorizzato alla modifica delle configurazioni critiche (inclusa la matrice) secondo catalogo ruoli aziendale",
+          "Esiste una configurazione critica 'Matrice Offerte' modificabile (versione corrente disponibile)"
+        ],
+        "test_data": [
+          "Utente: MK_CONF",
+          "Modifica matrice: cambia valore soglia da 10 a 11 per la riga 'Segmento=Gold', colonna 'Sconto%'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_CONF'",
+          "Navigare alla sezione 'Configurazioni critiche'",
+          "Aprire la configurazione 'Matrice Offerte'",
+          "Applicare la modifica prevista ai dati di matrice",
+          "Cliccare su 'Salva'"
+        ],
+        "expected_results": [
+          "La sezione 'Configurazioni critiche' è accessibile e visibile per l'utente 'MK_CONF'",
+          "La configurazione 'Matrice Offerte' è apribile in modalità modifica",
+          "Il salvataggio termina con esito positivo (messaggio di conferma e nessun errore)",
+          "Riaprendo la configurazione, la modifica risulta persistita (valore soglia = 11 nella cella modificata)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esistono funzionalità UI per modificare e salvare la matrice e un meccanismo di persistenza verificabile (riapertura/refresh)."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC02",
+        "title": "Accesso e inserimento eccezione manuale con ruolo autorizzato all'inserimento",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_EXC_INS' autenticabile con ruolo autorizzato all'inserimento eccezioni e NON necessariamente all'approvazione",
+          "La funzione 'Inserimento eccezioni' è disponibile in dashboard"
+        ],
+        "test_data": [
+          "Utente: MK_EXC_INS",
+          "Eccezione: ID cliente 'CUST-100045', motivo 'Campagna retention', validità dal 2026-03-01 al 2026-03-31, parametro 'Sconto extra' = 5%"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_EXC_INS'",
+          "Navigare alla sezione 'Eccezioni'",
+          "Selezionare la funzione 'Inserisci eccezione'",
+          "Compilare i campi con i dati di test",
+          "Confermare l'inserimento"
+        ],
+        "expected_results": [
+          "La funzione 'Inserisci eccezione' è accessibile per l'utente 'MK_EXC_INS'",
+          "L'inserimento termina con esito positivo (messaggio di conferma e nessun errore)",
+          "L'eccezione inserita risulta presente in elenco con stato coerente al processo (ad es. 'In attesa di approvazione' se previsto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: l'eccezione inserita viene tracciata in una lista consultabile in dashboard; lo stato post-inserimento dipende dal workflow definito esternamente."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC03",
+        "title": "Accesso e approvazione eccezione con ruolo autorizzato all'approvazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_EXC_APP' autenticabile con ruolo autorizzato all'approvazione eccezioni",
+          "Esiste almeno una eccezione in stato 'In attesa di approvazione' (es. creata dal test REQ-NF-001.US01.TC02 o pre-caricata)"
+        ],
+        "test_data": [
+          "Utente: MK_EXC_APP",
+          "Eccezione da approvare: riferimento 'EXC-20260223-0001'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_EXC_APP'",
+          "Navigare alla sezione 'Eccezioni'",
+          "Aprire la funzione 'Approva eccezioni'",
+          "Selezionare l'eccezione 'EXC-20260223-0001'",
+          "Confermare l'approvazione"
+        ],
+        "expected_results": [
+          "La funzione 'Approva eccezioni' è accessibile per l'utente 'MK_EXC_APP'",
+          "L'approvazione termina con esito positivo (messaggio di conferma e nessun errore)",
+          "Lo stato dell'eccezione passa a 'Approvata' (o stato equivalente previsto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esiste un workflow di approvazione con uno stato verificabile prima/dopo."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC04",
+        "title": "Utente autenticato con permessi parziali tenta operazione non autorizzata (approvazione eccezioni) e viene bloccato con segnalazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_EXC_INS' autenticabile con permesso di inserimento eccezioni ma SENZA permesso di approvazione",
+          "Esiste almeno una eccezione in stato 'In attesa di approvazione'",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (es. audit log applicativo, SIEM, console logging centralizzata) accessibile al team di test"
+        ],
+        "test_data": [
+          "Utente: MK_EXC_INS",
+          "Eccezione da approvare: riferimento 'EXC-20260223-0002'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_EXC_INS'",
+          "Navigare alla sezione 'Eccezioni'",
+          "Tentare di accedere alla funzione 'Approva eccezioni'",
+          "Se la funzione è visibile, tentare di approvare l'eccezione 'EXC-20260223-0002'",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al tentativo"
+        ],
+        "expected_results": [
+          "L'accesso alla funzione 'Approva eccezioni' è negato oppure l'azione di approvazione è bloccata (nessuna approvazione eseguita)",
+          "L'eccezione 'EXC-20260223-0002' non cambia stato in 'Approvata'",
+          "È presente un'evidenza verificabile del tentativo non autorizzato secondo policy (evento con utente, timestamp, funzione/risorsa e esito negativo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede 'segnalata secondo policy aziendali' ma non specifica il meccanismo (log vs alert vs SIEM): il test verifica la presenza di un'evidenza consultabile concordata in progetto."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC05",
+        "title": "Sessione scaduta durante salvataggio modifica matrice: operazione fallisce e richiede nuova autenticazione",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_CONF' autenticabile con ruolo autorizzato alla modifica configurazioni critiche",
+          "È possibile configurare o simulare la scadenza sessione (timeout breve o invalidazione token)",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (se previsto per questo caso)"
+        ],
+        "test_data": [
+          "Utente: MK_CONF",
+          "Modifica matrice: cambia valore soglia da 20 a 21 per la riga 'Segmento=Silver', colonna 'Sconto%'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_CONF'",
+          "Navigare alla sezione 'Configurazioni critiche' e aprire 'Matrice Offerte'",
+          "Applicare la modifica prevista ai dati di matrice",
+          "Attendere la scadenza della sessione (o invalidare la sessione/token)",
+          "Cliccare su 'Salva'",
+          "Eseguire nuovamente l'autenticazione quando richiesto",
+          "Riaprire 'Matrice Offerte' e verificare il valore nella cella modificata"
+        ],
+        "expected_results": [
+          "Il salvataggio viene rifiutato a causa di sessione scaduta (errore esplicito o redirect a login)",
+          "Il sistema richiede una nuova autenticazione prima di consentire operazioni protette",
+          "La modifica non risulta persistita (il valore rimane 20 nella cella target dopo nuovo accesso)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case richiede fallimento e re-auth; la modalità di simulazione timeout dipende dall'infrastruttura di session management."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC06",
+        "title": "Permessi revocati mentre l'utente è in sessione: successivo accesso/salvataggio viene bloccato e segnalato",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'MK_CONF' autenticabile con ruolo autorizzato alla modifica configurazioni critiche",
+          "È disponibile un amministratore o processo per revocare il permesso/ruolo a 'MK_CONF' durante la sessione",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert)"
+        ],
+        "test_data": [
+          "Utente: MK_CONF",
+          "Modifica matrice: cambia valore soglia da 30 a 31 per la riga 'Segmento=Platinum', colonna 'Sconto%'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'MK_CONF'",
+          "Navigare alla sezione 'Configurazioni critiche' e aprire 'Matrice Offerte'",
+          "Applicare la modifica prevista ai dati di matrice",
+          "Revocare il permesso di modifica configurazioni critiche all'utente 'MK_CONF' mentre la sessione è attiva",
+          "Cliccare su 'Salva'",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al blocco"
+        ],
+        "expected_results": [
+          "Il salvataggio viene bloccato per permessi insufficienti (errore/denied) anche se la sessione era già attiva",
+          "La modifica non risulta persistita (il valore rimane 30 nella cella target)",
+          "È presente un'evidenza verificabile del tentativo non autorizzato/bloccato secondo policy (utente, risorsa, esito negativo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: il sistema ricalcola/valida i permessi al momento dell'azione (non solo al login)."
+      },
+      {
+        "test_id": "REQ-NF-001.US01.TC07",
+        "title": "Errore del sistema di identity/authorization: accesso alle funzioni protette negato (fail-safe) e segnalato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile",
+          "Esiste un utente 'MK_CONF' autenticabile",
+          "È possibile simulare un errore del servizio di identity/authorization (es. timeout/500 dal provider, mancata raggiungibilità)",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert)"
+        ],
+        "test_data": [
+          "Utente: MK_CONF",
+          "Simulazione errore: timeout del servizio authorization per 30s"
+        ],
+        "steps": [
+          "Configurare la simulazione di errore del sistema di authorization",
+          "Accedere alla dashboard con l'utente 'MK_CONF'",
+          "Tentare di accedere alla sezione 'Configurazioni critiche'",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa all'errore e al diniego"
+        ],
+        "expected_results": [
+          "L'accesso alle funzioni protette è negato in modalità fail-safe (nessuna operazione consentita senza verifica permessi)",
+          "Viene mostrato un messaggio di errore coerente (es. 'Impossibile verificare le autorizzazioni' o accesso negato)",
+          "È presente un'evidenza verificabile dell'evento secondo policy (errore authorization e/o accesso negato)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: modalità tecnica di fault-injection verso il sistema IAM/Authorization e formato dei log secondo policy aziendali."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-NF-001.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-001.US02.TC01",
+        "title": "Utente non autorizzato tenta accesso a 'Inserisci eccezione': accesso negato e evidenza di segnalazione disponibile",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'BASIC_USER' autenticabile senza permessi di inserimento eccezioni",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert) accessibile per verifica in test di sicurezza"
+        ],
+        "test_data": [
+          "Utente: BASIC_USER"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'BASIC_USER'",
+          "Navigare alla sezione 'Eccezioni'",
+          "Tentare di accedere alla funzione 'Inserisci eccezione' (via menu o URL/route interna se disponibile)",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al tentativo"
+        ],
+        "expected_results": [
+          "L'accesso alla funzione 'Inserisci eccezione' è negato (funzione non visibile oppure accesso bloccato con errore/denied)",
+          "Non è possibile completare alcun inserimento eccezione",
+          "È presente un'evidenza verificabile del tentativo non autorizzato secondo policy (utente, timestamp, funzione/risorsa, esito negativo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede evidenza 'verificabile in test di sicurezza'; il punto di raccolta evidenze dipende dalle policy aziendali (SIEM/audit log)."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC02",
+        "title": "Utente non autorizzato tenta accesso a 'Approva eccezioni': accesso negato e evidenza di segnalazione disponibile",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'BASIC_USER' autenticabile senza permessi di approvazione eccezioni",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert) accessibile per verifica in test di sicurezza"
+        ],
+        "test_data": [
+          "Utente: BASIC_USER"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'BASIC_USER'",
+          "Navigare alla sezione 'Eccezioni'",
+          "Tentare di accedere alla funzione 'Approva eccezioni' (via menu o URL/route interna se disponibile)",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al tentativo"
+        ],
+        "expected_results": [
+          "L'accesso alla funzione 'Approva eccezioni' è negato (funzione non visibile oppure accesso bloccato con errore/denied)",
+          "Non è possibile approvare alcuna eccezione",
+          "È presente un'evidenza verificabile del tentativo non autorizzato secondo policy (utente, timestamp, funzione/risorsa, esito negativo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Verifica orientata ad audit: l'evidenza deve essere reperibile e correlabile al tentativo effettuato."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC03",
+        "title": "Utente non autorizzato tenta modifica configurazioni critiche (matrice): operazione bloccata e segnalata con evidenza verificabile",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'BASIC_USER' autenticabile senza permessi di modifica configurazioni critiche",
+          "Esiste una configurazione critica 'Matrice Offerte' consultabile (almeno come riferimento per il tentativo)",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert) accessibile per verifica in test di sicurezza"
+        ],
+        "test_data": [
+          "Utente: BASIC_USER",
+          "Tentativo modifica matrice: variazione valore soglia da 10 a 12 per 'Segmento=Gold', colonna 'Sconto%'"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'BASIC_USER'",
+          "Tentare di navigare alla sezione 'Configurazioni critiche'",
+          "Se la sezione è accessibile in sola lettura, tentare di entrare in modifica su 'Matrice Offerte'",
+          "Se i campi risultano modificabili, tentare di applicare la modifica e cliccare 'Salva'",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al tentativo"
+        ],
+        "expected_results": [
+          "La modifica della matrice non è consentita (UI non permette edit oppure salvataggio bloccato con errore/denied)",
+          "Nessuna modifica risulta persistita sulla matrice",
+          "È presente un'evidenza verificabile del tentativo non autorizzato secondo policy (utente, risorsa 'Matrice Offerte', esito negativo)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il comportamento UI può variare (sezione nascosta vs read-only); il requisito impone comunque blocco dell'azione e segnalazione."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC04",
+        "title": "Test di sicurezza RBAC: verifica end-to-end di blocco + segnalazione per tentativi non autorizzati (suite)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esistono almeno tre utenti autenticabili con ruoli distinti: 'MK_CONF' (modifica configurazioni), 'MK_EXC_INS' (inserimento eccezioni), 'MK_EXC_APP' (approvazione eccezioni), e un utente 'BASIC_USER' (nessun permesso sulle funzioni critiche)",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert) con possibilità di ricerca per intervallo temporale e/o utente",
+          "L'orologio di sistema e i timestamp dei log sono sincronizzati (o comunque correlabili)"
+        ],
+        "test_data": [
+          "Utenti: MK_CONF, MK_EXC_INS, MK_EXC_APP, BASIC_USER",
+          "Intervallo ricerca log: finestra temporale del test (es. 10 minuti)"
+        ],
+        "steps": [
+          "Eseguire un tentativo non autorizzato con 'BASIC_USER' su 'Inserisci eccezione'",
+          "Eseguire un tentativo non autorizzato con 'BASIC_USER' su 'Approva eccezioni'",
+          "Eseguire un tentativo non autorizzato con 'BASIC_USER' su modifica 'Matrice Offerte'",
+          "Accedere allo strumento di evidenza (log/audit/SIEM) con credenziali abilitate alla consultazione",
+          "Ricercare gli eventi relativi ai tre tentativi nella finestra temporale del test",
+          "Verificare che ciascun evento contenga i campi minimi di audit previsti dalla policy (almeno utente, risorsa/funzione, timestamp, esito)"
+        ],
+        "expected_results": [
+          "Tutti e tre i tentativi risultano bloccati lato applicazione (nessuna azione eseguita)",
+          "Per ciascun tentativo è presente un evento di segnalazione/audit reperibile e correlabile al tentativo",
+          "Gli eventi risultano 'verificabili' in test di sicurezza: sono ricercabili, completi dei campi minimi e con esito negativo esplicito"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia i campi obbligatori della segnalazione: il test assume un set minimo per rendere l'evidenza oggettivamente verificabile; allineare con policy aziendali."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC05",
+        "title": "Elevato numero di tentativi non autorizzati: la segnalazione avviene senza perdere eventi rilevanti",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "Esiste un utente 'BASIC_USER' autenticabile senza permessi sulle funzioni critiche",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert) con capacità di conteggio/filtri",
+          "È disponibile uno strumento per generare richieste ripetute (script, test tool, o automazione UI/API) verso le funzioni protette"
+        ],
+        "test_data": [
+          "Utente: BASIC_USER",
+          "Numero tentativi: 100 accessi in 2 minuti verso la route 'Approva eccezioni' (menu o URL/route)",
+          "Intervallo ricerca log: finestra temporale del test (es. 10 minuti)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente 'BASIC_USER'",
+          "Generare 100 tentativi di accesso alla funzione 'Approva eccezioni' nel periodo definito",
+          "Accedere allo strumento di evidenza (log/audit/SIEM)",
+          "Filtrare gli eventi per utente 'BASIC_USER' e funzione 'Approva eccezioni' nella finestra temporale del test",
+          "Conteggiare gli eventi rilevati e verificare la presenza di eventuali indicatori di throttling/aggregazione previsti dalla policy"
+        ],
+        "expected_results": [
+          "Tutti i tentativi risultano bloccati (nessun accesso/azione consentita)",
+          "La segnalazione avviene secondo policy senza perdita di eventi rilevanti: il numero di eventi è coerente con la policy (uno per tentativo o aggregazione controllata se prevista) ed è comunque presente evidenza dell'attacco/tentativi massivi",
+          "Non si osservano errori che impediscano la registrazione/consultazione delle evidenze nella finestra temporale del test"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La policy potrebbe prevedere rate limiting o aggregazione degli eventi; il criterio di 'senza perdere eventi rilevanti' va allineato alla policy (dipendenza esterna)."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC06",
+        "title": "Utente non autenticato tenta accesso diretto a URL/endpoint protetto: accesso negato e segnalazione secondo policy",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "La dashboard è raggiungibile",
+          "È nota una URL/route o endpoint interno di una funzione protetta (es. pagina 'Approva eccezioni')",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert)"
+        ],
+        "test_data": [
+          "URL/route protetta: /dashboard/eccezioni/approvazione (esempio, da sostituire con route reale)"
+        ],
+        "steps": [
+          "Aprire una nuova sessione browser in modalità anonima (nessun utente autenticato)",
+          "Richiedere direttamente la URL/route protetta indicata nei dati di test",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al tentativo non autenticato"
+        ],
+        "expected_results": [
+          "L'accesso è negato (redirect a login o risposta 'Unauthorized/Forbidden' coerente con il canale)",
+          "Non viene mostrato contenuto della funzione protetta",
+          "È presente un'evidenza verificabile del tentativo non autenticato secondo policy (almeno risorsa/funzione, timestamp, esito negativo; l'identità può essere assente o 'anonymous' se previsto)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La route è indicativa e deve essere sostituita con quella reale; la policy deve chiarire come tracciare tentativi anonimi (IP/session id, correlation id)."
+      },
+      {
+        "test_id": "REQ-NF-001.US02.TC07",
+        "title": "Disallineamento ruoli vs permessi effettivi: l'accesso non autorizzato viene comunque bloccato e segnalato",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "La dashboard è raggiungibile e operativa",
+          "È disponibile un ambiente/strumento per simulare un disallineamento tra ruoli assegnati e permessi effettivi (es. ruolo in IdP presente ma mapping applicativo mancante o permesso non propagato)",
+          "Esiste un utente 'MK_MISALIGN' con ruolo assegnato a livello IdP che dovrebbe avere accesso, ma che a livello applicativo risulta privo del permesso effettivo (scenario controllato)",
+          "È disponibile un canale di evidenza delle segnalazioni secondo policy (log/audit/alert)"
+        ],
+        "test_data": [
+          "Utente: MK_MISALIGN",
+          "Funzione target: 'Configurazioni critiche' (modifica matrice)"
+        ],
+        "steps": [
+          "Configurare lo scenario di disallineamento per l'utente 'MK_MISALIGN'",
+          "Accedere alla dashboard con l'utente 'MK_MISALIGN'",
+          "Tentare di accedere alla modifica della 'Matrice Offerte' e salvare una modifica minima",
+          "Recuperare l'evidenza di segnalazione secondo policy (log/audit/alert) relativa al diniego"
+        ],
+        "expected_results": [
+          "L'operazione risulta bloccata se il permesso effettivo non è presente (fail-safe)",
+          "Nessuna modifica risulta persistita",
+          "È presente evidenza verificabile del diniego secondo policy (utile per audit e diagnosi disallineamento)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Scenario dipendente dall'architettura IAM e dal mapping ruoli-permessi; l'obiettivo è evidenziare blocco + segnalazione in caso di mismatch."
+      }
+    ]
+  }
+]

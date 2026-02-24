@@ -1,0 +1,263 @@
+[
+  {
+    "test_id": "REQ-D-001.TC01",
+    "title": "Persistenza e recupero della configurazione aggiornata (matrice + campi principali) da parte del motore",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard disponibile e raggiungibile.",
+      "Datastore di persistenza configurazioni disponibile.",
+      "Motore di calcolo proposte disponibile e configurato per leggere dal datastore.",
+      "Esiste una combinazione in matrice identificabile univocamente (es. per chiavi: prodotto=P1, canale=WEB, segmento=STANDARD).",
+      "Utente marketing autenticato in dashboard con permessi di modifica configurazioni."
+    ],
+    "test_data": [
+      "Combinazione matrice: prodotto=P1, canale=WEB, segmento=STANDARD",
+      "Stato combinazione: \"interessante\" (flag interessante=true, vietato=false)",
+      "Sconto: 15 (%)",
+      "Periodo di validità: dal 2026-03-01 al 2026-03-31",
+      "Target: \"ClientiStandard\""
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente marketing.",
+      "Aprire la sezione di configurazione della matrice delle combinazioni.",
+      "Selezionare la combinazione prodotto=P1, canale=WEB, segmento=STANDARD.",
+      "Impostare stato combinazione su \"interessante\" (vietato=false, interessante=true).",
+      "Impostare sconto a 15 (%).",
+      "Impostare periodo di validità dal 2026-03-01 al 2026-03-31.",
+      "Impostare target a \"ClientiStandard\".",
+      "Salvare la configurazione.",
+      "Verificare nel datastore (tramite API/console DB/log applicativi) la presenza della configurazione salvata per la combinazione selezionata.",
+      "Eseguire una richiesta al motore per il calcolo proposte per un cliente appartenente al target \"ClientiStandard\" e coerente con la combinazione (P1/WEB/STANDARD).",
+      "Acquisire l'output del motore e/o i log diagnostici che indicano la configurazione letta."
+    ],
+    "expected_results": [
+      "Il salvataggio da dashboard termina con esito positivo e senza errori.",
+      "Nel datastore esiste un record/oggetto di configurazione per la combinazione P1/WEB/STANDARD con i campi: stato combinazione, sconto, periodo di validità, target valorizzati come inserito.",
+      "Il motore recupera dal datastore la configurazione relativa a P1/WEB/STANDARD (evidenza in log o tracciamento della chiamata/lettura).",
+      "Il motore applica lo sconto 15% alle proposte calcolate per il cliente del target \"ClientiStandard\" entro il periodo di validità indicato."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (utente marketing) e il canale (dashboard web) sono stati inferiti dalla descrizione. La verifica del recupero dal datastore può avvenire via API di servizio, query DB o log applicativi a seconda dell'implementazione disponibile."
+  },
+  {
+    "test_id": "REQ-D-001.TC02",
+    "title": "Propagazione della modifica: applicazione della nuova configurazione entro un tempo prevedibile e documentato",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard disponibile e raggiungibile.",
+      "Datastore disponibile.",
+      "Motore disponibile.",
+      "È definito e documentato un valore di SLA/tempo massimo di applicazione (T_MAX) tra salvataggio in dashboard e utilizzo da parte del motore.",
+      "Utente marketing autenticato con permessi di modifica."
+    ],
+    "test_data": [
+      "Combinazione matrice: prodotto=P2, canale=WEB, segmento=PREMIUM",
+      "Configurazione iniziale: sconto 5 (%), target \"ClientiPremium\", validità 2026-03-01..2026-03-31, stato \"interessante\"",
+      "Nuova configurazione: sconto 10 (%), target \"ClientiPremium\", validità 2026-03-01..2026-03-31, stato \"interessante\"",
+      "T_MAX: valore documentato (es. 60 secondi) da parametrizzare nel test"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente marketing.",
+      "Impostare (o verificare) la configurazione iniziale per la combinazione P2/WEB/PREMIUM e salvarla.",
+      "Eseguire una richiesta al motore per il calcolo proposte per un cliente nel target \"ClientiPremium\" e registrare lo sconto applicato (atteso 5%).",
+      "Aggiornare via dashboard la configurazione della stessa combinazione impostando sconto a 10 (%).",
+      "Registrare l'istante di completamento del salvataggio (timestamp).",
+      "Eseguire richieste al motore a intervalli regolari fino a quando viene osservato lo sconto 10% oppure fino al superamento di T_MAX.",
+      "Registrare l'istante in cui il motore inizia ad applicare lo sconto 10% (timestamp)."
+    ],
+    "expected_results": [
+      "Prima della modifica, il motore applica lo sconto 5% per la combinazione P2/WEB/PREMIUM.",
+      "Dopo la modifica, il motore inizia ad applicare lo sconto 10% senza necessità di interventi manuali (es. riavvii) entro T_MAX dal timestamp di salvataggio.",
+      "Il tempo di propagazione misurato (timestamp applicazione - timestamp salvataggio) è <= T_MAX."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 è parzialmente non verificabile senza un valore esplicito di tempo massimo: il test parametrizza T_MAX e richiede che sia disponibile in documentazione/configurazione. In assenza di T_MAX il test non può determinare PASS/FAIL in modo oggettivo."
+  },
+  {
+    "test_id": "REQ-D-001.TC03",
+    "title": "Validazione struttura oggetto di configurazione: presenza dei campi minimi richiesti",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Dashboard disponibile.",
+      "Datastore disponibile.",
+      "Utente marketing autenticato con permessi di modifica."
+    ],
+    "test_data": [
+      "Combinazione matrice: prodotto=P3, canale=WEB, segmento=STANDARD",
+      "Stato combinazione: \"vietato\" (vietato=true, interessante=false)",
+      "Sconto: 0 (%)",
+      "Periodo di validità: dal 2026-04-01 al 2026-04-30",
+      "Target: \"ClientiStandard\""
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente marketing.",
+      "Creare o modificare la configurazione per la combinazione P3/WEB/STANDARD impostando i valori di test.",
+      "Salvare la configurazione.",
+      "Recuperare l'oggetto di configurazione salvato dal datastore (tramite API/console DB/log).",
+      "Ispezionare la struttura dell'oggetto recuperato."
+    ],
+    "expected_results": [
+      "L'oggetto di configurazione recuperato contiene i campi: stato combinazione, sconto, periodo di validità (data inizio e data fine) e target.",
+      "I campi recuperati risultano valorizzati coerentemente con i valori inseriti in dashboard."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La modalità di recupero/inspection dell'oggetto (API vs query DB) dipende dall'implementazione e va concordata con il team."
+  },
+  {
+    "test_id": "REQ-D-001.TC04",
+    "title": "Gestione errore datastore non disponibile durante il salvataggio da dashboard",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard disponibile.",
+      "Utente marketing autenticato con permessi di modifica.",
+      "Datastore di persistenza configurazioni reso indisponibile (es. servizio fermo, rete bloccata) per la durata del test."
+    ],
+    "test_data": [
+      "Combinazione matrice: prodotto=P4, canale=WEB, segmento=STANDARD",
+      "Stato combinazione: \"interessante\"",
+      "Sconto: 20 (%)",
+      "Periodo di validità: dal 2026-05-01 al 2026-05-31",
+      "Target: \"ClientiStandard\""
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente marketing.",
+      "Aprire la configurazione della combinazione P4/WEB/STANDARD.",
+      "Impostare i valori di test.",
+      "Tentare il salvataggio della configurazione mentre il datastore è indisponibile.",
+      "Ripristinare la disponibilità del datastore.",
+      "Recuperare dal datastore la configurazione per P4/WEB/STANDARD."
+    ],
+    "expected_results": [
+      "Il sistema segnala il fallimento del salvataggio (errore visibile all'utente o messaggio di errore) e non conferma l'operazione come completata.",
+      "Nel datastore non risulta presente (o non risulta aggiornata) alcuna configurazione con i valori di test per P4/WEB/STANDARD a seguito del tentativo fallito.",
+      "Dopo il ripristino del datastore, la configurazione rimane non salvata finché l'utente non ripete esplicitamente l'operazione di salvataggio."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito richiede affidabilità della persistenza ma non specifica la UX/strategia di retry; il test verifica almeno che non avvengano falsi positivi di salvataggio e che i dati non risultino persistiti in modo parziale/non dichiarato."
+  },
+  {
+    "test_id": "REQ-D-001.TC05",
+    "title": "Motore non riesce a recuperare configurazioni: comportamento in caso di timeout/errore lettura datastore",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore di calcolo proposte disponibile.",
+      "Datastore indisponibile o con latenza indotta tale da provocare timeout in lettura dal motore.",
+      "Esiste una configurazione precedentemente salvata per una combinazione nota (es. P1/WEB/STANDARD)."
+    ],
+    "test_data": [
+      "Richiesta al motore: calcolo proposte per combinazione P1/WEB/STANDARD e cliente nel target associato",
+      "Condizione di errore: timeout in lettura configurazione (simulato)"
+    ],
+    "steps": [
+      "Indurre l'indisponibilità/timeout del datastore per le operazioni di lettura del motore.",
+      "Inviare una richiesta al motore per il calcolo proposte per la combinazione configurata.",
+      "Raccogliere l'esito della richiesta e i log del motore."
+    ],
+    "expected_results": [
+      "Il motore gestisce l'errore di lettura configurazione senza crash (processo/servizio rimane disponibile).",
+      "La richiesta al motore termina con un esito deterministico e tracciabile (errore esplicito o risposta coerente con la gestione prevista) e con evidenza nei log dell'impossibilità di recuperare la configurazione."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [],
+    "notes": "Il requisito non specifica la strategia in caso di mancata lettura (fallback su cache/default vs errore). Il test verifica robustezza e tracciabilità dell'errore senza assumere un comportamento funzionale non dichiarato."
+  },
+  {
+    "test_id": "REQ-D-001.TC06",
+    "title": "Edge case: periodo di validità non coerente (data fine precedente alla data inizio) in dashboard",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Dashboard disponibile.",
+      "Datastore disponibile.",
+      "Utente marketing autenticato con permessi di modifica."
+    ],
+    "test_data": [
+      "Combinazione matrice: prodotto=P5, canale=WEB, segmento=STANDARD",
+      "Stato combinazione: \"interessante\"",
+      "Sconto: 10 (%)",
+      "Periodo di validità: dal 2026-06-30 al 2026-06-01 (fine < inizio)",
+      "Target: \"ClientiStandard\""
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente marketing.",
+      "Aprire la configurazione della combinazione P5/WEB/STANDARD.",
+      "Inserire il periodo di validità con data fine precedente alla data inizio.",
+      "Tentare il salvataggio della configurazione.",
+      "Se il salvataggio risulta consentito, recuperare l'oggetto salvato dal datastore."
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio mostrando un errore di validazione sul periodo di validità, oppure (se consente il salvataggio) persiste il dato ma lo rende esplicitamente non applicabile al motore in modo tracciabile (es. stato/errore) senza applicare configurazioni incoerenti."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La regola di validazione sul periodo non è esplicitata nel requisito; il test è un edge case per garantire affidabilità dei dati. L'esito atteso ammette due comportamenti accettabili (blocco in UI o non applicazione tracciata) perché non è definita la policy."
+  },
+  {
+    "test_id": "REQ-D-001.TC07",
+    "title": "Autorizzazioni: utente senza permessi marketing non può modificare/salvare configurazioni",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard disponibile.",
+      "Datastore disponibile.",
+      "Esiste un utente autenticabile con ruolo non marketing o senza permessi di modifica configurazioni."
+    ],
+    "test_data": [
+      "Utente: ruolo \"viewer\" (senza permessi di modifica)",
+      "Combinazione matrice: prodotto=P1, canale=WEB, segmento=STANDARD",
+      "Tentativo modifica: cambiare sconto a 99 (%)"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente senza permessi di modifica.",
+      "Navigare alla sezione configurazione matrice.",
+      "Aprire la combinazione P1/WEB/STANDARD.",
+      "Tentare di modificare il valore di sconto e salvare."
+    ],
+    "expected_results": [
+      "Il sistema impedisce la modifica e/o il salvataggio (controlli UI e/o errore autorizzativo lato backend).",
+      "Nel datastore non viene salvata alcuna modifica per la combinazione P1/WEB/STANDARD a seguito del tentativo non autorizzato."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona che le modifiche sono effettuate dal marketing: i ruoli/permessi non sono formalizzati negli AC, quindi questo test assume l'esistenza di un controllo autorizzativo minimo per evitare modifiche da utenti non marketing."
+  }
+]

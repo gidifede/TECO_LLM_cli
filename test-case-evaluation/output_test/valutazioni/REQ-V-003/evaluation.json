@@ -1,0 +1,143 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-003",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-003.TC01",
+        "detail": "Introduce il canale 'web' e specifiche interfacce (config file/console/API), e assume privilegi amministrativi: il requisito non cita canali/interfacce/ruoli."
+      },
+      {
+        "test_id": "REQ-V-003.TC01",
+        "detail": "Introduce un valore numerico di retention (es. 180 giorni) come riferimento operativo: il requisito non definisce durate."
+      },
+      {
+        "test_id": "REQ-V-003.TC02",
+        "detail": "Assume specifici tipi di PII (email, codice fiscale, telefono) e tecniche (tokenizzazione/mascheramento) e l'esistenza di endpoint che generano PII nei log: non specificato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.TC03",
+        "detail": "Aggiunge uno scenario di 'bypass' su testo libero e un comportamento atteso (blocco o mascheramento del testo libero) non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-003.TC04",
+        "detail": "Introduce ruoli specifici (Auditor/Security, Utente standard) e codici/risposte tecniche (403), oltre al tracciamento degli accessi ai log: il requisito parla di procedure di accesso documentate/verificabili, non di RBAC o auditing degli accessi."
+      },
+      {
+        "test_id": "REQ-V-003.TC05",
+        "detail": "Assume la possibilità di ridurre la retention in test tramite 'policy centralizzata' e introduce la distinzione storage primario/archivio e un job di lifecycle: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.TC06",
+        "detail": "Assume un repository documentale, profilo 'Auditor', requisiti di versioning e contenuti minimi delle procedure (approvazioni, responsabilità, frequenza controlli): il requisito richiede solo che siano documentate e verificabili in audit, senza dettaglio."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'accessibilità' dei log",
+        "detail": "Non viene validato esplicitamente che l'accessibilità ai log sia conforme alle policy (il set introduce RBAC/ruoli, ma non è tracciabile al requisito; manca un test che verifichi l'allineamento a policy senza assumere meccanismi specifici)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-003.TC02",
+          "REQ-V-003.TC03"
+        ],
+        "detail": "Entrambi verificano presenza/assenza di PII in chiaro e anonimizzazione nei log; TC03 è una variante 'testo libero' molto vicina allo scenario di TC02."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 11,
+    "coherence_score": 15,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-003.US01.TC01",
+        "detail": "Introduce il dominio applicativo 'Motore di Offerte' e categorie log 'applicativo/audit' con durate (90/365 giorni): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC02",
+        "detail": "Assume un meccanismo di configurazione del 'Motore di Offerte' e richiede evidenza tracciabile del rifiuto override (log/audit interno): non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC03",
+        "detail": "Aggiunge l'asserzione 'non esistono copie del medesimo evento con PII in chiaro nello storage consultabile': il requisito non richiede deduplica/copie né vincoli su repliche."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC04",
+        "detail": "Definisce comportamento in caso di policy non recuperabile (blocco persistenza o marcatura 'non conforme', alerting): non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC05",
+        "detail": "Introduce meccanismi di controllo/alerting (DLQ, contatori) e regole di segnalazione non conformità privacy: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US01.TC06",
+        "detail": "Introduce identificativi/versioni di policy (RET-LOG-APP-001, PRIV-LOG-002) e requisiti di esportazione evidenze: non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC01",
+        "detail": "Introduce canale 'dashboard' e ruolo 'Team Compliance' e specifica di UX/consultazione: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC02",
+        "detail": "Assume accesso documentale via dashboard e metadati (owner/responsabile) come obbligatori: non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC03",
+        "detail": "Aggiunge vincoli su esportazione/impossibilità di export oltre retention tramite dashboard: il requisito non cita export né canali."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC04",
+        "detail": "Introduce regole di obsolescenza documentale (soglie/marker) e gestione UI di 'non conforme': non definite nel requisito."
+      },
+      {
+        "test_id": "REQ-V-003.US02.TC05",
+        "detail": "Introduce funzionalità di segnalazione/flagging di anomalia in dashboard e tracciamento per remediation: non presente nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'Poste Italiane' e 'policy aziendali già in vigore'",
+        "detail": "Il set sposta il contesto su 'Motore di Offerte' e dashboard senza verificare esplicitamente l'allineamento alle policy aziendali esistenti (come fonte unica) se non come assunzione generica; manca un test che dimostri l'assenza di override locale a livello di 'sistema di tracciamento log' indipendentemente dal componente applicativo."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-003.US01.TC03",
+          "REQ-V-003.US02.TC01"
+        ],
+        "detail": "Entrambi verificano che PII non sia in chiaro e sia mascherato/anonimizzato; cambia solo il punto di osservazione (storage vs dashboard)."
+      },
+      {
+        "test_ids": [
+          "REQ-V-003.US01.TC06",
+          "REQ-V-003.US02.TC02"
+        ],
+        "detail": "Entrambi verificano disponibilità documentazione/evidenze per audit; cambia solo il canale (repository generico vs accesso da dashboard)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia il set direct introduce meno elementi non tracciabili e resta più vicino al perimetro del requisito (coherence_score 58 vs 15). Il set indirect_persona aggiunge molto contesto non richiesto (Motore di Offerte, dashboard, Team Compliance, durate 90/365, alerting e workflow), aumentando significativamente le 'added_info' e anche alcune ridondanze, riducendo la coerenza complessiva."
+  }
+}

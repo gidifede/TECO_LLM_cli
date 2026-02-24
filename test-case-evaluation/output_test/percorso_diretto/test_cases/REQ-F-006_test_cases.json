@@ -1,0 +1,263 @@
+[
+  {
+    "test_id": "REQ-F-006.TC01",
+    "title": "Generazione descrizione breve per ogni prodotto suggerito con beneficio, sconto e motivazione (web self)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con motore di suggerimento attivo",
+      "Esiste un cliente 'CLI-1001' con profilo e consenso necessari per ricevere suggerimenti",
+      "Per 'CLI-1001' il motore restituisce almeno 2 prodotti suggeriti con sconto associato (es. P-INS-01, P-CC-02)",
+      "Touchpoint digitale web self disponibile e accessibile"
+    ],
+    "test_data": [
+      "Cliente: CLI-1001 (segmento: Retail; contesto: rinnovo polizza tra 20 giorni)",
+      "Prodotto suggerito 1: P-INS-01 'Polizza Casa' con sconto 15%",
+      "Prodotto suggerito 2: P-CC-02 'Carta Premium' con sconto 30 EUR",
+      "Lingua interfaccia: Italiano"
+    ],
+    "steps": [
+      "Accedere al touchpoint web self come cliente CLI-1001",
+      "Aprire la sezione in cui vengono mostrati i prodotti suggeriti",
+      "Per il prodotto P-INS-01, visualizzare la descrizione breve associata alla proposta",
+      "Verificare nel testo la presenza di un beneficio esplicito per P-INS-01",
+      "Verificare nel testo la presenza del valore dello sconto per P-INS-01",
+      "Verificare nel testo la presenza della motivazione della proposta per P-INS-01",
+      "Per il prodotto P-CC-02, visualizzare la descrizione breve associata alla proposta",
+      "Verificare nel testo la presenza di un beneficio esplicito per P-CC-02",
+      "Verificare nel testo la presenza del valore dello sconto per P-CC-02",
+      "Verificare nel testo la presenza della motivazione della proposta per P-CC-02"
+    ],
+    "expected_results": [
+      "Per ciascun prodotto suggerito (P-INS-01 e P-CC-02) è presente e visibile un testo breve associato alla proposta",
+      "La descrizione di P-INS-01 contiene tutti e tre gli elementi: (1) beneficio, (2) valore sconto (15%), (3) motivazione della proposta",
+      "La descrizione di P-CC-02 contiene tutti e tre gli elementi: (1) beneficio, (2) valore sconto (30 EUR), (3) motivazione della proposta",
+      "Le descrizioni sono visualizzate nel canale web self senza errori di rendering o campi vuoti"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori e i touchpoint digitali (web) sono inferiti dalla descrizione; il requisito non specifica regole formali per validare 'testo breve' (es. numero massimo caratteri), quindi la verifica è limitata alla presenza dei 3 elementi richiesti."
+  },
+  {
+    "test_id": "REQ-F-006.TC02",
+    "title": "Verifica esempi di output automatico su più casi (prodotti e contesti cliente differenti)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con motore di suggerimento attivo",
+      "Esistono almeno 3 clienti con contesti differenti e suggerimenti disponibili: CLI-1001, CLI-2002, CLI-3003",
+      "Per ciascun cliente il motore restituisce almeno 1 prodotto suggerito con sconto associato",
+      "Touchpoint digitale web self disponibile e accessibile"
+    ],
+    "test_data": [
+      "Caso A: CLI-1001; Prodotto: P-INS-01 'Polizza Casa'; Sconto: 15%; Contesto: rinnovo imminente",
+      "Caso B: CLI-2002; Prodotto: P-INV-03 'PAC Investimento'; Sconto/agevolazione: 0,20% riduzione commissioni; Contesto: alta liquidità su conto",
+      "Caso C: CLI-3003; Prodotto: P-MOB-04 'Assistenza Stradale'; Sconto: 10 EUR; Contesto: acquisto auto recente"
+    ],
+    "steps": [
+      "Accedere al touchpoint web self come cliente CLI-1001",
+      "Aprire la sezione prodotti suggeriti e visualizzare la descrizione del prodotto P-INS-01",
+      "Verificare che la descrizione contenga beneficio, sconto e motivazione",
+      "Accedere al touchpoint web self come cliente CLI-2002",
+      "Aprire la sezione prodotti suggeriti e visualizzare la descrizione del prodotto P-INV-03",
+      "Verificare che la descrizione contenga beneficio, sconto/agevolazione e motivazione",
+      "Accedere al touchpoint web self come cliente CLI-3003",
+      "Aprire la sezione prodotti suggeriti e visualizzare la descrizione del prodotto P-MOB-04",
+      "Verificare che la descrizione contenga beneficio, sconto e motivazione"
+    ],
+    "expected_results": [
+      "Per ciascuno dei tre casi (A, B, C) è disponibile una descrizione automatica associata al prodotto suggerito",
+      "In ciascun caso la descrizione contiene esplicitamente tutti e tre gli elementi richiesti (beneficio, valore dello sconto/agevolazione, motivazione)",
+      "Le descrizioni risultano coerenti con il contesto cliente/prodotto nel senso che la motivazione fa riferimento al contesto del cliente (rinnovo imminente, liquidità elevata, acquisto auto recente) e al prodotto proposto"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 è parzialmente dichiarativo: 'Esempi verificabili' è stato interpretato come esecuzione di più casi con clienti/prodotti diversi e verifica della presenza dei 3 elementi e della coerenza semantica minima (motivazione riferita al contesto)."
+  },
+  {
+    "test_id": "REQ-F-006.TC03",
+    "title": "Visualizzazione descrizione generata accanto alla proposta nel canale fisico (operatore)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con applicazione operatore per canale fisico attiva",
+      "Esiste un utente operatore 'OP-01' abilitato alla consultazione delle proposte per i clienti",
+      "Esiste il cliente CLI-1001 con almeno 1 prodotto suggerito dal motore con descrizione generabile",
+      "La schermata operatore prevede una lista/area proposte per il cliente"
+    ],
+    "test_data": [
+      "Operatore: OP-01",
+      "Cliente: CLI-1001",
+      "Prodotto suggerito: P-INS-01 'Polizza Casa' con sconto 15%"
+    ],
+    "steps": [
+      "Accedere all'applicazione operatore come OP-01",
+      "Ricercare e aprire la scheda del cliente CLI-1001",
+      "Navigare alla sezione che mostra le proposte/suggerimenti del motore",
+      "Individuare la proposta relativa a P-INS-01",
+      "Verificare la presenza della descrizione generata visualizzata accanto alla proposta"
+    ],
+    "expected_results": [
+      "La proposta P-INS-01 è visibile nella sezione proposte/suggerimenti del cliente",
+      "La descrizione generata è visibile accanto alla proposta (stessa riga/cella/pannello della proposta) nel canale fisico operatore",
+      "La descrizione visualizzata contiene beneficio, sconto e motivazione"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "canale_fisico"
+    ],
+    "notes": "Il requisito non specifica dettagli UI (posizionamento esatto, etichetta campo); la verifica 'accanto alla proposta' è intesa come visibile nello stesso contesto immediato della proposta senza navigazioni aggiuntive."
+  },
+  {
+    "test_id": "REQ-F-006.TC04",
+    "title": "Negativo: prodotto suggerito senza valore sconto disponibile -> descrizione non esposta e segnalazione errore controllata",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con motore di suggerimento attivo",
+      "Esiste un cliente 'CLI-4004' per cui il motore restituisce un prodotto suggerito P-ERR-01 privo del dato 'valore sconto' (dato mancante/null)",
+      "Touchpoint web self disponibile e accessibile"
+    ],
+    "test_data": [
+      "Cliente: CLI-4004",
+      "Prodotto suggerito: P-ERR-01 'Servizio X'",
+      "Valore sconto: null (dato mancante)"
+    ],
+    "steps": [
+      "Accedere al touchpoint web self come cliente CLI-4004",
+      "Aprire la sezione prodotti suggeriti",
+      "Individuare la proposta P-ERR-01",
+      "Verificare la descrizione associata alla proposta P-ERR-01"
+    ],
+    "expected_results": [
+      "Il sistema non mostra una descrizione che ometta uno degli elementi richiesti (beneficio/sconto/motivazione)",
+      "Il sistema gestisce il caso in modo controllato mostrando un messaggio di indisponibilità della descrizione oppure non esponendo la descrizione per P-ERR-01 senza errori applicativi (es. nessun crash, nessun errore 5xx visibile all'utente)",
+      "Nei log applicativi/monitoring (se disponibili in ambiente test) è registrata un'anomalia relativa al dato sconto mancante per la proposta P-ERR-01"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce il comportamento atteso in assenza di uno dei 3 elementi; è stata introdotta un'assunzione di qualità: evitare descrizioni incomplete e gestire l'errore in modo controllato."
+  },
+  {
+    "test_id": "REQ-F-006.TC05",
+    "title": "Authorization: operatore non autorizzato non può visualizzare le descrizioni delle proposte nel canale fisico",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con applicazione operatore per canale fisico attiva",
+      "Esiste un utente 'OP-NOAUTH' con permessi insufficienti per consultare proposte/suggerimenti cliente",
+      "Esiste il cliente CLI-1001 con proposte disponibili"
+    ],
+    "test_data": [
+      "Operatore: OP-NOAUTH",
+      "Cliente: CLI-1001"
+    ],
+    "steps": [
+      "Accedere all'applicazione operatore come OP-NOAUTH",
+      "Tentare di aprire la scheda del cliente CLI-1001",
+      "Tentare di accedere alla sezione proposte/suggerimenti"
+    ],
+    "expected_results": [
+      "L'accesso alla sezione proposte/suggerimenti è negato oppure le informazioni sono oscurate in base ai permessi",
+      "Le descrizioni generate non sono visualizzabili da OP-NOAUTH",
+      "Il sistema mostra un messaggio di autorizzazione insufficiente o un comportamento equivalente senza esporre dati sensibili"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "canale_fisico"
+    ],
+    "notes": "Il requisito non menziona ruoli/permessi; il test è aggiunto come controllo standard di autorizzazione per canale operatore (best practice enterprise). Potrebbe richiedere allineamento con la matrice autorizzativa reale."
+  },
+  {
+    "test_id": "REQ-F-006.TC06",
+    "title": "Integration: indisponibilità/timeout del servizio di generazione descrizioni -> gestione controllata su web self e canale operatore",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente disponibile con motore di suggerimento attivo",
+      "È possibile simulare timeout/errore del componente/servizio che genera le descrizioni (es. tramite stub, fault injection o configurazione di test)",
+      "Esiste il cliente CLI-1001 con almeno 1 prodotto suggerito",
+      "Touchpoint web self e applicazione operatore disponibili"
+    ],
+    "test_data": [
+      "Cliente: CLI-1001",
+      "Prodotto suggerito: P-INS-01",
+      "Fault injection: risposta servizio descrizioni = timeout (es. > 10s) oppure HTTP 503"
+    ],
+    "steps": [
+      "Abilitare la simulazione di timeout/errore per il servizio di generazione descrizioni",
+      "Accedere al touchpoint web self come cliente CLI-1001",
+      "Aprire la sezione prodotti suggeriti e osservare il rendering della proposta P-INS-01",
+      "Accedere all'applicazione operatore come OP-01",
+      "Aprire la scheda del cliente CLI-1001 e navigare alla sezione proposte/suggerimenti",
+      "Osservare il rendering della proposta P-INS-01"
+    ],
+    "expected_results": [
+      "Sul canale web self il sistema non va in errore e gestisce l'indisponibilità mostrando un messaggio/placeholder controllato per la descrizione oppure non mostrando la descrizione",
+      "Sul canale operatore il sistema non va in errore e gestisce l'indisponibilità mostrando un messaggio/placeholder controllato per la descrizione oppure non mostrando la descrizione",
+      "In nessuno dei due canali viene mostrata una descrizione parziale che contenga solo alcuni elementi tra beneficio/sconto/motivazione",
+      "L'evento di errore/timeout è tracciato lato logging/monitoring (se disponibile in ambiente test)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "canale_fisico"
+    ],
+    "notes": "Il requisito non specifica la dipendenza tecnica dal servizio di generazione; il test assume un componente esterno/servizio e verifica resilienza e non esposizione di descrizioni incomplete."
+  },
+  {
+    "test_id": "REQ-F-006.TC07",
+    "title": "Edge case: più prodotti suggeriti (volume elevato) -> ogni proposta mantiene descrizione corretta e associata al prodotto",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente disponibile con motore di suggerimento attivo",
+      "Esiste un cliente 'CLI-5005' per cui il motore restituisce 20 prodotti suggeriti con sconti associati",
+      "Touchpoint web self disponibile e accessibile"
+    ],
+    "test_data": [
+      "Cliente: CLI-5005",
+      "Numero prodotti suggeriti: 20",
+      "Esempio subset per verifica: P-01 sconto 5%, P-10 sconto 25 EUR, P-20 sconto 12%"
+    ],
+    "steps": [
+      "Accedere al touchpoint web self come cliente CLI-5005",
+      "Aprire la sezione prodotti suggeriti",
+      "Verificare che per ciascuna delle proposte visualizzate sia presente una descrizione breve",
+      "Per i prodotti P-01, P-10 e P-20, verificare che il valore sconto riportato nella descrizione corrisponda allo sconto della specifica proposta",
+      "Per i prodotti P-01, P-10 e P-20, verificare che la motivazione faccia riferimento al prodotto corretto (nessun mismatch tra descrizione e prodotto)"
+    ],
+    "expected_results": [
+      "Tutte le proposte visualizzate hanno una descrizione breve disponibile",
+      "Per il subset verificato (P-01, P-10, P-20) il valore dello sconto nella descrizione corrisponde al valore atteso per ciascun prodotto",
+      "Non si osservano descrizioni scambiate tra prodotti (associazione descrizione-prodotto corretta)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce limiti massimi di numero proposte; il caso limite verifica la corretta associazione descrizione/prodotto in presenza di molte proposte."
+  }
+]

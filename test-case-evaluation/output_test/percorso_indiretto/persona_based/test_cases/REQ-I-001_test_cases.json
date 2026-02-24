@@ -1,0 +1,274 @@
+[
+  {
+    "story_id": "REQ-I-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-001.US01.TC01",
+        "title": "Ricezione lista ordinata di raccomandazioni e preservazione dell'ordine/priorità",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "Sono disponibili log/tracing per verificare l'ordine di acquisizione e l'ordine memorizzato/elaborato dal Motore",
+          "Il Motore di Offerte è in esecuzione e pronto a ricevere input sul canale di integrazione"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (3 elementi) in ordine: (prodotto=P-1001, priorità=1, cluster=CL-A, motivazione='Upsell'), (prodotto=P-2002, priorità=2, cluster=CL-B, motivazione='Cross-sell'), (prodotto=P-3003, priorità=3, cluster=CL-A, motivazione='Retention')"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione la lista di raccomandazioni nell'ordine definito dai dati di test",
+          "Verificare che il Motore di Offerte acquisisca la richiesta senza errori di trasporto",
+          "Recuperare dal Motore (tramite log, storage tecnico o interfaccia di monitoraggio prevista) l'elenco ricevuto così come registrato internamente",
+          "Confrontare l'ordine degli elementi ricevuti dal Motore con l'ordine inviato dal sistema esterno"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte riceve la lista sul canale di integrazione senza errori",
+          "L'elenco registrato/acquisito dal Motore mantiene lo stesso ordine degli elementi inviati (priorità 1, poi 2, poi 3)",
+          "Per ciascun elemento ricevuto è presente l'informazione di ordine/priorità coerente con quanto inviato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il formato tecnico del canale (API/evento/batch) non è specificato: i passi assumono un meccanismo di invio e una modalità di verifica (log/storage) disponibili in ambiente di test."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC02",
+        "title": "Acquisizione payload con campi obbligatori e metadati (prodotto, priorità, cluster, motivazione)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È possibile ispezionare il payload acquisito dal Motore (log strutturati, persistence o endpoint di diagnostica)"
+        ],
+        "test_data": [
+          "Raccomandazione singola: prodotto=P-7788, priorità=10, cluster=CL-PREMIUM, motivazione='Propensione acquisto alta'"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione una raccomandazione contenente tutti i campi previsti",
+          "Ispezionare il payload acquisito dal Motore per la raccomandazione ricevuta",
+          "Verificare la presenza e la valorizzazione dei campi nel payload acquisito"
+        ],
+        "expected_results": [
+          "Il payload acquisito dal Motore contiene i campi: identificatore prodotto, ordine/priorità, cluster cliente e motivazione",
+          "I valori dei campi nel payload acquisito corrispondono a quelli inviati (P-7788, 10, CL-PREMIUM, 'Propensione acquisto alta')"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La user story non specifica schema/nomi tecnici dei campi: la verifica è concettuale (presenza dei 4 attributi) e va mappata allo schema reale in analisi tecnica."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC03",
+        "title": "Elaborazione delle raccomandazioni applicando configurazioni locali (filtro) prima dell'output",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È configurato un filtro locale attivo che esclude il prodotto P-9999 dall'elaborazione (configurazione preesistente da requisiti esterni)",
+          "È possibile ottenere l'output di proposta generato dal Motore (es. output topic/endpoint/storage di output)"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (2 elementi): (prodotto=P-9999, priorità=1, cluster=CL-A, motivazione='Test filtro'), (prodotto=P-1001, priorità=2, cluster=CL-A, motivazione='Valido')"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione la lista di raccomandazioni contenente un prodotto escluso dal filtro locale e un prodotto consentito",
+          "Attivare l'elaborazione del Motore (se non automatica) sul batch ricevuto",
+          "Recuperare l'output di proposta generato dal Motore per il batch",
+          "Verificare la presenza/assenza dei prodotti nell'output"
+        ],
+        "expected_results": [
+          "Il Motore elabora il batch applicando le configurazioni locali prima di produrre l'output",
+          "Il prodotto P-9999 (escluso dal filtro locale) non è presente nell'output di proposta",
+          "Il prodotto P-1001 (non escluso) è presente nell'output di proposta"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: le regole di filtro/matrice/frequenza sono definite in requisiti separati. Questo test rende verificabile AC-3 assumendo l'esistenza di una configurazione di filtro attivabile in ambiente QA."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC04",
+        "title": "Gestione lista di raccomandazioni vuota senza generare output elaborabile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È possibile verificare che non venga prodotto output (o che venga prodotto output vuoto) per la richiesta test"
+        ],
+        "test_data": [
+          "Lista raccomandazioni: [] (vuota)"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione una lista vuota di raccomandazioni",
+          "Verificare l'esito di ricezione/acquisizione della richiesta da parte del Motore",
+          "Verificare l'eventuale output prodotto dal Motore per la richiesta"
+        ],
+        "expected_results": [
+          "Il Motore riceve la richiesta senza errori di trasporto",
+          "Il Motore non genera elementi elaborabili a partire dalla lista vuota",
+          "L'output di proposta è assente oppure presente ma vuoto (nessuna proposta generata)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La user story indica che la richiesta viene ricevuta correttamente; la forma dell'output (assente vs lista vuota) non è specificata e va allineata alla definizione tecnica."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC05",
+        "title": "Raccomandazione con identificatore prodotto mancante: scarto dell'elemento senza bloccare il batch",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È possibile verificare sia gli errori/avvisi di validazione sia l'output di proposta del batch"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (2 elementi): (prodotto=NON VALORIZZATO, priorità=1, cluster=CL-A, motivazione='Missing product'), (prodotto=P-1001, priorità=2, cluster=CL-A, motivazione='Valido')"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione la lista contenente un elemento con identificatore prodotto mancante e un elemento valido",
+          "Attivare l'elaborazione del Motore (se non automatica) sul batch ricevuto",
+          "Verificare nei log/monitoraggio la gestione dell'elemento non valido",
+          "Recuperare l'output di proposta generato dal Motore",
+          "Verificare che l'elemento valido sia stato elaborato"
+        ],
+        "expected_results": [
+          "Il Motore non blocca l'elaborazione dell'intero batch a causa dell'elemento con identificatore prodotto mancante",
+          "L'elemento con identificatore prodotto mancante risulta non elaborato (scartato) e viene tracciata un'anomalia/errore di validazione associata all'elemento",
+          "L'elemento valido (P-1001) viene elaborato e può comparire nell'output di proposta secondo le configurazioni locali"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La user story non specifica il formato dell'errore (codice/messaggio) né dove venga registrato: la verifica richiede un meccanismo osservabile (log strutturati o report di scarti)."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC06",
+        "title": "Ordine/priorità duplicato: gestione deterministica preservando l'ordine ricevuto",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È possibile verificare l'ordine interno di acquisizione/elaborazione (log/tracing) e/o l'ordine dell'output"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (3 elementi) con priorità duplicata: (prodotto=P-1001, priorità=1, cluster=CL-A, motivazione='A'), (prodotto=P-2002, priorità=1, cluster=CL-A, motivazione='B'), (prodotto=P-3003, priorità=2, cluster=CL-A, motivazione='C')"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione la lista con due elementi aventi la stessa priorità",
+          "Verificare l'acquisizione della lista da parte del Motore",
+          "Verificare l'ordine registrato internamente dal Motore per gli elementi con priorità duplicata",
+          "Avviare l'elaborazione (se prevista) e verificare l'ordine degli elementi nell'output, se l'output preserva l'ordinamento"
+        ],
+        "expected_results": [
+          "Il Motore riceve la lista senza errori",
+          "Il Motore gestisce la priorità duplicata senza fallire l'elaborazione del batch",
+          "L'ordine relativo degli elementi con priorità duplicata è deterministico e, in assenza di regole diverse, coincide con l'ordine ricevuto (P-1001 prima di P-2002)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La user story indica che la regola deterministica è 'da definire'. Questo test assume come comportamento minimo la preservazione dell'ordine ricevuto; se verrà definita una regola diversa, adeguare l'expected result."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC07",
+        "title": "Cluster cliente o motivazione non valorizzati: accettazione della raccomandazione se prodotto e priorità sono presenti",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il canale di integrazione verso il Motore di Offerte è disponibile e raggiungibile",
+          "È possibile ispezionare il payload acquisito e l'esito di elaborazione per singolo elemento"
+        ],
+        "test_data": [
+          "Raccomandazione singola: prodotto=P-1001, priorità=1, cluster=NON VALORIZZATO, motivazione=NON VALORIZZATA"
+        ],
+        "steps": [
+          "Inviare al canale di integrazione una raccomandazione con prodotto e priorità valorizzati ma cluster e motivazione mancanti",
+          "Ispezionare il payload acquisito dal Motore",
+          "Avviare l'elaborazione (se non automatica)",
+          "Verificare l'esito di elaborazione dell'elemento e l'eventuale presenza in output"
+        ],
+        "expected_results": [
+          "Il Motore acquisisce la raccomandazione senza errori di parsing/validazione bloccanti",
+          "Nel payload acquisito risultano assenti o null i campi cluster e motivazione, mentre prodotto e priorità risultano presenti e corretti",
+          "L'elemento è considerato elaborabile e viene processato secondo le configurazioni locali (con eventuale fallback per cluster/motivazione, se previsto)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Comportamento di fallback 'da confermare' nella user story: questo test assume che cluster e motivazione siano opzionali e non blocchino l'elaborazione quando prodotto e priorità sono presenti."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC08",
+        "title": "Canale di integrazione non disponibile/errore di trasporto: gestione dell'errore di integrazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile simulare indisponibilità del canale di integrazione (es. servizio down, timeout, errore rete) in ambiente di test",
+          "È disponibile un meccanismo osservabile di gestione errori (log, metriche, DLQ, stato batch) per verificare la reazione del Motore"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (1 elemento): (prodotto=P-1001, priorità=1, cluster=CL-A, motivazione='Test trasporto')",
+          "Simulazione errore: timeout di rete o risposta 5xx (a seconda del canale reale)"
+        ],
+        "steps": [
+          "Rendere non disponibile il canale di integrazione o configurare la simulazione di errore di trasporto",
+          "Tentare l'invio della lista di raccomandazioni verso il canale di integrazione",
+          "Verificare che il Motore non acquisisca l'input (assenza di conferma/ricezione) oppure che registri l'errore di integrazione secondo i meccanismi previsti",
+          "Ripristinare la disponibilità del canale di integrazione",
+          "Verificare l'assenza di output di proposta generato a partire dal tentativo fallito (salvo meccanismi di retry, se presenti)"
+        ],
+        "expected_results": [
+          "In caso di indisponibilità/errore di trasporto, l'input non risulta acquisito dal Motore",
+          "Il Motore registra un errore di integrazione osservabile (log/metriche/stato) relativo al fallimento di ricezione",
+          "Non viene generato output di proposta a partire dal tentativo fallito (a meno di retry riuscito, se implementato e verificabile)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Retry/gestione applicativa dell'errore è 'da definire' nella user story: il test verifica almeno la non acquisizione e la tracciatura dell'errore; eventuali retry vanno specificati per rendere l'expected result più stringente."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC09",
+        "title": "Autorizzazione/controllo accesso al canale: rifiuto di invio non autorizzato (se previsto dal canale)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di integrazione prevede un meccanismo di autenticazione/autorizzazione (es. API key, OAuth, mTLS) configurato in ambiente di test",
+          "È disponibile una credenziale valida e una credenziale non valida/scaduta"
+        ],
+        "test_data": [
+          "Lista raccomandazioni (1 elemento): (prodotto=P-1001, priorità=1, cluster=CL-A, motivazione='Auth test')",
+          "Credenziale non valida: API key 'INVALID-KEY-0000' (o token scaduto)"
+        ],
+        "steps": [
+          "Inviare la lista di raccomandazioni al canale di integrazione utilizzando la credenziale non valida/scaduta",
+          "Verificare la risposta del canale (o l'esito di consegna) e l'eventuale acquisizione lato Motore",
+          "Verificare che non venga generato output di proposta per l'invio non autorizzato"
+        ],
+        "expected_results": [
+          "La richiesta viene rifiutata dal canale o dal Motore per mancanza di autorizzazione (es. 401/403 o equivalente per il canale)",
+          "Il Motore non acquisisce la lista di raccomandazioni inviata con credenziale non valida",
+          "Non viene generato alcun output di proposta associato al tentativo non autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non esplicita requisiti di sicurezza sul canale; questo test è condizionale ('se previsto dal canale'). Se il canale non implementa auth, rimuovere o adeguare il test secondo l'architettura."
+      }
+    ]
+  }
+]

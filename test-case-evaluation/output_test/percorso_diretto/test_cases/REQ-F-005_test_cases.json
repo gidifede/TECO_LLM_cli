@@ -1,0 +1,421 @@
+[
+  {
+    "test_id": "REQ-F-005.TC01",
+    "title": "Verifica documentazione: presenza di due flussi distinti (digitale e fisico) con relativa descrizione",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Accesso ai repository/strumenti di documentazione ufficiale del progetto (es. Confluence/SharePoint/Repo docs) disponibile",
+      "Disponibile una versione identificabile della documentazione (tag/release o data pubblicazione)"
+    ],
+    "test_data": [
+      "Identificativo release documentazione: v1.0 (o ultima versione disponibile)",
+      "Sezioni attese: 'Flusso Digitale (self-service)' e 'Flusso Fisico (operatore)'"
+    ],
+    "steps": [
+      "Aprire la documentazione funzionale del progetto per la release selezionata",
+      "Ricercare una sezione dedicata al flusso 'digitale/self-service'",
+      "Ricercare una sezione dedicata al flusso 'fisico/operatore'",
+      "Verificare che per ciascun flusso siano descritti attori, passi principali e output (es. consultazione, proposta, acquisto)",
+      "Verificare che la documentazione evidenzi differenze di interfaccia/comportamento tra i due flussi"
+    ],
+    "expected_results": [
+      "È presente una sezione documentata per il flusso digitale (self-service) con descrizione dei passi principali e dell'attore 'cliente'",
+      "È presente una sezione documentata per il flusso fisico (guidato) con descrizione dei passi principali e dell'attore 'operatore'",
+      "La documentazione evidenzia esplicitamente che i flussi e/o interfacce e/o comportamenti sono differenziati tra canali"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "UP"
+    ],
+    "notes": "Il requisito cita anche 'user story' nella documentazione (AC-1) ma l'input richiede generazione diretta di test case; questo test valida la presenza di documentazione dei flussi. La parte di configurazione offerte per canale e vincoli REQ-F-002/REQ-F-027 non è inclusa negli AC; vengono creati test aggiuntivi per coprire quanto descritto nella description."
+  },
+  {
+    "test_id": "REQ-F-005.TC02",
+    "title": "Verifica documentazione: presenza di user story distinte per flusso digitale e fisico",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Accesso ai repository/strumenti di documentazione ufficiale del progetto disponibile",
+      "Disponibile una versione identificabile della documentazione (tag/release o data pubblicazione)"
+    ],
+    "test_data": [
+      "Identificativo release documentazione: v1.0 (o ultima versione disponibile)",
+      "Parole chiave ricerca: 'user story', 'digitale', 'self-service', 'operatore', 'UP'"
+    ],
+    "steps": [
+      "Aprire la documentazione funzionale del progetto per la release selezionata",
+      "Ricercare le user story associate al flusso digitale",
+      "Ricercare le user story associate al flusso fisico/operatore",
+      "Verificare che le user story siano separate o chiaramente etichettate per canale"
+    ],
+    "expected_results": [
+      "Sono presenti user story riferite esplicitamente al flusso digitale/self-service",
+      "Sono presenti user story riferite esplicitamente al flusso fisico/operatore",
+      "Le user story risultano distinguibili per canale (etichette, sezioni separate o tassonomia equivalente)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app",
+      "UP"
+    ],
+    "notes": "Test di natura 'documentale': verifica un deliverable (user story) richiesto dall'AC-1. Se le user story non sono considerate artefatto di progetto ma requisito di processo, concordare con PO/BA il criterio di evidenza accettabile."
+  },
+  {
+    "test_id": "REQ-F-005.TC03",
+    "title": "Canale digitale: verifica disponibilità di endpoint/interfacce dedicate al percorso self-service",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con API Gateway/endpoint esposti",
+      "Credenziali/Token per un utente 'cliente digitale' disponibili",
+      "Strumento di chiamata API disponibile (es. Postman/CLI) o test automatizzato configurato"
+    ],
+    "test_data": [
+      "Cliente digitale: customerId=CD-10001",
+      "Token cliente digitale valido",
+      "Operazione di consultazione offerte: endpoint digitale (es. /digital/offers o equivalente)",
+      "Operazione di acquisto: endpoint digitale (es. /digital/purchase o equivalente)"
+    ],
+    "steps": [
+      "Eseguire autenticazione come cliente digitale e ottenere un token valido",
+      "Invocare l'endpoint di consultazione offerte per canale digitale con il token cliente",
+      "Verificare che la risposta includa offerte disponibili per il canale digitale",
+      "Invocare l'endpoint di acquisto digitale per una delle offerte restituite"
+    ],
+    "expected_results": [
+      "L'endpoint/interfaccia per canale digitale è raggiungibile e risponde con HTTP 200 (o esito equivalente di successo)",
+      "La risposta di consultazione offerte contiene un insieme di offerte coerente con il canale digitale (assenza di dati esclusivi operatore, se applicabile)",
+      "La chiamata di acquisto digitale completa l'operazione senza richiedere azioni/attributi tipici del canale operatore (es. nessun operatoreId obbligatorio)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica i nomi degli endpoint: i percorsi indicati nei test_data sono esempi e vanno sostituiti con quelli reali. Attori inferiti: 'cliente digitale' dal testo."
+  },
+  {
+    "test_id": "REQ-F-005.TC04",
+    "title": "Canale fisico (UP): verifica disponibilità di endpoint/interfacce dedicate al percorso operatore",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con API/servizi operatore esposti",
+      "Credenziali/Token per un utente 'operatore' disponibili",
+      "Esiste una postazione/istanza UI operatore (UP) o API equivalenti"
+    ],
+    "test_data": [
+      "Operatore: operatorId=OP-9001",
+      "Token operatore valido",
+      "Cliente servito: customerId=CF-20002",
+      "Operazione ricezione proposte: endpoint operatore (es. /operator/proposals o equivalente)"
+    ],
+    "steps": [
+      "Eseguire autenticazione come operatore e ottenere un token valido",
+      "Invocare l'endpoint/interfaccia di ricezione proposte per il cliente customerId=CF-20002",
+      "Verificare che la risposta includa proposte/offerte utilizzabili dall'operatore",
+      "Verificare che la struttura dati includa elementi tipici del canale operatore (es. motivazioni, script, note per proposta) se previsti dall'implementazione"
+    ],
+    "expected_results": [
+      "L'endpoint/interfaccia per canale operatore è raggiungibile e risponde con HTTP 200 (o esito equivalente di successo)",
+      "La risposta contiene un elenco di proposte/offerte per il cliente indicato",
+      "Le proposte risultano consumabili dall'operatore tramite l'interfaccia operatore (dati necessari presenti e non nulli secondo contratto API/UI)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Il requisito non dettaglia i campi delle proposte: la verifica sui 'dati tipici operatore' va allineata al contratto API/UI effettivo. Attori inferiti: 'operatore' dal testo."
+  },
+  {
+    "test_id": "REQ-F-005.TC05",
+    "title": "Autorizzazioni: un cliente digitale non può accedere alle interfacce/endpoint operatore",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con endpoint operatore esposti",
+      "Credenziali/Token per un utente 'cliente digitale' disponibili"
+    ],
+    "test_data": [
+      "Cliente digitale: customerId=CD-10001",
+      "Token cliente digitale valido",
+      "Endpoint operatore: /operator/proposals (o equivalente)"
+    ],
+    "steps": [
+      "Eseguire autenticazione come cliente digitale e ottenere un token valido",
+      "Invocare l'endpoint/interfaccia operatore con il token cliente digitale"
+    ],
+    "expected_results": [
+      "La richiesta viene rifiutata con errore di autorizzazione (HTTP 401/403 o equivalente)",
+      "Nessun dato di proposte/offerte operatore viene restituito nella risposta"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non esplicita RBAC, ma la separazione di modalità operative tra canali implica segregazione degli accessi; questo test la rende verificabile."
+  },
+  {
+    "test_id": "REQ-F-005.TC06",
+    "title": "Autorizzazioni: un operatore non può eseguire l'acquisto tramite endpoint self-service cliente (se canali separati)",
+    "type": "Authorization",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test disponibile con endpoint digitali esposti",
+      "Credenziali/Token per un utente 'operatore' disponibili"
+    ],
+    "test_data": [
+      "Operatore: operatorId=OP-9001",
+      "Token operatore valido",
+      "Endpoint acquisto digitale: /digital/purchase (o equivalente)",
+      "Offerta digitale di esempio: offerId=OFF-DIGI-001"
+    ],
+    "steps": [
+      "Eseguire autenticazione come operatore e ottenere un token valido",
+      "Invocare l'endpoint di acquisto digitale con token operatore e offerId=OFF-DIGI-001"
+    ],
+    "expected_results": [
+      "La richiesta viene rifiutata con errore di autorizzazione (HTTP 401/403 o equivalente) oppure viene applicata una regola che forza l'uso del canale operatore secondo le policy implementate",
+      "Non viene creato alcun ordine/acquisto associato alla chiamata rifiutata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Se l'architettura consente all'operatore di operare anche su endpoint digitali (impersonation), questo test va adattato alle policy effettive. Il requisito richiede modalità operative distinte, non necessariamente endpoint completamente segregati."
+  },
+  {
+    "test_id": "REQ-F-005.TC07",
+    "title": "E2E digitale (web/app): il cliente consulta e acquista autonomamente senza intervento operatore",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente E2E disponibile con canale digitale abilitato (web e/o app)",
+      "Esiste un cliente digitale attivo con metodo di pagamento/strumento necessario configurato se richiesto dal processo",
+      "Esiste almeno un'offerta acquistabile sul canale digitale"
+    ],
+    "test_data": [
+      "Cliente digitale: username=cliente.digitale01, password=ValidPass!23",
+      "Offerta acquistabile digitale: offerId=OFF-DIGI-010",
+      "Canale di esecuzione: web (ripetibile su app con stessi passi concettuali)"
+    ],
+    "steps": [
+      "Accedere al canale digitale con le credenziali del cliente",
+      "Navigare alla sezione di consultazione offerte",
+      "Selezionare l'offerta offerId=OFF-DIGI-010",
+      "Avviare il processo di acquisto",
+      "Confermare l'acquisto secondo i passaggi previsti dal canale digitale",
+      "Verificare lo stato dell'ordine/acquisto nella sezione riepilogo del cliente"
+    ],
+    "expected_results": [
+      "Il cliente visualizza le offerte disponibili sul canale digitale",
+      "Il cliente può completare l'acquisto end-to-end senza dover inserire dati di operatore o passare da un'interfaccia operatore",
+      "Al termine, l'ordine/acquisto risulta creato e visibile al cliente con stato coerente (es. 'Confermato' o equivalente)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito parla di 'cliente digitale compia il processo autonomamente': questo test verifica il flusso completo. Dettagli su pagamento/firma/identificazione non sono nel requisito e vanno allineati al processo reale."
+  },
+  {
+    "test_id": "REQ-F-005.TC08",
+    "title": "E2E fisico (UP): l'operatore riceve proposte dal motore e le propone al cliente tramite interfaccia operatore",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente E2E disponibile con canale UP abilitato",
+      "Credenziali operatore valide e profilo abilitato alla gestione offerte",
+      "Esiste un cliente servibile in UP",
+      "Il motore proposte è disponibile e configurato per restituire almeno una proposta per il cliente selezionato"
+    ],
+    "test_data": [
+      "Operatore: username=operatore01, password=ValidPass!23",
+      "Cliente: customerId=CF-20002",
+      "Touchpoint: UP"
+    ],
+    "steps": [
+      "Accedere all'interfaccia operatore (UP) con credenziali operatore",
+      "Aprire la scheda del cliente customerId=CF-20002",
+      "Richiedere/ricevere le proposte dal motore tramite la funzione prevista (es. 'Recupera proposte')",
+      "Selezionare una proposta ricevuta",
+      "Eseguire l'azione di 'proponi al cliente' secondo la UI operatore (es. mostra dettaglio, avvia iter guidato)",
+      "Verificare che la proposta risulti registrata come proposta al cliente (stato/log/evento) secondo quanto previsto dall'implementazione"
+    ],
+    "expected_results": [
+      "L'operatore visualizza un elenco di proposte ricevute dal motore per il cliente selezionato",
+      "L'operatore può aprire e presentare una proposta tramite l'interfaccia operatore (flusso guidato)",
+      "Il sistema registra l'azione di proposta (es. audit/log o stato della proposta aggiornato) in modo verificabile"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Il requisito non specifica come avvenga la 'proposta al cliente' (es. stampa, invio, sola presentazione a schermo). La verifica è impostata su evidenze osservabili (stato/log/evento) da allineare all'implementazione."
+  },
+  {
+    "test_id": "REQ-F-005.TC09",
+    "title": "Marketing: associazione offerta a touchpoint con default 'tutti i touchpoint' (web, app, UP)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo Marketing abilitato alla configurazione offerte",
+      "Esiste un'offerta configurabile (offerId=OFF-MKT-001) senza restrizioni specifiche in REQ-F-002 (vendibile su web/app/UP)",
+      "Interfaccia o API di configurazione offerte disponibile"
+    ],
+    "test_data": [
+      "Utente Marketing: username=marketing01, password=ValidPass!23",
+      "Offerta: offerId=OFF-MKT-001",
+      "Impostazione touchpoint: non valorizzata esplicitamente (per verificare default)"
+    ],
+    "steps": [
+      "Accedere come utente Marketing alla funzione di gestione/configurazione offerte",
+      "Creare una nuova associazione o modificare l'offerta offerId=OFF-MKT-001 senza impostare esplicitamente i touchpoint",
+      "Salvare la configurazione",
+      "Recuperare i dettagli dell'offerta (da UI o API) per verificare i touchpoint abilitati"
+    ],
+    "expected_results": [
+      "Il salvataggio della configurazione va a buon fine",
+      "L'offerta risulta abilitata di default su tutti e tre i touchpoint: UP, web e app (o equivalenti nel dominio applicativo)"
+    ],
+    "traced_criteria": [],
+    "channels": [
+      "web",
+      "app",
+      "UP"
+    ],
+    "notes": "Questa funzionalità è descritta nella description ma non è coperta dagli acceptance criteria forniti; test creato per coprire regole di business esplicite nel testo. Dipendenza esterna: vincoli regolamentari per touchpoint definiti in REQ-F-002 e riferimento a REQ-F-027 (non forniti)."
+  },
+  {
+    "test_id": "REQ-F-005.TC10",
+    "title": "Marketing: abilitazione offerta su combinazione di touchpoint (solo digitale: web+app, escluso UP)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo Marketing abilitato alla configurazione offerte",
+      "Esiste un'offerta configurabile (offerId=OFF-MKT-002) vendibile su web e app e su UP secondo vincoli REQ-F-002 (nessun blocco)",
+      "Interfaccia o API di configurazione offerte disponibile",
+      "Canali digitali (web/app) e UP disponibili per consultazione offerte"
+    ],
+    "test_data": [
+      "Utente Marketing: username=marketing01, password=ValidPass!23",
+      "Offerta: offerId=OFF-MKT-002",
+      "Touchpoint abilitati: web=true, app=true, UP=false"
+    ],
+    "steps": [
+      "Accedere come utente Marketing alla funzione di gestione/configurazione offerte",
+      "Impostare per l'offerta offerId=OFF-MKT-002 i touchpoint abilitati: web e app, disabilitando UP",
+      "Salvare la configurazione",
+      "Accedere come cliente digitale e consultare le offerte su web",
+      "Accedere come cliente digitale e consultare le offerte su app",
+      "Accedere come operatore UP e richiedere le proposte/offerte per un cliente",
+      "Ricercare l'offerta offerId=OFF-MKT-002 nell'elenco risultante su UP"
+    ],
+    "expected_results": [
+      "Il salvataggio della configurazione touchpoint va a buon fine",
+      "L'offerta offerId=OFF-MKT-002 è visibile/selezionabile su web",
+      "L'offerta offerId=OFF-MKT-002 è visibile/selezionabile su app",
+      "L'offerta offerId=OFF-MKT-002 non è disponibile su UP (non presente tra offerte/proposte o non selezionabile)"
+    ],
+    "traced_criteria": [],
+    "channels": [
+      "web",
+      "app",
+      "UP"
+    ],
+    "notes": "Test derivato dalla description (promo speciali per digitale o UP). Non tracciabile ad AC perché gli AC non includono la configurazione Marketing. Dipendenza esterna: definizioni 'vendibile/non vendibile' per touchpoint in REQ-F-002."
+  },
+  {
+    "test_id": "REQ-F-005.TC11",
+    "title": "Negative: Marketing non può abilitare un touchpoint marcato come 'non vendibile' per il prodotto/offerta (vincoli REQ-F-002)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo Marketing abilitato alla configurazione offerte",
+      "Esiste un'offerta/prodotto (offerId=OFF-MKT-003) configurata in REQ-F-002 come 'non vendibile' su almeno un touchpoint (es. app)",
+      "Interfaccia o API di configurazione offerte disponibile"
+    ],
+    "test_data": [
+      "Utente Marketing: username=marketing01, password=ValidPass!23",
+      "Offerta: offerId=OFF-MKT-003",
+      "Vincolo REQ-F-002: app=NON_VENDIBILE",
+      "Tentativo configurazione: app=true"
+    ],
+    "steps": [
+      "Accedere come utente Marketing alla funzione di gestione/configurazione offerte",
+      "Aprire la configurazione touchpoint dell'offerta offerId=OFF-MKT-003",
+      "Tentare di abilitare il touchpoint 'app' nonostante il vincolo 'non vendibile' definito per tale offerta/prodotto",
+      "Salvare la configurazione"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della configurazione non conforme oppure forza automaticamente app=false",
+      "È mostrato un messaggio di errore/validazione che indica l'impossibilità di abilitare il touchpoint per vincoli regolamentari",
+      "La configurazione finale persiste con app disabilitata (app=false) e senza violare i vincoli"
+    ],
+    "traced_criteria": [],
+    "channels": [
+      "web",
+      "app",
+      "UP"
+    ],
+    "notes": "Test basato su dipendenza esterna REQ-F-002 (non fornita). La modalità di enforcement (blocco salvataggio vs auto-correzione) non è specificata: accettare una delle due implementazioni purché non consenta la violazione del vincolo."
+  },
+  {
+    "test_id": "REQ-F-005.TC12",
+    "title": "Integration/Negative: indisponibilità del motore proposte in canale fisico (UP) durante richiesta proposte",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test in cui sia possibile simulare indisponibilità/timeout del motore proposte (mock, feature flag o stop servizio)",
+      "Credenziali/Token operatore disponibili",
+      "Cliente servibile in UP disponibile"
+    ],
+    "test_data": [
+      "Operatore: operatorId=OP-9001",
+      "Cliente: customerId=CF-20002",
+      "Simulazione guasto: motore proposte risponde con timeout o HTTP 5xx"
+    ],
+    "steps": [
+      "Accedere all'interfaccia operatore (UP) come operatore",
+      "Aprire la scheda del cliente customerId=CF-20002",
+      "Attivare la simulazione di indisponibilità del motore proposte (timeout/5xx)",
+      "Richiedere le proposte dal motore tramite la funzione prevista",
+      "Osservare la risposta del sistema e lo stato dell'interfaccia operatore"
+    ],
+    "expected_results": [
+      "Il sistema gestisce l'errore del motore proposte senza crash dell'interfaccia",
+      "Viene mostrato un messaggio di errore chiaro (es. 'Servizio proposte non disponibile, riprovare') o equivalente",
+      "Non vengono mostrate proposte parziali/incoerenti come se fossero valide"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Il requisito non menziona esplicitamente la gestione errori del motore, ma la dipendenza è implicita nel flusso fisico (operatore riceve proposte dal motore). Questo test copre un caso negativo obbligatorio per requisiti high."
+  }
+]

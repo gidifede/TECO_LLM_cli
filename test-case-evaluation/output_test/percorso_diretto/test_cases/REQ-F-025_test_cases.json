@@ -1,0 +1,295 @@
+[
+  {
+    "test_id": "REQ-F-025.TC01",
+    "title": "Applicazione della regola: blocco riproposizione dello stesso prodotto entro l'intervallo minimo (canale web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Parametro di intervallo minimo riproposizione per prodotto impostato a 30 giorni",
+      "Esiste il cliente C-10001 nel sistema",
+      "Esiste il prodotto P-20001 nel catalogo del Motore",
+      "Non sono configurate eccezioni per il prodotto P-20001 e/o per il cliente C-10001",
+      "È disponibile uno storico presentazioni/proposte consultabile dal Motore per determinare l'ultima presentazione per coppia (cliente, prodotto)"
+    ],
+    "test_data": [
+      "Cliente: C-10001",
+      "Prodotto: P-20001",
+      "Intervallo minimo: 30 giorni",
+      "Timestamp presentazione iniziale: 2026-02-01 10:00:00",
+      "Timestamp nuova generazione presentazioni: 2026-02-15 10:00:00 (14 giorni dopo)"
+    ],
+    "steps": [
+      "Forzare/registrare una presentazione del prodotto P-20001 al cliente C-10001 con timestamp 2026-02-01 10:00:00",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10001 sul canale web al timestamp 2026-02-15 10:00:00",
+      "Recuperare l'elenco delle presentazioni generate per il cliente C-10001 sul canale web"
+    ],
+    "expected_results": [
+      "Nell'elenco delle presentazioni generate sul canale web NON è presente il prodotto P-20001",
+      "Il Motore considera la data dell'ultima presentazione del prodotto P-20001 per il cliente C-10001 per applicare la regola di intervallo minimo"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (Motore e team autorizzati) e i canali sono stati inferiti dal requisito. La modalità di impostazione del timestamp (clock di test o inserimento su storico) dipende dalle capacità dell'ambiente."
+  },
+  {
+    "test_id": "REQ-F-025.TC02",
+    "title": "Applicazione della regola: riproposizione consentita allo scadere dell'intervallo minimo (canale web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Parametro di intervallo minimo riproposizione per prodotto impostato a 30 giorni",
+      "Esiste il cliente C-10002 nel sistema",
+      "Esiste il prodotto P-20002 nel catalogo del Motore",
+      "Non sono configurate eccezioni per il prodotto P-20002 e/o per il cliente C-10002"
+    ],
+    "test_data": [
+      "Cliente: C-10002",
+      "Prodotto: P-20002",
+      "Intervallo minimo: 30 giorni",
+      "Timestamp presentazione iniziale: 2026-01-01 09:00:00",
+      "Timestamp nuova generazione presentazioni: 2026-01-31 09:00:00 (30 giorni dopo)"
+    ],
+    "steps": [
+      "Forzare/registrare una presentazione del prodotto P-20002 al cliente C-10002 con timestamp 2026-01-01 09:00:00",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10002 sul canale web al timestamp 2026-01-31 09:00:00",
+      "Recuperare l'elenco delle presentazioni generate per il cliente C-10002 sul canale web"
+    ],
+    "expected_results": [
+      "Nell'elenco delle presentazioni generate sul canale web è presente il prodotto P-20002",
+      "La riproposizione avviene perché il tempo trascorso dall'ultima presentazione è maggiore o uguale all'intervallo configurato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Assunzione verificabile: l'intervallo minimo è interpretato come condizione '>= X giorni' per consentire la riproposizione al giorno X."
+  },
+  {
+    "test_id": "REQ-F-025.TC03",
+    "title": "Eccezione configurata: riproposizione consentita prima dell'intervallo minimo",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Parametro di intervallo minimo riproposizione per prodotto impostato a 30 giorni",
+      "Esiste il cliente C-10003 nel sistema",
+      "Esiste il prodotto P-20003 nel catalogo del Motore",
+      "È configurata un'eccezione che consente la riproposizione del prodotto P-20003 al cliente C-10003 prima dei 30 giorni (regola/whitelist eccezioni attiva)",
+      "È disponibile uno storico presentazioni/proposte consultabile dal Motore"
+    ],
+    "test_data": [
+      "Cliente: C-10003",
+      "Prodotto: P-20003",
+      "Intervallo minimo: 30 giorni",
+      "Eccezione: abilitata per coppia (C-10003, P-20003)",
+      "Timestamp presentazione iniziale: 2026-02-01 08:00:00",
+      "Timestamp nuova generazione presentazioni: 2026-02-10 08:00:00 (9 giorni dopo)"
+    ],
+    "steps": [
+      "Forzare/registrare una presentazione del prodotto P-20003 al cliente C-10003 con timestamp 2026-02-01 08:00:00",
+      "Verificare che l'eccezione per (C-10003, P-20003) risulti attiva nella configurazione",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10003 al timestamp 2026-02-10 08:00:00",
+      "Recuperare l'elenco delle presentazioni generate per il cliente C-10003"
+    ],
+    "expected_results": [
+      "Nell'elenco delle presentazioni generate è presente il prodotto P-20003 nonostante non siano trascorsi 30 giorni",
+      "Il comportamento differisce dal caso standard perché l'eccezione configurata è applicata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna irrisolta: il requisito cita 'eccezioni configurate' ma non specifica tipologia (per cliente, per prodotto, per segmento) né priorità tra eccezioni e regola base; il test assume un'eccezione per coppia (cliente, prodotto) disponibile via configurazione."
+  },
+  {
+    "test_id": "REQ-F-025.TC04",
+    "title": "Modifica del parametro di intervallo da utente autorizzato con audit trail",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente U-CONFIG-01 con ruolo autorizzato alla modifica configurazioni del Motore",
+      "L'interfaccia/meccanismo di configurazione del parametro è disponibile (UI o console o API di configurazione)",
+      "Audit trail abilitato per le modifiche di configurazione"
+    ],
+    "test_data": [
+      "Utente autorizzato: U-CONFIG-01",
+      "Parametro: intervallo minimo riproposizione per prodotto",
+      "Valore iniziale: 30 giorni",
+      "Nuovo valore: 7 giorni",
+      "Motivazione modifica (se prevista): \"Campagna breve\""
+    ],
+    "steps": [
+      "Autenticarsi come U-CONFIG-01",
+      "Aprire la sezione di configurazione del Motore relativa alla frequenza di riproposizione per prodotto",
+      "Verificare il valore corrente del parametro (30 giorni)",
+      "Impostare il parametro a 7 giorni",
+      "Salvare/applicare la configurazione",
+      "Aprire la sezione di audit trail delle modifiche di configurazione",
+      "Filtrare l'audit trail per il parametro modificato e per l'utente U-CONFIG-01"
+    ],
+    "expected_results": [
+      "Il sistema consente a U-CONFIG-01 di modificare e salvare il parametro da 30 a 7 giorni",
+      "Il nuovo valore (7 giorni) risulta persistito ed è visualizzato come valore corrente",
+      "Nell'audit trail è presente una voce relativa alla modifica con almeno: identificativo parametro, valore precedente (30), nuovo valore (7), utente (U-CONFIG-01), data/ora della modifica"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica quali campi minimi debba contenere l'audit trail; nel test si assume un set minimo verificabile (parametro, old/new value, utente, timestamp)."
+  },
+  {
+    "test_id": "REQ-F-025.TC05",
+    "title": "Tentativo di modifica del parametro da utente non autorizzato (accesso negato)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente U-READ-01 privo di permessi di modifica configurazioni del Motore",
+      "L'interfaccia/meccanismo di configurazione del parametro è disponibile"
+    ],
+    "test_data": [
+      "Utente non autorizzato: U-READ-01",
+      "Parametro: intervallo minimo riproposizione per prodotto",
+      "Nuovo valore tentato: 14 giorni"
+    ],
+    "steps": [
+      "Autenticarsi come U-READ-01",
+      "Aprire la sezione di configurazione del Motore relativa alla frequenza di riproposizione per prodotto",
+      "Tentare di modificare il parametro a 14 giorni",
+      "Tentare di salvare/applicare la configurazione"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio della modifica per mancanza di autorizzazioni",
+      "È mostrato un messaggio di errore/una risposta di accesso negato (es. 403 o equivalente) e il valore del parametro rimane invariato"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il canale dell'interfaccia di configurazione; il test assume un canale web o equivalente. Adeguare la verifica dell'errore (UI/API) in base all'implementazione."
+  },
+  {
+    "test_id": "REQ-F-025.TC06",
+    "title": "Coerenza multi-canale: la regola blocca la riproposizione su canale diverso (web -> app)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Parametro di intervallo minimo riproposizione per prodotto impostato a 30 giorni",
+      "Esiste il cliente C-10004 nel sistema",
+      "Esiste il prodotto P-20004 nel catalogo del Motore",
+      "Non sono configurate eccezioni per il prodotto P-20004 e/o per il cliente C-10004",
+      "Sono attivi almeno due canali di presentazione: web e app",
+      "Lo storico presentazioni è condiviso tra canali (o comunque consultabile dal Motore in modo unificato)"
+    ],
+    "test_data": [
+      "Cliente: C-10004",
+      "Prodotto: P-20004",
+      "Intervallo minimo: 30 giorni",
+      "Timestamp presentazione su web: 2026-02-01 12:00:00",
+      "Timestamp generazione su app: 2026-02-05 12:00:00 (4 giorni dopo)"
+    ],
+    "steps": [
+      "Forzare/registrare una presentazione del prodotto P-20004 al cliente C-10004 sul canale web con timestamp 2026-02-01 12:00:00",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10004 sul canale app al timestamp 2026-02-05 12:00:00",
+      "Recuperare l'elenco delle presentazioni generate per il cliente C-10004 sul canale app"
+    ],
+    "expected_results": [
+      "Nell'elenco delle presentazioni generate sul canale app NON è presente il prodotto P-20004",
+      "La regola di intervallo minimo è applicata coerentemente anche quando l'ultima presentazione è avvenuta su un canale differente"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-4"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "AC-4 richiede evidenza tramite test automatizzati: questo caso è progettato per essere automatizzabile (setup storico + invocazione generazione per canale + assert su output)."
+  },
+  {
+    "test_id": "REQ-F-025.TC07",
+    "title": "Edge case: intervallo minimo impostato a 0 giorni (nessun blocco riproposizione)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Parametro di intervallo minimo riproposizione per prodotto impostato a 0 giorni",
+      "Esiste il cliente C-10005 nel sistema",
+      "Esiste il prodotto P-20005 nel catalogo del Motore",
+      "Non sono configurate eccezioni per il prodotto P-20005 e/o per il cliente C-10005"
+    ],
+    "test_data": [
+      "Cliente: C-10005",
+      "Prodotto: P-20005",
+      "Intervallo minimo: 0 giorni",
+      "Timestamp presentazione iniziale: 2026-02-10 10:00:00",
+      "Timestamp nuova generazione presentazioni: 2026-02-10 10:05:00 (5 minuti dopo)"
+    ],
+    "steps": [
+      "Forzare/registrare una presentazione del prodotto P-20005 al cliente C-10005 con timestamp 2026-02-10 10:00:00",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10005 al timestamp 2026-02-10 10:05:00",
+      "Recuperare l'elenco delle presentazioni generate per il cliente C-10005"
+    ],
+    "expected_results": [
+      "Nell'elenco delle presentazioni generate è presente il prodotto P-20005",
+      "Il Motore non applica alcun blocco temporale quando l'intervallo è configurato a 0 giorni"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce i vincoli di dominio del parametro (minimo/massimo). Questo test assume che 0 sia un valore ammesso; se non lo fosse, convertire in test negativo di validazione input configurazione."
+  },
+  {
+    "test_id": "REQ-F-025.TC08",
+    "title": "Negativo: servizio di configurazione non disponibile durante la lettura del parametro (fallback/errore controllato)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il Motore recupera il parametro di intervallo minimo da un meccanismo di configurazione esterno (es. config service/DB/config repository)",
+      "Simulazione guasto: il servizio/meccanismo di configurazione risulta non disponibile (timeout o errore 5xx) al momento della generazione presentazioni",
+      "Esiste il cliente C-10006 nel sistema",
+      "Esiste il prodotto P-20006 nel catalogo del Motore"
+    ],
+    "test_data": [
+      "Cliente: C-10006",
+      "Prodotto: P-20006",
+      "Guasto configurazione: timeout 10s in lettura parametro intervallo minimo"
+    ],
+    "steps": [
+      "Configurare il test double/mocking o le condizioni ambientali per rendere non disponibile la lettura del parametro di intervallo minimo (timeout/5xx)",
+      "Avviare la generazione delle presentazioni del Motore per il cliente C-10006",
+      "Raccogliere l'esito della generazione (risposta API/log evento/monitoring) e l'elenco presentazioni generate (se prodotto)"
+    ],
+    "expected_results": [
+      "Il Motore gestisce l'indisponibilità della configurazione in modo controllato (errore esplicito o fallback deterministico) senza generare crash",
+      "È registrato un evento/log di errore che indica l'impossibilità di leggere la configurazione dell'intervallo minimo",
+      "Se è previsto un fallback, il comportamento applicato è coerente e verificabile (es. uso dell'ultimo valore noto o valore di default configurato) e viene indicato nei log"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento atteso in caso di indisponibilità del meccanismo di configurazione (fallback vs errore). Il test definisce verifiche minime (gestione controllata + logging) e richiede decisione di prodotto/architettura per l'assert finale sul fallback."
+  }
+]

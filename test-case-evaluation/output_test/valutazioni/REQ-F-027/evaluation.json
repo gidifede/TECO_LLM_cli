@@ -1,0 +1,139 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-027",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 81,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-027.TC01",
+        "detail": "Assume un 'repository' della matrice (DB/servizio di configurazione) e richiede logging/telemetria con dettaglio ruolo+versione/timestamp: il requisito non specifica dove risiede la matrice né che esistano log/trace o metadati di versione."
+      },
+      {
+        "test_id": "REQ-F-027.TC02",
+        "detail": "Assume l'esistenza di un 'catalogo prodotti' e che tutti i prodotti siano 'tecnicamente proponibili' salvo vincolo di ruolo: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.TC03",
+        "detail": "Assume l'esistenza di un 'catalogo prodotti' e condizioni di proponibilità indipendenti dal ruolo: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.TC04",
+        "detail": "Assume l'esistenza di un 'catalogo prodotti' e condizioni di proponibilità indipendenti dal ruolo: non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.TC05",
+        "detail": "Introduce il concetto di 'override' (meccanismo per forzare la proposta di un prodotto non abilitato) e ne richiede l'assenza: il requisito non menziona override."
+      },
+      {
+        "test_id": "REQ-F-027.TC06",
+        "detail": "Definisce un comportamento in fault 'fail-closed' (nessun elenco non filtrato, errore/lista vuota) e specifica timeout 30s/HTTP 503: il requisito non specifica comportamento in caso di indisponibilità della matrice né codici/timeout."
+      },
+      {
+        "test_id": "REQ-F-027.TC07",
+        "detail": "Assume formati export (CSV/XLSX/PDF), eventuali filtri e la presenza di versione/timestamp nel report: il requisito richiede solo esportabilità e verificabilità per audit, senza dettagli di formato/metadati."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-027.TC02",
+          "REQ-F-027.TC03",
+          "REQ-F-027.TC04"
+        ],
+        "detail": "I tre TC replicano lo stesso scenario E2E (generazione proposta su canale operatore e verifica esclusione prodotti non abilitati) variando solo il ruolo; la copertura di AC-2 è sostanzialmente sovrapposta."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 13,
+    "coherence_score": 43,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-027.US01.TC02",
+        "detail": "Introduce la casistica 'ruolo mancante/non riconosciuto (XYZ)' e impone un comportamento fail-safe (lista vuota/errore): non previsto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC03",
+        "detail": "Introduce indisponibilità matrice e comportamento fail-safe (lista vuota/errore): il requisito non definisce comportamento in fault."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC04",
+        "detail": "Assume regola 'prodotto assente dalla matrice => non abilitato di default': non esplicitata dal requisito (che parla di impedire proposta di prodotti non consentiti, ma non definisce il default per prodotti non mappati)."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC01",
+        "detail": "Introduce un canale/sistema specifico 'front-end commerciale' e la verifica lato UI: il requisito cita solo 'canali operatore' e non menziona un front-end specifico."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC02",
+        "detail": "Introduce 'front-end commerciale' come canale e test di visualizzazione UI multi-profilo: non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC03",
+        "detail": "Introduce gestione messaggi/standard di progetto e un comportamento UI di errore per ruolo non valido/mancante: non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC04",
+        "detail": "Introduce scenario di 'cambio utenza/ruolo durante la sessione' e ricalcolo proposte: non menzionato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC01",
+        "detail": "Introduce 'dashboard' e un attore/ruolo 'Compliance' con permessi specifici: il requisito richiede report per audit ma non definisce canale/strumento né ruoli autorizzativi."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC02",
+        "detail": "Introduce export da 'dashboard' con struttura specifica (indicatori SI/NO per ruolo): il requisito non definisce layout/struttura del report."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC03",
+        "detail": "Introduce requisiti di autorizzazione/visibilità (utente non autorizzato non può accedere/esportare): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC04",
+        "detail": "Introduce comportamento in caso di errore di generazione report ('no output parziali', download fallisce esplicitamente): non specificato dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1 (\"tale matrice è consultata dal Motore prima di generare proposte\")",
+        "detail": "I TC tracciati ad AC-1 validano quasi sempre solo l'effetto (filtro) e non dimostrano che la matrice sia effettivamente consultata 'prima' della generazione (mancano evidenze/asserzioni sulla consultazione o sull'ordine temporale)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-027.US01.TC02",
+          "REQ-F-027.US02.TC03"
+        ],
+        "detail": "Entrambi testano ruolo mancante/non valido con aspettativa 'nessuna proposta non autorizzata' (uno via Motore, uno via front-end), scenario concettualmente duplicato rispetto al requisito che non richiede questa casistica."
+      },
+      {
+        "test_ids": [
+          "REQ-F-027.US01.TC03",
+          "REQ-F-027.US03.TC04"
+        ],
+        "detail": "Entrambi testano gestione errore (matrice/report non disponibile) con aspettativa di errore gestito e assenza di output: scenari di resilienza non richiesti dal requisito e parzialmente sovrapposti come intento (fault handling)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set 'direct' risulta piu coerente: copre tutti gli AC senza introdurre canali/attori estranei al requisito e include un test esplicito di consultazione della matrice da parte del Motore (AC-1) e l'export per audit (AC-3). Il set 'indirect_persona' aggiunge molte informazioni non tracciabili (front-end commerciale, dashboard, ruolo Compliance, autorizzazioni, gestione errori e scenari di sessione) e, pur dichiarando copertura AC-1, non dimostra la consultazione 'prima' della generazione ma solo l'effetto di filtro; per questo ha piu added_info e anche una missing_info sostanziale su AC-1, con punteggio complessivo inferiore (43 vs 81)."
+  }
+}

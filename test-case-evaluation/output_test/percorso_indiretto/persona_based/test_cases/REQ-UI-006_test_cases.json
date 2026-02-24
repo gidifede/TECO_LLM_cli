@@ -1,0 +1,429 @@
+[
+  {
+    "story_id": "REQ-UI-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-006.US01.TC01",
+        "title": "Cliente: prodotto non sottoscrivibile mostra condizioni mancanti e azioni di sanatoria (App/Web)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato su App e/o Web",
+          "Esiste un prodotto/offerta associato al profilo cliente in stato NON sottoscrivibile",
+          "Il sistema a monte (motore regole/servizio sottoscrivibilità) restituisce: stato NON sottoscrivibile, elenco condizioni mancanti e azioni necessarie per ciascuna condizione"
+        ],
+        "test_data": [
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizioni mancanti restituite dal servizio: ['Documento identità scaduto', 'Questionario MIFID non compilato']",
+          "Azioni restituite dal servizio: ['Aggiorna documento identità', 'Compila questionario MIFID']"
+        ],
+        "steps": [
+          "Accedere all'App o al portale Web come cliente CF RSSMRA80A01H501U",
+          "Aprire il dettaglio del prodotto/offerta 'Prodotto X' (ID OFF-1001) associato al profilo",
+          "Individuare la sezione/stato di proponibilità/sottoscrivibilità",
+          "Visualizzare l'area 'Condizioni mancanti' (o equivalente)",
+          "Per ciascuna condizione elencata, visualizzare l'azione di sanatoria associata"
+        ],
+        "expected_results": [
+          "Lo stato di proponibilità/sottoscrivibilità del prodotto è visibile nel dettaglio prodotto e risulta 'Non sottoscrivibile' (o dicitura equivalente)",
+          "È mostrato in modo chiaro l'elenco delle condizioni mancanti e contiene esattamente: 'Documento identità scaduto' e 'Questionario MIFID non compilato'",
+          "Per 'Documento identità scaduto' è indicata l'azione 'Aggiorna documento identità'",
+          "Per 'Questionario MIFID non compilato' è indicata l'azione 'Compila questionario MIFID'",
+          "Le condizioni e le azioni mostrate risultano pertinenti al profilo del cliente e al prodotto consultato (nessuna condizione/azione estranea)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito originale non include esplicitamente la visualizzazione dello stato di sottoscrivibilità; il test la verifica perché presente negli AC della user story. Coerenza condizioni/azioni dipende dal servizio a monte."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC02",
+        "title": "Cliente: nessuna condizione mancante non mostra azioni di sanatoria (App/Web)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente autenticato su App e/o Web",
+          "Esiste un prodotto/offerta associato al profilo cliente per cui il servizio restituisce nessuna condizione mancante (lista vuota)"
+        ],
+        "test_data": [
+          "Cliente: CF VRDLGI75C10F205Z",
+          "Prodotto/offerta: 'Prodotto Y' (ID OFF-2002)",
+          "Condizioni mancanti restituite dal servizio: []"
+        ],
+        "steps": [
+          "Accedere all'App o al portale Web come cliente CF VRDLGI75C10F205Z",
+          "Aprire il dettaglio del prodotto/offerta 'Prodotto Y' (ID OFF-2002)",
+          "Visualizzare l'area relativa a condizioni mancanti/azioni (se presente)"
+        ],
+        "expected_results": [
+          "Non viene mostrato alcun elenco di condizioni mancanti oppure l'elenco risulta vuoto senza elementi",
+          "Non vengono mostrate azioni di sanatoria quando non esistono condizioni mancanti"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La user story indica esplicitamente che in assenza di condizioni mancanti non devono comparire azioni di sanatoria."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC03",
+        "title": "Cliente: condizioni mancanti non determinabili (servizio non disponibile) mostra messaggio di indisponibilità (App/Web)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente autenticato su App e/o Web",
+          "Esiste un prodotto/offerta associato al profilo cliente",
+          "Il servizio di verifica/sottoscrivibilità è non disponibile (timeout/HTTP 503) oppure restituisce esito 'non determinabile'"
+        ],
+        "test_data": [
+          "Cliente: CF BNCLSS90D41H501K",
+          "Prodotto/offerta: 'Prodotto Z' (ID OFF-3003)",
+          "Errore servizio: timeout > 10s (o HTTP 503)"
+        ],
+        "steps": [
+          "Accedere all'App o al portale Web come cliente CF BNCLSS90D41H501K",
+          "Aprire il dettaglio del prodotto/offerta 'Prodotto Z' (ID OFF-3003)",
+          "Attendere il caricamento della sezione stato/condizioni"
+        ],
+        "expected_results": [
+          "L'interfaccia indica che lo stato e/o le condizioni di sottoscrivibilità non sono temporaneamente disponibili (messaggio chiaro e non tecnico)",
+          "Non viene mostrato un elenco di condizioni/azioni potenzialmente errato o parziale come se fosse definitivo"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La gestione dell'indisponibilità è un edge case della user story; l'AC originale non menziona l'errore servizio. Si verifica comunque la non esposizione di condizioni non affidabili."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC04",
+        "title": "Cliente: elenco condizioni molto lungo rimane consultabile e chiaro (App/Web)",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente autenticato su App e/o Web",
+          "Esiste un prodotto/offerta associato al profilo cliente in stato NON sottoscrivibile",
+          "Il servizio restituisce un elenco condizioni mancanti lungo (>= 25 elementi) ciascuno con azione associata"
+        ],
+        "test_data": [
+          "Cliente: CF PLRMRC85E12F839Q",
+          "Prodotto/offerta: 'Prodotto W' (ID OFF-4004)",
+          "Numero condizioni mancanti: 25"
+        ],
+        "steps": [
+          "Accedere all'App o al portale Web come cliente CF PLRMRC85E12F839Q",
+          "Aprire il dettaglio del prodotto/offerta 'Prodotto W' (ID OFF-4004)",
+          "Aprire la sezione 'Condizioni mancanti' (se collassata)",
+          "Scorrere l'elenco fino all'ultimo elemento",
+          "Verificare la presenza dell'azione associata per almeno il primo, un elemento intermedio e l'ultimo"
+        ],
+        "expected_results": [
+          "L'elenco delle condizioni mancanti è consultabile integralmente (scroll/paginazione/espansione) senza blocchi dell'interfaccia",
+          "Ogni condizione visualizzata mantiene leggibilità e associazione chiara con la relativa azione di sanatoria"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non prescrive un pattern UI specifico (scroll/accordion); il test verifica l'obiettivo: consultabilità e chiarezza."
+      },
+      {
+        "test_id": "REQ-UI-006.US01.TC05",
+        "title": "Cliente fisico in UP: visualizzazione assistita di condizioni mancanti e azioni (canale UP)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente presente in UP e identificato secondo procedure di sportello/assistenza",
+          "Postazione UP disponibile per consultazione assistita del profilo cliente",
+          "Esiste un prodotto/offerta associato al profilo cliente in stato NON sottoscrivibile",
+          "Il servizio a monte restituisce condizioni mancanti e azioni necessarie"
+        ],
+        "test_data": [
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizioni mancanti: ['Documento identità scaduto']",
+          "Azioni: ['Aggiorna documento identità']"
+        ],
+        "steps": [
+          "Avviare la consultazione assistita in UP per il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001) associato al profilo",
+          "Visualizzare la sezione con condizioni mancanti e azioni"
+        ],
+        "expected_results": [
+          "Sono mostrate in modo chiaro le condizioni mancanti per la sottoscrivibilità del prodotto per il cliente selezionato",
+          "Per ciascuna condizione è indicata l'azione necessaria per sanarla"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "UP"
+        ],
+        "notes": "Basato sull'assunzione della user story: la UI cliente fisico è fruibile tramite consultazione assistita in UP; i dettagli della postazione/UI non sono specificati."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-006.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-006.US02.TC01",
+        "title": "Operatore: prodotto non sottoscrivibile mostra condizioni mancanti e azioni; workflow disponibile per condizioni sanabili",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato su front-end commerciale con ruolo abilitato alla gestione del cliente",
+          "Cliente selezionabile/gestibile nel contesto UP secondo autorizzazioni",
+          "Esiste un prodotto/offerta per il cliente in stato NON sottoscrivibile",
+          "Configurazione di sanabilità presente: almeno una condizione è sanabile a sportello e abilita il workflow; almeno una condizione non è sanabile"
+        ],
+        "test_data": [
+          "Operatore: matricola OP12345, ruolo 'Addetto sportello'",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione A (sanabile): 'Documento identità scaduto' -> azione 'Aggiorna documento identità' -> workflow abilitato",
+          "Condizione B (non sanabile): 'Profilo di rischio non aggiornato' -> azione 'Aggiorna profilo di rischio' -> workflow NON abilitato"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP12345",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Visualizzare lo stato di proponibilità/sottoscrivibilità",
+          "Aprire la sezione 'Condizioni mancanti' (se collassata)",
+          "Verificare la presenza dell'azione e della disponibilità del workflow per la condizione 'Documento identità scaduto'",
+          "Verificare che per la condizione 'Profilo di rischio non aggiornato' sia mostrata l'azione ma non sia disponibile il workflow"
+        ],
+        "expected_results": [
+          "Lo stato di proponibilità/sottoscrivibilità del prodotto per il cliente selezionato è visibile e risulta 'Non sottoscrivibile' (o equivalente)",
+          "L'elenco condizioni mancanti è mostrato in modo chiaro e contiene 'Documento identità scaduto' e 'Profilo di rischio non aggiornato'",
+          "Per ogni condizione è indicata l'azione necessaria corrispondente",
+          "Per la condizione sanabile 'Documento identità scaduto' è disponibile l'accesso al workflow di sanatoria a sportello (pulsante/azione abilitata)",
+          "Per la condizione non sanabile 'Profilo di rischio non aggiornato' il workflow non è eseguibile (azione assente o disabilitata) ma l'informazione sull'azione necessaria è comunque visibile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La determinazione di sanabilità dipende da configurazioni/regole non fornite; il test richiede dati predisposti."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC02",
+        "title": "Operatore: esecuzione sanatoria a sportello con esito positivo genera log completo",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato su front-end commerciale con permessi di sanatoria per la tipologia di condizione",
+          "Cliente e prodotto selezionabili",
+          "Condizione sanabile con workflow disponibile",
+          "Sistema di logging/audit attivo e consultabile (es. SIEM, audit DB, log service) per verifica evento"
+        ],
+        "test_data": [
+          "Operatore: matricola OP12345",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione sanabile: 'Documento identità scaduto' (ID condizione: COND-01)",
+          "Azione workflow: 'Aggiorna documento identità' (ID azione: ACT-01)",
+          "Documento nuovo: 'CI AZ1234567', scadenza '2031-12-31', ente 'Comune di Roma'"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP12345",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Avviare il workflow di sanatoria per la condizione 'Documento identità scaduto'",
+          "Inserire i dati del nuovo documento (CI AZ1234567, scadenza 2031-12-31, ente Comune di Roma)",
+          "Confermare l'esecuzione dell'azione di sanatoria",
+          "Recuperare l'evento di log/audit relativo all'azione appena eseguita (tramite strumento di consultazione log)"
+        ],
+        "expected_results": [
+          "Il workflow completa l'azione con esito positivo (messaggio di conferma e/o stato condizione aggiornato a 'sanata')",
+          "Nei log è presente un evento relativo all'azione eseguita con almeno: identificativo cliente (CF RSSMRA80A01H501U), identificativo prodotto (OFF-1001), identificativo condizione (COND-01 o descrizione univoca), azione (ACT-01 o descrizione univoca), esito 'SUCCESS' (o equivalente) e timestamp",
+          "L'evento di log è associabile all'operatore OP12345 (es. matricola/utenza) se previsto dal sistema di audit"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Assunzione da user story: struttura minima dei log include cliente/prodotto/condizione/azione/esito/timestamp; la presenza dell'operatore nei log è verificata se disponibile."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC03",
+        "title": "Operatore: workflow non disponibile per una condizione mostra solo azione informativa e impedisce esecuzione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato su front-end commerciale",
+          "Cliente e prodotto selezionabili",
+          "Esiste almeno una condizione non sanabile a sportello secondo configurazione/regole"
+        ],
+        "test_data": [
+          "Operatore: matricola OP12345",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione non sanabile: 'Profilo di rischio non aggiornato' (ID condizione: COND-02)",
+          "Azione indicata: 'Aggiorna profilo di rischio'"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP12345",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Individuare la condizione 'Profilo di rischio non aggiornato'",
+          "Tentare di avviare il workflow di sanatoria per la condizione (se presente un controllo UI)"
+        ],
+        "expected_results": [
+          "La condizione 'Profilo di rischio non aggiornato' è visualizzata in elenco in modo chiaro",
+          "È indicata l'azione necessaria 'Aggiorna profilo di rischio'",
+          "Non è possibile avviare alcun workflow a sportello per la condizione (assenza di CTA o CTA disabilitata con motivazione)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Copre l'edge case 'workflow non disponibile'."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC04",
+        "title": "Operatore: errore durante sanatoria mostra esito negativo, non sana la condizione e traccia evento di errore nei log",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato con permessi di sanatoria",
+          "Condizione sanabile con workflow disponibile",
+          "Sistema/servizio downstream necessario alla sanatoria configurato per restituire errore (es. HTTP 500) o non raggiungibile"
+        ],
+        "test_data": [
+          "Operatore: matricola OP12345",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione sanabile: 'Documento identità scaduto' (ID condizione: COND-01)",
+          "Azione: 'Aggiorna documento identità' (ID azione: ACT-01)",
+          "Errore downstream: HTTP 500 su servizio aggiornamento documenti"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP12345",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Avviare il workflow di sanatoria per 'Documento identità scaduto'",
+          "Inserire dati documento validi",
+          "Confermare l'esecuzione dell'azione",
+          "Recuperare l'evento di log/audit relativo al tentativo di sanatoria"
+        ],
+        "expected_results": [
+          "L'interfaccia mostra un esito negativo dell'azione (messaggio chiaro) e non conferma la sanatoria",
+          "La condizione 'Documento identità scaduto' non risulta marcata come sanata (rimane tra le condizioni mancanti)",
+          "Nei log è presente un evento relativo al tentativo con: cliente, prodotto, condizione, azione, esito 'ERROR/FAIL' (o equivalente) e timestamp"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "L'edge case richiede tracciamento anche in errore; il requisito originale parla di tracciamento delle azioni intraprese, interpretato includendo i tentativi falliti."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC05",
+        "title": "Operatore: azione ripetuta sulla stessa condizione gestita (idempotenza o messaggio già sanata) e tracciata nei log",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato con permessi di sanatoria",
+          "Condizione sanabile con workflow disponibile",
+          "È già stata eseguita con successo una sanatoria sulla stessa condizione per lo stesso cliente/prodotto (condizione risulta sanata oppure in stato non più bloccante)"
+        ],
+        "test_data": [
+          "Operatore: matricola OP12345",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione: 'Documento identità scaduto' (ID condizione: COND-01)",
+          "Azione ripetuta: 'Aggiorna documento identità' (ID azione: ACT-01)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP12345",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Tentare di eseguire nuovamente il workflow di sanatoria per la condizione COND-01",
+          "Recuperare l'evento di log/audit relativo al secondo tentativo"
+        ],
+        "expected_results": [
+          "Il sistema impedisce la duplicazione in modo deterministico (es. workflow non avviabile) oppure consente l'avvio ma indica che la condizione risulta già sanata",
+          "Lo stato della condizione rimane coerente (non torna a 'mancante' e non genera inconsistenze)",
+          "Nei log è presente un evento del secondo tentativo con esito coerente (es. 'NO-OP/ALREADY_SANITIZED' o equivalente) e riferimenti a cliente/prodotto/condizione/azione/timestamp"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La user story ammette due comportamenti (idempotenza o segnalazione già sanata); il test accetta entrambi purché deterministici e tracciati."
+      },
+      {
+        "test_id": "REQ-UI-006.US02.TC06",
+        "title": "Operatore: permessi insufficienti impediscono sanatoria e tracciano la negazione nei log (se previsto)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Operatore autenticato su front-end commerciale con ruolo privo dei permessi per la sanatoria della specifica condizione/prodotto",
+          "Cliente e prodotto selezionabili",
+          "Condizione sanabile a sportello in generale, ma non eseguibile dall'operatore per mancanza permessi",
+          "Sistema di logging/audit consultabile (se la policy prevede tracciamento delle negazioni)"
+        ],
+        "test_data": [
+          "Operatore: matricola OP99999, ruolo 'Addetto sala' (senza permesso sanatoria documenti)",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Prodotto/offerta: 'Prodotto X' (ID OFF-1001)",
+          "Condizione: 'Documento identità scaduto' (ID condizione: COND-01)",
+          "Azione: 'Aggiorna documento identità' (ID azione: ACT-01)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP99999",
+          "Selezionare il cliente CF RSSMRA80A01H501U",
+          "Selezionare il prodotto/offerta 'Prodotto X' (ID OFF-1001)",
+          "Individuare la condizione 'Documento identità scaduto'",
+          "Tentare di avviare il workflow di sanatoria per la condizione",
+          "Se disponibile, consultare i log/audit relativi al tentativo"
+        ],
+        "expected_results": [
+          "L'interfaccia impedisce l'esecuzione della sanatoria (CTA non disponibile oppure blocco con messaggio di autorizzazione insufficiente)",
+          "La condizione non viene marcata come sanata",
+          "Se previsto dalla policy di logging, nei log è presente un evento di 'ACCESS DENIED/UNAUTHORIZED' (o equivalente) con riferimenti a cliente/prodotto/condizione/azione e timestamp"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La user story indica 'registrare il tentativo/negazione nei log (se previsto dalle policy di logging)': la verifica del log è condizionata alla policy effettiva."
+      }
+    ]
+  }
+]

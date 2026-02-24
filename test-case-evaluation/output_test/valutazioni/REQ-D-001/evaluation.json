@@ -1,0 +1,151 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-001",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-001.TC01",
+        "detail": "Introduce chiavi di matrice specifiche (prodotto/canale/segmento) e valori di esempio (P1, WEB, STANDARD) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.TC01",
+        "detail": "Assume un canale specifico 'WEB' e un campo 'segmento' nella matrice; il requisito non elenca dimensioni/chiavi della matrice né canali."
+      },
+      {
+        "test_id": "REQ-D-001.TC01",
+        "detail": "Assume che il motore applichi lo sconto solo per clienti appartenenti a un target specifico e che esista un concetto di 'cliente' e richiesta al motore con target; il requisito parla di calcolo proposte ma non definisce queste regole operative."
+      },
+      {
+        "test_id": "REQ-D-001.TC02",
+        "detail": "Richiede un valore di SLA/T_MAX definito e documentato e lo usa come soglia di test; il requisito dice 'tempo prevedibile e documentato' ma non introduce un parametro misurabile specifico (T_MAX) né dove sia definito."
+      },
+      {
+        "test_id": "REQ-D-001.TC02",
+        "detail": "Afferma 'senza necessità di interventi manuali (riavvii)' come aspettativa; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.TC04",
+        "detail": "Specifica comportamento UX e regola 'non salvata finché l'utente non ripete esplicitamente il salvataggio' (policy di retry/assenza retry); non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-D-001.TC05",
+        "detail": "Introduce requisiti di robustezza operativa del motore (no crash, esito deterministico e tracciabile) in caso di timeout lettura; il requisito non descrive la gestione errori."
+      },
+      {
+        "test_id": "REQ-D-001.TC06",
+        "detail": "Introduce una regola di validazione sul periodo di validità (fine < inizio) e comportamenti alternativi; il requisito richiede il campo ma non regole di validazione né policy di applicazione."
+      },
+      {
+        "test_id": "REQ-D-001.TC07",
+        "detail": "Introduce autorizzazioni/ruoli (viewer vs marketing) e blocco modifiche; il requisito cita che il marketing modifica via dashboard ma non definisce controlli autorizzativi."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: include anche 'eccezioni manuali', 'durate promozionali', 'flag vietato/interessante' e 'matrice delle combinazioni'",
+        "detail": "I TC validano principalmente matrice/flag/sconti/periodo/target, ma non coprono esplicitamente la persistenza e disponibilità al motore delle 'eccezioni manuali' come tipologia distinta."
+      },
+      {
+        "source": "Descrizione requisito: 'Tutte le configurazioni definite nella dashboard ... devono essere persistite'",
+        "detail": "Non esiste un TC specifico che verifichi la persistenza/recupero per tutte le tipologie elencate oltre ai campi minimi (es. 'durate promozionali' come oggetto/concetto separato dagli intervalli di validità)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-001.TC01",
+          "REQ-D-001.TC03"
+        ],
+        "detail": "Entrambi verificano persistenza nel datastore e presenza/valorizzazione dei campi minimi (stato/sconto/validità/target), con forte sovrapposizione di scenario."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 11,
+    "coherence_score": 37,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-001.US01.TC01",
+        "detail": "Introduce chiavi e canali specifici (Prodotto=P1, Canale=WEB) e formati/valori target (NUOVI_CLIENTI) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC02",
+        "detail": "Assume che la dashboard mostri in UI un SLA/ETA del tempo di applicazione; il requisito richiede tempo prevedibile e documentato, non che sia visualizzato in dashboard."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC04",
+        "detail": "Impone che il motore usi la configurazione precedente quando il salvataggio fallisce; il requisito non definisce la gestione funzionale in questo caso."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC05",
+        "detail": "Introduce gestione conflitti di modifica concorrente (lock, ETag/versione) e audit/log di chi ha salvato cosa; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC01",
+        "detail": "Introduce il concetto di 'vista consistente/snapshot' durante un calcolo e verifica di versioni/timestamp; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC03",
+        "detail": "Introduce una regola: il motore rifiuta configurazioni con campi mancanti e registra anomalia; il requisito richiede che i campi esistano negli oggetti, non definisce comportamento del motore con dati malformati."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC04",
+        "detail": "Aggiunge aspettative di recupero post-ripristino e assenza di stati intermedi corrotti dal motore; non descritto nel requisito."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC05",
+        "detail": "Aggiunge business rule: il motore non applica configurazioni scadute/non ancora valide e seleziona quella attiva; il requisito richiede il campo 'periodo di validità' ma non specifica l'uso di selezione/applicazione temporale."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC02",
+        "detail": "Aggiunge l'assunzione che 'prima dell'applicazione effettiva il motore può continuare a usare la configurazione precedente senza errori'; il requisito non definisce questo comportamento transitorio."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: elenco tipologie configurazioni (matrice, flag vietato/interessante, sconti, durate promozionali, target, eccezioni manuali)",
+        "detail": "Anche qui manca una copertura esplicita e dedicata per 'eccezioni manuali' come oggetto di configurazione da persistere e rendere disponibile al motore."
+      },
+      {
+        "source": "Descrizione requisito: 'durate promozionali'",
+        "detail": "I TC trattano il periodo di validità, ma non verificano esplicitamente una 'durata promozionale' come informazione distinta/derivata (se prevista) o come elemento di configurazione separato."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-001.US01.TC03",
+          "REQ-D-001.US02.TC03"
+        ],
+        "detail": "Entrambi ruotano attorno ai campi obbligatori dell'oggetto di configurazione (presenza/assenza) con parziale sovrapposizione concettuale."
+      },
+      {
+        "test_ids": [
+          "REQ-D-001.US01.TC02",
+          "REQ-D-001.US02.TC02"
+        ],
+        "detail": "Entrambi coprono AC-2 sul tempo prevedibile/documentato, uno lato UI e uno lato E2E, con sovrapposizione sul concetto di 'tempo documentato'."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3), ma il set 'direct' introduce meno informazioni non tracciabili al requisito (meno assunzioni su UI/SLA esposto, conflitti concorrenti, snapshot/versioning e regole di selezione temporale). L'indirect_persona aggiunge diverse business rules e meccanismi non menzionati (concorrenza, vista consistente, rifiuto configurazioni malformate, non-applicazione scadute/future), accumulando piu 'added_info' e quindi un punteggio di coerenza inferiore."
+  }
+}

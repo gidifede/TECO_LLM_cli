@@ -1,0 +1,210 @@
+[
+  {
+    "test_id": "REQ-V-003.TC01",
+    "title": "Applicazione della retention aziendale ai log senza possibilità di override locale",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di tracciamento log installato e attivo in un ambiente di test con pipeline di log funzionante",
+      "È disponibile un documento/parametrizzazione ufficiale della policy aziendale di retention (valori di riferimento per il test)",
+      "Sono disponibili privilegi amministrativi per leggere la configurazione effettiva di retention applicata dal sistema"
+    ],
+    "test_data": [
+      "Policy aziendale retention (valore di riferimento): 180 giorni (o valore definito dalla policy vigente)",
+      "Log di test generati giornalmente per almeno 2 giorni (timestamp noti)"
+    ],
+    "steps": [
+      "Recuperare dai riferimenti aziendali il valore di retention atteso per la tipologia di log in uso",
+      "Accedere alla configurazione effettiva del sistema di tracciamento log (config file, console, API o parametro centralizzato)",
+      "Verificare il valore di retention configurato/applicato per i log",
+      "Tentare di impostare localmente un valore di retention diverso da quello aziendale (es. 30 giorni) tramite il meccanismo previsto dal prodotto (config/console/API)",
+      "Riavviare/ricaricare la configurazione del servizio di logging (se applicabile) per applicare le modifiche",
+      "Rileggere la configurazione effettivamente applicata dopo il tentativo di override"
+    ],
+    "expected_results": [
+      "Il valore di retention effettivamente applicato corrisponde al valore definito dalla policy aziendale per la tipologia di log",
+      "Il tentativo di override locale della retention viene impedito (errore/permesso negato) oppure ignorato mantenendo la retention aziendale",
+      "Dopo riavvio/ricarica, la retention applicata resta conforme alla policy aziendale (nessuna persistenza dell'override locale)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (amministratore di piattaforma/audit) e il canale 'web' sono stati inferiti: il requisito non specifica interfacce; il test presuppone l'esistenza di un punto di amministrazione o accesso a configurazione/API. Il valore '180 giorni' è un esempio e deve essere sostituito con quello della policy vigente."
+  },
+  {
+    "test_id": "REQ-V-003.TC02",
+    "title": "Gestione privacy: assenza di dati personali in chiaro nei log o anonimizzazione applicata secondo direttive interne",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di tracciamento log attivo e in grado di acquisire log applicativi",
+      "Sono disponibili le direttive interne che definiscono quali campi sono dati personali e la modalità attesa (mascheramento/anonimizzazione/tokenizzazione)",
+      "È disponibile un endpoint/azione applicativa che, se non gestita, genererebbe log contenenti dati personali (es. email, codice fiscale) in payload o parametri"
+    ],
+    "test_data": [
+      "Email utente: mario.rossi@example.com",
+      "Codice fiscale (esempio): RSSMRA80A01H501U",
+      "Numero telefono (esempio): +39 3331234567"
+    ],
+    "steps": [
+      "Eseguire l'azione applicativa che genera eventi di log includendo i dati personali di test (email, CF, telefono) nei parametri/payload",
+      "Recuperare i log generati relativi all'azione eseguita (tramite ricerca per timestamp/correlation-id se disponibile)",
+      "Ispezionare i campi del log e il messaggio per verificare la presenza di dati personali in chiaro",
+      "Verificare che eventuali dati personali presenti siano trattati secondo la direttiva interna (es. mascherati/anonimizzati) e non ricostruibili direttamente"
+    ],
+    "expected_results": [
+      "Nei log non sono presenti dati personali in chiaro (email, codice fiscale, telefono) nei campi e nel messaggio",
+      "Se la direttiva interna prevede anonimizzazione/mascheramento, i dati personali risultano trasformati secondo lo schema previsto (es. mascheramento parziale o token) in modo consistente",
+      "Eventuali identificativi tecnici (es. userId) risultano utilizzati in alternativa ai dati personali, se previsto dalle direttive interne"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito è dichiarativo: 'conforme alle direttive interne' non specifica regole verificabili; il test assume l'esistenza di una direttiva interna che definisce campi PII e trasformazioni attese. Attori/canale inferiti."
+  },
+  {
+    "test_id": "REQ-V-003.TC03",
+    "title": "Negativo: tentativo di bypass dell'anonimizzazione tramite campi liberi nei messaggi di log",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di logging attivo con regole di privacy/anonimizzazione abilitate secondo direttive interne",
+      "È disponibile un componente applicativo che scrive messaggi di log con testo libero (es. logger.info(\"...\") )",
+      "È possibile eseguire una chiamata che produca un messaggio di log con testo contenente dati personali"
+    ],
+    "test_data": [
+      "Messaggio di log contenente PII: \"Errore autenticazione per utente mario.rossi@example.com CF RSSMRA80A01H501U\""
+    ],
+    "steps": [
+      "Eseguire l'azione che genera un messaggio di log a testo libero contenente i dati personali di test",
+      "Recuperare i log generati relativi all'azione eseguita",
+      "Verificare il contenuto del messaggio di log memorizzato nel sistema di tracciamento"
+    ],
+    "expected_results": [
+      "Il sistema impedisce la persistenza del messaggio contenente PII in chiaro oppure applica mascheramento/anonimizzazione anche sul testo libero secondo direttive interne",
+      "Non risultano presenti nei log i valori completi di email e codice fiscale forniti nel messaggio originario"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Assunzione: le direttive interne richiedono protezione PII anche nei messaggi a testo libero; se la direttiva limita il controllo ai soli campi strutturati, adeguare l'atteso. Attori/canale inferiti."
+  },
+  {
+    "test_id": "REQ-V-003.TC04",
+    "title": "Autorizzazioni: accesso ai log consentito solo a ruoli autorizzati secondo policy interne",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono almeno due ruoli: uno autorizzato alla consultazione dei log (es. Auditor/Security) e uno non autorizzato (es. Utente standard/Operatore non abilitato), definiti da policy interna",
+      "Sono disponibili due account di test associati ai ruoli sopra",
+      "È presente un'interfaccia o API per consultare/ricercare i log"
+    ],
+    "test_data": [
+      "Account autorizzato: audit.user (ruolo: Auditor/Security)",
+      "Account non autorizzato: standard.user (ruolo: Standard)",
+      "Filtro ricerca: intervallo temporale ultimo 1 giorno, parola chiave \"login\""
+    ],
+    "steps": [
+      "Autenticarsi come utente non autorizzato",
+      "Tentare di accedere alla funzione di consultazione/ricerca log",
+      "Eseguire una ricerca log con il filtro definito",
+      "Disconnettersi",
+      "Autenticarsi come utente autorizzato",
+      "Accedere alla funzione di consultazione/ricerca log",
+      "Eseguire la stessa ricerca log con il filtro definito"
+    ],
+    "expected_results": [
+      "L'utente non autorizzato non può accedere ai log (accesso negato/403/permesso insufficiente) e non visualizza contenuti di log",
+      "L'utente autorizzato può accedere alla funzione e visualizza i risultati della ricerca coerenti con il filtro",
+      "Gli eventi di accesso ai log (successo/fallimento) risultano tracciati secondo le modalità previste dalla piattaforma (se disponibili)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia ruoli e meccanismi di accesso: ruoli e canale sono stati inferiti. L'ultima expected relativa al tracciamento degli accessi è subordinata alle capacità della piattaforma; se non previsto, rimuovere la verifica."
+  },
+  {
+    "test_id": "REQ-V-003.TC05",
+    "title": "Conservazione: verifica dell'effettiva cancellazione/archiviazione dei log allo scadere della retention",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "È possibile configurare un ambiente di test con retention ridotta temporaneamente tramite policy centralizzata (non override locale) per rendere il test eseguibile (es. 1 giorno)",
+      "È disponibile un job/servizio di lifecycle management (cancellazione/archiviazione) operativo",
+      "Sono disponibili strumenti per verificare presenza/assenza dei log su storage primario e, se previsto, su storage di archiviazione"
+    ],
+    "test_data": [
+      "Retention di test tramite policy centralizzata: 1 giorno (solo ambiente test)",
+      "Log di test con timestamp T0 (più vecchio di 24h + margine) e T1 (meno vecchio di 24h)"
+    ],
+    "steps": [
+      "Applicare la retention di test tramite policy centralizzata per la tipologia di log in oggetto",
+      "Generare un set di log di test e registrare i loro identificativi/timestamp",
+      "Attendere il superamento della finestra di retention per i log T0 (includendo un margine per l'esecuzione del job)",
+      "Eseguire/attendere l'esecuzione del processo di lifecycle (cancellazione/archiviazione) secondo scheduling",
+      "Ricercare i log T0 nel sistema di consultazione/indice",
+      "Ricercare i log T1 nel sistema di consultazione/indice",
+      "Se la policy prevede archiviazione, verificare la presenza dei log T0 nello storage di archivio e l'assenza nello storage primario"
+    ],
+    "expected_results": [
+      "I log T0 oltre la retention non sono più disponibili nel sistema primario di consultazione (non ricercabili/assenti)",
+      "I log T1 entro la retention restano disponibili e consultabili",
+      "Se prevista archiviazione, i log T0 risultano presenti nello storage di archivio secondo policy e non nel primario"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: disponibilità di una policy centralizzata che consenta retention ridotta in ambiente test senza 'override locale'. Il requisito non specifica se la retention comporti cancellazione o archiviazione: il test copre entrambe le possibilità condizionando le verifiche alla policy vigente."
+  },
+  {
+    "test_id": "REQ-V-003.TC06",
+    "title": "Audit: disponibilità e verificabilità della documentazione su accesso e conservazione dei log",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un repository/document management aziendale o un'area applicativa dove sono pubblicate le procedure ufficiali",
+      "È disponibile un profilo 'Auditor' con accesso in sola lettura alla documentazione",
+      "Sono disponibili evidenze di configurazione/controlli (es. screenshot console, export configurazione, report) per supportare la verificabilità"
+    ],
+    "test_data": [
+      "Documento procedurale: \"Procedura Accesso ai Log - vX.Y\" (identificativo reale)",
+      "Documento procedurale: \"Procedura Retention e Conservazione Log - vX.Y\" (identificativo reale)"
+    ],
+    "steps": [
+      "Accedere al repository/area documentale con profilo Auditor",
+      "Ricercare e aprire la procedura relativa all'accesso ai log",
+      "Verificare che la procedura includa: ruoli autorizzati, modalità di richiesta/approvazione (se prevista), tracciamento accessi, modalità di consultazione",
+      "Ricercare e aprire la procedura relativa a retention e conservazione",
+      "Verificare che la procedura includa: durata retention per tipologie di log, modalità di cancellazione/archiviazione, responsabilità, frequenza controlli",
+      "Verificare la presenza di evidenze verificabili (es. riferimenti a configurazioni, report, controlli periodici) utilizzabili in audit"
+    ],
+    "expected_results": [
+      "Le procedure di accesso ai log risultano disponibili, versionate e consultabili dal profilo Auditor",
+      "Le procedure di retention e conservazione risultano disponibili, versionate e consultabili dal profilo Auditor",
+      "Le procedure contengono elementi verificabili (ruoli, controlli, configurazioni/estrazioni) tali da supportare un audit"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è parzialmente dichiarativo ('documentate e verificabili'): il test interpreta 'verificabili' come presenza di documentazione versionata e di riferimenti/evidenze oggettive. Canale inferito (repository web)."
+  }
+]

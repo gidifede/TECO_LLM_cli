@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-I-001</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-I-001</h1>
+  <div class="subtitle">Consumo di raccomandazioni prioritarie da sistema esterno con informazioni addizionali</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:29</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-I-001</div>
+  <div class="req-field"><strong>Titolo:</strong> Consumo di raccomandazioni prioritarie da sistema esterno con informazioni addizionali</div>
+  <div class="req-field"><strong>Categoria:</strong> INTEGRAZIONE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il Motore deve poter ricevere come input raccomandazioni già prioritizzate da un sistema esterno di prioritizzazione basato sulle propensioni d’acquisto. L&#x27;utente ha specificato che questi input includono, oltre ai prodotti suggeriti in ordine prioritario, informazioni aggiuntive come il cluster di appartenenza del cliente e le motivazioni della raccomandazione. Questo requisito stabilisce che il motore tratti tali raccomandazioni come input primario esterno e sia in grado di elaborarle secondo le regole interne configurate.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È disponibile un canale di integrazione per ricevere una lista ordinata di raccomandazioni da un sistema esterno.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il payload di input supporta campi per identificatore prodotto, ordine/priorità, cluster cliente e motivazione della raccomandazione.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Il motore processa gli input ricevuti e lo fa rispettando le configurazioni locali (es. filtri, matrix, regole di frequenza) definite in altri requisiti.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">55</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">65</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1..AC-3). Il set direct introduce meno casi &#x27;inventati&#x27; in termini di regole di business (ma aggiunge security/resilienza e vincoli di validazione) e presenta una ridondanza E2E vs integrazione (TC03/TC08). Il set indirect_persona aggiunge piu scenari extra (lista vuota, scarto elemento, fallback cluster/motivazione), ma nel complesso mantiene una tracciabilita piu aderente agli AC senza imporre obbligatorieta forti su campi (es. non introduce un rifiuto totale del payload come TC04 del set direct) e ha una ridondanza meno impattante. Per questo ottiene un punteggio di coerenza superiore (65 vs 55).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">55</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-001.TC01</td><td>Assume meccanismi specifici non citati (HTTP status/ACK, correlation-id, persistenza tecnica e logging) come parte dell’esito del canale.</td></tr>
+<tr><td class='mono'>REQ-I-001.TC03</td><td>Introduce dettagli di configurazioni locali specifiche e verifiche puntuali (filtro che esclude SKU-2002, limite massimo 2 raccomandazioni) non presenti nel requisito, che cita solo esempi generici.</td></tr>
+<tr><td class='mono'>REQ-I-001.TC04</td><td>Introduce regole di obbligatorietà e gestione errori (rifiuto/scarto con HTTP 400) per productId/priority non definite dal requisito (che dice solo che il payload &#x27;supporta&#x27; i campi).</td></tr>
+<tr><td class='mono'>REQ-I-001.TC05</td><td>Introduce casi e attese su priorità duplicate/non sequenziali e una &#x27;regola implementata&#x27; di gestione, non descritta dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.TC06</td><td>Introduce requisiti di autenticazione/autorizzazione (API key/OAuth2/mTLS, 401/403) non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.TC07</td><td>Introduce requisiti di resilienza/errore canale (timeout, retry, metriche, correlation-id per errori) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.TC08</td><td>Assume l’esistenza di un punto di uscita specifico consultabile (endpoint/evento/report) per l’output; il requisito non specifica come l’output sia esposto.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-001.TC03, REQ-I-001.TC08</td><td>Entrambi verificano ingestione + applicazione regole locali + controllo output/ordinamento; TC08 è sostanzialmente un E2E che ricopre lo scenario già coperto da TC03 con variazioni minori.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">65</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-001.US01.TC01</td><td>Assume modalità di verifica tramite log/storage/interfaccia di monitoraggio per confrontare l’ordine; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC03</td><td>Introduce un dettaglio di configurazione locale specifica (filtro che esclude P-9999) e concetto di &#x27;batch&#x27;/&#x27;attivare elaborazione&#x27;, non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC04</td><td>Gestione di lista vuota e aspettativa su output assente/vuoto: scenario non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC05</td><td>Definisce una regola di gestione errore per elemento non valido (&#x27;scarto dell’elemento senza bloccare il batch&#x27;) non definita dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC06</td><td>Assume che in caso di priorità duplicata il comportamento minimo sia preservare l’ordine ricevuto; il requisito non definisce la gestione di duplicati.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC07</td><td>Assume opzionalità di cluster/motivazione e introduce &#x27;fallback&#x27; per cluster/motivazione; il requisito non specifica obbligatorietà né fallback.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC08</td><td>Introduce DLQ/stato batch e logiche di retry come varianti; resilienza non prevista dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC09</td><td>Introduce autenticazione/autorizzazione (API key/OAuth/mTLS, 401/403) non menzionata nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-001.US01.TC01, REQ-I-001.US01.TC06</td><td>Entrambi verificano preservazione/gestione dell’ordine e determinismo dell’ordinamento in ricezione; TC06 è una variante molto vicina (duplicati) che ricade nello stesso ambito di controllo dell’ordine.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-I-001&quot;,
+  &quot;title&quot;: &quot;Consumo di raccomandazioni prioritarie da sistema esterno con informazioni addizionali&quot;,
+  &quot;description&quot;: &quot;Il Motore deve poter ricevere come input raccomandazioni già prioritizzate da un sistema esterno di prioritizzazione basato sulle propensioni d’acquisto. L&#x27;utente ha specificato che questi input includono, oltre ai prodotti suggeriti in ordine prioritario, informazioni aggiuntive come il cluster di appartenenza del cliente e le motivazioni della raccomandazione. Questo requisito stabilisce che il motore tratti tali raccomandazioni come input primario esterno e sia in grado di elaborarle secondo le regole interne configurate.&quot;,
+  &quot;category&quot;: &quot;INTEGRAZIONE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È disponibile un canale di integrazione per ricevere una lista ordinata di raccomandazioni da un sistema esterno.&quot;,
+    &quot;Il payload di input supporta campi per identificatore prodotto, ordine/priorità, cluster cliente e motivazione della raccomandazione.&quot;,
+    &quot;Il motore processa gli input ricevuti e lo fa rispettando le configurazioni locali (es. filtri, matrix, regole di frequenza) definite in altri requisiti.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-001.TC01</td><td>Integrazione: ricezione di una lista ordinata di raccomandazioni tramite canale esposto</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.TC02</td><td>Validazione payload: supporto dei campi productId, priorità, cluster cliente e motivazione</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-001.TC03</td><td>Elaborazione: applicazione delle configurazioni locali (filtri/matrix/regole frequenza) alle raccomandazioni esterne</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.TC04</td><td>Negativo: payload non valido con campi obbligatori mancanti (productId o priorità)</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.TC05</td><td>Edge case: priorità duplicate o non sequenziali nella lista ordinata</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.TC06</td><td>Authorization: accesso al canale di integrazione con credenziali non valide o mancanti</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.TC07</td><td>Negativo: indisponibilità del canale/servizio di ingestione (timeout/errore) e gestione dell’esito</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.TC08</td><td>E2E: ingestione raccomandazioni esterne con info addizionali e produzione output elaborato secondo regole locali</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 9 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-001.US01.TC01</td><td>Ricezione lista ordinata di raccomandazioni e preservazione dell&#x27;ordine/priorità</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC02</td><td>Acquisizione payload con campi obbligatori e metadati (prodotto, priorità, cluster, motivazione)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC03</td><td>Elaborazione delle raccomandazioni applicando configurazioni locali (filtro) prima dell&#x27;output</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC04</td><td>Gestione lista di raccomandazioni vuota senza generare output elaborabile</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC05</td><td>Raccomandazione con identificatore prodotto mancante: scarto dell&#x27;elemento senza bloccare il batch</td><td>Negative</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC06</td><td>Ordine/priorità duplicato: gestione deterministica preservando l&#x27;ordine ricevuto</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC07</td><td>Cluster cliente o motivazione non valorizzati: accettazione della raccomandazione se prodotto e priorità sono presenti</td><td>Negative</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC08</td><td>Canale di integrazione non disponibile/errore di trasporto: gestione dell&#x27;errore di integrazione</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-001.US01.TC09</td><td>Autorizzazione/controllo accesso al canale: rifiuto di invio non autorizzato (se previsto dal canale)</td><td>Authorization</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 7, 0, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 8, 0, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+[
+  {
+    "test_id": "REQ-F-030.TC01",
+    "title": "Proposta per prodotto con questionario obbligatorio: presenza del flag 'questionario richiesto' nel payload",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un prodotto P-QUEST-OBB configurato come 'richiede questionario obbligatorio'",
+      "Il Motore di Offerte è raggiungibile e l'endpoint di generazione proposta è attivo",
+      "È disponibile un client (es. Postman/automazione) per invocare l'API del Motore e ispezionare il payload della proposta"
+    ],
+    "test_data": [
+      "Prodotto: P-QUEST-OBB",
+      "Dati richiesta proposta: {\"productCode\":\"P-QUEST-OBB\",\"customerId\":\"CUST-10001\",\"channel\":\"web\"}"
+    ],
+    "steps": [
+      "Invocare l'API del Motore di Offerte per generare una proposta per il prodotto P-QUEST-OBB con i dati di richiesta previsti",
+      "Acquisire la risposta (payload proposta) restituita dal Motore",
+      "Verificare nel payload la presenza dell'indicazione 'questionario richiesto' (flag/metadato) associata alla proposta"
+    ],
+    "expected_results": [
+      "La risposta contiene un payload di proposta valido",
+      "Nel payload è presente un'indicazione chiara che il questionario è richiesto (flag/metadato valorizzato in modo non ambiguo, es. boolean true o valore equivalente)",
+      "L'indicazione 'questionario richiesto' è associata alla proposta generata per P-QUEST-OBB"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica nome esatto del campo nel payload (es. 'questionnaireRequired'); il test verifica la presenza di un flag/metadato non ambiguo concordato da contratto API."
+  },
+  {
+    "test_id": "REQ-F-030.TC02",
+    "title": "Proposta per prodotto senza questionario: assenza o disattivazione del flag 'questionario richiesto' nel payload",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un prodotto P-NO-QUEST configurato come 'non richiede questionario'",
+      "Il Motore di Offerte è raggiungibile e l'endpoint di generazione proposta è attivo"
+    ],
+    "test_data": [
+      "Prodotto: P-NO-QUEST",
+      "Dati richiesta proposta: {\"productCode\":\"P-NO-QUEST\",\"customerId\":\"CUST-10002\",\"channel\":\"web\"}"
+    ],
+    "steps": [
+      "Invocare l'API del Motore di Offerte per generare una proposta per il prodotto P-NO-QUEST",
+      "Acquisire la risposta (payload proposta) restituita dal Motore",
+      "Verificare che il payload non indichi erroneamente la richiesta di questionario"
+    ],
+    "expected_results": [
+      "La risposta contiene un payload di proposta valido",
+      "Il flag/metadato 'questionario richiesto' è assente oppure presente ma valorizzato a false/valore equivalente",
+      "Non sono presenti indicazioni contraddittorie nel payload che facciano intendere un questionario obbligatorio per P-NO-QUEST"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce se il campo debba essere omesso o valorizzato a false per prodotti senza questionario; il test accetta entrambe le implementazioni purché non ambigue."
+  },
+  {
+    "test_id": "REQ-F-030.TC03",
+    "title": "Il Motore non accetta né persiste dati di questionario all'interno della richiesta/risposta proposta",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un prodotto P-QUEST-OBB configurato come 'richiede questionario obbligatorio'",
+      "Il Motore di Offerte è raggiungibile e l'endpoint di generazione proposta è attivo",
+      "È possibile inviare campi addizionali nel body della richiesta (per test di robustezza/contratto)"
+    ],
+    "test_data": [
+      "Prodotto: P-QUEST-OBB",
+      "Dati richiesta proposta con sezione questionario (non prevista dal Motore): {\"productCode\":\"P-QUEST-OBB\",\"customerId\":\"CUST-10003\",\"channel\":\"web\",\"questionario\":{\"q1\":\"SI\",\"q2\":\"testo\"}}"
+    ],
+    "steps": [
+      "Invocare l'API del Motore di Offerte per generare una proposta includendo nel body una sezione 'questionario' (o campi equivalenti) con risposte compilate",
+      "Acquisire la risposta del Motore",
+      "Verificare che la risposta/payload proposta non contenga dati di questionario (solo l'eventuale indicazione di obbligo)",
+      "Eseguire una seconda invocazione di recupero proposta (se prevista) o rigenerazione proposta con gli stessi parametri senza sezione 'questionario'",
+      "Confrontare i payload per verificare che non vi sia alcuna persistenza/ripristino di dati di questionario da parte del Motore"
+    ],
+    "expected_results": [
+      "Il Motore non espone nel payload della proposta alcuna struttura/dato riconducibile alle risposte del questionario inviate",
+      "Nel payload è presente al massimo l'indicazione 'questionario richiesto' (se applicabile) e nessun contenuto di compilazione",
+      "In recupero/rigenerazione non compaiono dati di questionario precedentemente inviati (nessun ripristino/persistenza lato Motore)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica come il Motore gestisca campi non previsti (ignorati vs errore 4xx). Il test è focalizzato sul vincolo: nessuna validazione/salvataggio/ripristino del questionario nel Motore; l'esito HTTP può variare in base al contratto API."
+  },
+  {
+    "test_id": "REQ-F-030.TC04",
+    "title": "Il Motore non esegue validazioni su completezza/coerenza delle risposte questionario (input incompleto/errato)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un prodotto P-QUEST-OBB configurato come 'richiede questionario obbligatorio'",
+      "Il Motore di Offerte è raggiungibile"
+    ],
+    "test_data": [
+      "Prodotto: P-QUEST-OBB",
+      "Dati richiesta proposta con risposte incomplete/errate (non previste dal Motore): {\"productCode\":\"P-QUEST-OBB\",\"customerId\":\"CUST-10004\",\"channel\":\"web\",\"questionario\":{\"q1\":\"\",\"q2\":null}}"
+    ],
+    "steps": [
+      "Invocare l'API del Motore di Offerte per generare una proposta includendo una sezione 'questionario' con risposte incomplete/errate",
+      "Acquisire la risposta del Motore",
+      "Verificare che il Motore non ritorni messaggi/strutture di errore riferite a validazioni del questionario"
+    ],
+    "expected_results": [
+      "Il Motore non restituisce errori funzionali specifici di validazione questionario (es. 'domanda obbligatoria mancante', 'formato risposta non valido')",
+      "Se la richiesta viene accettata, la proposta contiene l'indicazione 'questionario richiesto' ma nessuna evidenza di validazione delle risposte",
+      "Se la richiesta viene rifiutata, l'errore (4xx) è riconducibile a violazione del contratto API/JSON schema e non a regole di validazione del questionario"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito demanda la gestione di input incompleti/errati al verticale; questo test verifica che il Motore non introduca regole di validazione questionario. La distinzione tra errore di schema e errore di business sul questionario deve essere verificabile tramite codici/descrizioni errore standard del Motore."
+  },
+  {
+    "test_id": "REQ-F-030.TC05",
+    "title": "In caso di anomalie del questionario, il Motore non gestisce workflow di correzione né stati di errore questionario",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un prodotto P-QUEST-OBB configurato come 'richiede questionario obbligatorio'",
+      "Il Motore di Offerte è raggiungibile",
+      "È disponibile un client per inviare richieste con campi addizionali"
+    ],
+    "test_data": [
+      "Dati richiesta proposta con indicazione anomalia questionario (non prevista dal Motore): {\"productCode\":\"P-QUEST-OBB\",\"customerId\":\"CUST-10005\",\"channel\":\"web\",\"questionarioStatus\":\"ERROR\",\"questionarioErrors\":[\"E001\"]}"
+    ],
+    "steps": [
+      "Invocare l'API del Motore di Offerte per generare una proposta includendo campi che simulano uno stato/errore del questionario",
+      "Acquisire la risposta del Motore",
+      "Verificare che nel payload proposta non compaiano stati di workflow di correzione o dettagli di gestione anomalie questionario generati dal Motore"
+    ],
+    "expected_results": [
+      "Il Motore non introduce nel payload stati/flag di workflow di correzione del questionario (es. 'in correzione', 'da correggere', 'errori questionario')",
+      "Il Motore non restituisce logiche/azioni di remediation (es. link, step successivi, task) relative al questionario",
+      "Rimane al massimo l'indicazione 'questionario richiesto' per il prodotto che lo prevede"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito specifica che i workflow di correzione sono a carico del verticale. Il test verifica che il Motore non esponga concetti di stato/gestione anomalie del questionario oltre al semplice requisito di obbligatorietà."
+  },
+  {
+    "test_id": "REQ-F-030.TC06",
+    "title": "Verifica documentale: responsabilità di gestione errori e salvataggi temporanei attribuita al verticale di prodotto",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "È disponibile la documentazione ufficiale (es. Confluence, repository, API contract, ADR) relativa all'integrazione Motore di Offerte ↔ Verticale di prodotto per il questionario",
+      "Accesso in lettura alla documentazione per il team QA"
+    ],
+    "test_data": [
+      "Documento/i da verificare: Specifica integrazione proposta, Contratto API proposta, Sezione 'Questionario obbligatorio' (versione corrente)"
+    ],
+    "steps": [
+      "Aprire la documentazione di integrazione relativa alla proposta e al requisito questionario obbligatorio",
+      "Individuare la sezione che descrive responsabilità e confini tra Motore di Offerte e verticale di prodotto",
+      "Verificare che sia esplicitato che gestione errori questionario e salvataggi temporanei (bozze) sono responsabilità del verticale",
+      "Verificare che non siano assegnate al Motore responsabilità operative di validazione/salvataggio/ripristino del questionario"
+    ],
+    "expected_results": [
+      "La documentazione indica esplicitamente che la gestione operativa di errori e salvataggi temporanei del questionario è in carico all'applicativo verticale di prodotto",
+      "La documentazione non attribuisce al Motore di Offerte compiti di validazione, salvataggio o ripristino dei dati del questionario",
+      "La documentazione è coerente con il contratto di payload (presenza del solo flag/metadato di obbligo questionario)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 è un criterio documentale/non puramente eseguibile via sistema; il test è impostato come verifica di integrazione/contract & governance."
+  }
+]

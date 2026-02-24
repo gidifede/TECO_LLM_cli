@@ -1,0 +1,271 @@
+[
+  {
+    "test_id": "REQ-F-022.TC01",
+    "title": "Generazione NBO: lista ordinata per propensione del cluster con criteri marketing applicati (batch)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con dataset noto e versionato (snapshot) contenente: clienti, cluster, valori di propensity, catalogo prodotti, regole di priorità marketing.",
+      "Job batch NBO abilitato e schedulabile manualmente.",
+      "Per i clienti del campione non sono configurate eccezioni di inclusione per prodotti già posseduti (tabella/feature flag eccezioni vuota per tali clienti).",
+      "Esiste una configurazione di priorità marketing attiva e deterministica (es. priorità per categoria/prodotto) applicabile ai prodotti del catalogo."
+    ],
+    "test_data": [
+      "Cliente C001: cluster=CL_A; posseduti=[P2]; propensity(CL_A)={P1:0.80, P2:0.70, P3:0.60, P4:0.10}",
+      "Cliente C002: cluster=CL_A; posseduti=[]; propensity(CL_A)={P1:0.80, P2:0.70, P3:0.60, P4:0.10}",
+      "Cliente C003: cluster=CL_B; posseduti=[P1]; propensity(CL_B)={P1:0.20, P2:0.90, P3:0.40, P4:0.30}",
+      "Regole priorità marketing (esempio deterministico): se due prodotti hanno stessa propensity, ordinare per 'priorità_marketing' decrescente; a parità, per 'product_id' crescente",
+      "Numero massimo raccomandazioni (se configurabile): TOP_N=3"
+    ],
+    "steps": [
+      "Caricare lo snapshot dati di test (clienti/cluster/propensity/catalogo/regole marketing) nell'ambiente di test.",
+      "Avviare l'esecuzione batch del Motore NBO per il campione clienti [C001, C002, C003].",
+      "Recuperare l'output NBO prodotto dal job per ciascun cliente (lista ordinata di raccomandazioni con punteggio/propensity)."
+    ],
+    "expected_results": [
+      "Per ciascun cliente viene prodotta una lista ordinata di raccomandazioni (con riferimento prodotto e valore di propensity o punteggio equivalente).",
+      "Per C001 la lista NON include P2 (prodotto posseduto) e risulta ordinata per propensity del cluster CL_A: [P1 (0.80), P3 (0.60), P4 (0.10)] rispettando TOP_N=3.",
+      "Per C002 la lista risulta ordinata per propensity del cluster CL_A: [P1 (0.80), P2 (0.70), P3 (0.60)] rispettando TOP_N=3.",
+      "Per C003 la lista NON include P1 (prodotto posseduto) e risulta ordinata per propensity del cluster CL_B: [P2 (0.90), P3 (0.40), P4 (0.30)] rispettando TOP_N=3.",
+      "In presenza di eventuali pari-merito di propensity (se presenti nel dataset), l'ordinamento secondario segue la regola marketing definita nelle precondizioni."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito non specifica il canale/endpoint di esposizione; è stato modellato un canale 'batch' coerente con la descrizione ('in tempo reale o in batch'). La regola di tie-break marketing è un'assunzione necessaria per rendere verificabile l'ordinamento in caso di pari propensity."
+  },
+  {
+    "test_id": "REQ-F-022.TC02",
+    "title": "Generazione NBO: esclusione prodotti posseduti con eccezione marketing configurata (inclusione consentita)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con dataset noto e versionato (snapshot).",
+      "Meccanismo di configurazione eccezioni marketing disponibile e attivo (es. tabella 'nbo_owned_product_exceptions').",
+      "Job batch NBO abilitato."
+    ],
+    "test_data": [
+      "Cliente C010: cluster=CL_A; posseduti=[P2]; propensity(CL_A)={P1:0.80, P2:0.70, P3:0.60}",
+      "Eccezione marketing configurata: (cliente=C010, prodotto=P2, allow_owned=true)",
+      "TOP_N=3"
+    ],
+    "steps": [
+      "Caricare lo snapshot dati di test nell'ambiente.",
+      "Configurare l'eccezione marketing per (C010,P2) con allow_owned=true.",
+      "Avviare l'esecuzione NBO per il cliente C010.",
+      "Recuperare la lista di raccomandazioni per C010."
+    ],
+    "expected_results": [
+      "La lista raccomandazioni per C010 include P2 nonostante risulti tra i prodotti posseduti dal cliente, in virtù dell'eccezione configurata.",
+      "La lista risulta ordinata per propensity del cluster CL_A: [P1 (0.80), P2 (0.70), P3 (0.60)] rispettando TOP_N=3."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito non dettaglia la granularità dell'eccezione (per cliente/prodotto o per cluster); il test assume la granularità indicata dall'AC (cliente/prodotto)."
+  },
+  {
+    "test_id": "REQ-F-022.TC03",
+    "title": "NBO: verifica input espliciti (cluster e propensity) e tracciabilità dei punteggi usati nel calcolo",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con logging/telemetria abilitati per il Motore NBO (es. audit tecnico o tracciamento richieste interne).",
+      "Disponibile un'interfaccia per interrogare l'output NBO includendo metadati (es. cluster usato, timestamp calcolo, versione modello/propensity, punteggio per prodotto) oppure log tecnici consultabili.",
+      "Dataset noto con associazione cliente->cluster e cliente/cluster->propensity."
+    ],
+    "test_data": [
+      "Cliente C020: cluster=CL_B; posseduti=[]; propensity(CL_B)={P2:0.90, P3:0.40}",
+      "Identificativo versione modello/propensity nel dataset: model_version='PROP_2026_01'"
+    ],
+    "steps": [
+      "Caricare lo snapshot dati di test nell'ambiente.",
+      "Eseguire il calcolo NBO per il cliente C020.",
+      "Recuperare l'output NBO per C020 includendo metadati (o, in alternativa, consultare i log tecnici della stessa esecuzione).",
+      "Verificare quali input sono stati utilizzati dal Motore (cluster e valori di propensity) per generare l'ordinamento."
+    ],
+    "expected_results": [
+      "L'output NBO per C020 è una lista ordinata di raccomandazioni con punteggio/propensity per ciascun prodotto raccomandato.",
+      "Nei metadati (o nei log) risulta che il cluster utilizzato per C020 è CL_B.",
+      "Nei metadati (o nei log) risultano utilizzati i valori di propensity coerenti con il dataset noto (es. P2=0.90, P3=0.40) e, se disponibile, la versione modello/propensity 'PROP_2026_01'.",
+      "L'ordine delle raccomandazioni è coerente con i valori di propensity utilizzati (P2 prima di P3)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Dipendenza esterna: disponibilità di metadati o logging per rendere verificabile l'uso esplicito degli input (cluster/propensity). Se non esiste un audit esposto, il test deve essere eseguito tramite log applicativi/tecnici concordati."
+  },
+  {
+    "test_id": "REQ-F-022.TC04",
+    "title": "Replicabilità: stessa esecuzione NBO su dati invariati produce risultati identici (batch)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con dataset noto e congelato (snapshot) e configurazioni marketing versionate.",
+      "Assenza di componenti non deterministiche non controllate (es. randomizzazione non disattivata) oppure seed fissato e documentato.",
+      "Job batch NBO eseguibile più volte sullo stesso dataset."
+    ],
+    "test_data": [
+      "Campione clienti: [C001, C002, C003] dallo snapshot del test REQ-F-022.TC01",
+      "Identificativo snapshot: SNAPSHOT_NBO_001"
+    ],
+    "steps": [
+      "Ripristinare lo snapshot SNAPSHOT_NBO_001 nell'ambiente di test.",
+      "Eseguire il job batch NBO per il campione clienti e salvare l'output completo (Run#1).",
+      "Senza modificare dati o configurazioni, rieseguire lo stesso job batch NBO e salvare l'output completo (Run#2).",
+      "Confrontare Run#1 e Run#2 per ciascun cliente (stessa lista prodotti nello stesso ordine e stessi punteggi/propensity)."
+    ],
+    "expected_results": [
+      "Per ogni cliente del campione, Run#1 e Run#2 contengono esattamente gli stessi prodotti raccomandati nello stesso ordine.",
+      "Per ogni prodotto raccomandato, il punteggio/propensity (o valore equivalente) coincide tra Run#1 e Run#2 entro la precisione prevista dal sistema (es. uguaglianza esatta o tolleranza definita, se applicabile).",
+      "Eventuali metadati (timestamp escluso) rilevanti per il calcolo risultano coerenti (es. stesso cluster usato, stessa versione modello/propensity)."
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito richiede replicabilità in test con dati noti ma non specifica tolleranze numeriche per i punteggi; il test assume uguaglianza esatta salvo diversa definizione tecnica (da chiarire)."
+  },
+  {
+    "test_id": "REQ-F-022.TC05",
+    "title": "Negativo: dati cluster mancanti per il cliente impediscono la generazione NBO e producono errore tracciabile",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con gestione errori e logging attivi.",
+      "Motore NBO configurato per richiedere cluster come input (come da requisito)."
+    ],
+    "test_data": [
+      "Cliente C030: cluster=ASSENTE/NULL; posseduti=[]; propensity non disponibile per assenza cluster",
+      "Catalogo prodotti disponibile"
+    ],
+    "steps": [
+      "Caricare/creare il cliente C030 nell'ambiente di test senza cluster associato.",
+      "Eseguire il calcolo NBO per il cliente C030.",
+      "Recuperare l'esito dell'elaborazione (output NBO o stato errore) e i log associati."
+    ],
+    "expected_results": [
+      "Il sistema non produce una lista di raccomandazioni valida per C030.",
+      "Il sistema restituisce un errore o stato di fallimento chiaramente identificabile (es. 'CLUSTER_MANCANTE' o equivalente) e tracciabile nei log.",
+      "Non vengono restituiti risultati parziali non motivati (es. lista vuota senza indicazione di errore) a meno che ciò sia esplicitamente previsto e tracciato come 'input insufficiente'."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito non specifica il comportamento atteso in caso di input mancanti; questo test interpreta 'input esplicito' come requisito di obbligatorietà. Se il sistema deve invece degradare a default (es. cluster sconosciuto), va chiarito e aggiornato il test."
+  },
+  {
+    "test_id": "REQ-F-022.TC06",
+    "title": "Negativo: valori di propensity mancanti o non validi impediscono l'ordinamento e producono errore tracciabile",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con gestione errori e logging attivi.",
+      "Motore NBO configurato per utilizzare valori di propensity come base dell'ordinamento."
+    ],
+    "test_data": [
+      "Cliente C031: cluster=CL_A; posseduti=[]; propensity(CL_A)={P1:NULL, P2:'NaN', P3:0.50}",
+      "Catalogo prodotti: [P1,P2,P3]"
+    ],
+    "steps": [
+      "Caricare/creare i dati di propensity non validi per CL_A come da test data.",
+      "Eseguire il calcolo NBO per il cliente C031.",
+      "Recuperare l'esito dell'elaborazione e i log associati."
+    ],
+    "expected_results": [
+      "Il sistema segnala un errore o stato di fallimento tracciabile relativo a dati di propensity non validi/mancanti.",
+      "Il sistema non restituisce una lista ordinata che includa elementi con propensity non valida senza evidenza di normalizzazione/gestione (che non è specificata dal requisito).",
+      "L'errore identifica almeno il cliente impattato e la causa (propensity mancante/non numerica)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito non definisce regole di default/normalizzazione per propensity non valida; il test assume comportamento fail-fast con errore tracciabile per garantire verificabilità."
+  },
+  {
+    "test_id": "REQ-F-022.TC07",
+    "title": "Integrazione/Resilienza: sorgente dati propensity non disponibile (timeout/errore) durante il calcolo NBO",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Architettura con sorgente dati propensity esterna o componente separato (DB/servizio) rispetto al Motore NBO.",
+      "Possibilità di simulare indisponibilità (es. blocco rete, mock che risponde 500, timeout).",
+      "Logging e metriche di errore abilitati."
+    ],
+    "test_data": [
+      "Cliente C040: cluster=CL_B; posseduti=[]",
+      "Simulazione errore sorgente propensity: timeout 10s o HTTP 500 per la richiesta dei valori di propensity"
+    ],
+    "steps": [
+      "Configurare la simulazione di indisponibilità della sorgente propensity (timeout/errore).",
+      "Eseguire il calcolo NBO per il cliente C040.",
+      "Raccogliere l'esito (output o errore) e i log/metriche della chiamata alla sorgente propensity."
+    ],
+    "expected_results": [
+      "Il sistema non restituisce una lista NBO 'silenziosamente' errata; l'elaborazione fallisce o viene marcata come non eseguibile per input non recuperabili.",
+      "Nei log/metriche è presente evidenza dell'errore di integrazione (timeout/HTTP 500) e del cliente impattato.",
+      "Non vengono prodotte raccomandazioni non verificabili basate su dati di propensity non recuperati."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Dipendenza esterna: modalità di accesso ai dati di propensity (servizio/DB) non specificata nel requisito; il test va adattato al componente reale. La replicabilità (AC-4) è impattata da errori di integrazione: il test verifica che l'errore sia tracciabile e riproducibile in test."
+  },
+  {
+    "test_id": "REQ-F-022.TC08",
+    "title": "Edge case: tutti i prodotti con alta propensione sono già posseduti, output NBO coerente con regola di esclusione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test con dataset noto.",
+      "Nessuna eccezione configurata per includere prodotti posseduti per il cliente in test."
+    ],
+    "test_data": [
+      "Cliente C050: cluster=CL_A; posseduti=[P1,P2,P3]; propensity(CL_A)={P1:0.90, P2:0.80, P3:0.70, P4:0.10}",
+      "TOP_N=3"
+    ],
+    "steps": [
+      "Caricare/creare i dati per il cliente C050 come da test data.",
+      "Eseguire il calcolo NBO per C050.",
+      "Recuperare la lista raccomandazioni per C050."
+    ],
+    "expected_results": [
+      "La lista raccomandazioni per C050 non include P1, P2, P3 perché già posseduti e senza eccezioni.",
+      "La lista include P4 (se presente in catalogo e idoneo) come unica raccomandazione, ordinata coerentemente con la propensity disponibile.",
+      "Se non esistono altri prodotti candidabili oltre a quelli posseduti, il sistema restituisce una lista vuota con indicazione tracciabile del motivo (es. 'nessun prodotto candidabile dopo esclusione posseduti')."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "batch"
+    ],
+    "notes": "Il requisito non specifica il comportamento quando la lista risultante è vuota; il test richiede almeno una motivazione tracciabile per mantenere verificabilità."
+  }
+]

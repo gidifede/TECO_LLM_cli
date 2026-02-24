@@ -1,0 +1,225 @@
+[
+  {
+    "test_id": "REQ-F-003.TC01",
+    "title": "Creazione eccezione manuale da dashboard per un singolo caso specifico (happy path)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC (es. ruolo: 'ExceptionManager')",
+      "L'utente è autenticato e può accedere alla dashboard",
+      "La funzionalità 'Eccezioni manuali' è visibile in dashboard per i ruoli autorizzati"
+    ],
+    "test_data": [
+      "Ambito eccezione: Cliente ID 'CUST-100045'",
+      "Chiave caso specifico: 'COMBINAZIONE=PRODOTTO_A|CANALI=WEB' (esempio di combinazione)",
+      "Nome eccezione: 'Override regola per CUST-100045 - WEB'",
+      "Motivazione: 'Caso particolare richiesto dal business'",
+      "Durata: Dal 2026-03-01 00:00 al 2026-03-31 23:59 (timezone di sistema)"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente autorizzato",
+      "Aprire la sezione 'Eccezioni manuali'",
+      "Selezionare l'azione 'Crea eccezione'",
+      "Inserire il nome dell'eccezione",
+      "Impostare l'ambito su 'Cliente' e selezionare 'CUST-100045'",
+      "Impostare il caso specifico tramite chiave combinazione 'COMBINAZIONE=PRODOTTO_A|CANALI=WEB'",
+      "Impostare la durata inserendo data/ora di inizio e fine",
+      "Inserire la motivazione",
+      "Salvare l'eccezione"
+    ],
+    "expected_results": [
+      "Il sistema salva l'eccezione senza errori",
+      "L'eccezione compare nell'elenco eccezioni con stato 'Attiva' (o equivalente) e con ambito 'Cliente: CUST-100045'",
+      "Nell'elenco eccezioni sono visibili i campi: nome, ambito, durata (inizio/fine), autore/ruolo (se previsto), data creazione",
+      "I dettagli dell'eccezione mostrano la chiave del caso specifico inserita"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori e i nomi delle sezioni UI sono stati inferiti (dashboard web). Il formato della 'combinazione' non è definito nel requisito: è stato rappresentato come chiave testuale per rendere il test eseguibile."
+  },
+  {
+    "test_id": "REQ-F-003.TC02",
+    "title": "Creazione eccezione manuale da dashboard per più casi specifici",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+      "L'utente è autenticato e può accedere alla dashboard"
+    ],
+    "test_data": [
+      "Ambito eccezione: Cliente ID 'CUST-200010'",
+      "Casi specifici (multipli): ['COMBINAZIONE=PRODOTTO_B|CANALI=APP', 'COMBINAZIONE=PRODOTTO_B|CANALI=WEB']",
+      "Nome eccezione: 'Override multi-caso per CUST-200010'",
+      "Durata: Dal 2026-03-10 09:00 al 2026-03-10 18:00"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente autorizzato",
+      "Aprire la sezione 'Eccezioni manuali'",
+      "Selezionare 'Crea eccezione'",
+      "Impostare l'ambito su 'Cliente' e selezionare 'CUST-200010'",
+      "Aggiungere il primo caso specifico 'COMBINAZIONE=PRODOTTO_B|CANALI=APP'",
+      "Aggiungere il secondo caso specifico 'COMBINAZIONE=PRODOTTO_B|CANALI=WEB'",
+      "Impostare data/ora di inizio e fine",
+      "Salvare l'eccezione"
+    ],
+    "expected_results": [
+      "Il sistema salva l'eccezione senza errori",
+      "L'eccezione risulta associata a entrambi i casi specifici inseriti",
+      "In visualizzazione dettaglio, i casi specifici sono elencati separatamente e corrispondono ai valori inseriti"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il limite massimo di casi associabili a una eccezione; il test verifica la gestione di almeno 2 casi."
+  },
+  {
+    "test_id": "REQ-F-003.TC03",
+    "title": "Configurazione durata: eccezione attiva solo nel periodo configurato",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+      "L'utente è autenticato e può accedere alla dashboard",
+      "Esiste un comportamento standard automatizzato applicabile al caso scelto (baseline), osservabile tramite un esito/valore di configurazione",
+      "È possibile verificare l'esito del comportamento (es. tramite schermata di anteprima/configurazione o log applicativo)"
+    ],
+    "test_data": [
+      "Caso specifico: Cliente ID 'CUST-300001' + 'COMBINAZIONE=PRODOTTO_C|CANALI=WEB'",
+      "Durata breve: Dal 2026-03-15 10:00 al 2026-03-15 10:05",
+      "Override atteso: 'Deviazione comportamento standard' (valore specifico non definito nel requisito; verificare cambio di esito rispetto alla baseline)"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente autorizzato",
+      "Rilevare e annotare l'esito del comportamento standard per il caso specifico (baseline)",
+      "Creare una nuova eccezione manuale per il caso specifico con durata 10:00-10:05",
+      "Verificare l'esito del comportamento per il caso specifico alle 10:02 (dentro finestra)",
+      "Verificare l'esito del comportamento per il caso specifico alle 10:06 (fuori finestra)"
+    ],
+    "expected_results": [
+      "Alle 10:02 l'esito del comportamento risulta deviato rispetto alla baseline (applicazione eccezione)",
+      "Alle 10:06 l'esito del comportamento coincide con la baseline (eccezione non applicata)",
+      "L'eccezione risulta memorizzata con inizio/fine conformi a quanto inserito"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce come osservare la 'deviazione del comportamento standard' né quale campo/valore venga modificato: il test presuppone un punto di osservabilità (anteprima, output configurazione, log o endpoint)."
+  },
+  {
+    "test_id": "REQ-F-003.TC04",
+    "title": "Validazione input durata: fine precedente all'inizio non consentita",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+      "L'utente è autenticato e può accedere alla dashboard"
+    ],
+    "test_data": [
+      "Ambito eccezione: Cliente ID 'CUST-400002'",
+      "Caso specifico: 'COMBINAZIONE=PRODOTTO_D|CANALI=WEB'",
+      "Durata non valida: Dal 2026-04-01 12:00 al 2026-04-01 11:00"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente autorizzato",
+      "Aprire la sezione 'Eccezioni manuali'",
+      "Selezionare 'Crea eccezione'",
+      "Impostare ambito e caso specifico",
+      "Inserire una data/ora fine precedente alla data/ora inizio",
+      "Tentare il salvataggio dell'eccezione"
+    ],
+    "expected_results": [
+      "Il sistema impedisce il salvataggio dell'eccezione",
+      "Viene mostrato un messaggio di errore che indica che la data/ora fine deve essere successiva alla data/ora inizio",
+      "Nessuna nuova eccezione viene creata nell'elenco"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica le regole di validazione della durata; questa è un'assunzione minima per rendere configurabile e consistente l'intervallo temporale."
+  },
+  {
+    "test_id": "REQ-F-003.TC05",
+    "title": "Creazione eccezione negata a utente non autorizzato (RBAC)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo NON autorizzato alla creazione di eccezioni manuali secondo RBAC (es. ruolo: 'Viewer')",
+      "L'utente è autenticato e può accedere alla dashboard"
+    ],
+    "test_data": [
+      "Ambito eccezione: Cliente ID 'CUST-500003'",
+      "Caso specifico: 'COMBINAZIONE=PRODOTTO_E|CANALI=WEB'",
+      "Durata: Dal 2026-03-20 08:00 al 2026-03-21 18:00"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente non autorizzato",
+      "Aprire (o tentare di aprire) la sezione 'Eccezioni manuali'",
+      "Tentare di avviare la creazione di una nuova eccezione (pulsante 'Crea' o URL diretto, se disponibile)",
+      "Se la UI consente l'inserimento, compilare i campi e tentare il salvataggio"
+    ],
+    "expected_results": [
+      "L'utente non autorizzato non può creare eccezioni manuali",
+      "Se la sezione è visibile, l'azione 'Crea eccezione' risulta disabilitata o non presente; in alternativa l'accesso è negato",
+      "In caso di tentativo via URL diretto o chiamata backend, il sistema risponde con errore di autorizzazione (es. HTTP 403 o messaggio equivalente) e non crea alcuna eccezione"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: 'vedi requisito RBAC' non fornito; i ruoli e le modalità di enforcement (UI vs API) sono stati inferiti. Verificare i codici/messeggi effettivi definiti dallo standard applicativo."
+  },
+  {
+    "test_id": "REQ-F-003.TC06",
+    "title": "Gestione indisponibilità del servizio di salvataggio eccezioni (errore/timeout)",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo autorizzato alla creazione di eccezioni manuali secondo RBAC",
+      "L'utente è autenticato e può accedere alla dashboard",
+      "Il componente/servizio backend di persistenza eccezioni è simulabile in errore (es. mock, feature di test, proxy) oppure è possibile indurre un timeout controllato"
+    ],
+    "test_data": [
+      "Ambito eccezione: Cliente ID 'CUST-600004'",
+      "Caso specifico: 'COMBINAZIONE=PRODOTTO_F|CANALI=WEB'",
+      "Durata: Dal 2026-03-25 00:00 al 2026-03-31 23:59",
+      "Simulazione errore: backend 'ExceptionService' restituisce HTTP 500 oppure timeout > 30s"
+    ],
+    "steps": [
+      "Accedere alla dashboard con l'utente autorizzato",
+      "Aprire la sezione 'Eccezioni manuali'",
+      "Selezionare 'Crea eccezione' e compilare i campi con i dati di test",
+      "Attivare la condizione di errore/timeout del servizio di salvataggio",
+      "Tentare il salvataggio dell'eccezione"
+    ],
+    "expected_results": [
+      "Il sistema notifica l'errore di salvataggio in modo esplicito (messaggio di errore visibile all'utente)",
+      "L'eccezione non risulta creata nell'elenco eccezioni",
+      "Non vengono creati record parziali (nessuna eccezione in stato incoerente/duplicata a seguito di retry automatici non controllati, se osservabile)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non menziona servizi esterni, ma la creazione da dashboard implica persistenza e/o API. I dettagli di retry/idempotenza non sono specificati: le verifiche sono limitate all'assenza di creazione e alla corretta segnalazione errore."
+  }
+]

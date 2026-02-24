@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-006</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-006</h1>
+  <div class="subtitle">Generazione di descrizioni personalizzate per ogni prodotto suggerito</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:33</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-006</div>
+  <div class="req-field"><strong>Titolo:</strong> Generazione di descrizioni personalizzate per ogni prodotto suggerito</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Per ciascun prodotto suggerito dal motore, il sistema deve generare automaticamente una descrizione breve e personalizzata che includa in modo esplicito: i benefici associati al prodotto, il valore dello sconto riservato al cliente e la motivazione della proposta. Le descrizioni devono essere fruibili dall&#x27;operatore (canale fisico) e coerenti con il contesto cliente/prodotto.
+
+Le suddette descrizioni devono essere accessibili anche ai clienti in modalità self sui touchpoint digitali.
+
+</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Per ogni prodotto suggerito il sistema espone un testo breve che contiene: beneficio, sconto e motivazione.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Esempi di output automatico sono verificabili e contengono i tre elementi richiesti per più casi di test (diversi prodotti e contesti cliente).</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>L&#x27;operatore vede la descrizione generata accanto alla proposta nel canale fisico.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">65</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">55</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili (6 added_info) rispetto a indirect_persona (11 added_info) e non presenta ridondanze (0 vs 2). Pur avendo un elemento mancante non-AC (copertura esplicita della pluralità dei touchpoint digitali), il direct mantiene una coerenza complessiva superiore (65 vs 55).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">65</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-006.TC01</td><td>Introduce uno specifico touchpoint digitale &#x27;web self&#x27; e modalità di accesso/UX (sezione prodotti suggeriti) non esplicitati nel requisito (che parla genericamente di touchpoint digitali).</td></tr>
+<tr><td class='mono'>REQ-F-006.TC01</td><td>Introduce il concetto di &#x27;consenso necessario per ricevere suggerimenti&#x27; e dati cliente/segmento non citati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.TC04</td><td>Definisce un comportamento negativo/fallback non previsto: &#x27;descrizione non esposta e segnalazione errore&#x27;, messaggi all&#x27;utente e logging dell&#x27;anomalia; il requisito non specifica cosa fare se manca uno dei tre elementi.</td></tr>
+<tr><td class='mono'>REQ-F-006.TC05</td><td>Aggiunge vincoli di autorizzazione/permessi per l&#x27;operatore (utente non autorizzato) non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.TC06</td><td>Assume un &#x27;servizio di generazione descrizioni&#x27; con HTTP error/timeout, fault injection e logging/monitoring: dettagli tecnici e comportamenti di resilienza non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.TC07</td><td>Introduce un caso di volume (20 prodotti) e requisiti impliciti di performance/associazione su grandi numeri non indicati dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &quot;Le suddette descrizioni devono essere accessibili anche ai clienti in modalità self sui touchpoint digitali.&quot;</td><td>La copertura dei touchpoint digitali è limitata al solo &#x27;web self&#x27;; non viene coperto esplicitamente il concetto di pluralità di touchpoint digitali (es. più di un canale digitale).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      <p class='empty'>Nessuna ridondanza.</p>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">55</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-006.US01.TC01</td><td>Introduce ruoli/figure specifiche (OSP/OFE/figure di sala) e uno specifico &#x27;front-end commerciale&#x27; non menzionati nel requisito (che parla solo di operatore nel canale fisico).</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC01</td><td>Introduce vincoli/formati non richiesti: &#x27;sezione/parte riconoscibile&#x27;, &#x27;valore non nullo e non ambiguo&#x27; e dettagli come &#x27;periodo se applicabile&#x27; per lo sconto.</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC03</td><td>Aggiunge un requisito implicito di personalizzazione: &#x27;descrizioni non identiche tra tutti i casi&#x27; (differenziazione), non esplicitato negli AC (che richiedono coerenza col contesto, non necessariamente unicità tra casi).</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC04</td><td>Definisce comportamento di fallback/gestione anomalia (placeholder/messaggio) per descrizione incompleta; non specificato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC05</td><td>Gestisce esplicitamente &#x27;sconto non applicabile/non disponibile&#x27; e relative regole di non-fuorvianza/fallback; il requisito richiede che lo sconto sia incluso, ma non definisce casi di assenza o regole di fallback.</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC06</td><td>Assume errori/timeout HTTP 5xx/504 e comportamenti di resilienza (&#x27;pagina/flow non bloccato&#x27;); dettagli tecnici e UX non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC01</td><td>Introduce esplicitamente canali &#x27;App&#x27; oltre a &#x27;Web&#x27; e dettagli di autenticazione/sessione; il requisito parla genericamente di touchpoint digitali senza specificare App o requisiti di login.</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC03</td><td>Ribadisce la regola di &#x27;non tutte identiche&#x27; come proxy di personalizzazione; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC04</td><td>Definisce fallback UX per descrizione incompleta; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC05</td><td>Regole di fallback per sconto non disponibile/non applicabile; non definite nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC06</td><td>Assume gestione di retry/ricarica e &#x27;senza blocco del self-service&#x27;; non specificato nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      <p class='empty'>Nessun elemento.</p>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-006.US01.TC04, REQ-F-006.US02.TC04</td><td>Stesso scenario concettuale (descrizione incompleta) replicato su fisico e digitale con expected result molto simili (fallback/placeholder, non mostrare contenuti mancanti).</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC06, REQ-F-006.US02.TC06</td><td>Stesso scenario concettuale (timeout/errore recupero descrizione) replicato su fisico e digitale con expected result molto simili (placeholder/messaggio, no parziali, resilienza).</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-006&quot;,
+  &quot;title&quot;: &quot;Generazione di descrizioni personalizzate per ogni prodotto suggerito&quot;,
+  &quot;description&quot;: &quot;Per ciascun prodotto suggerito dal motore, il sistema deve generare automaticamente una descrizione breve e personalizzata che includa in modo esplicito: i benefici associati al prodotto, il valore dello sconto riservato al cliente e la motivazione della proposta. Le descrizioni devono essere fruibili dall&#x27;operatore (canale fisico) e coerenti con il contesto cliente/prodotto.\n\nLe suddette descrizioni devono essere accessibili anche ai clienti in modalità self sui touchpoint digitali.\n\n&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Per ogni prodotto suggerito il sistema espone un testo breve che contiene: beneficio, sconto e motivazione.&quot;,
+    &quot;Esempi di output automatico sono verificabili e contengono i tre elementi richiesti per più casi di test (diversi prodotti e contesti cliente).&quot;,
+    &quot;L&#x27;operatore vede la descrizione generata accanto alla proposta nel canale fisico.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-006.TC01</td><td>Generazione descrizione breve per ogni prodotto suggerito con beneficio, sconto e motivazione (web self)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.TC02</td><td>Verifica esempi di output automatico su più casi (prodotti e contesti cliente differenti)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-006.TC03</td><td>Visualizzazione descrizione generata accanto alla proposta nel canale fisico (operatore)</td><td>UI</td><td>HIGH</td><td>AC-3, AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.TC04</td><td>Negativo: prodotto suggerito senza valore sconto disponibile -&gt; descrizione non esposta e segnalazione errore controllata</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.TC05</td><td>Authorization: operatore non autorizzato non può visualizzare le descrizioni delle proposte nel canale fisico</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.TC06</td><td>Integration: indisponibilità/timeout del servizio di generazione descrizioni -&gt; gestione controllata su web self e canale operatore</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.TC07</td><td>Edge case: più prodotti suggeriti (volume elevato) -&gt; ogni proposta mantiene descrizione corretta e associata al prodotto</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 12 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-006.US01.TC01</td><td>Canale fisico: visualizzazione descrizione completa (benefici, sconto, motivazione) accanto alla proposta singola</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC02</td><td>Canale fisico: più prodotti suggeriti, ciascuno con descrizione completa e correttamente associata</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC03</td><td>Canale fisico: matrice di verificabilità su prodotti e contesti cliente differenti</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC04</td><td>Canale fisico: anomalia descrizione mancante di uno dei tre elementi obbligatori</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC05</td><td>Canale fisico: sconto non applicabile/non disponibile, evitare esposizione di valore fuorviante</td><td>Edge Case</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US01.TC06</td><td>Canale fisico: timeout/errore nel recupero descrizione, gestione placeholder/messaggio</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC01</td><td>Touchpoint digitali (App/Web): visualizzazione descrizione completa per proposta singola in modalità self-service</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC02</td><td>Touchpoint digitali (App/Web): più prodotti suggeriti, ciascuno con descrizione completa</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC03</td><td>Touchpoint digitali: verificabilità output su clienti/prodotti diversi (matrice casi)</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC04</td><td>Touchpoint digitali: anomalia descrizione incompleta (manca benefici/sconto/motivazione) non deve apparire come conforme</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC05</td><td>Touchpoint digitali: sconto non disponibile/non applicabile, non mostrare valori di sconto fuorvianti</td><td>Edge Case</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-006.US02.TC06</td><td>Touchpoint digitali: errore/timeout recupero descrizione, gestione errore/placeholder senza blocco del self-service</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 1, 0], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 11, 0, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-002",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 75,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-002.TC01",
+        "detail": "Assume canale 'web' e dettagli di accesso/ruolo utente ('Marketing') e una sezione UI specifica; il requisito cita solo 'dashboard marketing' senza canale né dettagli di navigazione/permessi."
+      },
+      {
+        "test_id": "REQ-D-002.TC01",
+        "detail": "Introduce precondizione 'funzionalità ... abilitata in ambiente di test' non menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-D-002.TC02",
+        "detail": "Introduce formati e valori specifici di identificatori cluster (es. 'CL-RET-01', 'CL-VIP-99') non definiti nel requisito (ammissibili come dati di test, ma non tracciabili come regola)."
+      },
+      {
+        "test_id": "REQ-D-002.TC04",
+        "detail": "Introduce regola di validazione 'testo variante obbligatorio' e messaggistica di errore, non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-002.TC05",
+        "detail": "Introduce limite/volume (50 cluster), controllo duplicati e requisiti di robustezza non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-D-002.TC06",
+        "detail": "Assume l'esistenza di endpoint/API e verifica di integrazione a livello servizi; il requisito non menziona API né livelli tecnici."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-D-002.TC06",
+        "detail": "Parzialmente ridondante rispetto a TC01+TC02 (stessa validazione di creazione variante e associazione cluster) ma su canale/strato diverso (API); scenario funzionale già coperto."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 11,
+    "coherence_score": 48,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-002.US01.TC01",
+        "detail": "Introduce canale 'dashboard' come 'channels' distinto e dettagli di permessi/credenziali; il requisito cita solo 'dashboard marketing' senza specifiche operative."
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC04",
+        "detail": "Introduce validazione 'testo obbligatorio' e messaggio di errore, non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC05",
+        "detail": "Introduce regola di validazione di 'cluster non valido' (blocco salvataggio + messaggio) non richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-D-002.US01.TC06",
+        "detail": "Introduce funzionalità di modifica/rimozione associazioni cluster (update parziale) non descritta nel requisito."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC01",
+        "detail": "Introduce esplicitamente il canale 'App' (oltre a Web) e presuppone pubblicazione offerta su App; il requisito parla genericamente di 'interfaccia' senza canali."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC02",
+        "detail": "Introduce esplicitamente il canale 'Web' come canale distinto (oltre a 'dashboard'); il requisito non distingue canali di fruizione."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC01",
+        "detail": "Introduce 'meccanismo/servizio di determinazione cluster' come componente esplicito; il requisito non menziona servizi di determinazione né requisiti di disponibilità."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC03",
+        "detail": "Estende la regola a comportamento uniforme su App e Web e verifica cross-canale; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC04",
+        "detail": "Introduce gestione errore del servizio cluster e 'fallback (da definire)'; il requisito non prevede scenari di errore né fallback."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC05",
+        "detail": "Introduce scenario 'cliente senza cluster' e fallback (da definire); il requisito non specifica comportamento quando il cliente non appartiene a cluster."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-D-002.US01.TC01",
+        "detail": "Ridondante con US01.TC02 rispetto ad AC-1: entrambi verificano presenza/salvataggio/visualizzazione varianti per la stessa offerta con differenze minime di setup."
+      },
+      {
+        "test_id": "REQ-D-002.US02.TC01",
+        "detail": "Ridondante con US02.TC02: stesso scenario AC-3 replicato per canale (App vs Web), mentre il requisito non richiede distinzione per canale."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Il set direct introduce meno informazioni non tracciabili (6 added_info vs 10) e meno ridondanze (1 vs 2), ottenendo un punteggio di coerenza più alto (75 vs 48). Il set indirect_persona aggiunge numerosi comportamenti non richiesti (validazioni su cluster non valido, update/rimozione associazioni, fallback/gestione errori, distinzione App/Web) che riducono la fedeltà al requisito."
+  }
+}

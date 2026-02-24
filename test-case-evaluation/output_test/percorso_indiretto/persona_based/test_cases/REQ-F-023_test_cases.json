@@ -1,0 +1,671 @@
+[
+  {
+    "story_id": "REQ-F-023.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-023.US01.TC01",
+        "title": "Categorizzazione: cluster non identificato con fallback configurato e audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione fallback attiva per categoria 'cluster non identificato' (es. 'DEFAULT_RANKING_CLUSTER_UNKNOWN')",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Esiste un dataset di input NBO valido che non consente l'identificazione del cluster (es. clusterId nullo o non risolvibile)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-CLUSTER-0001",
+          "CustomerId: 10004567",
+          "ClusterId: null (o valore non mappato 'CL-UNKNOWN')",
+          "PropensityModelId: PM-001 (presente e coerente)",
+          "ExternalRecommendationId: EXTREC-123 (presente e consistente)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10004567 con CorrelationId NBO-EDGE-CLUSTER-0001 e ClusterId nullo/non risolvibile",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-EDGE-CLUSTER-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-CLUSTER-0001"
+        ],
+        "expected_results": [
+          "Il sistema rileva la condizione e categorizza il caso limite come 'cluster non identificato'",
+          "Il sistema applica la strategia di fallback attiva configurata per 'cluster non identificato' (es. 'DEFAULT_RANKING_CLUSTER_UNKNOWN')",
+          "L'elaborazione NBO termina senza errore non gestito",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='cluster non identificato', dati in input (inclusi CustomerId e ClusterId), timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La verifica dell'effettiva applicazione del fallback è basata su un indicatore/metadata dell'esito (es. 'fallbackApplied=true' o 'strategyId'); se non disponibile, verificare tramite regole di output concordate con il team di sviluppo."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC02",
+        "title": "Categorizzazione: propensity assente con fallback configurato e audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione fallback attiva per categoria 'propensity assente' (es. 'DEFAULT_PROPENSITY')",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Input NBO con modello di propensity assente (es. propensityModelId nullo o modello non presente in repository)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-PROP-ABS-0001",
+          "CustomerId: 10007890",
+          "ClusterId: CL-001 (valido)",
+          "PropensityModelId: null",
+          "ExternalRecommendationId: EXTREC-456 (presente e consistente)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10007890 con CorrelationId NBO-EDGE-PROP-ABS-0001 e PropensityModelId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-EDGE-PROP-ABS-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-PROP-ABS-0001"
+        ],
+        "expected_results": [
+          "Il sistema rileva la condizione e categorizza il caso limite come 'propensity assente'",
+          "Il sistema applica la strategia di fallback attiva configurata per 'propensity assente' (es. 'DEFAULT_PROPENSITY')",
+          "L'elaborazione NBO termina senza errore non gestito",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='propensity assente', dati in input (inclusi CustomerId e PropensityModelId), timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La definizione di 'modello assente' è interpretata come riferimento non presente o nullo, coerentemente con la user story."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC03",
+        "title": "Categorizzazione: propensity incoerente con fallback configurato e audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione fallback attiva per categoria 'propensity incoerente' (es. 'IGNORE_PROPENSITY_AND_USE_RULES')",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Disponibile un modello di propensity che il Motore considera 'incoerente' (es. schema/versione non compatibile o punteggi fuori dominio)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-PROP-INCOH-0001",
+          "CustomerId: 10001234",
+          "ClusterId: CL-002 (valido)",
+          "PropensityModelId: PM-INCOH-01 (presente ma incoerente secondo regole di validazione del Motore)",
+          "ExternalRecommendationId: EXTREC-789 (presente e consistente)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10001234 con CorrelationId NBO-EDGE-PROP-INCOH-0001 e PropensityModelId PM-INCOH-01",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-EDGE-PROP-INCOH-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-PROP-INCOH-0001"
+        ],
+        "expected_results": [
+          "Il sistema rileva la condizione e categorizza il caso limite come 'propensity incoerente'",
+          "Il sistema applica la strategia di fallback attiva configurata per 'propensity incoerente' (es. 'IGNORE_PROPENSITY_AND_USE_RULES')",
+          "L'elaborazione NBO termina senza errore non gestito",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='propensity incoerente', dati in input (inclusi CustomerId e PropensityModelId), timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il criterio di 'incoerenza' non è formalizzato nel requisito; il test richiede un dataset/fixture che riproduca una condizione riconosciuta dal Motore come incoerente."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC04",
+        "title": "Categorizzazione: raccomandazione esterna mancante con fallback configurato e audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione fallback attiva per categoria 'raccomandazione esterna mancante' (es. 'USE_INTERNAL_RANKING')",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Integrazione verso fonte raccomandazione esterna attiva ma risposta priva di raccomandazioni (mancante)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-EXTREC-MISS-0001",
+          "CustomerId: 10009999",
+          "ClusterId: CL-003 (valido)",
+          "PropensityModelId: PM-002 (presente e coerente)",
+          "ExternalRecommendationResponse: vuota/null (nessuna raccomandazione)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10009999 con CorrelationId NBO-EDGE-EXTREC-MISS-0001 in modo che la raccomandazione esterna risulti mancante",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-EDGE-EXTREC-MISS-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-EXTREC-MISS-0001"
+        ],
+        "expected_results": [
+          "Il sistema rileva la condizione e categorizza il caso limite come 'raccomandazione esterna mancante'",
+          "Il sistema applica la strategia di fallback attiva configurata per 'raccomandazione esterna mancante' (es. 'USE_INTERNAL_RANKING')",
+          "L'elaborazione NBO termina senza errore non gestito",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='raccomandazione esterna mancante', dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il modo di simulare la mancanza (risposta vuota vs null vs 204) dipende dall'integrazione; usare stub/mocking nei test di integrazione."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC05",
+        "title": "Categorizzazione: raccomandazione esterna contraddittoria con fallback configurato e audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione fallback attiva per categoria 'raccomandazione esterna contraddittoria' (es. 'DROP_EXTERNAL_RECOMMENDATION')",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Disponibile un dataset di raccomandazioni esterne che il Motore considera 'contraddittorio/inconsistente' (es. prodotti duplicati con ranking incompatibile o riferimenti a prodotti non vendibili)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-EXTREC-CONTR-0001",
+          "CustomerId: 10005555",
+          "ClusterId: CL-004 (valido)",
+          "PropensityModelId: PM-003 (presente e coerente)",
+          "ExternalRecommendationResponse: contiene elementi inconsistenti secondo regole del Motore (es. SKU non valido 'SKU-XXXX' o ranking duplicato)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10005555 con CorrelationId NBO-EDGE-EXTREC-CONTR-0001 fornendo una raccomandazione esterna contraddittoria/inconsistente",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-EDGE-EXTREC-CONTR-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-EXTREC-CONTR-0001"
+        ],
+        "expected_results": [
+          "Il sistema rileva la condizione e categorizza il caso limite come 'raccomandazione esterna contraddittoria'",
+          "Il sistema applica la strategia di fallback attiva configurata per 'raccomandazione esterna contraddittoria' (es. 'DROP_EXTERNAL_RECOMMENDATION')",
+          "L'elaborazione NBO termina senza errore non gestito",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='raccomandazione esterna contraddittoria', dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il criterio di 'contraddittoria/inconsistente' non è formalizzato; il test richiede un dataset/fixture allineato alle regole di validazione implementate."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC06",
+        "title": "Assenza di fallback configurato per categoria: condizione gestita e audit registrato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Nessuna strategia di fallback definita/attiva per categoria 'cluster non identificato'",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Dataset di input NBO che genera 'cluster non identificato'"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-NOFALLBACK-0001",
+          "CustomerId: 10004567",
+          "ClusterId: null",
+          "PropensityModelId: PM-001",
+          "ExternalRecommendationId: EXTREC-123"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10004567 con CorrelationId NBO-EDGE-NOFALLBACK-0001 e ClusterId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito/risposta tecnica dell'elaborazione per CorrelationId NBO-EDGE-NOFALLBACK-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-NOFALLBACK-0001"
+        ],
+        "expected_results": [
+          "Il sistema non genera un errore non gestito (nessun crash/exception non catturata) nonostante l'assenza di fallback configurato",
+          "Il sistema categorizza il caso limite come 'cluster non identificato'",
+          "Nel log/audit è presente un evento che include almeno: tipo caso='cluster non identificato', dati in input, timestamp",
+          "L'evento indica che non è stata applicata alcuna strategia esplicita (es. campo strategyId assente/null o fallbackApplied=false), se tale informazione è prevista dal logging"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "L'output funzionale del calcolo in assenza di fallback non è specificato; il test valida la gestione e la registrazione dell'evento, non il contenuto commerciale dell'output."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC07",
+        "title": "Fallback configurato ma non applicabile/incoerente: trattato come assenza di strategia e audit registrato",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Configurazione presente e marcata attiva per categoria 'propensity assente' ma non valutabile/non applicabile (es. regola con parametro mancante)",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Input NBO che genera 'propensity assente'"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-FBINCOH-0001",
+          "CustomerId: 10007890",
+          "ClusterId: CL-001",
+          "PropensityModelId: null",
+          "FallbackConfig(propensity assente): attiva ma invalida (es. ruleId=RULE-999 inesistente)"
+        ],
+        "steps": [
+          "Configurare (o predisporre) una strategia di fallback attiva ma non applicabile per la categoria 'propensity assente'",
+          "Avviare il calcolo NBO per CustomerId 10007890 con CorrelationId NBO-EDGE-FBINCOH-0001 e PropensityModelId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-FBINCOH-0001"
+        ],
+        "expected_results": [
+          "Il sistema categorizza il caso limite come 'propensity assente'",
+          "Il sistema non genera un errore non gestito anche se la strategia configurata non è applicabile",
+          "Il sistema registra l'evento nel log/audit con almeno: tipo caso='propensity assente', dati in input, timestamp",
+          "Il sistema tratta la strategia non applicabile come assenza di fallback esplicito (es. nessuna strategia applicata), se tale informazione è tracciata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "La modalità con cui il sistema segnala 'fallback non applicabile' non è specificata; verificare almeno la non-interruzione e la registrazione evento."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC08",
+        "title": "Input malformato per calcolo NBO: condizione categorizzata e audit registrato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile tramite endpoint/job di calcolo",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "È definita nel sistema una gestione esplicita degli input errati (categoria generica 'input errato' o equivalente)"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-BADINPUT-0001",
+          "CustomerId: 'ABCDEF' (formato non valido se atteso numerico)",
+          "Payload NBO: JSON non conforme allo schema atteso (es. campo obbligatorio mancante 'customerId')"
+        ],
+        "steps": [
+          "Inviare una richiesta di calcolo NBO con CorrelationId NBO-EDGE-BADINPUT-0001 e payload malformato/non conforme",
+          "Osservare la risposta tecnica del Motore (HTTP/errore applicativo) o l'esito del job",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-EDGE-BADINPUT-0001"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'input errato senza errore non gestito",
+          "Il sistema registra un evento di caso limite nel log/audit con almeno: tipo caso (es. 'input errato' o categoria equivalente), dati in input disponibili, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "AC-1 non include esplicitamente la categoria 'input errato'; il test valida la business rule 'nessuna condizione non gestita' tramite AC-4 e la registrazione tramite AC-3. La categoria esatta è assunta come generica configurabile."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC09",
+        "title": "Sistema log/audit non disponibile: il Motore gestisce l'errore senza crash",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile",
+          "Sistema di log/audit reso non disponibile (es. endpoint down, timeout o credenziali invalide) per la durata del test",
+          "Input NBO che genera un caso limite categorizzato (es. 'cluster non identificato')"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-LOGDOWN-0001",
+          "CustomerId: 10004567",
+          "ClusterId: null"
+        ],
+        "steps": [
+          "Disabilitare o simulare indisponibilità del sistema di log/audit",
+          "Avviare il calcolo NBO con CorrelationId NBO-EDGE-LOGDOWN-0001 e ClusterId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Verificare i log tecnici del Motore e/o metriche di errore di integrazione"
+        ],
+        "expected_results": [
+          "Il sistema categorizza il caso limite (es. 'cluster non identificato') e non termina con errore non gestito",
+          "Il sistema gestisce l'errore di logging in modo controllato (es. errore registrato su log tecnico/metriche) senza bloccare l'elaborazione",
+          "Non si verificano retry infiniti o blocchi dell'elaborazione (l'esecuzione termina entro una soglia di tempo concordata)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il comportamento di resilienza verso il sistema di audit non è definito nel requisito; questo test valida almeno l'assenza di crash/condizione non gestita. La verifica di 'evento audit scritto altrove' non è richiesta."
+      },
+      {
+        "test_id": "REQ-F-023.US01.TC10",
+        "title": "Più casi limite contemporanei: categorizzazione e logging deterministici",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore NBO deployato e raggiungibile",
+          "Sistema di log/audit disponibile e raggiungibile",
+          "Sono definiti criteri deterministici di gestione quando coesistono più casi limite (priorità/ordine o multi-evento) oppure è disponibile una specifica tecnica del comportamento atteso"
+        ],
+        "test_data": [
+          "CorrelationId: NBO-EDGE-MULTI-0001",
+          "CustomerId: 10001111",
+          "ClusterId: null (cluster non identificato)",
+          "PropensityModelId: null (propensity assente)"
+        ],
+        "steps": [
+          "Avviare il calcolo NBO per CustomerId 10001111 con CorrelationId NBO-EDGE-MULTI-0001 con ClusterId nullo e PropensityModelId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare dal sistema di log/audit tutti gli eventi associati a CorrelationId NBO-EDGE-MULTI-0001"
+        ],
+        "expected_results": [
+          "Il sistema non genera un errore non gestito",
+          "La categorizzazione e la registrazione risultano deterministiche secondo la regola implementata: o viene registrato un singolo evento con categoria prioritaria, oppure vengono registrati più eventi (uno per categoria) sempre nello stesso ordine/struttura",
+          "Ogni evento registrato include almeno: tipo caso, dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "La priorità/gestione dei casi multipli è indicata come 'da definire' nella user story; il test richiede una decisione di implementazione per poter essere automatizzato con asserzioni puntuali."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-023.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-023.US02.TC01",
+        "title": "Dashboard: definizione e attivazione strategie di fallback per tutte le categorie richieste",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo/permessi 'Marketing' abilitato alla configurazione fallback NBO",
+          "Esiste una sezione 'Configurazione fallback NBO' raggiungibile dalla dashboard"
+        ],
+        "test_data": [
+          "Strategia per 'cluster non identificato': DEFAULT_RANKING_CLUSTER_UNKNOWN",
+          "Strategia per 'propensity assente': DEFAULT_PROPENSITY",
+          "Strategia per 'propensity incoerente': IGNORE_PROPENSITY_AND_USE_RULES",
+          "Strategia per 'raccomandazione esterna mancante': USE_INTERNAL_RANKING",
+          "Strategia per 'raccomandazione esterna contraddittoria': DROP_EXTERNAL_RECOMMENDATION"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing",
+          "Navigare alla sezione 'Configurazione fallback NBO'",
+          "Selezionare la categoria 'cluster non identificato'",
+          "Definire la strategia 'DEFAULT_RANKING_CLUSTER_UNKNOWN'",
+          "Salvare la configurazione della categoria",
+          "Selezionare la categoria 'propensity assente'",
+          "Definire la strategia 'DEFAULT_PROPENSITY'",
+          "Salvare la configurazione della categoria",
+          "Selezionare la categoria 'propensity incoerente'",
+          "Definire la strategia 'IGNORE_PROPENSITY_AND_USE_RULES'",
+          "Salvare la configurazione della categoria",
+          "Selezionare la categoria 'raccomandazione esterna mancante'",
+          "Definire la strategia 'USE_INTERNAL_RANKING'",
+          "Salvare la configurazione della categoria",
+          "Selezionare la categoria 'raccomandazione esterna contraddittoria'",
+          "Definire la strategia 'DROP_EXTERNAL_RECOMMENDATION'",
+          "Salvare la configurazione della categoria",
+          "Verificare che ciascuna strategia risulti 'attiva' (o attivabile e attivata) per la rispettiva categoria"
+        ],
+        "expected_results": [
+          "La dashboard consente di definire una strategia per ciascuna categoria richiesta",
+          "Dopo il salvataggio, ciascuna strategia risulta attiva (o chiaramente attivabile e impostata su attiva) per la categoria selezionata",
+          "Le configurazioni salvate risultano persistenti ricaricando la pagina o riaccedendo alla sezione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia UI/UX; il test verifica la capacità di configurare/attivare strategie (AC-2) tramite dashboard come da user story."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC02",
+        "title": "E2E: strategia attiva configurata da dashboard viene applicata dal Motore durante calcolo NBO",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo Marketing",
+          "Motore NBO disponibile",
+          "Sistema di log/audit disponibile",
+          "È possibile rendere effettiva la configurazione sul Motore (immediato o tramite meccanismo previsto dall'ambiente)"
+        ],
+        "test_data": [
+          "Categoria: 'raccomandazione esterna mancante'",
+          "Strategia attiva: 'USE_INTERNAL_RANKING'",
+          "CorrelationId: NBO-E2E-CONFIG-APPLY-0001",
+          "CustomerId: 10009999",
+          "Scenario NBO: raccomandazione esterna mancante (risposta vuota/null)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing",
+          "Navigare alla sezione 'Configurazione fallback NBO'",
+          "Impostare per la categoria 'raccomandazione esterna mancante' la strategia 'USE_INTERNAL_RANKING' e attivarla",
+          "Avviare il calcolo NBO per CustomerId 10009999 con CorrelationId NBO-E2E-CONFIG-APPLY-0001 in modo che la raccomandazione esterna sia mancante",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare l'esito del calcolo NBO per CorrelationId NBO-E2E-CONFIG-APPLY-0001",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-E2E-CONFIG-APPLY-0001"
+        ],
+        "expected_results": [
+          "Il Motore categorizza il caso limite come 'raccomandazione esterna mancante'",
+          "Il Motore applica la strategia attiva configurata 'USE_INTERNAL_RANKING'",
+          "Nel log/audit è presente un evento con almeno: tipo caso, dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story US02 richiede l'effetto sul Motore; questo test valida l'integrazione end-to-end. Se l'effettività della config non è immediata, inserire un passo di 'pubblicazione/propagazione' secondo l'ambiente."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC03",
+        "title": "Dashboard: tentativo di attivare/salvare una strategia incompleta o non valida",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo Marketing",
+          "Sezione 'Configurazione fallback NBO' disponibile"
+        ],
+        "test_data": [
+          "Categoria: 'propensity incoerente'",
+          "Strategia: selezione vuota/null oppure riferimento non valido 'RULE-999' (se consentito dal campo)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing",
+          "Navigare alla sezione 'Configurazione fallback NBO'",
+          "Selezionare la categoria 'propensity incoerente'",
+          "Lasciare la strategia non valorizzata oppure inserire un riferimento non valido (se previsto)",
+          "Tentare di salvare/attivare la configurazione"
+        ],
+        "expected_results": [
+          "La dashboard impedisce il salvataggio/attivazione oppure mostra un errore di validazione chiaro e blocca la persistenza della configurazione non valida",
+          "La configurazione della categoria rimane invariata rispetto allo stato precedente"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Le regole di validazione non sono definite nel requisito; il test verifica almeno che non venga attivata una strategia palesemente incompleta/non valida."
+      },
+      {
+        "test_id": "REQ-F-023.US02.TC04",
+        "title": "Assenza di strategia definita/attiva per una categoria: il Motore gestisce e registra comunque l'evento",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo Marketing",
+          "Motore NBO disponibile",
+          "Sistema di log/audit disponibile",
+          "Per la categoria scelta non esiste strategia definita o risulta disattivata (es. 'cluster non identificato')"
+        ],
+        "test_data": [
+          "Categoria senza fallback: 'cluster non identificato'",
+          "CorrelationId: NBO-INT-NOFALLBACK-0002",
+          "CustomerId: 10004567",
+          "ClusterId: null"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing",
+          "Navigare alla sezione 'Configurazione fallback NBO'",
+          "Verificare che per 'cluster non identificato' non sia definita/attiva alcuna strategia",
+          "Avviare il calcolo NBO per CustomerId 10004567 con CorrelationId NBO-INT-NOFALLBACK-0002 e ClusterId nullo",
+          "Attendere il completamento dell'elaborazione NBO",
+          "Recuperare dal sistema di log/audit l'evento associato a CorrelationId NBO-INT-NOFALLBACK-0002"
+        ],
+        "expected_results": [
+          "Il Motore non genera un errore non gestito in assenza di strategia di fallback esplicita",
+          "Nel log/audit è presente un evento con almeno: tipo caso='cluster non identificato', dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Questo test copre l'effetto di business richiesto anche da US02: assenza di strategia non deve lasciare condizioni non gestite."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-023.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-023.US03.TC01",
+        "title": "Dashboard Compliance: consultazione evento audit con campi minimi (tipo, dati input, timestamp)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo/permessi 'Compliance' in sola lettura sui log/audit",
+          "Esiste almeno un evento di caso limite già registrato nel sistema di log/audit (es. generato da un test precedente) e consultabile in dashboard",
+          "La dashboard espone una vista di dettaglio dell'evento audit"
+        ],
+        "test_data": [
+          "CorrelationId evento esistente: NBO-EDGE-CLUSTER-0001 (o equivalente)",
+          "Categoria attesa: 'cluster non identificato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance",
+          "Navigare alla sezione di consultazione log/audit NBO",
+          "Aprire il dettaglio dell'evento con CorrelationId NBO-EDGE-CLUSTER-0001"
+        ],
+        "expected_results": [
+          "L'evento audit è consultabile in dashboard",
+          "Nel dettaglio evento sono presenti almeno: tipo di caso, dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Eventuali politiche di mascheramento dei dati non sono specificate; il test verifica solo la presenza dei campi minimi."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC02",
+        "title": "Dashboard Compliance: distinzione delle categorie di caso limite nei log/audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo Compliance",
+          "Esistono nel sistema di log/audit eventi registrati per ciascuna categoria prevista: cluster non identificato, propensity assente, propensity incoerente, raccomandazione esterna mancante, raccomandazione esterna contraddittoria"
+        ],
+        "test_data": [
+          "CorrelationId esempi: NBO-EDGE-CLUSTER-0001, NBO-EDGE-PROP-ABS-0001, NBO-EDGE-PROP-INCOH-0001, NBO-EDGE-EXTREC-MISS-0001, NBO-EDGE-EXTREC-CONTR-0001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance",
+          "Navigare alla sezione di consultazione log/audit NBO",
+          "Aprire in sequenza gli eventi indicati nei test data",
+          "Per ciascun evento, leggere il campo 'tipo caso' (categoria)"
+        ],
+        "expected_results": [
+          "Per ogni evento consultato, la categoria è chiaramente distinguibile e valorizzata coerentemente con la tipologia prevista (cluster non identificato / propensity assente / propensity incoerente / raccomandazione esterna mancante / raccomandazione esterna contraddittoria)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non richiede filtri/ricerca; la distinzione è verificata tramite consultazione del dettaglio o della colonna categoria nella lista."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC03",
+        "title": "Dashboard Compliance: evento presente anche senza fallback configurato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Utente autenticato con ruolo Compliance",
+          "È stato generato un evento di caso limite per una categoria senza fallback esplicito configurato (es. tramite esecuzione NBO con 'cluster non identificato' e fallback non definito)",
+          "L'evento è presente nel sistema di log/audit"
+        ],
+        "test_data": [
+          "CorrelationId evento: NBO-EDGE-NOFALLBACK-0001",
+          "Categoria attesa: 'cluster non identificato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance",
+          "Navigare alla sezione di consultazione log/audit NBO",
+          "Aprire il dettaglio dell'evento con CorrelationId NBO-EDGE-NOFALLBACK-0001"
+        ],
+        "expected_results": [
+          "L'evento è presente e consultabile anche se non esisteva una strategia di fallback esplicita per la categoria",
+          "Nel dettaglio evento sono presenti almeno: tipo di caso, dati in input, timestamp"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La dashboard potrebbe non mostrare esplicitamente l'informazione 'nessun fallback applicato'; non è richiesta dal requisito originale."
+      },
+      {
+        "test_id": "REQ-F-023.US03.TC04",
+        "title": "Autorizzazioni dashboard: utente non-Compliance non può consultare i log/audit NBO",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile",
+          "Esiste un utente autenticabile con ruolo diverso da Compliance (es. 'Marketing' o 'Operatore')",
+          "La sezione log/audit NBO è protetta da autorizzazioni"
+        ],
+        "test_data": [
+          "Utente: marketing.user01",
+          "Ruolo: Marketing"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing.user01",
+          "Tentare di navigare alla sezione di consultazione log/audit NBO tramite menu",
+          "Se la sezione non è visibile, tentare l'accesso diretto tramite URL della sezione log/audit NBO"
+        ],
+        "expected_results": [
+          "La sezione log/audit NBO non è accessibile all'utente non-Compliance (menu non visibile e/o accesso diretto negato)",
+          "In caso di accesso negato, la dashboard mostra un messaggio/errore di autorizzazione (es. HTTP 403 o pagina 'Accesso non consentito')"
+        ],
+        "traced_criteria": [],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il vincolo di autorizzazione è presente nella user story US03 ma non negli AC del requisito originale forniti; per rispettare la tracciabilità richiesta, questo test non mappa alcun AC-1..AC-4."
+      }
+    ]
+  }
+]

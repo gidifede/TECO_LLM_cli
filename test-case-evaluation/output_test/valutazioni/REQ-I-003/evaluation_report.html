@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-I-003</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-I-003</h1>
+  <div class="subtitle">Utilizzo delle regole marketing gestite dalla dashboard esterna</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:43</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-I-003</div>
+  <div class="req-field"><strong>Titolo:</strong> Utilizzo delle regole marketing gestite dalla dashboard esterna</div>
+  <div class="req-field"><strong>Categoria:</strong> INTEGRAZIONE</div>
+  <div class="req-field"><strong>Priorita:</strong> medium</div>
+  <div class="req-desc">Eventuali regole aggiuntive di marketing (campagne, esclusioni, personalizzazioni) sono gestite dalla dashboard di marketing esterna già descritta dall&#x27;utente. Il motore di bundle deve fare riferimento e rispettare queste regole gestite manualmente nella dashboard: cioè la logica di selezione e le eventuali esclusioni o parametri commerciali non devono essere duplicate ma devono essere ottenute o consultate dalla dashboard di marketing quando applicabile.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>È documentata l&#x27;interdipendenza operativa: il motore utilizza le regole provenienti dalla dashboard di marketing per modificare/escludere proposte.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Sono presenti test che dimostrano che regole attivate nella dashboard influiscono sulle proposte presentate al cliente (es. inclusioni/esclusioni).</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>La documentazione tecnica specifica i punti in cui il motore legge/rispetta le regole definite nella dashboard.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">68</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">54</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili e ha meno ridondanze complessive. Il set indirect_persona aggiunge numerosi dettagli non presenti nel requisito (workflow stati, validità temporali, sconti %, SLA propagazione, tassonomie di flusso) e presenta ridondanze documentali e funzionali più marcate, portando a un punteggio di coerenza inferiore (54 vs 68).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">68</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-003.TC01</td><td>Introduce attori/ruoli non citati nel requisito (&quot;utente abilitato&quot;, &quot;consumatore del motore bundle&quot;), segmenti cliente (STANDARD) e canale &quot;web&quot; non menzionati.</td></tr>
+<tr><td class='mono'>REQ-I-003.TC01</td><td>Assume dettagli operativi non presenti nel requisito: concetto di &quot;pubblicare/applicare&quot; la regola, disponibilità log/telemetria e verificabilità della chiamata, assenza di altre regole per isolare il test, identificativi proposte/regole (P-BASE-001, P-ADD-009, R-EXC-ADD-009).</td></tr>
+<tr><td class='mono'>REQ-I-003.TC02</td><td>Assume comportamenti non specificati: efficacia immediata post-pubblicazione, nessun caching/non invalidazione cache; inoltre mantiene canale &quot;web&quot; e segmentazione cliente non citati.</td></tr>
+<tr><td class='mono'>REQ-I-003.TC03</td><td>Specifica un effetto di personalizzazione come &quot;prioritizzazione/ordinamento&quot; e introduce segmenti (PREMIUM) e regole di ambito per segmento, non esplicitati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-003.TC04</td><td>Introduce gestione errore/fallback in caso di indisponibilità dashboard (HTTP 503/timeout 10s) e requisiti su come il motore debba reagire; il requisito non menziona scenari di indisponibilità né policy di resilienza.</td></tr>
+<tr><td class='mono'>REQ-I-003.TC05</td><td>Richiede contenuti documentali aggiuntivi non richiesti esplicitamente dagli AC (pull/push, identificativi/parametri principali, gestione errori/caching).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;la logica ... non deve essere duplicata ma deve essere ottenuta o consultata dalla dashboard ...&quot;</td><td>Non esiste un TC che verifichi in modo diretto l&#x27;assenza di duplicazione della logica (oltre a inferenze da log/telemetria). I TC la trattano come evidenza indiretta o checklist documentale, ma non coprono un criterio operativo verificabile (es. configurazioni locali disabilitate/assenti) perché non definito nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Scenari molto simili (toggle attiva/disattiva della stessa regola di esclusione) con passi e attese quasi identici; cambia solo lo stato della regola e l&#x27;asserzione su presenza/assenza della proposta.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">54</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-I-003.US01.TC01</td><td>Introduce stati di workflow regole (Bozza/Disattiva/Attiva), &quot;Team Marketing&quot;, e una validità temporale (oggi..oggi+7 giorni) non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC01</td><td>Mappa in modo discutibile i criteri: traccia AC-3 ma il test verifica log/telemetria e consultazione runtime; AC-3 richiede specifica in documentazione tecnica dei punti di lettura.</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC02</td><td>Presuppone un &quot;canale cliente&quot; (es. web) ma poi indica il canale solo come &quot;dashboard&quot;; inoltre introduce concetti di &quot;presentazione proposte&quot; non specificati come canali nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC03</td><td>Introduce parametri commerciali specifici (sconto 10%, prezzo/sconto/label campagna) non definiti dal requisito, che parla genericamente di personalizzazioni/parametri commerciali.</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC04</td><td>Aggiunge scenario &quot;stato non attivo non viene applicata&quot; come regola generale: coerente in senso comune, ma non esplicitato nel requisito (che parla di regole &#x27;gestite&#x27; e &#x27;quando applicabile&#x27;, non di stati).</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC05</td><td>Introduce concetto di non-applicabilità per mismatch target (T5 vs T6) e rappresentazione della priorità: non esplicitati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC06</td><td>Verifica documentazione solo su interdipendenza (AC-1) ma non sui punti specifici di lettura (AC-3); inoltre introduce canale &quot;dashboard&quot; non pertinente alla documentazione.</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC01</td><td>Introduce affermazione verificabile &quot;non è necessario configurare nel Motore una regola duplicata&quot; (assunzione su configurabilità interna) non descritta dal requisito.</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC02</td><td>Introduce concetti di baseline e &#x27;propagazione&#x27; con eventuale SLA/tempo finestra; il requisito non parla di tempi di propagazione né SLA.</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC03</td><td>Introduce una tassonomia di punti del flusso (pre-selezione, post-filtri, pricing/personalizzazione) non presente nel requisito; AC-3 richiede che i punti siano specificati, ma non quali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-1: &quot;È documentata l&#x27;interdipendenza operativa...&quot;</td><td>I TC runtime (es. US01.TC02-05, US02.TC01-02) non coprono esplicitamente la parte &#x27;documentata&#x27; dell&#x27;interdipendenza; è coperta solo da test documentali (US01.TC06, US02.TC04). Manca una tracciabilità più coerente tra runtime e AC-1 (non è una mancanza di copertura AC, ma una lacuna di allineamento scenario↔criterio).</td></tr>
+<tr><td class='mono'>Descrizione requisito: &quot;...non devono essere duplicate ma devono essere ottenute o consultate dalla dashboard...&quot;</td><td>Come nel set direct, l&#x27;assenza di duplicazione è solo inferita; non c&#x27;è un TC che la verifichi in modo osservabile e non ambiguo (oltre a log/trace).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Entrambi verificano la stessa cosa: documentazione che esplicita l&#x27;interdipendenza operativa Motore↔Dashboard (AC-1) con passi/attese molto simili.</td></tr>
+<tr><td class='mono'></td><td>Entrambi verificano che l&#x27;attivazione di una regola di esclusione in dashboard produca un effetto osservabile sulle proposte (AC-2), con struttura di test sovrapponibile (baseline/effetto).</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-I-003&quot;,
+  &quot;title&quot;: &quot;Utilizzo delle regole marketing gestite dalla dashboard esterna&quot;,
+  &quot;description&quot;: &quot;Eventuali regole aggiuntive di marketing (campagne, esclusioni, personalizzazioni) sono gestite dalla dashboard di marketing esterna già descritta dall&#x27;utente. Il motore di bundle deve fare riferimento e rispettare queste regole gestite manualmente nella dashboard: cioè la logica di selezione e le eventuali esclusioni o parametri commerciali non devono essere duplicate ma devono essere ottenute o consultate dalla dashboard di marketing quando applicabile.&quot;,
+  &quot;category&quot;: &quot;INTEGRAZIONE&quot;,
+  &quot;priority&quot;: &quot;medium&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;È documentata l&#x27;interdipendenza operativa: il motore utilizza le regole provenienti dalla dashboard di marketing per modificare/escludere proposte.&quot;,
+    &quot;Sono presenti test che dimostrano che regole attivate nella dashboard influiscono sulle proposte presentate al cliente (es. inclusioni/esclusioni).&quot;,
+    &quot;La documentazione tecnica specifica i punti in cui il motore legge/rispetta le regole definite nella dashboard.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 5 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-003.TC01</td><td>Applicazione di una regola di esclusione attiva in dashboard: proposta rimossa dal risultato del motore bundle</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.TC02</td><td>Disattivazione della regola in dashboard: la proposta precedentemente esclusa ricompare nel risultato</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.TC03</td><td>Applicazione di una regola di inclusione/personalizzazione: modifica dell&#x27;ordine o della visibilità delle proposte in base a regola dashboard</td><td>Integration</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.TC04</td><td>Gestione indisponibilità dashboard marketing: il motore bundle segnala errore di integrazione (timeout/5xx) senza duplicare logiche locali</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-003.TC05</td><td>Verifica documentazione: interdipendenza operativa e punti di lettura regole dalla dashboard sono descritti in documentazione tecnica</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 10 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-I-003.US01.TC01</td><td>Attivazione/modifica regola in dashboard resa disponibile al motore (verifica consultazione regole)</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC02</td><td>Regola di esclusione attiva in dashboard esclude/modifica coerentemente le proposte generate dal motore</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC03</td><td>Regola di inclusione/personalizzazione attiva influenza coerentemente le proposte generate</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC04</td><td>Regola in stato non attivo non viene applicata dal motore</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC05</td><td>Regola definita ma non applicabile al contesto corrente non altera le proposte</td><td>Negative</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.US01.TC06</td><td>Verifica documentazione di integrazione: interdipendenza operativa tra dashboard e motore esplicitata</td><td>Functional</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC01</td><td>Il Motore legge e applica regole marketing provenienti dalla dashboard durante la generazione proposte</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC02</td><td>Aggiornamento regola attivata in dashboard produce effetto verificabile sulle proposte (propagazione)</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC03</td><td>Verifica documentazione tecnica: punti del flusso in cui il Motore legge/rispetta le regole sono specificati</td><td>Functional</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-I-003.US02.TC04</td><td>Verifica documentazione: interdipendenza operativa Motore↔Dashboard esplicitata</td><td>Functional</td><td>MEDIUM</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 2, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

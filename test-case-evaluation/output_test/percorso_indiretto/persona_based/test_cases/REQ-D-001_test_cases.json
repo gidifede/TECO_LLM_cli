@@ -1,0 +1,380 @@
+[
+  {
+    "story_id": "REQ-D-001.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-001.US01.TC01",
+        "title": "Salvataggio configurazione da dashboard e recupero dal datastore da parte del Motore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Almeno una configurazione esistente nel datastore (es. combinazione Prodotto=P1, Canale=WEB) visualizzabile e modificabile in dashboard",
+          "Utente Team Marketing autenticato e autorizzato alla modifica configurazioni in dashboard",
+          "Connettività attiva tra dashboard e datastore",
+          "Motore di Offerte con accesso in lettura al datastore (o API di accesso configurazioni) disponibile"
+        ],
+        "test_data": [
+          "Configurazione di partenza: stato combinazione='interessante', sconto=10,00%, validità: inizio=2026-03-01 00:00, fine=2026-03-31 23:59, target='NUOVI_CLIENTI'",
+          "Modifica: sconto=15,00% (stessi altri campi)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la sezione di configurazione (matrice combinazioni/eccezioni) relativa alla configurazione di partenza",
+          "Modificare il campo 'sconto' impostandolo a 15,00%",
+          "Confermare il salvataggio",
+          "Recuperare dal datastore (o tramite API di lettura configurazioni usata dal Motore) la configurazione appena modificata identificandola con la stessa chiave funzionale",
+          "Eseguire un calcolo proposte del Motore che utilizzi la combinazione interessata"
+        ],
+        "expected_results": [
+          "Il salvataggio in dashboard termina con esito positivo e la modifica risulta persistita",
+          "La configurazione recuperata dal datastore mostra sconto=15,00% per la chiave funzionale modificata",
+          "Il Motore utilizza la configurazione recuperata dal datastore nel calcolo proposte (evidenza tramite output proposta e/o log applicativo) e applica lo sconto del 15,00% alla combinazione interessata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il test valida la persistenza e la recuperabilità dal Motore. L'evidenza dell'uso nel calcolo può essere ottenuta via log/telemetria del Motore o confronto deterministico dell'output proposta."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC02",
+        "title": "Visualizzazione del tempo prevedibile e documentato entro cui il Motore applicherà la nuova configurazione",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato",
+          "Dashboard configurata per mostrare l'informazione sul tempo di applicazione (SLA/ETA) al momento del salvataggio o in un dettaglio della configurazione"
+        ],
+        "test_data": [
+          "Modifica: target='CLIENTI_PREMIUM' (valore valido) su una configurazione esistente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire una configurazione esistente modificabile",
+          "Modificare il campo 'target' impostandolo a 'CLIENTI_PREMIUM'",
+          "Confermare il salvataggio",
+          "Individuare nella UI (messaggio di conferma, dettaglio configurazione o sezione informativa) l'informazione relativa al tempo entro cui il Motore applicherà la modifica"
+        ],
+        "expected_results": [
+          "Dopo il salvataggio la dashboard mostra un'informazione esplicita e consultabile sul tempo di applicazione (es. timestamp previsto o SLA in minuti/secondi) entro cui il Motore leggerà e applicherà la nuova configurazione",
+          "L'informazione sul tempo di applicazione è presentata in modo coerente e non ambiguo (valore numerico o data/ora), tale da poter essere verificata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica formato/posizione del 'tempo prevedibile e documentato'. Il test assume che la dashboard lo esponga come valore verificabile (SLA o ETA) al salvataggio o nel dettaglio della configurazione."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC03",
+        "title": "Salvataggio include i campi minimi richiesti nell'oggetto di configurazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato",
+          "Connettività attiva tra dashboard e datastore",
+          "Disponibile un modo per ispezionare l'oggetto salvato (lettura dal datastore o API di backoffice) per verificare i campi persistiti"
+        ],
+        "test_data": [
+          "Nuova/Modifica configurazione: stato combinazione='vietato', sconto=0,00%, validità: inizio=2026-04-01 00:00, fine=2026-04-30 23:59, target='TUTTI'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Creare una nuova configurazione oppure aprire una configurazione esistente in modifica",
+          "Impostare 'stato combinazione' a 'vietato'",
+          "Impostare 'sconto' a 0,00%",
+          "Impostare 'periodo di validità' con inizio 2026-04-01 00:00 e fine 2026-04-30 23:59",
+          "Impostare 'target' a 'TUTTI'",
+          "Confermare il salvataggio",
+          "Recuperare l'oggetto di configurazione persistito dal datastore (o API) e visualizzarne i campi"
+        ],
+        "expected_results": [
+          "Il salvataggio termina con esito positivo",
+          "L'oggetto persistito include almeno i campi: stato combinazione, sconto, periodo di validità (inizio e fine) e target",
+          "I valori dei campi minimi nell'oggetto persistito corrispondono a quelli inseriti in dashboard"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede che l'oggetto salvato includa i campi minimi; il test verifica presenza e correttezza valori nel datastore o tramite API di lettura."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC04",
+        "title": "Salvataggio fallisce per errore datastore e la modifica non risulta applicabile dal Motore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato",
+          "Configurazione esistente modificabile",
+          "Datastore non disponibile o operazione di scrittura forzata a fallire (es. simulazione errore 5xx/timeout) durante il salvataggio",
+          "Motore di Offerte disponibile per eseguire un calcolo proposte sulla combinazione interessata"
+        ],
+        "test_data": [
+          "Modifica tentata: sconto da 10,00% a 20,00% sulla configurazione selezionata"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la configurazione esistente",
+          "Modificare il campo 'sconto' impostandolo a 20,00%",
+          "Confermare il salvataggio durante l'indisponibilità/fallimento del datastore",
+          "Recuperare dal datastore (o API) la configurazione con la stessa chiave funzionale",
+          "Eseguire un calcolo proposte del Motore per la combinazione interessata"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore di salvataggio (fallimento esplicito) e non conferma la persistenza",
+          "Nel datastore la configurazione non risulta aggiornata (sconto rimane 10,00% o valore precedente)",
+          "Il Motore, nel calcolo proposte, non applica la modifica non persistita (usa la configurazione precedente)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case esplicitato: errore datastore. Il requisito non definisce il testo del messaggio, ma richiede segnalazione del fallimento e non applicazione della modifica non persistita."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC05",
+        "title": "Conflitto di modifica concorrente sulla stessa configurazione gestito in modo esplicito e tracciabile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Due utenti Team Marketing (Utente A e Utente B) autenticati e autorizzati",
+          "Stessa configurazione esistente modificabile, accessibile contemporaneamente",
+          "Sistema dotato di meccanismo di gestione conflitti (es. lock ottimistico con versione/ETag o lock pessimista) e audit/log delle modifiche"
+        ],
+        "test_data": [
+          "Utente A modifica: sconto=12,00%",
+          "Utente B modifica: sconto=18,00%"
+        ],
+        "steps": [
+          "Utente A apre la configurazione in modifica in dashboard",
+          "Utente B apre la stessa configurazione in modifica in dashboard",
+          "Utente A imposta sconto=12,00% e conferma il salvataggio",
+          "Utente B imposta sconto=18,00% e conferma il salvataggio senza ricaricare la pagina",
+          "Verificare l'esito del salvataggio di Utente B e lo stato finale nel datastore",
+          "Verificare la tracciabilità dell'evento (audit/log) relativo al conflitto e/o all'eventuale override"
+        ],
+        "expected_results": [
+          "Il sistema gestisce il conflitto in modo esplicito: o rifiuta il salvataggio di Utente B con messaggio di conflitto, oppure applica un override dichiarato",
+          "Lo stato finale nel datastore è coerente con la policy adottata (rifiuto: sconto=12,00%; override: sconto=18,00%)",
+          "È disponibile un'evidenza tracciabile dell'evento (audit/log) che consente di ricostruire chi ha salvato cosa e l'esito del conflitto"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story richiede gestione del conflitto 'esplicita e tracciabile' ma non definisce la policy (rifiuto vs override). Il test accetta entrambe purché esplicite e verificabili."
+      },
+      {
+        "test_id": "REQ-D-001.US01.TC06",
+        "title": "Validazione periodo di validità incoerente (data fine precedente alla data inizio) blocca il salvataggio",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing autenticato e autorizzato",
+          "Configurazione esistente modificabile oppure creazione nuova configurazione abilitata"
+        ],
+        "test_data": [
+          "Periodo di validità non valido: inizio=2026-05-10 00:00, fine=2026-05-01 23:59",
+          "Altri campi: stato combinazione='interessante', sconto=5,00%, target='TUTTI'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Avviare creazione o modifica di una configurazione",
+          "Impostare stato combinazione a 'interessante'",
+          "Impostare sconto a 5,00%",
+          "Impostare periodo di validità con inizio 2026-05-10 00:00 e fine 2026-05-01 23:59",
+          "Impostare target a 'TUTTI'",
+          "Confermare il salvataggio"
+        ],
+        "expected_results": [
+          "Il sistema blocca o rifiuta il salvataggio",
+          "La dashboard mostra un messaggio di validazione che indica l'incoerenza del periodo di validità (fine < inizio)",
+          "Nessuna nuova versione/modifica della configurazione viene persistita nel datastore"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case esplicitato: periodo di validità incoerente. Il requisito non dettaglia il messaggio; il test verifica presenza di un errore di validazione e assenza di persistenza."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-001.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-001.US02.TC01",
+        "title": "Il Motore recupera una vista consistente delle configurazioni dal datastore durante il calcolo proposte",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Datastore configurazioni disponibile e popolato con set di configurazioni coerenti",
+          "Motore di Offerte disponibile e configurato per leggere dal datastore (o servizio configurazioni)",
+          "Disponibile un identificativo di versione/timestamp o meccanismo equivalente per verificare consistenza della vista (se previsto dall'implementazione)"
+        ],
+        "test_data": [
+          "Set configurazioni: combinazioni P1/WEB e P2/APP con sconti distinti e target distinti",
+          "Input calcolo proposte: richiesta che coinvolga P1/WEB e P2/APP (o più combinazioni) in un'unica esecuzione"
+        ],
+        "steps": [
+          "Avviare un calcolo proposte nel Motore con l'input definito",
+          "Raccogliere evidenze di lettura configurazioni (log/trace del Motore o metriche) durante l'esecuzione",
+          "Verificare che le configurazioni utilizzate nel calcolo appartengano a una vista consistente (stessa versione o snapshot coerente) per l'intera esecuzione"
+        ],
+        "expected_results": [
+          "Il Motore recupera dal datastore le configurazioni necessarie e le utilizza nel calcolo proposte",
+          "Le configurazioni usate nel calcolo risultano coerenti tra loro (vista consistente/snapshot), senza mix di versioni che produca combinazioni incongruenti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story cita 'vista consistente' ma non specifica il meccanismo (snapshot/versioning). Il test richiede evidenza verificabile (versione unica o indicatore equivalente) coerente con l'implementazione."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC02",
+        "title": "Applicazione della nuova configurazione entro il tempo prevedibile e documentato dopo salvataggio da dashboard",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e abilitata al salvataggio configurazioni",
+          "Motore di Offerte disponibile per eseguire calcoli ripetuti sulla stessa combinazione",
+          "Datastore disponibile",
+          "È disponibile il valore del tempo prevedibile e documentato (SLA/ETA) esposto dalla dashboard o documentazione operativa consultabile"
+        ],
+        "test_data": [
+          "Configurazione: combinazione Prodotto=P3, Canale=WEB, stato combinazione='interessante', sconto iniziale=5,00%, validità: inizio=2026-03-01 00:00, fine=2026-03-31 23:59, target='TUTTI'",
+          "Modifica: sconto=9,00%",
+          "Tempo documentato di applicazione: X minuti (valore da UI/documentazione)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come Team Marketing",
+          "Modificare la configurazione impostando sconto=9,00% e salvare",
+          "Registrare l'istante di salvataggio e il tempo documentato di applicazione (X) mostrato/consultato",
+          "Eseguire un calcolo proposte nel Motore per la combinazione P3/WEB immediatamente dopo il salvataggio e registrare lo sconto applicato",
+          "Ripetere il calcolo proposte a intervalli regolari fino a raggiungere l'istante (salvataggio + X)",
+          "Eseguire un ulteriore calcolo proposte al più tardi all'istante (salvataggio + X)"
+        ],
+        "expected_results": [
+          "Prima dell'applicazione effettiva, il Motore può continuare a usare la configurazione precedente (sconto 5,00%) fino al completamento della propagazione, senza errori",
+          "Entro e non oltre il tempo documentato X, il Motore applica la nuova configurazione e il calcolo proposte riflette sconto=9,00%",
+          "L'evidenza temporale (timestamp salvataggio, timestamp calcolo con nuova configurazione) dimostra il rispetto del tempo documentato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce il valore di X né il meccanismo (pull/cache/eventi). Il test assume che X sia disponibile in modo 'documentato' e quindi misurabile."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC03",
+        "title": "Il Motore rifiuta configurazioni con campi obbligatori mancanti e registra l'anomalia",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Datastore (o servizio configurazioni) accessibile",
+          "Possibilità di inserire/forzare nel datastore una configurazione malformata per test (ambiente QA) oppure di simulare la risposta del servizio configurazioni con campi mancanti",
+          "Sistema di logging/monitoring del Motore accessibile per verifiche"
+        ],
+        "test_data": [
+          "Configurazione malformata: stato combinazione='interessante', sconto=10,00%, periodo di validità assente, target='TUTTI' (campo mancante: periodo di validità)",
+          "Input calcolo proposte che richieda l'uso della configurazione malformata"
+        ],
+        "steps": [
+          "Preparare nel datastore (o mock del servizio configurazioni) la configurazione malformata associata alla combinazione richiesta dall'input",
+          "Avviare il calcolo proposte nel Motore con l'input definito",
+          "Raccogliere l'esito del calcolo e i log del Motore relativi alla lettura configurazioni"
+        ],
+        "expected_results": [
+          "Il Motore non utilizza la configurazione priva dei campi obbligatori per determinare la proposta",
+          "Il Motore registra un'anomalia verificabile (log/errore) che indica la mancanza dei campi obbligatori",
+          "Il Motore non corrompe lo stato dell'esecuzione (nessun crash); l'esito segue la gestione errore prevista (es. blocco calcolo o esclusione della proposta) secondo comportamento implementato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La user story cita la registrazione dell'anomalia e il rifiuto dell'uso; non definisce l'esatto comportamento di uscita (fallback/blocco). Il test verifica rifiuto + evidenza log e stabilità."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC04",
+        "title": "Indisponibilità datastore in lettura: il Motore gestisce l'errore senza corrompere lo stato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Datastore (o servizio configurazioni) reso non disponibile (timeout/errore 5xx) durante la lettura",
+          "Sistema di logging/monitoring del Motore accessibile"
+        ],
+        "test_data": [
+          "Input calcolo proposte standard che richieda lettura configurazioni"
+        ],
+        "steps": [
+          "Forzare l'indisponibilità del datastore/servizio configurazioni per le richieste del Motore",
+          "Avviare il calcolo proposte nel Motore con l'input definito",
+          "Raccogliere l'esito del calcolo e i log/metriche del Motore",
+          "Ripristinare la disponibilità del datastore/servizio configurazioni",
+          "Avviare nuovamente il calcolo proposte con lo stesso input"
+        ],
+        "expected_results": [
+          "Durante l'indisponibilità, il Motore gestisce l'errore di lettura in modo controllato (nessun crash) e registra un errore verificabile (log/metriche)",
+          "Dopo il ripristino, il Motore torna a recuperare configurazioni e a calcolare proposte correttamente",
+          "Non risultano stati intermedi corrotti o persistiti dal Motore a causa dell'errore di lettura"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story menziona una policy da definire (fallback vs blocco). Il test verifica robustezza, logging e recupero post-ripristino, senza imporre una specifica policy di output."
+      },
+      {
+        "test_id": "REQ-D-001.US02.TC05",
+        "title": "Configurazioni non attive (scadute o non ancora valide) non vengono applicate dal Motore",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Datastore popolato con configurazioni per la stessa combinazione ma con periodi di validità differenti",
+          "Orario di sistema sincronizzato (NTP) o controllabile in ambiente QA"
+        ],
+        "test_data": [
+          "Configurazione A (scaduta): validità 2026-01-01 00:00 - 2026-01-31 23:59, sconto=20,00%, target='TUTTI'",
+          "Configurazione B (futura): validità 2026-04-01 00:00 - 2026-04-30 23:59, sconto=30,00%, target='TUTTI'",
+          "Configurazione C (attiva): validità 2026-03-01 00:00 - 2026-03-31 23:59, sconto=10,00%, target='TUTTI'",
+          "Data/ora di esecuzione test: 2026-03-15 12:00",
+          "Input calcolo proposte per la combinazione interessata"
+        ],
+        "steps": [
+          "Assicurare che nel datastore siano presenti le configurazioni A, B e C per la stessa combinazione",
+          "Impostare/assicurare che la data/ora di esecuzione sia 2026-03-15 12:00",
+          "Avviare il calcolo proposte nel Motore per la combinazione interessata",
+          "Raccogliere l'output della proposta e/o i log di selezione configurazione"
+        ],
+        "expected_results": [
+          "Il Motore non applica la configurazione scaduta (A) né quella non ancora valida (B)",
+          "Il Motore applica la configurazione attiva (C) e la proposta riflette sconto=10,00%",
+          "Le evidenze (log/trace o output deterministico) indicano che la selezione tiene conto del periodo di validità"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito originale richiede la presenza del periodo di validità come campo necessario; questo test verifica anche l'uso funzionale del campo nel calcolo, coerentemente con le business rules della US02."
+      }
+    ]
+  }
+]

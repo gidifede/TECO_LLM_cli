@@ -1,0 +1,330 @@
+[
+  {
+    "test_id": "REQ-D-006.TC01",
+    "title": "Creazione record persistente proposta con tutti i campi obbligatori valorizzati",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un cliente con id 'C-10001' nel sistema",
+      "Esiste un prodotto con id 'P-20001' nel catalogo",
+      "Il sistema consente la generazione di una proposta per il cliente (meccanismo di generazione disponibile in ambiente di test o via API/servizio interno)"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30001'",
+      "Id cliente: 'C-10001'",
+      "Id prodotto: 'P-20001'",
+      "Immagine: URL 'https://cdn.example.com/img/P-20001.png'",
+      "Prezzo scontato: 89,90 EUR",
+      "Valore sconto: 10,00 EUR",
+      "Stato iniziale: 'presentata'",
+      "Data/ora scadenza: now() + 10 giorni (es. '2026-03-04T10:00:00Z' se now='2026-02-23T10:00:00Z')"
+    ],
+    "steps": [
+      "Generare una proposta per il cliente 'C-10001' con id 'PR-30001' e i dati di test indicati",
+      "Recuperare il record persistito della proposta 'PR-30001' tramite il canale di controllo dati disponibile (es. API di lettura, query DB, servizio interno)",
+      "Verificare la presenza e valorizzazione di tutti i campi richiesti nel record"
+    ],
+    "expected_results": [
+      "Esiste esattamente un record persistente per id proposta 'PR-30001' associato a id cliente 'C-10001'",
+      "Il record contiene id prodotto 'P-20001'",
+      "Il record contiene il riferimento immagine 'https://cdn.example.com/img/P-20001.png'",
+      "Il record contiene prezzo scontato pari a 89,90 EUR",
+      "Il record contiene valore sconto pari a 10,00 EUR",
+      "Il record contiene stato corrente pari a 'presentata'",
+      "Il record contiene data/ora di scadenza valorizzata e pari al valore atteso (now + 10 giorni secondo i dati di test)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "I canali sono stati inferiti dal riferimento a 'controlli lato canale' nella descrizione; la verifica del record può avvenire via API/servizio o accesso DB a seconda dell'architettura disponibile."
+  },
+  {
+    "test_id": "REQ-D-006.TC02",
+    "title": "Disponibilità dei dati proposta per controlli lato canale prima della scadenza",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30002' per il cliente 'C-10001' con scadenza futura (>= now + 1 giorno)",
+      "È disponibile un endpoint/servizio di canale che recupera lo stato proposta per cliente (o equivalente meccanismo di lettura lato canale)"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30002'",
+      "Id cliente: 'C-10001'",
+      "Scadenza: '2026-03-01T10:00:00Z' (futura rispetto all'esecuzione test)",
+      "Stato corrente: 'presentata'"
+    ],
+    "steps": [
+      "Invocare il servizio/endpoint di canale per recuperare i dati proposta del cliente 'C-10001' includendo la proposta 'PR-30002'",
+      "Ispezionare la risposta del canale"
+    ],
+    "expected_results": [
+      "La risposta include la proposta 'PR-30002' non scaduta",
+      "Per 'PR-30002' sono presenti almeno i campi: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato, data/ora scadenza",
+      "Lo stato restituito per 'PR-30002' corrisponde allo stato persistito (es. 'presentata')"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Dipendenza esterna: definizione dell'API/servizio di canale per la lettura dei dati; il requisito non specifica il contratto, quindi il test valida la disponibilità dei campi minimi richiesti."
+  },
+  {
+    "test_id": "REQ-D-006.TC03",
+    "title": "Transizione di stato proposta registrata e riproducibile per audit (presentata -> aggiunta al carrello)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30003' per il cliente 'C-10001' con stato iniziale 'presentata' e scadenza futura",
+      "È disponibile un meccanismo per cambiare lo stato a 'aggiunta al carrello' (azione applicativa o API interna)",
+      "È disponibile un meccanismo di audit/riproduzione storico stati (es. tabella eventi, log audit consultabile, endpoint di history)"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30003'",
+      "Id cliente: 'C-10001'",
+      "Stato iniziale: 'presentata'",
+      "Nuovo stato: 'aggiunta al carrello'",
+      "Timestamp cambio stato: now() (es. '2026-02-23T10:05:00Z')"
+    ],
+    "steps": [
+      "Eseguire l'azione che porta la proposta 'PR-30003' allo stato 'aggiunta al carrello'",
+      "Recuperare il record corrente della proposta 'PR-30003'",
+      "Recuperare la traccia audit/storico stati per la proposta 'PR-30003'",
+      "Riprodurre la sequenza degli stati dalla traccia audit in ordine temporale"
+    ],
+    "expected_results": [
+      "Il record corrente della proposta 'PR-30003' risulta in stato 'aggiunta al carrello'",
+      "La traccia audit contiene almeno un evento di cambio stato da 'presentata' a 'aggiunta al carrello'",
+      "Ogni evento audit relativo al cambio stato include almeno: id proposta, stato precedente, stato nuovo, data/ora dell'evento",
+      "La riproduzione della sequenza stati mostra l'ordine corretto: 'presentata' -> 'aggiunta al carrello'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica il formato/posizione dell'audit (DB, log, endpoint); il test assume l'esistenza di un artefatto consultabile per verificare riproducibilità e tracciabilità."
+  },
+  {
+    "test_id": "REQ-D-006.TC04",
+    "title": "Transizione di stato proposta registrata e riproducibile per audit (aggiunta al carrello -> accettata/completata)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30004' per il cliente 'C-10001' con stato iniziale 'aggiunta al carrello' e scadenza futura",
+      "È disponibile un flusso di completamento/accettazione (checkout o equivalente) che aggiorna lo stato proposta",
+      "È disponibile un meccanismo di audit/riproduzione storico stati per la proposta"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30004'",
+      "Id cliente: 'C-10001'",
+      "Stato iniziale: 'aggiunta al carrello'",
+      "Nuovo stato: 'accettata/completata'",
+      "Metodo pagamento (se richiesto dal flusso): Carta test '4111 1111 1111 1111', scadenza '12/30', CVV '123'"
+    ],
+    "steps": [
+      "Avviare il flusso di completamento per il cliente 'C-10001' includendo la proposta 'PR-30004'",
+      "Concludere il flusso fino alla conferma di completamento",
+      "Recuperare il record corrente della proposta 'PR-30004'",
+      "Recuperare la traccia audit/storico stati per la proposta 'PR-30004'"
+    ],
+    "expected_results": [
+      "Il record corrente della proposta 'PR-30004' risulta in stato 'accettata/completata'",
+      "La traccia audit contiene un evento di cambio stato da 'aggiunta al carrello' a 'accettata/completata' con data/ora valorizzata",
+      "La traccia audit consente di ricostruire la sequenza degli stati fino allo stato finale 'accettata/completata'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito cita 'accettata/completata' come esempio di stato; il flusso E2E è dipendente dal processo di checkout esistente, non descritto nel requisito."
+  },
+  {
+    "test_id": "REQ-D-006.TC05",
+    "title": "Transizione di stato proposta registrata e riproducibile per audit (presentata -> ignorata)",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30005' per il cliente 'C-10001' con stato iniziale 'presentata' e scadenza futura",
+      "È disponibile un'azione per marcare la proposta come 'ignorata' (UI o API)",
+      "È disponibile un meccanismo di audit/riproduzione storico stati per la proposta"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30005'",
+      "Id cliente: 'C-10001'",
+      "Stato iniziale: 'presentata'",
+      "Nuovo stato: 'ignorata'"
+    ],
+    "steps": [
+      "Eseguire l'azione di canale che imposta la proposta 'PR-30005' come 'ignorata'",
+      "Recuperare il record corrente della proposta 'PR-30005'",
+      "Recuperare la traccia audit/storico stati per la proposta 'PR-30005'"
+    ],
+    "expected_results": [
+      "Il record corrente della proposta 'PR-30005' risulta in stato 'ignorata'",
+      "La traccia audit contiene un evento di cambio stato da 'presentata' a 'ignorata' con data/ora valorizzata",
+      "La traccia audit consente di ricostruire la sequenza degli stati includendo lo stato finale 'ignorata'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Attori non esplicitati nel requisito: si assume un utente di canale (web/app) che può ignorare una proposta."
+  },
+  {
+    "test_id": "REQ-D-006.TC06",
+    "title": "Scadenza: record non disponibile lato canale dopo la data/ora di scadenza",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30006' per il cliente 'C-10001' con data/ora scadenza impostata a un istante nel passato rispetto all'esecuzione (es. now - 1 minuto)",
+      "È disponibile un endpoint/servizio di canale per consultare le proposte del cliente"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30006'",
+      "Id cliente: 'C-10001'",
+      "Data/ora scadenza: '2026-02-23T09:59:00Z' (con esecuzione test a '2026-02-23T10:00:00Z')"
+    ],
+    "steps": [
+      "Invocare il servizio/endpoint di canale per recuperare le proposte del cliente 'C-10001'",
+      "Verificare se la proposta 'PR-30006' è presente nella risposta",
+      "Tentare di recuperare direttamente (se supportato) la proposta 'PR-30006' tramite canale di consultazione"
+    ],
+    "expected_results": [
+      "La proposta 'PR-30006' non è restituita nelle liste lato canale (non disponibile dopo scadenza)",
+      "Se è disponibile una consultazione puntuale, la richiesta per 'PR-30006' restituisce esito di non disponibilità (es. 404/risorsa non trovata oppure flag 'scaduta' che la rende non utilizzabile), coerente con l'implementazione del canale",
+      "Non è possibile utilizzare la proposta 'PR-30006' per controlli lato canale dopo la scadenza"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito consente due comportamenti: 'espirati' o 'resi non disponibili'. Il test accetta entrambe le implementazioni purché la proposta non sia utilizzabile lato canale dopo scadenza; definire il codice di errore/contratto atteso in base alle API reali."
+  },
+  {
+    "test_id": "REQ-D-006.TC07",
+    "title": "Edge case scadenza: proposta disponibile fino a 1 secondo prima della scadenza e non disponibile a scadenza raggiunta",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30007' per il cliente 'C-10001'",
+      "È possibile controllare l'orologio di test o simulare il tempo (time travel) oppure impostare una scadenza ravvicinata e attendere",
+      "È disponibile un endpoint/servizio di canale per consultare le proposte del cliente"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30007'",
+      "Id cliente: 'C-10001'",
+      "Data/ora scadenza: T (es. '2026-02-23T10:10:00Z')"
+    ],
+    "steps": [
+      "Impostare il tempo di sistema/test a T - 1 secondo (oppure attendere fino a T - 1 secondo)",
+      "Invocare il servizio/endpoint di canale per recuperare le proposte del cliente 'C-10001'",
+      "Verificare la presenza della proposta 'PR-30007' nella risposta",
+      "Impostare il tempo di sistema/test a T (oppure attendere fino a T)",
+      "Invocare nuovamente il servizio/endpoint di canale per recuperare le proposte del cliente 'C-10001'",
+      "Verificare la presenza della proposta 'PR-30007' nella risposta"
+    ],
+    "expected_results": [
+      "A T - 1 secondo la proposta 'PR-30007' è disponibile lato canale",
+      "A T la proposta 'PR-30007' risulta non disponibile lato canale secondo la regola di scadenza implementata"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Richiede supporto a time manipulation o ambiente controllato; in assenza, usare una scadenza ravvicinata e sincronizzare l'esecuzione."
+  },
+  {
+    "test_id": "REQ-D-006.TC08",
+    "title": "Negativo: tentativo di persistere proposta con campo obbligatorio mancante (id cliente assente)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile un meccanismo di creazione proposta che valida i campi obbligatori (API/servizio interno o UI amministrativa)"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-NEG-01'",
+      "Id cliente: NULL/assente",
+      "Id prodotto: 'P-20001'",
+      "Immagine: URL 'https://cdn.example.com/img/P-20001.png'",
+      "Prezzo scontato: 89,90 EUR",
+      "Valore sconto: 10,00 EUR",
+      "Stato: 'presentata'",
+      "Data/ora scadenza: '2026-03-04T10:00:00Z'"
+    ],
+    "steps": [
+      "Tentare di creare/persistire una proposta con id 'PR-NEG-01' omettendo l'id cliente",
+      "Recuperare l'esito dell'operazione",
+      "Verificare se esiste un record persistente per id proposta 'PR-NEG-01'"
+    ],
+    "expected_results": [
+      "L'operazione di creazione/persistenza viene rifiutata con un errore di validazione indicante il campo obbligatorio mancante (id cliente)",
+      "Non viene creato alcun record persistente per id proposta 'PR-NEG-01'"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non esplicita la gestione errori; questo test deriva dall'obbligatorietà dei campi elencati in AC-1 per garantire integrità dati."
+  },
+  {
+    "test_id": "REQ-D-006.TC09",
+    "title": "Negativo: servizio di audit/storico non disponibile durante cambio stato (registrazione audit non riuscita)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una proposta persistita 'PR-30009' per il cliente 'C-10001' con stato iniziale 'presentata' e scadenza futura",
+      "Il sistema usa un componente/servizio per registrare l'audit (es. coda eventi, servizio logging, tabella audit) che può essere reso non disponibile in test",
+      "È disponibile un meccanismo per cambiare lo stato proposta"
+    ],
+    "test_data": [
+      "Id proposta: 'PR-30009'",
+      "Id cliente: 'C-10001'",
+      "Cambio stato richiesto: 'presentata' -> 'aggiunta al carrello'",
+      "Simulazione fault: audit service down/timeout"
+    ],
+    "steps": [
+      "Disabilitare o simulare il malfunzionamento del componente di audit (es. forzare timeout/errore)",
+      "Eseguire l'azione che richiede il cambio stato della proposta 'PR-30009' a 'aggiunta al carrello'",
+      "Recuperare l'esito dell'operazione di cambio stato",
+      "Recuperare la traccia audit/storico stati per la proposta 'PR-30009'",
+      "Recuperare il record corrente della proposta 'PR-30009'"
+    ],
+    "expected_results": [
+      "Il sistema gestisce il fault del componente audit in modo deterministico (o rifiutando il cambio stato, oppure completandolo ma segnalando chiaramente la mancata registrazione audit secondo le regole implementate)",
+      "Non esistono eventi audit parziali/corrotti per la proposta 'PR-30009'",
+      "La tracciabilità per audit risulta coerente con l'esito dell'operazione (se il cambio stato è rifiutato, lo stato resta 'presentata'; se è completato, esiste un meccanismo di recupero/compensazione che rende l'evento audit successivamente disponibile)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito richiede che i cambiamenti di stato siano 'registrati e riproducibili per audit' ma non specifica la strategia in caso di indisponibilità del servizio audit; il test verifica assenza di inconsistenze e definizione di un comportamento deterministico."
+  }
+]

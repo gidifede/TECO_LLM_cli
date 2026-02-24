@@ -1,0 +1,342 @@
+[
+  {
+    "story_id": "REQ-F-030.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-030.US01.TC01",
+        "title": "Proposta con prodotto che richiede questionario: esposizione flag 'questionario richiesto' a livello prodotto",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e endpoint di generazione proposta attivo",
+          "Esiste una configurazione/dominio prodotti in cui il prodotto 'PROD_Q1' ha attributo 'questionarioObbligatorio' = true",
+          "È possibile generare una proposta contenente il prodotto 'PROD_Q1' (es. tramite richiesta di preventivo valida)"
+        ],
+        "test_data": [
+          "Prodotto: PROD_Q1 (questionarioObbligatorio=true)",
+          "Richiesta generazione proposta: canale=web, customerId=CUST10001, scenario=preventivoStandard"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di generazione proposta per ottenere una proposta che includa il prodotto 'PROD_Q1'",
+          "Acquisire il payload della proposta restituito dal Motore di Offerte",
+          "Individuare nel payload la sezione relativa al prodotto/item 'PROD_Q1'",
+          "Verificare la presenza dell'indicazione 'questionario richiesto' associata al prodotto/item 'PROD_Q1'"
+        ],
+        "expected_results": [
+          "La proposta generata include il prodotto/item 'PROD_Q1'",
+          "Nel payload, per il prodotto/item 'PROD_Q1', è presente un flag/metadato che indica che il questionario è richiesto (valore coerente con true/required)",
+          "Il flag/metadato è univocamente associabile al prodotto/item 'PROD_Q1' (non ambiguo rispetto ad altri prodotti presenti in proposta)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non specifica il formato del payload né il nome del campo. Il test verifica la presenza di un'indicazione booleana/enumerativa coerente e tracciabile al singolo prodotto. Se l'implementazione è a livello proposta (non item), adeguare la verifica mantenendo la determinabilità per prodotto."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC02",
+        "title": "Proposta con prodotto che NON richiede questionario: assenza del flag o valorizzazione coerente a false",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e endpoint di generazione proposta attivo",
+          "Esiste una configurazione/dominio prodotti in cui il prodotto 'PROD_NOQ1' ha attributo 'questionarioObbligatorio' = false",
+          "È possibile generare una proposta contenente il prodotto 'PROD_NOQ1'"
+        ],
+        "test_data": [
+          "Prodotto: PROD_NOQ1 (questionarioObbligatorio=false)",
+          "Richiesta generazione proposta: canale=web, customerId=CUST10002, scenario=preventivoStandard"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di generazione proposta per ottenere una proposta che includa il prodotto 'PROD_NOQ1'",
+          "Acquisire il payload della proposta restituito dal Motore di Offerte",
+          "Individuare nel payload la sezione relativa al prodotto/item 'PROD_NOQ1'",
+          "Verificare che non sia presente l'indicazione 'questionario richiesto' per il prodotto/item 'PROD_NOQ1' oppure che sia valorizzata in modo coerente a false (se lo standard prevede la presenza del campo)"
+        ],
+        "expected_results": [
+          "La proposta generata include il prodotto/item 'PROD_NOQ1'",
+          "Nel payload, per il prodotto/item 'PROD_NOQ1', il flag/metadato 'questionario richiesto' è assente oppure presente con valore coerente a false/notRequired",
+          "Non sono presenti indicazioni di questionario richiesto attribuite erroneamente a 'PROD_NOQ1'"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "L'AC consente due comportamenti (assenza campo o false). Il test accetta entrambe le implementazioni purché coerenti e non ambigue."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC03",
+        "title": "Proposta con questionario richiesto: assenza di domande/risposte e strutture operative del questionario nel payload",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e endpoint di generazione proposta attivo",
+          "Prodotto 'PROD_Q1' configurato con questionario obbligatorio (questionarioObbligatorio=true)",
+          "È possibile generare una proposta contenente 'PROD_Q1'"
+        ],
+        "test_data": [
+          "Prodotto: PROD_Q1 (questionarioObbligatorio=true)",
+          "Richiesta generazione proposta: canale=web, customerId=CUST10003, scenario=preventivoStandard"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di generazione proposta includendo il prodotto 'PROD_Q1'",
+          "Acquisire il payload della proposta restituito dal Motore di Offerte",
+          "Verificare che nel payload non siano presenti strutture dati riconducibili al contenuto del questionario (es. liste domande, risposte, opzioni, regole di validazione)",
+          "Verificare che nel payload non siano presenti campi/endpoint/istruzioni operative per salvataggio, ripristino o validazione del questionario"
+        ],
+        "expected_results": [
+          "Nel payload è presente l'indicazione che il questionario è richiesto per 'PROD_Q1'",
+          "Nel payload non sono presenti oggetti/campi relativi a domande, risposte, opzioni o logiche di validazione del questionario",
+          "Nel payload non sono presenti informazioni operative per salvataggio temporaneo, ripristino o gestione workflow di correzione del questionario"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Poiché non è definito uno schema payload, la verifica va effettuata rispetto al contratto API adottato (es. assenza di nodi 'questionnaire/questions/answers/validationRules/saveDraft')."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC04",
+        "title": "Proposta con più prodotti: identificazione per-prodotto del requisito questionario quando solo alcuni lo richiedono",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e endpoint di generazione proposta attivo",
+          "Prodotto 'PROD_Q1' configurato con questionarioObbligatorio=true",
+          "Prodotto 'PROD_NOQ1' configurato con questionarioObbligatorio=false",
+          "È possibile generare una singola proposta contenente entrambi i prodotti"
+        ],
+        "test_data": [
+          "Prodotti in proposta: PROD_Q1 (true), PROD_NOQ1 (false)",
+          "Richiesta generazione proposta: canale=web, customerId=CUST10004, scenario=preventivoMultiProdotto"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di generazione proposta che includa i prodotti 'PROD_Q1' e 'PROD_NOQ1'",
+          "Acquisire il payload della proposta restituito dal Motore di Offerte",
+          "Individuare nel payload le sezioni relative ai due prodotti/item",
+          "Verificare come il payload rappresenta l'obbligo di questionario per ciascun prodotto/item"
+        ],
+        "expected_results": [
+          "La proposta generata include sia 'PROD_Q1' sia 'PROD_NOQ1'",
+          "Il payload consente di determinare in modo non ambiguo che 'PROD_Q1' richiede questionario e 'PROD_NOQ1' non lo richiede",
+          "Non esiste un'unica indicazione a livello proposta che renda ambiguo per quale prodotto sia richiesto il questionario (oppure, se a livello proposta, è presente una struttura che elenca i prodotti interessati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Edge case esplicitamente 'da chiarire' nella story. Il test è formulato in modo tollerante: accetta sia flag per-item sia struttura a livello proposta purché permetta la determinazione per singolo prodotto."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC05",
+        "title": "Errore tecnico nel recupero dell'informazione 'questionario richiesto': gestione tecnica senza logiche di fallback sul questionario",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e endpoint di generazione proposta attivo",
+          "Il Motore di Offerte recupera l'attributo 'questionarioObbligatorio' da un servizio/configurazione esterna (es. Product Catalog/Domain Config)",
+          "È possibile simulare un errore tecnico del servizio/configurazione (timeout o 5xx) durante la generazione proposta"
+        ],
+        "test_data": [
+          "Prodotto richiesto in proposta: PROD_Q1",
+          "Simulazione errore: Product Catalog risponde 500 oppure timeout > 5s durante il lookup di questionarioObbligatorio",
+          "Richiesta generazione proposta: customerId=CUST10005, scenario=preventivoStandard"
+        ],
+        "steps": [
+          "Configurare il mock/stub del servizio di configurazione prodotti per restituire errore tecnico (500 o timeout) sulla richiesta dell'attributo 'questionarioObbligatorio' per 'PROD_Q1'",
+          "Inviare al Motore di Offerte la richiesta di generazione proposta includendo 'PROD_Q1'",
+          "Osservare la risposta del Motore di Offerte e/o i log tecnici correlati alla richiesta",
+          "Verificare che il Motore non introduca nel payload strutture di questionario o logiche operative come compensazione dell'errore"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte gestisce l'errore come errore tecnico di recupero configurazione (es. risposta di errore o proposta non generata secondo comportamento standard del servizio)",
+          "In caso di proposta restituita nonostante l'errore, non vengono aggiunte strutture di questionario (domande/risposte/validazioni/salvataggi) nel payload",
+          "Non sono presenti nel payload indicazioni operative che trasferiscano al Motore responsabilità di gestione del questionario"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "La story indica 'gestione errore tecnica da chiarire' e non definisce se la proposta debba fallire o proseguire. Il test verifica il vincolo: nessun fallback che implichi gestione del questionario da parte del Motore."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-030.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-030.US02.TC01",
+        "title": "Ricezione proposta con 'questionario richiesto': avvio workflow questionario nel verticale senza richieste operative al Motore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Verticale di prodotto disponibile (UI e/o API) e integrato per consumare la proposta generata dal Motore di Offerte",
+          "È disponibile una proposta valida contenente il prodotto 'PROD_Q1' con indicazione 'questionario richiesto' (flag/metadato) coerente",
+          "Utente finale autenticato sul canale del verticale (es. portale verticale) con sessione attiva"
+        ],
+        "test_data": [
+          "Proposta: PROPOSTA_20001 contenente item PROD_Q1 con questionario richiesto=true",
+          "Utente: user.qa01 / ruolo=cliente",
+          "Input questionario (valido): domanda1='SI', domanda2='10', domanda3='Nessuna nota'"
+        ],
+        "steps": [
+          "Aprire nel verticale la proposta 'PROPOSTA_20001'",
+          "Selezionare l'azione di prosecuzione/sottoscrizione per il prodotto 'PROD_Q1'",
+          "Verificare che il verticale presenti il questionario associato al prodotto",
+          "Compilare il questionario con input validi",
+          "Inviare il questionario per proseguire nel flusso del verticale",
+          "Monitorare le chiamate in uscita del verticale verso il Motore di Offerte durante la compilazione/invio del questionario"
+        ],
+        "expected_results": [
+          "Il verticale avvia e mostra il workflow di questionario quando rileva 'questionario richiesto' nella proposta",
+          "Il completamento del questionario consente al verticale di proseguire nel proprio flusso (es. step successivo della sottoscrizione) secondo le regole del verticale",
+          "Durante compilazione e invio del questionario, il verticale non invia al Motore di Offerte richieste operative di validazione/salvataggio/ripristino del questionario (assenza di chiamate con tali finalità)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story non specifica i canali, quindi il test è applicabile al canale primario del verticale. La verifica 'assenza chiamate' richiede tooling di osservabilità (proxy, APM, log correlation)."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC02",
+        "title": "Input questionario incompleto/non valido: validazioni e messaggi di errore gestiti dal verticale senza feedback operativo al Motore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Verticale di prodotto disponibile e integrato per consumare proposte con 'questionario richiesto'",
+          "È disponibile una proposta valida 'PROPOSTA_20002' con prodotto 'PROD_Q1' e questionario richiesto=true",
+          "Utente finale autenticato sul verticale"
+        ],
+        "test_data": [
+          "Proposta: PROPOSTA_20002",
+          "Input questionario non valido: domanda1='' (obbligatoria), domanda2='-1' (fuori range), domanda3='test'",
+          "Utente: user.qa02 / ruolo=cliente"
+        ],
+        "steps": [
+          "Aprire nel verticale la proposta 'PROPOSTA_20002'",
+          "Avviare la prosecuzione per il prodotto 'PROD_Q1' fino alla schermata/step questionario",
+          "Inserire i dati non validi/incompleti nel questionario",
+          "Inviare il questionario",
+          "Monitorare le chiamate in uscita del verticale verso il Motore di Offerte durante l'azione di invio",
+          "Correggere i campi evidenziati e reinviare il questionario"
+        ],
+        "expected_results": [
+          "Il verticale impedisce l'avanzamento quando il questionario contiene campi obbligatori mancanti o valori non validi",
+          "Il verticale mostra messaggi di errore e indicazioni di correzione associati ai campi errati",
+          "Durante la fase di errore/correzione, il verticale non invia al Motore di Offerte eventi o richieste operative relative allo stato del questionario (validazione/salvataggio/ripristino)",
+          "Dopo la correzione, l'invio del questionario va a buon fine e il flusso del verticale prosegue"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Le regole di validazione puntuali non sono specificate; il test usa esempi tipici (obbligatorietà e range). Adeguare i dati ai vincoli reali del questionario del prodotto."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC03",
+        "title": "Errore tecnico di persistenza del questionario: gestione e risoluzione nel verticale (retry/rollback) senza coinvolgere il Motore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Verticale di prodotto disponibile con componente di persistenza questionario (DB/servizio interno) osservabile",
+          "È disponibile una proposta valida 'PROPOSTA_20003' con questionario richiesto=true",
+          "È possibile simulare errore tecnico di persistenza (es. DB down, 5xx dal servizio di persistenza)"
+        ],
+        "test_data": [
+          "Proposta: PROPOSTA_20003",
+          "Simulazione errore: servizioPersistenzaQuestionario ritorna 503 per 2 tentativi, poi 200",
+          "Input questionario valido: domanda1='NO', domanda2='5', domanda3='N/A'"
+        ],
+        "steps": [
+          "Aprire nel verticale la proposta 'PROPOSTA_20003' e avviare il workflow questionario",
+          "Compilare il questionario con input validi",
+          "Abilitare la simulazione di errore sul servizio di persistenza del questionario",
+          "Inviare il questionario",
+          "Osservare comportamento del verticale (messaggistica utente e/o retry automatici)",
+          "Disabilitare la simulazione di errore per consentire il successo della persistenza",
+          "Ripetere l'invio o attendere il retry del verticale (secondo implementazione)",
+          "Monitorare eventuali chiamate del verticale verso il Motore di Offerte durante l'errore e la risoluzione"
+        ],
+        "expected_results": [
+          "In caso di errore di persistenza, il verticale gestisce l'anomalia mostrando un messaggio coerente (es. 'salvataggio non riuscito, riprova') e mantenendo lo stato del questionario secondo le proprie regole",
+          "Il verticale esegue retry/rollback secondo le proprie regole senza delegare al Motore di Offerte operazioni sul questionario",
+          "Non vengono inviate al Motore di Offerte richieste operative di gestione del questionario durante l'errore (nessuna validazione/salvataggio/ripristino tramite Motore)",
+          "Dopo il ripristino del servizio di persistenza, il questionario viene salvato con successo e il flusso del verticale prosegue"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story cita esplicitamente retry/rollback come possibile comportamento. Se il verticale non implementa retry automatico, il test accetta la ripetizione manuale da parte dell'utente purché la gestione resti nel verticale."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC04",
+        "title": "Incoerenza: prodotto richiede questionario ma proposta non contiene flag 'questionario richiesto'—blocco e logging nel verticale",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Verticale di prodotto disponibile",
+          "Il verticale dispone di una propria conoscenza/configurazione che 'PROD_Q1' richiede questionario (indipendente dal Motore) oppure è in grado di rilevare l'incoerenza tramite regole interne",
+          "È disponibile una proposta 'PROPOSTA_20004' con prodotto 'PROD_Q1' ma senza indicazione 'questionario richiesto' nel payload"
+        ],
+        "test_data": [
+          "Proposta: PROPOSTA_20004 (PROD_Q1, flag assente o false)",
+          "Utente: user.qa03 / ruolo=cliente"
+        ],
+        "steps": [
+          "Aprire nel verticale la proposta 'PROPOSTA_20004'",
+          "Avviare la prosecuzione/sottoscrizione per il prodotto 'PROD_Q1'",
+          "Osservare il comportamento del verticale in presenza dell'incoerenza (mancanza flag vs requisito interno)",
+          "Verificare la presenza di logging/telemetria dell'anomalia nel verticale",
+          "Monitorare che il verticale non richieda al Motore operazioni di gestione del questionario per compensare l'incoerenza"
+        ],
+        "expected_results": [
+          "Il verticale gestisce l'incoerenza secondo proprie regole (es. blocca la sottoscrizione o forza l'avvio del questionario) senza demandare al Motore la gestione del questionario",
+          "È registrato un evento/log di anomalia nel verticale con riferimenti alla proposta e al prodotto (es. id proposta, id prodotto, motivo incoerenza)",
+          "Non vengono inviate al Motore di Offerte richieste operative relative a validazione/salvataggio/ripristino del questionario"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Edge case indicato nella story. Il comportamento esatto (blocco vs gestione alternativa) non è specificato; il test verifica il vincolo di responsabilità del verticale e l'evidenza di tracciamento dell'anomalia."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC05",
+        "title": "Documentazione: responsabilità operativa di errori e salvataggi temporanei del questionario assegnata al verticale di prodotto",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile la documentazione di responsabilità operative (es. runbook, RACI, documento architetturale, specifica operativa) nella versione rilasciata o candidata al rilascio",
+          "La documentazione è accessibile al team QA (repository o portale documentale)"
+        ],
+        "test_data": [
+          "Documento: DOC-RACI-Questionario v1.0 (o equivalente)",
+          "Sezioni attese: 'Responsabilità operative', 'Gestione errori', 'Salvataggi temporanei/draft', 'Componenti coinvolti'"
+        ],
+        "steps": [
+          "Aprire la documentazione di responsabilità operative relativa al questionario obbligatorio",
+          "Individuare le sezioni che descrivono gestione errori e salvataggi temporanei del questionario",
+          "Verificare che tali responsabilità siano attribuite esplicitamente all'applicativo verticale di prodotto",
+          "Verificare che non siano attribuite al Motore di Offerte responsabilità operative di validazione/salvataggio/ripristino del questionario"
+        ],
+        "expected_results": [
+          "La documentazione esplicita che gestione errori e salvataggi temporanei del questionario appartengono al verticale di prodotto",
+          "La documentazione non assegna al Motore di Offerte attività operative di validazione, salvataggio o ripristino dei dati del questionario",
+          "Le responsabilità risultano non ambigue (componenti e ownership chiaramente indicati)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Test di tipo Functional su requisito documentale. Se la documentazione è in più artefatti, ripetere la verifica sugli artefatti dichiarati come 'fonte autoritativa'."
+      }
+    ]
+  }
+]

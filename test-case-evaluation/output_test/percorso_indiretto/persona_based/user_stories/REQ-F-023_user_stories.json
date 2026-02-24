@@ -1,0 +1,105 @@
+[
+  {
+    "story_id": "REQ-F-023.US01",
+    "title": "Gestire casi limite NBO con fallback configurabile e audit",
+    "persona": "Motore di Offerte",
+    "goal": "rilevare e categorizzare i casi limite nel calcolo NBO, applicare una strategia di fallback configurabile e registrare gli eventi per audit/analisi",
+    "benefit": "garantire continuità del calcolo NBO e tracciabilità dei problemi dovuti a dati incompleti o incoerenti",
+    "user_story": "Come Motore di Offerte\nVoglio rilevare e gestire esplicitamente i casi limite del calcolo NBO applicando fallback configurabili e registrando gli eventi\nIn modo che il calcolo non fallisca in modo non gestito e sia possibile fare audit e analisi operativa",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore esegue il calcolo NBO e il cluster non è identificato ALLORA il Motore rileva la condizione e la categorizza come \"cluster non identificato\".",
+      "QUANDO il Motore esegue il calcolo NBO e il modello di propensity è assente ALLORA il Motore rileva la condizione e la categorizza come \"propensity assente\".",
+      "QUANDO il Motore esegue il calcolo NBO e il modello di propensity risulta incoerente ALLORA il Motore rileva la condizione e la categorizza come \"propensity incoerente\".",
+      "QUANDO il Motore esegue il calcolo NBO e la raccomandazione esterna è mancante ALLORA il Motore rileva la condizione e la categorizza come \"raccomandazione esterna mancante\".",
+      "QUANDO il Motore esegue il calcolo NBO e la raccomandazione esterna è contraddittoria/inconsistente ALLORA il Motore rileva la condizione e la categorizza come \"raccomandazione esterna contraddittoria\".",
+      "QUANDO si verifica un caso limite categorizzato ALLORA il Motore applica la strategia di fallback attiva configurata per quel tipo di caso (es. regola di default o comportamento alternativo definito in configurazione).",
+      "QUANDO si verifica un caso limite categorizzato ALLORA il Motore registra un evento di log/audit contenente almeno: tipo di caso, dati in input, timestamp.",
+      "QUANDO si verifica un caso limite categorizzato E non esiste una strategia di fallback esplicita configurata per quel tipo ALLORA il Motore non lascia la condizione non gestita e registra comunque l'evento per successiva analisi operativa."
+    ],
+    "business_rules": [
+      "I casi limite del calcolo NBO devono essere gestiti in modo esplicito (nessuna condizione deve rimanere non gestita).",
+      "Per ciascuna categoria di caso limite deve essere possibile definire e attivare una strategia di fallback tramite configurazione.",
+      "La registrazione per audit deve includere almeno: tipo evento, dati in input, timestamp."
+    ],
+    "edge_cases": [
+      "Input errati o malformati per il calcolo NBO: il Motore deve rilevare la condizione, categorizzarla e registrarla; l’eventuale comportamento alternativo deve essere governato da configurazione.",
+      "Configurazione fallback mancante per una categoria: il Motore deve comunque registrare l’evento e non lasciare la condizione non gestita.",
+      "Configurazione fallback presente ma incoerente/non applicabile (es. regola non valutabile): il Motore deve registrare l’evento e trattare l’assenza di fallback applicabile come mancanza di strategia esplicita.",
+      "Sistema di log/audit non disponibile o in errore: il Motore deve gestire l’errore senza lasciare la condizione non gestita (comportamento di resilienza da definire).",
+      "Più casi limite contemporanei (es. cluster non identificato e propensity assente): il Motore deve categorizzare e registrare in modo deterministico (priorità/gestione da definire)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica l’elenco completo delle categorie per \"input errati\": si assume che esista una categorizzazione configurabile o almeno una categoria generica \"input errato\".",
+      "Il requisito non specifica dove risieda la configurazione delle strategie di fallback (dashboard, file, servizio): si assume che esista un meccanismo di configurazione accessibile al Motore a runtime o deploy-time.",
+      "Il requisito non specifica il contenuto esatto dei \"dati in input\" da loggare né eventuali mascheramenti: si assume che i campi siano definiti secondo policy di logging/audit del sistema.",
+      "Il requisito non definisce l’output del calcolo NBO in fallback (es. lista vuota, default ranking, regola statica): si assume che l’esito sia determinato dalla strategia configurata."
+    ],
+    "notes": "Persona identificata come componente di sistema: 'Motore di Offerte'. Il requisito cita anche la disponibilità di configurazioni: la modalità di gestione/authoring della configurazione non è specificata qui (potrebbe ricadere su requisiti di dashboard/Marketing/Compliance). Alcuni AC sono dichiarativi (es. \"dati in input\" e \"incoerente/contraddittoria\" senza definizioni formali): sono stati resi testabili assumendo categorie esplicite e registrazione con campi minimi."
+  },
+  {
+    "story_id": "REQ-F-023.US02",
+    "title": "Configurare strategie di fallback per casi limite del calcolo NBO",
+    "persona": "Team Marketing",
+    "goal": "definire e attivare tramite configurazione le strategie di fallback per ciascuna tipologia di caso limite NBO",
+    "benefit": "controllare il comportamento commerciale del Motore in presenza di dati incompleti/incoerenti senza interventi tecnici",
+    "user_story": "Come Team Marketing\nVoglio configurare e attivare strategie di fallback per i casi limite del calcolo NBO\nIn modo che il Motore adotti comportamenti alternativi coerenti con le regole commerciali anche con dati incompleti o incongruenti",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla configurazione delle strategie di fallback NBO ALLORA posso definire una strategia per ciascuna delle seguenti categorie: cluster non identificato, propensity assente/incoerente, raccomandazione esterna mancante/contraddittoria.",
+      "QUANDO salvo una strategia di fallback per una categoria ALLORA la strategia risulta attivabile tramite configurazione.",
+      "QUANDO una strategia di fallback è attiva per una categoria ALLORA il Motore applica quella strategia quando rileva la categoria corrispondente durante il calcolo NBO.",
+      "QUANDO non è definita/attiva alcuna strategia di fallback per una categoria ALLORA il Motore non lascia la condizione non gestita e registra l’evento per analisi operativa."
+    ],
+    "business_rules": [
+      "Le strategie di fallback devono essere gestibili tramite configurazione (non hard-coded).",
+      "Deve essere possibile distinguere le strategie per tipologia di caso limite (almeno le categorie esplicitate nel requisito)."
+    ],
+    "edge_cases": [
+      "Tentativo di attivare una strategia incompleta/non valida: la configurazione deve impedire il salvataggio o segnalare l’errore (regole di validazione da definire).",
+      "Modifica di una strategia già attiva: deve essere chiaro da quando la nuova configurazione è effettiva (immediato vs dopo deploy/restart, da definire).",
+      "Assenza di una categoria in configurazione (nuovi casi limite introdotti): comportamento e governance da definire."
+    ],
+    "assumptions": [
+      "Si assume che il Team Marketing abbia permessi e un’interfaccia (dashboard) per gestire la configurazione, come da contesto personas, anche se il requisito non dettaglia la UI.",
+      "Il requisito non definisce quali tipi di strategie siano disponibili (es. default list, regole statiche): si assume che il sistema supporti almeno un insieme di comportamenti selezionabili/configurabili.",
+      "Il requisito non specifica il ciclo di vita della configurazione (versioning/approvazione): si assume non necessario ai fini di questo requisito."
+    ],
+    "notes": "AC condivisi con REQ-F-023.US01 (applicazione della strategia configurata e comportamento in assenza di strategia) e replicati dal punto di vista del Team Marketing. La parte di logging/audit non è resa come capacità diretta del Marketing in questo requisito, ma come effetto atteso lato Motore."
+  },
+  {
+    "story_id": "REQ-F-023.US03",
+    "title": "Consultare log/audit dei casi limite NBO per verifica di conformità",
+    "persona": "Team Compliance",
+    "goal": "accedere ai log/audit degli eventi di casi limite del calcolo NBO con dettaglio sufficiente",
+    "benefit": "verificare tracciabilità, controlli e gestione delle anomalie in ottica di audit e conformità",
+    "user_story": "Come Team Compliance\nVoglio consultare i log/audit degli eventi di casi limite del calcolo NBO con dettaglio\nIn modo che possa svolgere attività di audit e verifica di conformità sulle decisioni del Motore",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO si verifica un caso limite nel calcolo NBO ALLORA è disponibile un evento di log/audit consultabile che include almeno: tipo di caso, dati in input, timestamp.",
+      "QUANDO consulto i log/audit ALLORA posso distinguere le categorie di caso limite (cluster non identificato, propensity assente/incoerente, raccomandazione esterna mancante/contraddittoria).",
+      "QUANDO non è configurata una strategia di fallback per una categoria ALLORA l’evento risulta comunque registrato per successiva analisi operativa."
+    ],
+    "business_rules": [
+      "I log/audit devono contenere un livello di dettaglio minimo: tipo, dati in input, timestamp.",
+      "La consultazione dei log/audit è soggetta ad autorizzazioni (ruolo Compliance) secondo le regole di accesso della dashboard."
+    ],
+    "edge_cases": [
+      "Dati in input potenzialmente sensibili: necessità di mascheramento/limitazione visibilità in dashboard (policy non specificata).",
+      "Volume elevato di eventi: necessità di filtri/ricerca per categoria e periodo (non esplicitato nel requisito).",
+      "Incoerenza tra evento registrato e categoria attesa: deve essere possibile evidenziare l’anomalia (meccanismo da definire)."
+    ],
+    "assumptions": [
+      "Si assume che il Team Compliance abbia accesso in lettura alla dashboard/log come da contesto personas; il requisito non specifica funzionalità di filtro/ricerca, quindi non vengono rese obbligatorie.",
+      "Il requisito non definisce retention, immutabilità o firma dei log: si assume fuori ambito per questa trasformazione."
+    ],
+    "notes": "AC condivisi con REQ-F-023.US01 (registrazione evento con tipo/dati/timestamp e registrazione anche senza fallback) e replicati dal punto di vista del Team Compliance. Il requisito non richiede esplicitamente export o reportistica: non inclusi."
+  }
+]

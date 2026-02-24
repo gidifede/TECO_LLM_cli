@@ -1,0 +1,105 @@
+[
+  {
+    "story_id": "REQ-F-017.US01",
+    "title": "Visualizzare proposta bundle pre-checkout e gestire interazioni nella journey digitale",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare una proposta di bundle (A,B) prima del checkout quando avvio l’acquisto di A e interagire con essa (aggiungere al carrello, chiudere, posticipare)",
+    "benefit": "valutare e acquistare in modo semplice un secondo prodotto in offerta senza interrompere il flusso di acquisto",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare una proposta di bundle (A,B) prima del checkout quando avvio l’acquisto di A e sono in target\nIn modo che possa decidere se aggiungere il bundle al carrello, chiudere o posticipare la proposta senza compromettere l’acquisto",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO avvio la journey di acquisto di un singolo prodotto A ALLORA, se A è parte di un bundle valido con B e io sono in target per il bundle (A,B), il sistema mi mostra la proposta di bundle prima del checkout sotto forma di pop-up.",
+      "QUANDO il pop-up di proposta bundle è mostrato ALLORA posso scegliere almeno una delle seguenti azioni: aggiungere il bundle al carrello, chiudere la proposta, posticipare la proposta.",
+      "QUANDO scelgo di aggiungere il bundle (A,B) al carrello ALLORA la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto (come previsto dalla mappatura della journey).",
+      "QUANDO scelgo di chiudere o posticipare la proposta ALLORA posso proseguire e completare l’acquisto del prodotto A senza blocchi.",
+      "QUANDO consulto la documentazione di mappatura della journey ALLORA essa descrive ogni step dal trigger fino all’acquisto del secondo prodotto includendo il punto 'prima del checkout' e la visualizzazione come pop-up."
+    ],
+    "business_rules": [
+      "Il trigger della proposta bundle si applica solo se: (1) il cliente ha iniziato l’acquisto di A, (2) esiste un bundle valido (A,B), (3) il cliente è in target per (A,B).",
+      "La proposta bundle deve essere presentata prima del checkout.",
+      "Le azioni disponibili sulla proposta includono: aggiunta al carrello, chiusura, posticipo."
+    ],
+    "edge_cases": [
+      "Cliente non in target per (A,B): la proposta non deve essere mostrata.",
+      "Bundle (A,B) non valido al momento del trigger: la proposta non deve essere mostrata.",
+      "Impossibile caricare il pop-up (errore tecnico/UI): il cliente deve poter proseguire con l’acquisto di A senza blocchi.",
+      "Cliente chiude la proposta e poi torna indietro nel funnel: comportamento di ripresentazione/non ripresentazione non specificato dal requisito."
+    ],
+    "assumptions": [
+      "La definizione di 'in target' e 'bundle valido' è determinata da regole esterne al requisito (es. regole del Motore di Offerte) e viene considerata disponibile al canale digitale.",
+      "Il significato operativo di 'posticipo' (es. riproposizione nella stessa sessione o in sessioni successive) non è specificato nel requisito."
+    ],
+    "notes": "AC del requisito interpretati come requisiti di mappatura documentale della journey: sono stati resi testabili richiedendo che la documentazione includa trigger, pop-up pre-checkout e passi fino all’acquisto. Dipendenza esterna: REQ-F-018 per il dettaglio dell’accorpamento delle fasi (dati/questionari/firme) quando si acquista il bundle."
+  },
+  {
+    "story_id": "REQ-F-017.US02",
+    "title": "Mostrare in Loyalty offerte sottoscrivibili e persistere upgrade dopo rifiuto del bundle",
+    "persona": "Sezione Loyalty di Gruppo (APP e sito)",
+    "goal": "visualizzare al cliente le offerte sottoscrivibili (singoli prodotti e bundle) con testi/grafiche/CTA e mostrare la proposta di upgrade (A,B) persistita dopo rifiuto del bundle nel funnel",
+    "benefit": "garantire una vetrina coerente e sempre aggiornata delle offerte effettivamente sottoscrivibili e delle promo disponibili",
+    "user_story": "Come Sezione Loyalty di Gruppo (APP e sito)\nVoglio mostrare al cliente solo offerte di singoli prodotti e bundle sottoscrivibili, includendo testi/grafiche e call to action, e visualizzare l’upgrade (A,B) persistito dopo il rifiuto del bundle\nIn modo che il cliente veda in Loyalty esclusivamente opportunità acquistabili e possa sottoscriverle",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo l’area Loyalty del cliente ALLORA mostro sempre le offerte di singoli prodotti e bundle sottoscrivibili, escludendo i bundle già in possesso dal cliente.",
+      "QUANDO il cliente possiede un prodotto A ALLORA non mostro i bundle che includono A per i quali NON è possibile l’upgrade (quindi non sono sottoscrivibili).",
+      "QUANDO mostro una offerta in area Loyalty ALLORA rendo visibili testi e/o grafiche promozionali e la call to action di sottoscrizione per quella offerta.",
+      "QUANDO il cliente rifiuta il bundle nel pop-up e completa l’acquisto del prodotto A ALLORA, se esiste una proposta di upgrade (A,B) valida e abilitata, essa risulta disponibile/persistita in area Loyalty per la finestra temporale di validità prevista dalla mappatura.",
+      "QUANDO consulto la documentazione di mappatura della journey ALLORA essa specifica la persistenza della proposta in Sezione Loyalty di Gruppo e la finestra temporale di validità."
+    ],
+    "business_rules": [
+      "In Loyalty devono essere mostrate solo offerte 'sottoscrivibili'.",
+      "I bundle già in possesso non devono essere mostrati.",
+      "Se il cliente possiede A, i bundle che includono A e non prevedono upgrade non sono sottoscrivibili e non devono essere mostrati.",
+      "Per ogni offerta mostrata devono essere disponibili testi/grafiche promo e CTA di sottoscrizione."
+    ],
+    "edge_cases": [
+      "Dati offerta incompleti (mancano testi/grafiche/CTA): comportamento non specificato (es. fallback) e da chiarire.",
+      "Offerta presente ma non più sottoscrivibile (stato cambiato): deve essere rimossa/non mostrata al refresh della Loyalty.",
+      "Cliente possiede A ma la regola di upgrade non è determinabile: per prudenza l’offerta dovrebbe risultare non sottoscrivibile (da confermare)."
+    ],
+    "assumptions": [
+      "La Sezione Loyalty è componente di sola visualizzazione (read-only) e riceve già dal back-end l’informazione di 'sottoscrivibile' e la disponibilità dell’upgrade (A,B).",
+      "La finestra temporale di validità della proposta persistita è definita nella mappatura ma non è quantificata nel requisito."
+    ],
+    "notes": "AC condivisi con altre US: la persistenza in Loyalty e la finestra di validità sono condivise con la US del Cliente digitale (ridondanza intenzionale per tracciabilità). Dipendenza esterna: regole di 'sottoscrivibile' e di upgrade sono definite da configurazioni Marketing e/o logiche del Motore, non dettagliate qui."
+  },
+  {
+    "story_id": "REQ-F-017.US03",
+    "title": "Persistire proposta di upgrade e gestire validità temporale dopo rifiuto del bundle",
+    "persona": "Motore di Offerte",
+    "goal": "persistire la proposta di upgrade (A,B) quando il cliente rifiuta il bundle nel funnel e completare l’acquisto di A, applicando la finestra temporale di validità e le regole di abilitazione all’upgrade",
+    "benefit": "garantire continuità commerciale e coerenza tra journey di acquisto e offerte disponibili in Loyalty",
+    "user_story": "Come Motore di Offerte\nVoglio persistere la proposta di upgrade (A,B) quando il cliente rifiuta il bundle e acquista A, applicando le regole di abilitazione e la validità temporale\nIn modo che la proposta possa essere resa disponibile in Sezione Loyalty di Gruppo solo per il periodo previsto e secondo le regole configurate",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un cliente rifiuta la proposta di bundle (A,B) nel journey iniziato per A e perfeziona l’acquisto del prodotto A ALLORA il Motore di Offerte persiste una proposta di upgrade ad (A,B) se abilitata dalle regole di upgrade definite dal Marketing per quello specifico bundle.",
+      "QUANDO una proposta di upgrade (A,B) è persistita ALLORA il Motore di Offerte associa e gestisce una finestra temporale di validità coerente con quanto definito nella mappatura della journey.",
+      "QUANDO la finestra temporale di validità della proposta scade ALLORA la proposta non deve risultare più disponibile come offerta sottoscrivibile per i canali di consultazione (es. Loyalty).",
+      "QUANDO consulto la documentazione di mappatura della journey ALLORA essa descrive ogni step dal trigger fino all’acquisto del secondo prodotto e include persistenza e finestra temporale di validità della proposta."
+    ],
+    "business_rules": [
+      "La persistenza dell’upgrade (A,B) avviene solo se l’upgrade è abilitato per quel bundle secondo regole definite dal Marketing.",
+      "La proposta persistita deve avere una validità temporale definita e applicata dal Motore.",
+      "La disponibilità della proposta verso i canali deve rispettare sottoscrivibilità e possesso prodotti (es. casi di non-upgrade)."
+    ],
+    "edge_cases": [
+      "Regole di upgrade non disponibili/non leggibili: il Motore non deve persistere la proposta (o deve marcarla non disponibile) — comportamento da confermare.",
+      "Cambio regole Marketing dopo la persistenza: comportamento su offerte già persistite non specificato (es. ricalcolo/invalidazione).",
+      "Cliente acquista A ma l’evento di perfezionamento non arriva al Motore: la proposta di upgrade potrebbe non essere persistita (dipendenza da eventi esterni)."
+    ],
+    "assumptions": [
+      "Il Motore di Offerte riceve un segnale/evento affidabile del perfezionamento dell’acquisto di A per attivare la persistenza dell’upgrade.",
+      "La mappatura della journey definisce la finestra temporale di validità ma il valore puntuale (es. giorni/ore) non è presente nel requisito."
+    ],
+    "notes": "AC del requisito relativi alla 'finestra temporale di validità' sono dichiarativi: sono stati resi testabili introducendo scadenza e non disponibilità post-scadenza. Dipendenza esterna: la fonte evento 'acquisto perfezionato' non è specificata nel requisito."
+  }
+]

@@ -1,0 +1,94 @@
+[
+  {
+    "story_id": "REQ-UI-005.US01",
+    "title": "Consultare i log tramite dashboard (Marketing)",
+    "persona": "Team Marketing",
+    "goal": "cercare, filtrare e visualizzare i log tramite una dashboard interna, nel rispetto dei permessi assegnati",
+    "benefit": "monitorare rapidamente le azioni/configurazioni e gli effetti sul comportamento del Motore di Offerte",
+    "user_story": "Come Team Marketing\nVoglio cercare, filtrare e visualizzare i log tramite una dashboard interna, nel rispetto dei permessi assegnati\nIn modo che possa monitorare rapidamente le azioni/configurazioni e i relativi effetti sul Motore di Offerte",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing autenticato accede alla dashboard log ALLORA può visualizzare l’elenco dei log disponibili secondo i propri permessi.",
+      "QUANDO un utente del Team Marketing imposta criteri di ricerca e/o filtri nella dashboard ALLORA il sistema mostra solo i log coerenti con tali criteri.",
+      "QUANDO un utente del Team Marketing tenta di accedere a funzionalità o viste riservate al Team Compliance ALLORA il sistema nega l’accesso (es. messaggio di permesso insufficiente) e non mostra i dati non autorizzati."
+    ],
+    "business_rules": [
+      "L’accesso alla dashboard è consentito solo a utenti autenticati con ruoli autorizzati.",
+      "La visibilità dei dati e delle funzionalità in dashboard deve rispettare la segregazione dei ruoli tra Team Marketing e Team Compliance."
+    ],
+    "edge_cases": [
+      "Nessun log disponibile per i filtri impostati: la dashboard mostra stato vuoto e consente di modificare/azzerare i filtri.",
+      "Errore o indisponibilità del servizio log/dashboard: la dashboard mostra un errore gestito senza esporre dati parziali o non autorizzati.",
+      "Utente con sessione scaduta: l’accesso alla dashboard viene richiesto nuovamente (re-auth) prima di mostrare i log."
+    ],
+    "assumptions": [
+      "La frequenza di esportazione automatica è configurata da un ruolo/funzionalità non specificata in questo requisito; questa US copre solo consultazione via dashboard per Marketing.",
+      "Non sono specificati i campi/attributi dei log e i filtri disponibili: si assume esistano criteri di ricerca/filtraggio minimi definiti a livello di prodotto."
+    ],
+    "notes": "AC condivisi con REQ-UI-005.US02: consultazione log via dashboard (ricerca/filtri/visualizzazione) e segregazione ruoli. Questo requisito non dettaglia quali viste siano specifiche di Marketing vs Compliance."
+  },
+  {
+    "story_id": "REQ-UI-005.US02",
+    "title": "Consultare i log tramite dashboard (Compliance)",
+    "persona": "Team Compliance",
+    "goal": "cercare, filtrare e visualizzare i log tramite una dashboard interna, nel rispetto dei permessi assegnati",
+    "benefit": "verificare la conformità e auditare le decisioni/azioni tracciate dal sistema",
+    "user_story": "Come Team Compliance\nVoglio cercare, filtrare e visualizzare i log tramite una dashboard interna, nel rispetto dei permessi assegnati\nIn modo che possa svolgere attività di verifica di conformità e audit in modo rapido e tracciabile",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Compliance autenticato accede alla dashboard log ALLORA può visualizzare l’elenco dei log disponibili secondo i propri permessi.",
+      "QUANDO un utente del Team Compliance imposta criteri di ricerca e/o filtri nella dashboard ALLORA il sistema mostra solo i log coerenti con tali criteri.",
+      "QUANDO un utente del Team Compliance tenta di accedere a funzionalità o viste riservate al Team Marketing ALLORA il sistema nega l’accesso (es. messaggio di permesso insufficiente) e non mostra i dati non autorizzati."
+    ],
+    "business_rules": [
+      "L’accesso alla dashboard è consentito solo a utenti autenticati con ruoli autorizzati.",
+      "La visibilità dei dati e delle funzionalità in dashboard deve rispettare la segregazione dei ruoli tra Team Marketing e Team Compliance."
+    ],
+    "edge_cases": [
+      "Nessun log disponibile per i filtri impostati: la dashboard mostra stato vuoto e consente di modificare/azzerare i filtri.",
+      "Errore o indisponibilità del servizio log/dashboard: la dashboard mostra un errore gestito senza esporre dati parziali o non autorizzati.",
+      "Utente privo di ruolo Compliance ma con accesso alla rete interna: l’accesso alla dashboard viene negato."
+    ],
+    "assumptions": [
+      "Non sono specificati i filtri obbligatori per audit/compliance: si assume che la dashboard esponga funzionalità di filtro sufficienti a supportare le verifiche (da dettagliare in refinement).",
+      "La consultazione dei log è distinta dall’esportazione automatica verso sistemi di audit, trattata nella US del Motore di Offerte."
+    ],
+    "notes": "AC condivisi con REQ-UI-005.US01: consultazione log via dashboard (ricerca/filtri/visualizzazione) e segregazione ruoli. Il requisito non specifica differenze funzionali tra le viste Marketing e Compliance oltre ai permessi."
+  },
+  {
+    "story_id": "REQ-UI-005.US03",
+    "title": "Esportazione automatica dei log verso sistemi di audit con frequenza configurabile",
+    "persona": "Motore di Offerte",
+    "goal": "esportare automaticamente i log verso i sistemi di audit aziendali con una frequenza configurabile",
+    "benefit": "garantire disponibilità dei log per audit esterni e controlli periodici senza attività manuali",
+    "user_story": "Come Motore di Offerte\nVoglio esportare automaticamente i log verso i sistemi di audit aziendali con frequenza configurabile\nIn modo che i log siano disponibili per finalità di audit e controllo senza interventi manuali",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO è configurata una frequenza di esportazione (es. quotidiana, settimanale o personalizzata) ALLORA il sistema pianifica l’esecuzione dell’esportazione secondo tale configurazione.",
+      "QUANDO scatta l’esecuzione pianificata ALLORA il sistema esporta automaticamente i log verso i sistemi di audit aziendali.",
+      "QUANDO un utente non autorizzato tenta di modificare la configurazione di esportazione ALLORA il sistema nega l’operazione in coerenza con la segregazione dei ruoli definita."
+    ],
+    "business_rules": [
+      "La frequenza di esportazione deve essere configurabile (quotidiana, settimanale o personalizzata).",
+      "Le autorizzazioni di accesso/configurazione devono rispettare la segregazione dei ruoli (Marketing/Compliance) come da requisito."
+    ],
+    "edge_cases": [
+      "Sistema di audit non raggiungibile al momento dell’esportazione: l’esportazione fallisce in modo gestito e l’evento viene tracciato nei log.",
+      "Configurazione di frequenza non valida (es. formato errato o intervallo non ammesso): il sistema rifiuta il salvataggio della configurazione.",
+      "Esportazione parziale (timeout/interruzione): il sistema evita duplicazioni o inconsistenze alla successiva esecuzione (comportamento da definire)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica quale UI/attore configuri la frequenza: si assume esista una configurazione accessibile tramite componenti interni (es. dashboard o configurazione di sistema) da dettagliare.",
+      "Il requisito non dettaglia formato, protocollo, payload e destinazione dei “sistemi di audit aziendali”: si assume esistano interfacce/accordi di integrazione da definire.",
+      "‘Segregazione ruoli’ è interpretata anche come vincolo sulle operazioni di configurazione dell’esportazione, oltre che sull’accesso in consultazione."
+    ],
+    "notes": "Questa US copre l’AC di esportazione automatica e la parte di permessi legata alla configurazione. Dipendenza esterna: definizione integrazione con ‘sistemi di audit aziendali’ (endpoint, formato, autenticazione, retention)."
+  }
+]

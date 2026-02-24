@@ -1,0 +1,121 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-030",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 82,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-030.TC01",
+        "detail": "Introduce dettagli non richiesti dal requisito su endpoint API, uso di Postman/automazione, campi specifici (customerId, channel) e formato boolean/enumerativo; il requisito parla solo di 'payload di proposta' con indicazione chiara."
+      },
+      {
+        "test_id": "REQ-F-030.TC02",
+        "detail": "Assume comportamento per prodotti senza questionario (flag assente oppure false) non esplicitato dal requisito, che richiede solo l'inclusione del flag per i prodotti che lo prevedono."
+      },
+      {
+        "test_id": "REQ-F-030.TC03",
+        "detail": "Aggiunge lo scenario 'recupero proposta/rigenerazione proposta' e la verifica di persistenza tramite una seconda invocazione; il requisito non menziona API di recupero né modalità di persistenza della proposta."
+      },
+      {
+        "test_id": "REQ-F-030.TC04",
+        "detail": "Introduce la distinzione tra errore di JSON schema/contratto API vs errore di business e l'uso di codici 4xx; il requisito non definisce semantiche di errore HTTP."
+      },
+      {
+        "test_id": "REQ-F-030.TC05",
+        "detail": "Specifica esempi di stati/azioni di remediation (link, task, 'in correzione') e campi 'questionarioStatus/questionarioErrors' non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'La realizzazione, presentazione, validazione, salvataggio dei dati, gestione di input incompleti o errori e i workflow di correzione devono essere eseguiti dall'applicativo verticale di prodotto.'",
+        "detail": "Il set diretto non include alcun test che verifichi (anche solo a livello di integrazione/E2E) che tali attività siano effettivamente svolte dal verticale; copre solo il 'non fare' del Motore e una verifica documentale."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-030.TC04",
+          "REQ-F-030.TC05"
+        ],
+        "detail": "Entrambi mirano a dimostrare che il Motore non gestisce errori/workflow del questionario introducendo campi/stati non previsti; scenari diversi ma con sovrapposizione significativa sul medesimo vincolo (assenza di gestione anomalie/workflow nel Motore)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-030.US01.TC01",
+        "detail": "Introduce attributo di configurazione 'questionarioObbligatorio' e verifica per-item nel payload; il requisito non parla di attributi/configurazioni né del livello (item vs proposta)."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC02",
+        "detail": "Assume nuovamente comportamento per prodotti senza questionario (flag assente o false) non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC04",
+        "detail": "Scenario multi-prodotto e requisito di determinabilità per singolo prodotto; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-030.US01.TC05",
+        "detail": "Introduce dipendenza da Product Catalog esterno, timeout/5xx, soglia 'timeout > 5s', mocking/stubbing e log tecnici; non tracciabile al requisito."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC01",
+        "detail": "Assume esistenza di utente finale, UI del verticale, flusso di sottoscrizione e monitoraggio chiamate del verticale verso il Motore; il requisito non definisce canali/UI/telemetria né specifica che il verticale non debba chiamare il Motore (solo che la gestione è del verticale)."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC02",
+        "detail": "Introduce regole di validazione specifiche (obbligatorietà, range) e messaggi di errore a livello campo; il requisito non dettaglia regole del questionario."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC03",
+        "detail": "Introduce architettura del verticale (DB/servizio persistenza), scenari retry/rollback e codici 503; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC04",
+        "detail": "Introduce 'conoscenza/configurazione indipendente' del verticale, comportamento di blocco/forzatura e obbligo di logging/telemetria dell'anomalia; non indicato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-030.US02.TC05",
+        "detail": "Specifica artefatti documentali particolari (runbook, RACI, DOC-RACI-Questionario v1.0, 'fonte autoritativa'); il requisito richiede solo che la responsabilità sia documentata, non il tipo di documento o naming."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: 'Il Motore include nel payload di proposta un’indicazione chiara ... per i prodotti che lo prevedono'",
+        "detail": "Non c'è un test esplicito che verifichi la chiarezza a livello di 'proposta' senza assumere per forza rappresentazioni per-item o casi multi-prodotto; i TC introducono varianti non richieste invece di validare il minimo contrattuale (presenza indicazione chiara nel payload)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-030.US02.TC01",
+          "REQ-F-030.US02.TC02",
+          "REQ-F-030.US02.TC03"
+        ],
+        "detail": "Tre test ripetono lo stesso principio ('il verticale gestisce e non coinvolge operativamente il Motore') applicandolo a compilazione, validazione e persistenza, con forte sovrapposizione rispetto agli AC-2/AC-3 senza che il requisito richieda tali declinazioni operative/tecniche."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (5 added_info vs 9) e ha meno ridondanze. Il set indirect_persona aggiunge numerose assunzioni architetturali/operative (catalogo prodotti esterno, timeout, UI e flussi del verticale, retry/rollback, logging) non presenti nel requisito, riducendo la coerenza complessiva."
+  }
+}

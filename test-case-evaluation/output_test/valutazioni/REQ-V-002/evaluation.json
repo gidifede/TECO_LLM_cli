@@ -1,0 +1,182 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-002",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-002.TC01",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC01",
+        "detail": "Assume schermate specifiche (Home/Lista card/Dettaglio card) non menzionate nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC01",
+        "detail": "Introduce dettagli non presenti (codici HEX/RGB specifici, font 'Corporate Sans')."
+      },
+      {
+        "test_id": "REQ-V-002.TC02",
+        "detail": "Assume un meccanismo dati/flag (es. promoFlag=true/false) per determinare quando l'icona è 'appropriata', non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC02",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC03",
+        "detail": "Introduce misure/parametri specifici (px, outline/filled, spessore linee, area di rispetto) non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC03",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC04",
+        "detail": "Assume comportamento specifico per dato assente/nullo (promoFlag=null/campo assente => nessuna icona) e assenza placeholder/spazio vuoto, non indicato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC04",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC05",
+        "detail": "Aggiunge scenario di errore caricamento asset (CDN, HTTP 404/500, timeout, fallback) e requisiti di robustezza/crash/layout non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC05",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC06",
+        "detail": "Introduce ruoli/processi/strumenti non citati (revisore grafico/brand owner, ticketing, checklist, pipeline gate) e dettagli di tracciamento (data/ora, identificativo revisore)."
+      },
+      {
+        "test_id": "REQ-V-002.TC06",
+        "detail": "Introduce vincolo 'rilascio consentito solo dopo APPROVATO' (gate/blocco) non esplicitato dall'AC-3, che parla di review che valida prima del rilascio ma non definisce un meccanismo di blocco."
+      },
+      {
+        "test_id": "REQ-V-002.TC06",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC07",
+        "detail": "Introduce meccanismo di blocco del deploy (pipeline/procedura) e stati 'RIFIUTATO/NON PRESENTE' come regola operativa, non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-002.TC07",
+        "detail": "Introduce canale 'web' non citato nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: 'linee guida di brand' oltre a palette e tipografia",
+        "detail": "I TC verificano palette/tipografia e alcune regole icone, ma non coprono in modo esplicito altre linee guida di brand potenzialmente rilevanti (es. uso logo, spaziature/layout grid, tone of UI), che nella description sono citate genericamente."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-002.TC02",
+          "REQ-V-002.TC04"
+        ],
+        "detail": "Entrambi verificano assenza/presenza icona su card in funzione della condizione 'appropriata' (flag true/false vs nullo/assente). Scenario molto simile con variazione minima del dato."
+      },
+      {
+        "test_ids": [
+          "REQ-V-002.TC06",
+          "REQ-V-002.TC07"
+        ],
+        "detail": "Entrambi coprono AC-3 sulla review prima del rilascio; TC07 è la variante negativa del medesimo controllo di processo (approvato vs non approvato)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 6,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-002.US01.TC01",
+        "detail": "Introduce attore/ruolo 'Operatore sportello/sala' e utente specifico OP_POSTE_001 non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC01",
+        "detail": "Introduce canale/prodotto 'front-end commerciale' e schermate 'Proposta'/'Offerta' non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC01",
+        "detail": "Aggiunge componenti UI specifici (input, badge, alert) e verifica di 'stati' e 'spaziature' del design system non esplicitati negli AC."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC02",
+        "detail": "Introduce regole esterne di 'promozione applicabile' e identificativi offerta (OFF_PROMO_001) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC02",
+        "detail": "Introduce concetto di 'set di icone approvate' e verifica per nome/asset/versione; il requisito parla di icone coerenti con linee guida, non di un set/versioning."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC02",
+        "detail": "Introduce requisito di 'contrasto sufficiente' come criterio specifico, non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC03",
+        "detail": "Introduce offerta standard OFF_STD_001 e regole esterne di non-applicabilità non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC04",
+        "detail": "Introduce strumenti specifici (Jira/ALM/Repository/CI) e artefatti (ticket REVIEW_UI_123) non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC05",
+        "detail": "Aggiunge scenario specifico 'icona non appartenente al set approvato' e stati di review 'RESPINTO/BLOCCATO' con gate di qualità; il requisito non definisce set approvato né meccanismo di blocco."
+      },
+      {
+        "test_id": "REQ-V-002.US01.TC06",
+        "detail": "Introduce concetto di componenti 'custom/non standard' e obbligo di includerli nello scope della review; non esplicitato dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-2: 'visibili nelle card quando appropriate'",
+        "detail": "I TC coprono presenza/assenza icona in base ad 'applicabile', ma non coprono esplicitamente il requisito 'non contravvengano alle linee guida aziendali ma siano comunque distintive' con una verifica diretta di conformità grafica (colori/stile/dimensioni) come scenario dedicato; è solo parzialmente implicito."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-002.US01.TC02",
+          "REQ-V-002.US01.TC03"
+        ],
+        "detail": "Coppia positiva/negativa sullo stesso scenario (icona presente se applicabile, assente se non applicabile) con passi molto simili."
+      },
+      {
+        "test_ids": [
+          "REQ-V-002.US01.TC04",
+          "REQ-V-002.US01.TC05"
+        ],
+        "detail": "Entrambi insistono sulla review grafica come gate di rilascio; TC05 è una variante negativa specifica (icona non approvata) dello stesso controllo."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3). Il set direct risulta leggermente più coerente perché, pur introducendo molte assunzioni (es. canale web, flag promoFlag, strumenti di review), include una verifica esplicita della conformità grafica delle icone alle linee guida (TC03) aderente ad AC-2. Il set indirect_persona aggiunge più contesto non tracciabile (persona/ruoli, front-end commerciale, offerte e set icone approvate) e lascia parzialmente scoperta una validazione diretta della conformità grafica delle icone (missing_info su AC-2). Punteggi: direct 58 vs indirect_persona 55."
+  }
+}

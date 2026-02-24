@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-008</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-008</h1>
+  <div class="subtitle">Tracciamento decisioni motore e azioni di configurazione e proposte</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:56</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-008</div>
+  <div class="req-field"><strong>Titolo:</strong> Tracciamento decisioni motore e azioni di configurazione e proposte</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il sistema deve tracciare in modo completo sia le decisioni automatiche del Motore di Offerte (quali offerte/bundle sono state proposte, escluse o ordinate e le motivazioni) sia tutte le modifiche di configurazione effettuate dal Team Marketing (creazione, modifica, cancellazione di bundle, regole di pricing, campagne e parametri). Il tracciamento deve essere eseguito per ogni evento rilevante generato dal motore o dagli utenti di configurazione.
+
+Altri dati rilevanti di tracciamento: touchpoint dove avviene la proposta (UP, Web, app), timestampp (data, orario) della proposta, esito (abbandono ovvero finalizzazione offerta lato operatore o lato cliente in modalità &quot;self&quot; sui canali digitali).
+
+Il suddetto tracciamento delle proposte/condizioni/motivazioni/messaggi promozionali  generate per un cliente in UP o sui canali digitali, insieme all&#x27;esito della proposta, deve essere storicizzato al fine di consentire agli utenti Marketing di effettuare analisi per studiare l&#x27;efficacia delle offerte, dei messaggi proozionali/USP utilizzati</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Per ogni proposta o esclusione generata dal motore viene creato un record di log.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Per ogni operazione di configurazione (creazione/modifica/cancellazione) viene creato un record di log.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>I log sono consultabili tramite la dashboard prevista per marketing e compliance.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">56</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">31</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono formalmente tutti gli AC (3/3). Tuttavia, il set direct introduce meno informazioni non tracciabili (6 added_info vs 10) e presenta meno lacune rispetto alla description (3 missing_info vs 5, inclusa una carenza rilevante su AC-2 nel set indirect per assenza di cancellazione). Inoltre il set indirect ha piu ridondanze (3 vs 1). Per questi motivi il punteggio di coerenza risulta maggiore per direct (56 vs 31) e viene scelto come vincitore.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">56</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-008.TC01</td><td>Assume struttura/campi specifici del log (ordinamento/rank, motivazioni non nulle, touchpoint, timestamp, esito dettagliato &#x27;finalizzazione lato cliente self&#x27;) oltre a quanto esplicitato negli AC (che richiedono solo creazione record di log).</td></tr>
+<tr><td class='mono'>REQ-F-008.TC03</td><td>Assume l&#x27;esistenza di una &#x27;interfaccia web di backoffice&#x27; e filtri per tipologia evento &#x27;se disponibile&#x27; per consultazione; il requisito non specifica canale/strumento di configurazione né filtri.</td></tr>
+<tr><td class='mono'>REQ-F-008.TC06</td><td>Introduce filtri specifici della dashboard (customer_id e intervallo date) e la visualizzazione di &#x27;tipologia evento (motore/configurazione)&#x27;; il requisito dice solo che i log sono consultabili tramite dashboard.</td></tr>
+<tr><td class='mono'>REQ-F-008.TC07</td><td>Introduce requisiti di resilienza/gestione errori (fault injection, nessun crash, nessun log corrotto, messaggi non sensibili) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.TC09</td><td>Introduce regole di autorizzazione e ruoli specifici (&#x27;Sales&#x27;, &#x27;CustomerCare&#x27;) e comportamento atteso (403/pagina) non esplicitati dal requisito (che menziona solo consultabilità per marketing e compliance).</td></tr>
+<tr><td class='mono'>REQ-F-008.TC10</td><td>Introduce scenario &#x27;zero offerte eleggibili&#x27; e aspettativa di logging esplicito di lista vuota/conteggio=0; non esplicitato negli AC.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &#x27;tutte le modifiche di configurazione ... parametri&#x27;</td><td>Nessun test copre esplicitamente la tracciatura di modifiche ai &#x27;parametri&#x27; (oltre a bundle/pricing/campagne).</td></tr>
+<tr><td class='mono'>Description: &#x27;touchpoint dove avviene la proposta (UP, Web, app)&#x27;</td><td>Il set copre Web/UP/App, ma non verifica in modo sistematico che il tracciamento avvenga &#x27;per ogni evento rilevante&#x27; su tutti i touchpoint; mancano casi dedicati per proposta su App con esito (non solo errore logging).</td></tr>
+<tr><td class='mono'>Description: &#x27;storicizzato ... per consentire analisi efficacia offerte/messaggi promozionali/USP&#x27;</td><td>Nessun test verifica la persistenza/storicizzazione nel tempo e la disponibilità per analisi (es. consultazione di log storici oltre la sessione/evento).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-008.TC03, REQ-F-008.TC04, REQ-F-008.TC05</td><td>Tre TC molto simili che validano la stessa regola (creazione record log per operazioni di configurazione) variando solo l&#x27;oggetto (bundle/pricing/campagna).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">31</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">15</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-008.US01.TC01</td><td>Introduce motivazioni/USP specifiche (&#x27;Promo USP X&#x27;, &#x27;Eligible segment A&#x27;) e stato esito &#x27;pending/non disponibile&#x27;; il requisito cita messaggi promozionali/USP ma non definisce stati &#x27;pending&#x27;.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC03</td><td>Tratta &#x27;ordinamento&#x27; come evento/record dedicato; l&#x27;ordinamento è menzionato in description ma non come criterio di accettazione separato né come tipo evento distinto.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC05</td><td>Assume un controllo accessi specifico per utenti non-Marketing; il requisito non specifica meccanismi/ruoli, solo che la dashboard è prevista per marketing e compliance.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC06</td><td>Introduce regola di normalizzazione touchpoint a &#x27;unknown&#x27;/&#x27;non disponibile&#x27; per valori non riconosciuti; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC07</td><td>Introduce aggiornamento dell&#x27;esito nel tempo (pending-&gt;finale) e vincolo &#x27;no duplicati&#x27; e necessità di correlazione (proposalId/eventId); non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC08</td><td>Introduce gestione errore lato dashboard (messaggio, retry, no dati parziali) in caso di servizio log indisponibile; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC09</td><td>Assume che si logghino solo operazioni di configurazione completate con successo (assenza log su fallimento); il requisito dice &#x27;per ogni operazione ... viene creato un record di log&#x27; senza distinguere esito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC04</td><td>Introduce concetto di utente Compliance &#x27;limited&#x27; con permessi parziali; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC05</td><td>Introduce standard di rappresentazione dati mancanti (&#x27;N/D&#x27;, &#x27;pending&#x27;, &#x27;unknown&#x27;); non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC06</td><td>Introduce gestione errore lato dashboard Compliance in caso di servizio log indisponibile; non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &#x27;creazione, modifica, cancellazione di bundle, regole di pricing, campagne e parametri&#x27;</td><td>Copre solo creazione bundle (US01.TC04) e modifica pricing (US02.TC03); manca copertura esplicita di cancellazione (bundle/pricing/campagna) e dei &#x27;parametri&#x27;.</td></tr>
+<tr><td class='mono'>Acceptance Criteria AC-2: &#x27;Per ogni operazione di configurazione (creazione/modifica/cancellazione) viene creato un record di log.&#x27;</td><td>Manca almeno un test di cancellazione e un test di modifica/creazione per gli altri oggetti citati (campagne, parametri) per dimostrare &#x27;creazione/modifica/cancellazione&#x27; come insieme.</td></tr>
+<tr><td class='mono'>Description: &#x27;touchpoint dove avviene la proposta (UP, Web, app)&#x27;</td><td>I TC usano Web/App/UP nei dati, ma spesso il canale indicato in &#x27;channels&#x27; è solo &#x27;dashboard&#x27; e non verifica esplicitamente che il record contenga il touchpoint per tutti i casi (solo alcuni expected lo citano).</td></tr>
+<tr><td class='mono'>Description: &#x27;esito (abbandono ovvero finalizzazione offerta lato operatore o lato cliente in modalità self)&#x27;</td><td>Non c&#x27;è un test esplicito di esito &#x27;abbandono&#x27; né &#x27;finalizzazione lato operatore&#x27;; solo un caso &#x27;pending-&gt;finalizzazione self&#x27; (assunto) e in altri casi l&#x27;esito non è verificato.</td></tr>
+<tr><td class='mono'>Description: &#x27;storicizzato ... per consentire analisi efficacia&#x27;</td><td>Nessun test verifica la storicizzazione/persistenza nel tempo per analisi (es. consultazione di log storici).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-008.US01.TC08, REQ-F-008.US02.TC06</td><td>Stesso scenario (servizio consultazione log non disponibile) duplicato per Marketing e Compliance con passi/attesi quasi identici.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC01, REQ-F-008.US02.TC01</td><td>Stesso scenario base (consultazione record log di proposta) replicato per due dashboard con differenze minime.</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC02, REQ-F-008.US02.TC02</td><td>Stesso scenario base (consultazione record log di esclusione) replicato per due dashboard con differenze minime.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-008&quot;,
+  &quot;title&quot;: &quot;Tracciamento decisioni motore e azioni di configurazione e proposte&quot;,
+  &quot;description&quot;: &quot;Il sistema deve tracciare in modo completo sia le decisioni automatiche del Motore di Offerte (quali offerte/bundle sono state proposte, escluse o ordinate e le motivazioni) sia tutte le modifiche di configurazione effettuate dal Team Marketing (creazione, modifica, cancellazione di bundle, regole di pricing, campagne e parametri). Il tracciamento deve essere eseguito per ogni evento rilevante generato dal motore o dagli utenti di configurazione.\n\nAltri dati rilevanti di tracciamento: touchpoint dove avviene la proposta (UP, Web, app), timestampp (data, orario) della proposta, esito (abbandono ovvero finalizzazione offerta lato operatore o lato cliente in modalità \&quot;self\&quot; sui canali digitali).\n\nIl suddetto tracciamento delle proposte/condizioni/motivazioni/messaggi promozionali  generate per un cliente in UP o sui canali digitali, insieme all&#x27;esito della proposta, deve essere storicizzato al fine di consentire agli utenti Marketing di effettuare analisi per studiare l&#x27;efficacia delle offerte, dei messaggi proozionali/USP utilizzati&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Per ogni proposta o esclusione generata dal motore viene creato un record di log.&quot;,
+    &quot;Per ogni operazione di configurazione (creazione/modifica/cancellazione) viene creato un record di log.&quot;,
+    &quot;I log sono consultabili tramite la dashboard prevista per marketing e compliance.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 10 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-008.TC01</td><td>Creazione log per proposta del Motore di Offerte con motivazione, ordinamento, touchpoint, timestamp ed esito</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC02</td><td>Creazione log per esclusione di offerta/bundle da parte del motore con motivazione</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC03</td><td>Creazione log per operazione di creazione bundle da parte del Team Marketing</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC04</td><td>Creazione log per modifica di regola pricing da parte del Team Marketing</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC05</td><td>Creazione log per cancellazione campagna da parte del Team Marketing</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC06</td><td>Consultazione log da dashboard Marketing/Compliance con filtri per cliente e periodo</td><td>UI</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC07</td><td>Mancata creazione log in caso di errore/timeout del servizio di logging durante una proposta del motore (gestione errore)</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC08</td><td>Creazione log per proposta su canale UP con esito abbandono</td><td>E2E</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC09</td><td>Consultazione log: accesso non autorizzato alla dashboard log</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.TC10</td><td>Edge case: generazione proposta con zero offerte eleggibili e creazione del log evento</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 15 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-008.US01.TC01</td><td>Visualizzazione in dashboard Marketing del log di proposta generata dal Motore di Offerte con dettagli minimi</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC02</td><td>Visualizzazione in dashboard Marketing del log di esclusione generata dal Motore di Offerte con motivazioni</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC03</td><td>Visualizzazione in dashboard Marketing del log di ordinamento offerte/bundle con motivazioni (se previsto dal sistema)</td><td>Functional</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC04</td><td>Creazione e consultazione in dashboard Marketing del log di operazione di configurazione (creazione bundle)</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC05</td><td>Accesso non autorizzato: utente senza ruolo Marketing non può consultare i log in dashboard Marketing</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC06</td><td>Edge case: touchpoint non riconosciuto valorizzato come &#x27;unknown&#x27; e record consultabile</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC07</td><td>Edge case: esito proposta inizialmente &#x27;pending&#x27; e successivamente aggiornato, mantenendo consultabilità</td><td>Integration</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC08</td><td>Servizio log non disponibile: la dashboard gestisce l&#x27;errore senza mostrare dati parziali o incoerenti</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US01.TC09</td><td>Operazione di configurazione fallita: nessun record di log di &#x27;operazione completata&#x27; (assunzione) e consultazione coerente</td><td>Negative</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC01</td><td>Visualizzazione in dashboard Compliance del log di proposta generata dal Motore di Offerte</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC02</td><td>Visualizzazione in dashboard Compliance del log di esclusione generata dal Motore di Offerte</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC03</td><td>Visualizzazione in dashboard Compliance del log di operazione di configurazione (modifica regola pricing)</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC04</td><td>Accesso non autorizzato: utente Compliance senza permesso di consultazione log non accede ai log</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC05</td><td>Edge case: record con dati opzionali mancanti rimane consultabile in dashboard Compliance</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-008.US02.TC06</td><td>Servizio log non disponibile: la dashboard Compliance gestisce l&#x27;errore di consultazione</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 3, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 5, 3], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

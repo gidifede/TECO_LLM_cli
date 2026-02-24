@@ -1,0 +1,38 @@
+[
+  {
+    "story_id": "REQ-F-028.US01",
+    "title": "Aggiornare la matrice abilitazioni solo tramite workflow formale con tracciabilità",
+    "persona": "Team Marketing",
+    "goal": "modificare la matrice di abilitazione prodotti vs figure esclusivamente tramite un workflow formale integrato con il Motore di Offerte, con audit trail completo",
+    "benefit": "garantire controllo, tracciabilità e conformità delle abilitazioni di vendita evitando modifiche ad-hoc",
+    "user_story": "Come Team Marketing\nVoglio modificare la matrice di abilitazione prodotti vs figure solo tramite un workflow formale integrato con il Motore di Offerte\nIn modo che ogni variazione sia approvata/tracciata e non siano possibili modifiche ad-hoc non controllate",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing tenta di modificare la matrice di abilitazione ALLORA il sistema consente la modifica solo avviando/seguendo il workflow integrato e non tramite editing diretto fuori workflow",
+      "QUANDO una modifica alla matrice viene inserita nel workflow ALLORA il sistema registra almeno autore, timestamp e stato di approvazione associati alla modifica",
+      "QUANDO un utente del Team Marketing consulta la matrice ALLORA può ricostruire la storia delle modifiche (audit trail) con dettaglio di autore, timestamp e stato di approvazione per ciascuna variazione",
+      "QUANDO un utente del Team Marketing tenta una modifica fuori dal workflow ALLORA il sistema respinge l’operazione e genera un log di tentativo non autorizzato"
+    ],
+    "business_rules": [
+      "Le modifiche alla matrice di abilitazione sono permesse esclusivamente tramite workflow formale integrato con il Motore di Offerte",
+      "È vietato l’editing diretto/ad-hoc non tracciato della matrice",
+      "Ogni variazione deve avere audit trail leggibile con autore, timestamp e stato di approvazione",
+      "I tentativi di modifica fuori workflow devono essere respinti e tracciati a log come tentativi non autorizzati"
+    ],
+    "edge_cases": [
+      "Utente senza permessi prova ad avviare o completare una modifica: operazione respinta e loggata come tentativo non autorizzato",
+      "Workflow interrotto o non completato (es. stato in revisione): la matrice effettiva non deve riflettere la modifica finché non approvata (se previsto dal workflow)",
+      "Conflitto tra modifiche concorrenti sulla stessa coppia prodotto/figura: il workflow deve gestire la collisione (es. blocco, coda o richiesta di riconciliazione) senza consentire bypass",
+      "Errore di integrazione con il Motore di Offerte durante l’applicazione della modifica: la modifica non deve risultare applicata parzialmente e l’esito deve essere tracciato"
+    ],
+    "assumptions": [
+      "Il requisito non specifica i ruoli/attori approvatori del workflow: si assume che il Team Marketing avvii e/o proponga modifiche, mentre l’approvazione sia gestita dal workflow secondo configurazione di sistema",
+      "Il requisito non definisce gli stati del workflow oltre a un generico 'stato di approvazione': si assume che esista almeno uno stato consultabile e registrato (es. In revisione/Approvat0/Respinto)",
+      "Il requisito non specifica l’interfaccia di consultazione dell’audit trail: si assume sia disponibile via dashboard"
+    ],
+    "notes": "Requisito focalizzato su governance e tracciabilità: non dettaglia i passi del workflow (stati, ruoli di approvazione, regole di concorrenza). Gli AC sono stati resi testabili assumendo che la matrice non sia editabile direttamente e che l’audit trail sia consultabile. Persona coinvolta individuata: Team Marketing (canale dashboard) come attore che opera sulla configurazione; eventuali altri ruoli approvatori non sono esplicitati nel requisito."
+  }
+]

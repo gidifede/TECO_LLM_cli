@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-UI-005</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-UI-005</h1>
+  <div class="subtitle">Accesso consultazione log: dashboard e esportazione</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:37</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-UI-005</div>
+  <div class="req-field"><strong>Titolo:</strong> Accesso consultazione log: dashboard e esportazione</div>
+  <div class="req-field"><strong>Categoria:</strong> INTERFACCIA</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">I log devono essere resi disponibili tramite una dashboard interna per consultazione rapida da parte dei team Marketing e Compliance e deve essere prevista la possibilità di esportare automaticamente i log verso i sistemi di audit aziendali con frequenza configurabile (es. quotidiana, settimanale o personalizzata).</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Esiste una dashboard che consente a Marketing e Compliance di cercare, filtrare e visualizzare i log.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>È disponibile una funzione di esportazione automatica verso i sistemi di audit con frequenza configurabile.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>I permessi di accesso alla dashboard rispettano la segregazione dei ruoli (Marketing/Compliance).</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">60</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">16</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Il set direct mantiene una coerenza superiore (60) perché copre tutti gli AC con un numero limitato di assunzioni extra, principalmente dettagli tecnici per rendere testabile dashboard/export. Il set indirect_persona, pur coprendo formalmente gli AC, introduce molte più informazioni non tracciabili (SSO/rete interna, viste role-only, gestione sessione, sicurezza messaggi, scheduler/fuso, idempotenza) e presenta più ridondanze, riducendo drasticamente il punteggio (16).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">60</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-005.TC01</td><td>Assunzione di canale &#x27;web&#x27; e di campi minimi del log (timestamp/livello/messaggio) e log &#x27;indicizzati&#x27;; il requisito non specifica canale, schema o indicizzazione.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC01</td><td>Uso di livelli log specifici (INFO/ERROR) e keyword nel messaggio (&#x27;consenso&#x27;); il requisito non definisce livelli o campi ricercabili.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC02</td><td>Uso di livelli log specifici (INFO/WARN/ERROR) e keyword (&#x27;audit&#x27;); il requisito non definisce livelli o campi ricercabili.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC03</td><td>Introduzione ruolo &#x27;Sales&#x27; e aspettativa su comportamento UI (voce menu nascosta/disabilitata) e deep link/URL diretto con messaggio/redirect; il requisito richiede segregazione ruoli ma non specifica ruoli extra né modalità (menu/URL) di enforcement.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC04</td><td>Validazione specifica su intervallo date invertito e relativo messaggio; il requisito non definisce regole di validazione input.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC05</td><td>Dettagli di integrazione non presenti: endpoint/chiavi, identificativo connessione (AUDIT_TEST_01), finestra dati &#x27;ultime 24 ore&#x27;, evidenze di consegna (file/lotto) e stato &#x27;SUCCESS&#x27;.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC06</td><td>Dettagli di scheduling non richiesti: giorno specifico (domenica), vincolo &#x27;nessuna esecuzione fuori pianificazione&#x27; e modalità di simulazione tempo; il requisito parla solo di frequenza configurabile.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC07</td><td>Frequenza personalizzata concretizzata come &#x27;ogni 6 ore&#x27;, introduzione di tolleranza temporale e stati SUCCESS/FAIL; non specificati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC08</td><td>Gestione indisponibilità/timeout del sistema di audit e tracciamento FAIL/SUCCESS; il requisito non richiede esplicitamente gestione errori o tracciatura esiti dell&#x27;export.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;dashboard interna&quot;</td><td>I test assumono canale web ma non validano esplicitamente che sia una dashboard interna (es. accessibile solo internamente). Il requisito parla di &#x27;dashboard interna&#x27; come caratteristica.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Scenario sostanzialmente duplicato (ricerca/filtri/visualizzazione) replicato per Marketing e Compliance con variazioni minime di dati.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">16</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">17</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">18</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-005.US01.TC01</td><td>Assunzioni non presenti: accesso da rete interna/SSO, concetto di log con &#x27;visibilità Marketing&#x27; e dipendenza da &#x27;servizio backend dei log&#x27;.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC02</td><td>Assunzione di filtri specifici (data, severità INFO/ERROR) e che il backend supporti tali filtri; il requisito non definisce quali filtri o attributi.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC03</td><td>Assunzione di viste/funzionalità &#x27;Compliance-only&#x27; (es. /logs/compliance); il requisito non richiede viste separate per ruolo, solo segregazione accessi.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC04</td><td>Introduzione funzionalità &#x27;Azzera filtri&#x27; e gestione stato vuoto; non richieste dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC05</td><td>Gestione indisponibilità backend (500/timeout), no dati parziali e non esposizione di dettagli sensibili (stack trace/token); non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC06</td><td>Gestione sessione scaduta e re-auth (SSO/token refresh); non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC01</td><td>Assunzioni non presenti: accesso da rete interna/SSO, concetto di log con &#x27;visibilità Compliance&#x27; e dipendenza da backend.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC02</td><td>Assunzione di filtri specifici (data, severità) e supporto backend; non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC03</td><td>Assunzione di viste/funzionalità &#x27;Marketing-only&#x27; (es. /logs/marketing); non richiesta dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC04</td><td>Introduzione ruolo &#x27;Employee&#x27; e contesto &#x27;rete interna&#x27;; il requisito non elenca ruoli extra né vincoli di rete.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC05</td><td>Introduzione &#x27;Azzera filtri&#x27; e gestione stato vuoto; non richieste dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC06</td><td>Gestione indisponibilità backend e non esposizione dettagli sensibili; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC01</td><td>Introduzione di un attore/ruolo &#x27;export.admin1&#x27; e di dettagli di scheduler osservabile (API/DB/log), oltre a fuso orario Europe/Rome; il requisito non specifica attori, scheduler né fuso.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC02</td><td>Dettagli di integrazione inventati: endpoint mock HTTPS, frequenza &#x27;ogni 5 minuti&#x27; per test, correlazione export_run_id; non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC03</td><td>Estensione della segregazione ruoli alla modifica configurazione export; il requisito parla di permessi di accesso alla dashboard, non della configurazione/export.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC04</td><td>Assunzione di regole di validazione min/max o formato cron per frequenza personalizzata; il requisito non definisce vincoli né formato.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC05</td><td>Afferma che il requisito richiede gestione fallimento e tracciatura errore; in realtà il requisito non menziona gestione errori/logging dell&#x27;export.</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC06</td><td>Idempotenza/deduplicazione/checkpointing per evitare duplicazioni dopo interruzione; non presente nel requisito e indicato come &#x27;da definire&#x27; (quindi non tracciabile).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Acceptance Criteria AC-3: &quot;I permessi di accesso alla dashboard rispettano la segregazione dei ruoli (Marketing/Compliance).&quot;</td><td>Manca una verifica esplicita che entrambi i ruoli autorizzati (Marketing e Compliance) possano accedere alla dashboard mentre altri ruoli no, senza introdurre assunzioni di viste &#x27;role-only&#x27;. Esiste un TC per utente non autorizzato (US02.TC04) ma non è ancorato a un modello di permessi descritto e aggiunge contesto (rete interna).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'></td><td>Stesso scenario (accesso e visualizzazione elenco) duplicato per Marketing e Compliance.</td></tr>
+<tr><td class='mono'></td><td>Stesso scenario (filtri data/severità) duplicato per Marketing e Compliance.</td></tr>
+<tr><td class='mono'></td><td>Stesso scenario (backend log indisponibile e gestione errore) duplicato per Marketing e Compliance.</td></tr>
+<tr><td class='mono'></td><td>Stesso scenario (nessun risultato e reset filtri) duplicato per Marketing e Compliance.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-UI-005&quot;,
+  &quot;title&quot;: &quot;Accesso consultazione log: dashboard e esportazione&quot;,
+  &quot;description&quot;: &quot;I log devono essere resi disponibili tramite una dashboard interna per consultazione rapida da parte dei team Marketing e Compliance e deve essere prevista la possibilità di esportare automaticamente i log verso i sistemi di audit aziendali con frequenza configurabile (es. quotidiana, settimanale o personalizzata).&quot;,
+  &quot;category&quot;: &quot;INTERFACCIA&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Esiste una dashboard che consente a Marketing e Compliance di cercare, filtrare e visualizzare i log.&quot;,
+    &quot;È disponibile una funzione di esportazione automatica verso i sistemi di audit con frequenza configurabile.&quot;,
+    &quot;I permessi di accesso alla dashboard rispettano la segregazione dei ruoli (Marketing/Compliance).&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-005.TC01</td><td>Dashboard log: ricerca, filtri e visualizzazione per utente Marketing</td><td>UI</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC02</td><td>Dashboard log: ricerca, filtri e visualizzazione per utente Compliance</td><td>UI</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC03</td><td>Autorizzazioni: utente non appartenente a Marketing/Compliance non può accedere alla dashboard log</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC04</td><td>Dashboard log: gestione input non valido nei filtri (intervallo date invertito)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC05</td><td>Esportazione automatica: configurazione frequenza quotidiana verso sistema di audit e verifica avvenuta consegna</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC06</td><td>Esportazione automatica: configurazione frequenza settimanale e rispetto della pianificazione</td><td>Functional</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC07</td><td>Esportazione automatica: frequenza personalizzata (ogni 6 ore) e persistenza configurazione</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.TC08</td><td>Esportazione automatica: gestione indisponibilità del sistema di audit (timeout/errore) e tracciamento fallimento</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 18 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-005.US01.TC01</td><td>Marketing autenticato visualizza elenco log consentiti in dashboard</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC02</td><td>Marketing filtra i log e visualizza solo risultati coerenti</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC03</td><td>Marketing tenta accesso a vista/funzionalità riservata a Compliance: accesso negato</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC04</td><td>Marketing applica filtri che non restituiscono risultati: stato vuoto e reset filtri</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC05</td><td>Servizio log/dashboard indisponibile: errore gestito senza dati parziali</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US01.TC06</td><td>Sessione scaduta: richiesta di re-auth prima di mostrare i log</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC01</td><td>Compliance autenticato visualizza elenco log consentiti in dashboard</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC02</td><td>Compliance filtra i log e visualizza solo risultati coerenti</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC03</td><td>Compliance tenta accesso a vista/funzionalità riservata a Marketing: accesso negato</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC04</td><td>Utente senza ruolo Compliance tenta accesso alla dashboard: accesso negato</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC05</td><td>Compliance applica filtri che non restituiscono risultati: stato vuoto e reset filtri</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-005.US02.TC06</td><td>Servizio log/dashboard indisponibile: errore gestito senza dati parziali</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC01</td><td>Configurazione frequenza esportazione valida: pianificazione creata secondo configurazione</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC02</td><td>Esecuzione pianificata: esportazione automatica inviata ai sistemi di audit</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC03</td><td>Utente non autorizzato tenta modifica configurazione esportazione: operazione negata</td><td>Authorization</td><td>HIGH</td><td>AC-3, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC04</td><td>Configurazione frequenza non valida: salvataggio rifiutato</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC05</td><td>Sistema di audit non raggiungibile durante export: fallimento gestito e evento tracciato</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-005.US03.TC06</td><td>Timeout/interruzione durante export: esecuzione successiva evita duplicazioni o inconsistenze (comportamento da definire)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 9, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 18, 1, 4], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

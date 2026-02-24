@@ -1,0 +1,467 @@
+[
+  {
+    "story_id": "REQ-I-007.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-007.US01.TC01",
+        "title": "Ricezione evento da verticale e aggiornamento stato proposta (happy path, deterministico)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 nel Motore, in uno stato iniziale S0 compatibile con la transizione attesa per l'evento",
+          "Il canale/endpoint di integrazione del Motore e la relativa specifica payload sono disponibili e noti al verticale",
+          "È definita e attiva una regola di mapping evento→transizione (definizione esterna condivisa) per l'evento EVT_VENDITA_EFFETTIVA",
+          "Logging/audit eventi del Motore abilitato (per verifiche di tracciabilità)"
+        ],
+        "test_data": [
+          "Cliente: C-90001",
+          "Proposta: P-10001",
+          "Evento: eventId=EVT-000001, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:15:00Z, proposalId=P-10001, customerId=C-90001",
+          "Header autenticazione/integrazione: come da specifica (es. Authorization: Bearer <token_valido>)"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento con eventId=EVT-000001 tramite l'endpoint di integrazione previsto",
+          "Verificare l'esito della chiamata (codice HTTP o equivalente) e acquisire l'identificativo di correlazione (se previsto)",
+          "Recuperare dal Motore lo stato corrente della proposta P-10001 (tramite API interna/di consultazione disponibile in ambiente di test)",
+          "Recuperare dal Motore il log/audit dell'elaborazione dell'evento EVT-000001 (se disponibile)"
+        ],
+        "expected_results": [
+          "Il Motore accetta e processa l'evento (es. HTTP 200/202 o esito 'OK' equivalente)",
+          "Lo stato della proposta P-10001 risulta aggiornato a S1 coerente con la transizione attesa per EVT_VENDITA_EFFETTIVA e viene persistito",
+          "Il log/audit dell'evento riporta esito 'elaborato con successo' e correla eventId=EVT-000001 a proposalId=P-10001",
+          "A parità di payload (stesso eventType e stessi dati di correlazione), la transizione risultante è deterministica (stato finale S1 atteso)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "La verifica della deterministica dipende dalla definizione esterna evento→transizione, non fornita. Si assume esista una specifica tecnica che definisce S0→S1 per EVT_VENDITA_EFFETTIVA."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC02",
+        "title": "Visibilità dello stato aggiornato nell'elenco offerte per cliente dopo elaborazione evento",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste il cliente C-90001 con almeno due proposte nel Motore: P-10001 (target) e P-10002 (controllo)",
+          "P-10001 è in stato S0 e risulta presente nell'elenco offerte per cliente secondo le regole correnti",
+          "Il canale/endpoint di integrazione del Motore è disponibile",
+          "È disponibile almeno un'interfaccia esterna di consultazione dell'elenco offerte per cliente (es. API 'GET /offers?customerId=...')"
+        ],
+        "test_data": [
+          "Cliente: C-90001",
+          "Proposta target: P-10001",
+          "Evento: eventId=EVT-000002, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:20:00Z, proposalId=P-10001, customerId=C-90001",
+          "Chiamata elenco offerte: customerId=C-90001"
+        ],
+        "steps": [
+          "Recuperare l'elenco offerte per il cliente C-90001 tramite l'interfaccia esterna prevista e salvare il contenuto (baseline)",
+          "Inviare al Motore l'evento EVT-000002 per la proposta P-10001 tramite l'endpoint di integrazione",
+          "Attendere il completamento dell'elaborazione dell'evento (sincrono: esito OK; asincrono: polling fino a stato aggiornato o timeout concordato)",
+          "Recuperare nuovamente l'elenco offerte per il cliente C-90001 tramite la stessa interfaccia esterna"
+        ],
+        "expected_results": [
+          "La baseline mostra P-10001 con stato S0 (o comunque lo stato precedente all'evento)",
+          "Dopo l'elaborazione, l'elenco offerte riflette lo stato aggiornato di P-10001 (S1) coerente con l'evento",
+          "Le altre proposte del cliente (es. P-10002) non subiscono variazioni di stato imputabili all'evento di P-10001",
+          "La risposta dell'elenco offerte è coerente con l'ultimo evento elaborato per P-10001 (nessuna visibilità di stati intermedi/parziali)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non specifica quali siano 'tutte le interfacce': il test usa almeno un'interfaccia esterna disponibile in ambiente. Se esistono più interfacce, replicare la verifica su ciascuna."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC03",
+        "title": "Rifiuto aggiornamento stato se l'evento non proviene da un verticale di vendita (fonte non autorizzata)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 in stato S0",
+          "Il Motore distingue e valida la fonte degli eventi (es. claim nel token, mTLS, API key, allowlist sourceSystem) secondo specifica di sicurezza",
+          "Il canale/endpoint di integrazione del Motore è disponibile"
+        ],
+        "test_data": [
+          "Evento: eventId=EVT-000003, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=SISTEMA_NON_VERTICALE, occurredAt=2026-02-23T10:25:00Z, proposalId=P-10001, customerId=C-90001",
+          "Credenziali/chiamata: token o certificato associato a un sistema NON autorizzato (o assenza credenziali)"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento EVT-000003 con credenziali non autorizzate o con sourceSystem non ammesso",
+          "Verificare l'esito della chiamata (codice HTTP o equivalente)",
+          "Recuperare lo stato della proposta P-10001 dal Motore",
+          "Verificare la presenza di un record di audit/log relativo al tentativo (se previsto)"
+        ],
+        "expected_results": [
+          "Il Motore rifiuta la richiesta (es. HTTP 401/403 o esito 'KO' equivalente) oppure la accetta tecnicamente ma marca l'evento come non autorizzato senza applicare transizioni",
+          "Lo stato della proposta P-10001 rimane invariato rispetto a S0",
+          "L'esito è tracciabile (audit/log con motivazione: fonte non autorizzata o credenziali non valide)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non dettaglia autenticazione/autorizzazione; il test verifica il vincolo di business 'solo verticali' assumendo esista un meccanismo di validazione della fonte."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC04",
+        "title": "Evento con identificativo proposta mancante/non valido: nessun aggiornamento e anomalia tracciata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 in stato S0",
+          "Il canale/endpoint di integrazione del Motore è disponibile",
+          "Logging/audit eventi del Motore abilitato"
+        ],
+        "test_data": [
+          "Evento A (proposalId mancante): eventId=EVT-000004A, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:30:00Z, customerId=C-90001",
+          "Evento B (proposalId non valido): eventId=EVT-000004B, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:31:00Z, proposalId=P-XXXXXX, customerId=C-90001"
+        ],
+        "steps": [
+          "Inviare al Motore l'Evento A con proposalId mancante",
+          "Verificare l'esito della chiamata per l'Evento A",
+          "Inviare al Motore l'Evento B con proposalId non valido",
+          "Verificare l'esito della chiamata per l'Evento B",
+          "Recuperare lo stato della proposta P-10001 dal Motore",
+          "Recuperare i log/audit relativi agli eventi EVT-000004A e EVT-000004B"
+        ],
+        "expected_results": [
+          "Per ciascun evento, il Motore non applica alcuna transizione di stato a nessuna proposta",
+          "Lo stato della proposta P-10001 rimane invariato rispetto a S0",
+          "I log/audit riportano esito di scarto/errore con motivazione (proposalId mancante o non correlabile) e includono l'eventId"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non specifica il contratto di risposta (HTTP 400 vs 202 con esito interno). Il test accetta entrambe le implementazioni purché non avvengano aggiornamenti e l'esito sia tracciabile."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC05",
+        "title": "Gestione idempotente di evento duplicato: nessuna transizione incoerente",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 in stato S0",
+          "È definita una chiave di deduplica (es. eventId) e il Motore la utilizza per evitare duplicazioni",
+          "Il canale/endpoint di integrazione del Motore è disponibile",
+          "Logging/audit eventi del Motore abilitato"
+        ],
+        "test_data": [
+          "Evento duplicato: eventId=EVT-000005, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:35:00Z, proposalId=P-10001, customerId=C-90001"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento EVT-000005 (prima consegna)",
+          "Verificare che lo stato della proposta P-10001 sia aggiornato a S1",
+          "Inviare nuovamente al Motore lo stesso identico evento EVT-000005 (seconda consegna)",
+          "Recuperare lo stato della proposta P-10001 dal Motore",
+          "Recuperare i log/audit relativi alle due elaborazioni dell'eventId EVT-000005"
+        ],
+        "expected_results": [
+          "Dopo la prima consegna, lo stato della proposta P-10001 passa a S1 e viene persistito",
+          "Dopo la seconda consegna, lo stato della proposta P-10001 rimane S1 (nessuna ulteriore transizione o effetto collaterale)",
+          "I log/audit indicano che la seconda consegna è stata riconosciuta come duplicata (o comunque non ha prodotto una transizione aggiuntiva) ed è tracciata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "La chiave di deduplica non è specificata; si assume eventId o combinazione equivalente concordata."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC06",
+        "title": "Evento fuori sequenza/transizione non ammessa: stato non corrotto ed esito tracciabile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 in uno stato S_FINAL o comunque in uno stato per cui la transizione richiesta non è ammessa dalla state machine condivisa",
+          "Il canale/endpoint di integrazione del Motore è disponibile",
+          "Logging/audit eventi del Motore abilitato"
+        ],
+        "test_data": [
+          "Evento non ammesso: eventId=EVT-000006, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:40:00Z, proposalId=P-10001, customerId=C-90001"
+        ],
+        "steps": [
+          "Verificare lo stato corrente di P-10001 (atteso S_FINAL o stato non transizionabile per l'evento)",
+          "Inviare al Motore l'evento EVT-000006",
+          "Verificare l'esito della chiamata (codice HTTP o equivalente)",
+          "Recuperare lo stato della proposta P-10001 dal Motore",
+          "Recuperare i log/audit relativi all'elaborazione dell'evento EVT-000006"
+        ],
+        "expected_results": [
+          "Il Motore rifiuta l'evento o lo gestisce come 'non applicabile' senza applicare alcuna transizione",
+          "Lo stato della proposta P-10001 rimane invariato (nessuna corruzione dello stato)",
+          "I log/audit riportano esito tracciabile (es. 'transizione non ammessa' / 'fuori sequenza') con riferimento a eventId=EVT-000006"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il comportamento (rifiuto vs no-op) non è specificato; il test verifica l'invarianza dello stato e la tracciabilità dell'esito."
+      },
+      {
+        "test_id": "REQ-I-007.US01.TC07",
+        "title": "Errore di elaborazione/timeout: nessun aggiornamento parziale dello stato (atomicità)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-10001 associata al cliente C-90001 in stato S0",
+          "È possibile simulare un errore durante l'elaborazione (es. fault injection su DB, timeout su dipendenza interna, transazione DB forzata a rollback)",
+          "Il canale/endpoint di integrazione del Motore è disponibile",
+          "Logging/audit eventi del Motore abilitato"
+        ],
+        "test_data": [
+          "Evento: eventId=EVT-000007, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T10:45:00Z, proposalId=P-10001, customerId=C-90001",
+          "Simulazione errore: indisponibilità DB per 30s o errore 500 su componente di persistenza durante la transizione"
+        ],
+        "steps": [
+          "Abilitare la simulazione di errore durante la persistenza della transizione per P-10001",
+          "Inviare al Motore l'evento EVT-000007",
+          "Verificare l'esito della chiamata (timeout/errore o esito KO)",
+          "Disabilitare la simulazione di errore",
+          "Recuperare lo stato della proposta P-10001 dal Motore",
+          "Recuperare i log/audit relativi all'elaborazione dell'evento EVT-000007"
+        ],
+        "expected_results": [
+          "L'elaborazione dell'evento fallisce in modo rilevabile (es. HTTP 5xx/timeout o esito KO equivalente)",
+          "Lo stato della proposta P-10001 rimane S0 (nessun aggiornamento parziale o intermedio persistito)",
+          "I log/audit riportano l'errore e indicano che la transizione non è stata applicata/persistita"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Dipendenza: disponibilità di meccanismi di fault injection o ambienti controllati per simulare errori di persistenza/elaborazione."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-007.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-007.US02.TC01",
+        "title": "Invio evento nel formato concordato verso endpoint del Motore (contratto API)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Sono definiti endpoint, metodo, headers richiesti e schema payload (specifica tecnica condivisa)",
+          "Il verticale di vendita VERTICALE_A dispone di credenziali valide per invocare l'endpoint del Motore",
+          "L'endpoint del Motore è raggiungibile dall'ambiente del verticale"
+        ],
+        "test_data": [
+          "Evento valido: eventId=EVT-100001, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:00:00Z, proposalId=P-20001, customerId=C-91001",
+          "Content-Type: application/json",
+          "Header autenticazione/integrazione: come da specifica (es. Authorization: Bearer <token_valido>)"
+        ],
+        "steps": [
+          "Costruire il payload dell'evento conforme allo schema concordato",
+          "Inviare l'evento all'endpoint del Motore con metodo e headers previsti",
+          "Validare la risposta del Motore (codice HTTP o esito equivalente)",
+          "Validare che la risposta contenga gli elementi di contratto previsti (es. correlationId, timestamp, esito) se definiti"
+        ],
+        "expected_results": [
+          "Il Motore accetta la richiesta conforme al contratto (es. HTTP 200/202 o esito OK equivalente)",
+          "Non vengono restituiti errori di validazione payload (schema/obbligatorietà campi) per l'evento conforme",
+          "La risposta rispetta il contratto API definito (campi presenti/valori coerenti) se previsto dalla specifica"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non include la specifica tecnica; questo test presuppone la disponibilità dello schema payload e del contratto di risposta."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC02",
+        "title": "E2E: evento inviato dal verticale causa transizione attesa e visibile su interfacce elenco offerte",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-20001 associata al cliente C-91001 nel Motore in stato S0",
+          "Il verticale VERTICALE_A può inviare eventi all'endpoint del Motore con credenziali valide",
+          "È definita la regola evento→transizione per EVT_VENDITA_EFFETTIVA (S0→S1)",
+          "È disponibile almeno un'interfaccia esterna che recupera l'elenco offerte per cliente dal Motore"
+        ],
+        "test_data": [
+          "Cliente: C-91001",
+          "Proposta: P-20001",
+          "Evento: eventId=EVT-100002, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:05:00Z, proposalId=P-20001, customerId=C-91001"
+        ],
+        "steps": [
+          "Recuperare l'elenco offerte per il cliente C-91001 e registrare lo stato di P-20001 (baseline)",
+          "Inviare dal verticale l'evento EVT-100002 verso l'endpoint del Motore",
+          "Attendere l'elaborazione dell'evento (sincrono: esito OK; asincrono: polling fino a stato aggiornato o timeout concordato)",
+          "Recuperare nuovamente l'elenco offerte per il cliente C-91001 dalla/e interfaccia/e disponibile/i"
+        ],
+        "expected_results": [
+          "La baseline mostra P-20001 con stato precedente all'evento (S0)",
+          "Dopo elaborazione, il Motore ha applicato la transizione attesa e P-20001 risulta in stato S1",
+          "L'elenco offerte restituito dalle interfacce disponibili riflette lo stato aggiornato (S1) per P-20001"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Se esistono più interfacce di consultazione, estendere la verifica a ciascuna per coprire 'tutte le interfacce'."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC03",
+        "title": "Invio evento con dati incompleti/non validi: nessun aggiornamento non intenzionale e KO rilevabile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-20001 associata al cliente C-91001 nel Motore in stato S0",
+          "Il verticale VERTICALE_A può inviare eventi all'endpoint del Motore",
+          "Logging/audit eventi del Motore abilitato (o meccanismo di esito consultabile)"
+        ],
+        "test_data": [
+          "Evento A (eventType mancante): eventId=EVT-100003A, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:10:00Z, proposalId=P-20001, customerId=C-91001",
+          "Evento B (customerId non valido): eventId=EVT-100003B, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:11:00Z, proposalId=P-20001, customerId=C-XXXXX"
+        ],
+        "steps": [
+          "Inviare l'Evento A con campo obbligatorio mancante",
+          "Verificare l'esito della chiamata per l'Evento A",
+          "Inviare l'Evento B con customerId non valido",
+          "Verificare l'esito della chiamata per l'Evento B",
+          "Recuperare lo stato della proposta P-20001 dal Motore",
+          "Verificare log/audit o esito elaborazione per EVT-100003A e EVT-100003B"
+        ],
+        "expected_results": [
+          "Ciascun invio produce un esito di errore/KO rilevabile (es. HTTP 400/422 o esito KO equivalente)",
+          "Lo stato della proposta P-20001 rimane S0 (nessun aggiornamento non intenzionale)",
+          "L'esito è tracciabile con motivazione di validazione/correlazione fallita e riferimento agli eventId"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il set di campi obbligatori dipende dalla specifica tecnica non fornita; i casi includono esempi tipici (eventType e correlazione cliente)."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC04",
+        "title": "Retry su failure di invio: reinvio non causa transizioni multiple (idempotenza)",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-20002 associata al cliente C-91002 nel Motore in stato S0",
+          "Il verticale VERTICALE_A implementa un meccanismo di retry mantenendo invariata la chiave di deduplica (es. eventId) tra i tentativi",
+          "Il Motore applica deduplica/idempotenza sulla chiave concordata",
+          "È possibile simulare un failure di rete o un timeout tra verticale e Motore"
+        ],
+        "test_data": [
+          "Evento: eventId=EVT-100004, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:15:00Z, proposalId=P-20002, customerId=C-91002",
+          "Simulazione failure: timeout lato client al primo tentativo (nessuna certezza di ricezione lato verticale)"
+        ],
+        "steps": [
+          "Abilitare la simulazione di timeout/failure sul primo invio dal verticale verso l'endpoint del Motore",
+          "Inviare l'evento EVT-100004 (tentativo 1) e registrare il timeout/failure",
+          "Disabilitare la simulazione di timeout/failure",
+          "Reinviare lo stesso identico evento EVT-100004 (tentativo 2, stesso eventId)",
+          "Recuperare lo stato della proposta P-20002 dal Motore",
+          "Verificare nei log/audit del Motore l'elaborazione e l'eventuale deduplica dell'evento EVT-100004"
+        ],
+        "expected_results": [
+          "Dopo i tentativi, la proposta P-20002 risulta in stato S1 al massimo una volta (nessuna transizione multipla indesiderata)",
+          "Il Motore riconosce e gestisce correttamente eventuali duplicazioni dovute al retry (deduplica/idempotenza tracciata)",
+          "Il verticale può determinare l'esito finale del reinvio tramite risposta del Motore e/o meccanismo di consultazione previsto"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non specifica come il verticale 'rileva l'esito' in asincrono; si assume esista una risposta o una consultazione dello stato a valle."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC05",
+        "title": "Invio evento per proposta in stato finale/non transizionabile: esito anomalo rilevabile e stato non corrotto",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-20003 associata al cliente C-91003 nel Motore in stato S_FINAL (o stato per cui l'evento non è applicabile)",
+          "Il verticale VERTICALE_A può inviare eventi all'endpoint del Motore",
+          "È disponibile un meccanismo per rilevare l'esito (risposta sincrona o audit consultabile)"
+        ],
+        "test_data": [
+          "Evento: eventId=EVT-100005, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:20:00Z, proposalId=P-20003, customerId=C-91003"
+        ],
+        "steps": [
+          "Verificare lo stato corrente di P-20003 nel Motore (atteso S_FINAL)",
+          "Inviare l'evento EVT-100005 all'endpoint del Motore",
+          "Verificare l'esito della chiamata (codice HTTP o equivalente)",
+          "Recuperare lo stato della proposta P-20003 dal Motore",
+          "Verificare log/audit o esito elaborazione per EVT-100005"
+        ],
+        "expected_results": [
+          "Il Motore rifiuta l'evento o lo gestisce come 'non applicabile' (esito anomalo rilevabile per il verticale)",
+          "Lo stato della proposta P-20003 rimane S_FINAL (nessuna corruzione dello stato)",
+          "L'esito è tracciabile con motivazione (transizione non ammessa/stato finale)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Il requisito non definisce il codice/contratto di errore; il test richiede solo esito rilevabile e invarianza dello stato."
+      },
+      {
+        "test_id": "REQ-I-007.US02.TC06",
+        "title": "Interruzione connettività verso endpoint del Motore: evento reinviabile senza perdita di coerenza",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta P-20004 associata al cliente C-91004 nel Motore in stato S0",
+          "Il verticale VERTICALE_A può inviare eventi all'endpoint del Motore",
+          "È possibile simulare indisponibilità rete/endpoint (DNS fail, connection refused, 503) per un intervallo controllato",
+          "Il Motore applica deduplica/idempotenza sulla chiave concordata (es. eventId)"
+        ],
+        "test_data": [
+          "Evento: eventId=EVT-100006, eventType=EVT_VENDITA_EFFETTIVA, sourceSystem=VERTICALE_A, occurredAt=2026-02-23T11:25:00Z, proposalId=P-20004, customerId=C-91004",
+          "Simulazione indisponibilità: endpoint Motore non raggiungibile per 2 minuti"
+        ],
+        "steps": [
+          "Abilitare la simulazione di indisponibilità dell'endpoint del Motore",
+          "Tentare l'invio dell'evento EVT-100006 dal verticale e registrare l'errore di connettività",
+          "Ripristinare la connettività verso l'endpoint del Motore",
+          "Reinviare l'evento EVT-100006 mantenendo invariato eventId",
+          "Recuperare lo stato della proposta P-20004 dal Motore",
+          "Recuperare l'elenco offerte per il cliente C-91004 da un'interfaccia esterna del Motore"
+        ],
+        "expected_results": [
+          "Il primo tentativo fallisce per indisponibilità rete/endpoint (errore rilevabile dal verticale) senza effetti sul Motore",
+          "Dopo il reinvio, il Motore elabora l'evento e porta la proposta P-20004 allo stato S1 in modo coerente e una sola volta",
+          "L'elenco offerte per C-91004 riflette lo stato aggiornato di P-20004 (S1)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "integrazione (API/endpoint)"
+        ],
+        "notes": "Questo test copre anche la disponibilità della transizione ai consumatori post-ripristino. La gestione di code/retry lato verticale non è specificata; si assume reinvio manuale/automatico con stessa chiave."
+      }
+    ]
+  }
+]

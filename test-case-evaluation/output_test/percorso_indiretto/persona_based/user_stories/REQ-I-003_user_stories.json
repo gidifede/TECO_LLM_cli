@@ -1,0 +1,68 @@
+[
+  {
+    "story_id": "REQ-I-003.US01",
+    "title": "Configurare regole marketing in dashboard esterna per influenzare le proposte",
+    "persona": "Team Marketing",
+    "goal": "gestire e attivare regole di marketing (campagne, esclusioni, personalizzazioni/parametri commerciali) tramite la dashboard esterna affinché il motore di bundle le applichi alle proposte",
+    "benefit": "governare centralmente la logica commerciale senza duplicazioni e con impatto immediato sulle proposte mostrate ai clienti",
+    "user_story": "Come Team Marketing\nVoglio gestire e attivare regole di marketing nella dashboard esterna\nIn modo che il motore di bundle le utilizzi per includere/escludere o modificare le proposte senza duplicare la logica nel motore",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO il Team Marketing attiva/modifica una regola (campagna, esclusione o parametro commerciale) nella dashboard esterna ALLORA la regola risulta disponibile al motore di bundle come regola da rispettare per la selezione delle proposte",
+      "QUANDO è presente una regola di esclusione attiva in dashboard per una determinata combinazione/prodotto/target ALLORA le proposte generate dal motore risultano escluse/coerentemente modificate rispetto alla regola",
+      "QUANDO è presente una regola di inclusione/personalizzazione attiva in dashboard ALLORA le proposte generate dal motore risultano coerentemente influenzate (inclusione/modifica) dalla regola",
+      "QUANDO si consulta la documentazione di integrazione ALLORA è esplicitata l'interdipendenza operativa tra dashboard marketing e motore (il motore usa regole provenienti dalla dashboard per modificare/escludere proposte)",
+      "QUANDO si eseguono i test di integrazione end-to-end ALLORA l'attivazione di una regola in dashboard produce un effetto verificabile sulle proposte presentate al cliente (inclusioni/esclusioni)"
+    ],
+    "business_rules": [
+      "Le regole aggiuntive di marketing (campagne, esclusioni, personalizzazioni/parametri commerciali) sono la fonte esterna da rispettare: la logica non deve essere duplicata nel motore di bundle quando applicabile",
+      "Il motore di bundle deve consultare/ottenere le regole dalla dashboard esterna e applicarle alla logica di selezione delle proposte"
+    ],
+    "edge_cases": [
+      "Regole in dashboard in stato non attivo: il motore non deve applicarle",
+      "Regole tra loro potenzialmente conflittuali (es. inclusione ed esclusione sulla stessa proposta): comportamento non specificato nel requisito",
+      "Dashboard/regole non raggiungibili temporaneamente: comportamento di fallback del motore non specificato nel requisito",
+      "Regola definita in dashboard ma non applicabile al contesto corrente (es. target non corrispondente): il motore non deve alterare le proposte"
+    ],
+    "assumptions": [
+      "Il requisito non specifica modalità tecniche (API, polling/eventi) con cui il motore accede alle regole: si assume che esista un meccanismo di consultazione/ottenimento definito nella documentazione tecnica",
+      "Il requisito non definisce la priorità/precedenza tra regole in conflitto: si assume che verrà definita in una business rule o specifica successiva",
+      "Il requisito non definisce cosa accade se la dashboard è indisponibile: si assume che la strategia di fallback (es. ultima configurazione valida/cache, nessuna regola) sia definita in analisi tecnica"
+    ],
+    "notes": "User story focalizzata sulla governance delle regole da parte del Team Marketing e sulla tracciabilità dell'effetto sulle proposte. Gli AC del requisito sono stati resi testabili esplicitando l'effetto verificabile (inclusione/esclusione/modifica) e la necessità di documentazione dei punti di integrazione. Dipendenza esterna: specifica tecnica dei punti in cui il motore legge/rispetta le regole e relativo meccanismo di accesso."
+  },
+  {
+    "story_id": "REQ-I-003.US02",
+    "title": "Applicare nel Motore di Offerte le regole marketing provenienti dalla dashboard esterna",
+    "persona": "Motore di Offerte",
+    "goal": "consultare e rispettare le regole marketing gestite nella dashboard esterna per modificare/escludere le proposte generate",
+    "benefit": "garantire coerenza con le configurazioni marketing e ridurre duplicazioni di logica commerciale nel motore",
+    "user_story": "Come Motore di Offerte\nVoglio consultare e rispettare le regole marketing definite nella dashboard esterna\nIn modo che le proposte generate siano modificate o escluse secondo tali regole senza duplicare la logica",
+    "channels": [],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte genera proposte e sono presenti regole marketing applicabili provenienti dalla dashboard esterna ALLORA il Motore modifica/esclude le proposte in coerenza con tali regole",
+      "QUANDO una regola viene attivata nella dashboard esterna ALLORA i test dimostrano che le proposte risultanti (fornite ai canali) riflettono l'inclusione/esclusione prevista",
+      "QUANDO si redige/consulta la documentazione tecnica ALLORA sono specificati i punti del flusso in cui il Motore legge e rispetta le regole definite in dashboard (interdipendenza operativa e punti di lettura/applicazione)",
+      "QUANDO una regola marketing è applicabile ALLORA la logica corrispondente non è duplicata nel Motore ma ottenuta/consultata dalla dashboard esterna come fonte"
+    ],
+    "business_rules": [
+      "Il Motore di Offerte deve fare riferimento alle regole marketing gestite manualmente nella dashboard esterna per la selezione delle proposte e per eventuali esclusioni/parametri commerciali",
+      "Le regole marketing aggiuntive non devono essere duplicate nel Motore quando applicabile; devono essere ottenute/consultate dalla dashboard esterna"
+    ],
+    "edge_cases": [
+      "Regole non disponibili (errore di integrazione/timeout): comportamento non specificato; necessario definire fallback e impatto sulle proposte",
+      "Regole non valide o incomplete ricevute dalla dashboard: necessaria definizione di validazioni e gestione errori",
+      "Regole conflittuali: necessaria definizione di precedenza/risoluzione",
+      "Aggiornamento regole mentre è in corso una generazione proposta: necessaria definizione di consistenza (quale versione regola applicare)"
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia il contratto di integrazione (formato regole, versioning, tempi di propagazione): si assume che venga definito nella documentazione tecnica richiesta dagli AC",
+      "Il requisito non elenca i canali tecnici del Motore: si lascia vuoto 'channels' perché la persona è un componente sistema"
+    ],
+    "notes": "Gli acceptance criteria del requisito sono condivisi con la US del Team Marketing (interdipendenza, test di impatto, documentazione dei punti di lettura). Ridondanza intenzionale per tracciabilità per persona. Dipendenze aperte: definizione tecnica dei punti di integrazione e della strategia di gestione indisponibilità/conflitti."
+  }
+]

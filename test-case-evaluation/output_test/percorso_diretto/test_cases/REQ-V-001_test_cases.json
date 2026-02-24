@@ -1,0 +1,254 @@
+[
+  {
+    "test_id": "REQ-V-001.TC01",
+    "title": "Impostazione dello stato 'vietata' per una combinazione nella matrice di configurazione",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Configuratore/matrice di configurazione disponibile e raggiungibile in ambiente di test",
+      "Utente autenticato con permessi di configurazione (ruolo amministratore o equivalente)",
+      "Esiste almeno una combinazione configurabile identificabile univocamente (es. COMBO-A)"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-A (es. Prodotto=P1, Opzione=O1, Durata=12 mesi)",
+      "Stato da impostare: 'vietata'",
+      "Motivazione (se prevista dal configuratore): 'Vincolo regolatorio dichiarato dall’utente'"
+    ],
+    "steps": [
+      "Accedere al configuratore con un utente con permessi di configurazione",
+      "Aprire la matrice di configurazione",
+      "Individuare la combinazione COMBO-A",
+      "Impostare lo stato della combinazione su 'vietata'",
+      "Salvare la modifica",
+      "Ricaricare la matrice di configurazione"
+    ],
+    "expected_results": [
+      "La matrice consente di selezionare in modo esplicito lo stato 'vietata' per la combinazione COMBO-A",
+      "Dopo il salvataggio, la combinazione COMBO-A risulta persistita con stato 'vietata' alla riapertura/ricarica della matrice",
+      "Lo stato 'vietata' è visualizzato in modo chiaro e non ambiguo per COMBO-A (es. label/stato dedicato)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il canale del configuratore; si assume interfaccia web/amministrativa. Se esistono più UI (web/app/backoffice), replicare il test sul canale effettivo."
+  },
+  {
+    "test_id": "REQ-V-001.TC02",
+    "title": "Il motore esclude una combinazione marcata 'vietata' dalle proposte al cliente (canale web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "COMBO-A è marcata come 'vietata' nella matrice di configurazione",
+      "Il motore di proposta/valutazione combinazioni è disponibile",
+      "Non esistono eccezioni manuali attive per COMBO-A",
+      "Utente cliente (o utente canale vendita) autenticato sul canale web, se richiesto dal sistema"
+    ],
+    "test_data": [
+      "Input di configurazione che normalmente renderebbe eleggibile COMBO-A (es. Prodotto=P1, Opzione=O1, Durata=12 mesi)",
+      "Identificativo combinazione vietata: COMBO-A"
+    ],
+    "steps": [
+      "Accedere al canale web di proposta/configurazione come utente cliente (o profilo previsto)",
+      "Inserire i parametri di configurazione che rendono eleggibile COMBO-A",
+      "Richiedere la generazione delle combinazioni/proposte al motore (es. clic su 'Calcola'/'Trova offerte')",
+      "Ispezionare l'elenco delle combinazioni/proposte restituite"
+    ],
+    "expected_results": [
+      "COMBO-A non è presente tra le combinazioni/proposte restituite dal motore",
+      "Nessuna proposta visualizzata o restituita via API include una combinazione con stato 'vietata'",
+      "Le combinazioni non vietate (se esistenti per gli stessi input) vengono proposte regolarmente"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita 'canali supportati' ma non li elenca. Questo test copre il canale web; aggiungere ulteriori canali reali (es. app) quando noti."
+  },
+  {
+    "test_id": "REQ-V-001.TC03",
+    "title": "Il motore esclude una combinazione marcata 'vietata' dalle proposte al cliente (canale app)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "COMBO-A è marcata come 'vietata' nella matrice di configurazione",
+      "Il motore di proposta/valutazione combinazioni è disponibile",
+      "Non esistono eccezioni manuali attive per COMBO-A",
+      "App disponibile e utente autenticato (se richiesto)"
+    ],
+    "test_data": [
+      "Input di configurazione che normalmente renderebbe eleggibile COMBO-A (es. Prodotto=P1, Opzione=O1, Durata=12 mesi)",
+      "Identificativo combinazione vietata: COMBO-A"
+    ],
+    "steps": [
+      "Aprire l'app sul dispositivo di test",
+      "Accedere come utente cliente (o profilo previsto)",
+      "Inserire i parametri di configurazione che rendono eleggibile COMBO-A",
+      "Richiedere la generazione delle combinazioni/proposte",
+      "Verificare l'elenco delle combinazioni/proposte mostrate"
+    ],
+    "expected_results": [
+      "COMBO-A non è presente tra le combinazioni/proposte mostrate in app",
+      "Nessuna proposta mostrata in app include combinazioni con stato 'vietata'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il canale 'app' è inferito dal requisito ('canali supportati') come possibile canale. Se l'app non è tra i canali supportati, rimuovere/adeguare questo test."
+  },
+  {
+    "test_id": "REQ-V-001.TC04",
+    "title": "Eccezione manuale autorizzata: un ruolo autorizzato può abilitare la proposta di una combinazione 'vietata' tramite funzionalità di eccezione",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "COMBO-A è marcata come 'vietata' nella matrice di configurazione",
+      "La funzionalità di 'eccezione manuale' è disponibile",
+      "Esiste un ruolo autorizzato alle eccezioni (es. RUOLO-EXC-AUTH) secondo RBAC configurato",
+      "Utente U_AUTH assegnato a RUOLO-EXC-AUTH",
+      "Non esistono eccezioni manuali attive per COMBO-A"
+    ],
+    "test_data": [
+      "Utente autorizzato: U_AUTH",
+      "Combinazione oggetto eccezione: COMBO-A",
+      "Durata eccezione (se prevista): 24 ore",
+      "Motivazione eccezione (se prevista): 'Deroga autorizzata'"
+    ],
+    "steps": [
+      "Accedere al sistema con l'utente U_AUTH",
+      "Aprire la funzionalità di gestione eccezioni manuali",
+      "Creare una nuova eccezione manuale per la combinazione COMBO-A",
+      "Impostare l'eccezione come attiva (e valorizzare eventuali campi obbligatori come durata/motivazione)",
+      "Salvare l'eccezione",
+      "Sul canale di proposta (es. web), inserire i parametri di configurazione che rendono eleggibile COMBO-A",
+      "Richiedere la generazione delle combinazioni/proposte"
+    ],
+    "expected_results": [
+      "L'utente U_AUTH può accedere alla funzionalità di eccezione manuale",
+      "Il sistema consente di salvare un'eccezione manuale associata a COMBO-A",
+      "A eccezione attiva, il motore può includere COMBO-A tra le combinazioni/proposte, nonostante lo stato 'vietata'",
+      "La proposta di COMBO-A avviene solo nel perimetro dell'eccezione (es. finché l'eccezione è attiva, se prevista una durata)"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito rimanda a 'se e come definite dalla configurazione/ruoli' e al requisito RBAC: i dettagli di durata, campi obbligatori e perimetro dell'eccezione non sono specificati; i passi assumono che esistano campi minimi (attiva + eventuale motivazione/durata) e che l'eccezione renda proponibile la combinazione vietata."
+  },
+  {
+    "test_id": "REQ-V-001.TC05",
+    "title": "Eccezione manuale non autorizzata: un ruolo non autorizzato non può creare eccezioni per combinazioni 'vietate'",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "COMBO-A è marcata come 'vietata' nella matrice di configurazione",
+      "La funzionalità di 'eccezione manuale' è disponibile",
+      "Esiste un ruolo non autorizzato alle eccezioni (es. RUOLO-BASE) secondo RBAC configurato",
+      "Utente U_NOAUTH assegnato a RUOLO-BASE",
+      "Non esistono eccezioni manuali attive per COMBO-A"
+    ],
+    "test_data": [
+      "Utente non autorizzato: U_NOAUTH",
+      "Combinazione oggetto eccezione: COMBO-A"
+    ],
+    "steps": [
+      "Accedere al sistema con l'utente U_NOAUTH",
+      "Tentare di aprire la funzionalità di gestione eccezioni manuali",
+      "Se la funzionalità è visibile, tentare di creare una nuova eccezione manuale per COMBO-A",
+      "Tentare di salvare l'eccezione"
+    ],
+    "expected_results": [
+      "L'utente U_NOAUTH non può accedere alla funzionalità di eccezione manuale oppure la vede in sola lettura senza possibilità di creazione",
+      "Se l'utente tenta comunque l'operazione, il sistema blocca la creazione/salvataggio dell'eccezione e restituisce un errore di autorizzazione",
+      "Non viene creata alcuna eccezione attiva per COMBO-A",
+      "Sul canale di proposta, COMBO-A continua a non essere proposta"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "La modalità esatta di enforcement RBAC (feature nascosta vs errore a runtime) non è specificata; entrambe sono accettabili purché impediscano la creazione dell'eccezione da ruoli non autorizzati."
+  },
+  {
+    "test_id": "REQ-V-001.TC06",
+    "title": "Assenza/indisponibilità del servizio di eccezioni: il motore non deve proporre combinazioni 'vietate' in mancanza di conferma eccezione",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "COMBO-A è marcata come 'vietata' nella matrice di configurazione",
+      "Non esistono eccezioni manuali attive per COMBO-A",
+      "Il motore dipende da un componente/servizio per leggere le eccezioni manuali (separato o interno)",
+      "Il servizio/componente eccezioni è simulabile come non disponibile (timeout/500) in ambiente di test"
+    ],
+    "test_data": [
+      "Input di configurazione che normalmente renderebbe eleggibile COMBO-A (es. Prodotto=P1, Opzione=O1, Durata=12 mesi)",
+      "Simulazione errore: timeout 10s o HTTP 500 dal servizio eccezioni"
+    ],
+    "steps": [
+      "Configurare il mock/stub o le regole di rete per rendere non disponibile il servizio/componente eccezioni",
+      "Invocare la generazione combinazioni/proposte con input che renderebbe eleggibile COMBO-A",
+      "Raccogliere la risposta del motore (UI o API) e l'elenco combinazioni proposte"
+    ],
+    "expected_results": [
+      "Il motore non include COMBO-A tra le combinazioni proposte",
+      "In assenza di verifica eccezione, prevale il vincolo 'vietata' (fail-safe)",
+      "Se il sistema espone un messaggio/errore tecnico, questo non deve comportare la proposta di combinazioni vietate"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non descrive l'architettura del componente eccezioni; il test assume una dipendenza (diretta o indiretta) verificabile tramite fault injection. Comportamento atteso definito in ottica di conformità: mai proporre 'vietate' senza eccezione confermata."
+  },
+  {
+    "test_id": "REQ-V-001.TC07",
+    "title": "Edge case: cambio di stato a 'vietata' dopo che una combinazione era proponibile",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "COMBO-B esiste ed è inizialmente NON vietata nella matrice di configurazione",
+      "Il motore propone COMBO-B per un dato set di input",
+      "Nessuna eccezione manuale attiva per COMBO-B"
+    ],
+    "test_data": [
+      "Combinazione: COMBO-B (es. Prodotto=P2, Opzione=O3, Durata=24 mesi)",
+      "Input di configurazione che rende eleggibile COMBO-B"
+    ],
+    "steps": [
+      "Verificare sul canale web che, con l'input definito, COMBO-B venga proposta dal motore",
+      "Accedere al configuratore con permessi di configurazione",
+      "Impostare COMBO-B come 'vietata' e salvare",
+      "Richiedere nuovamente la generazione delle combinazioni/proposte con lo stesso input sul canale web"
+    ],
+    "expected_results": [
+      "Prima della modifica, COMBO-B è presente tra le proposte",
+      "Dopo la modifica a 'vietata', COMBO-B non è più presente tra le proposte",
+      "Non risultano proposte che includano combinazioni con stato 'vietata' in base alla configurazione aggiornata"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica tempi di propagazione/cache tra configuratore e motore. Se esiste caching, definire SLA di propagazione e adattare il test (es. attesa/invalidazione cache) senza cambiare l'aspettativa finale."
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "story_id": "REQ-D-003.US01",
+    "title": "Consultare e filtrare i log delle proposte bundle in dashboard",
+    "persona": "Team Marketing",
+    "goal": "visualizzare e filtrare nella dashboard i log delle proposte di combinazioni/bundle con i campi minimi previsti",
+    "benefit": "monitorare l’efficacia delle regole/campagne e analizzare le motivazioni di proposta per cluster e canale",
+    "user_story": "Come Team Marketing\nVoglio visualizzare e filtrare nella dashboard i log delle proposte di combinazioni/bundle con i campi minimi previsti\nIn modo che possa monitorare e analizzare le proposte per ottimizzare regole e campagne",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard dei log proposte ALLORA posso visualizzare per ogni evento almeno i campi: bundle_id, cliente_id (o riferimento identificativo previsto), cluster_id, motivo_proposta, timestamp, canale.",
+      "QUANDO imposto un filtro per bundle ALLORA la dashboard mostra solo i record di log coerenti con il bundle selezionato.",
+      "QUANDO imposto un filtro per cliente ALLORA la dashboard mostra solo i record di log coerenti con il cliente selezionato.",
+      "QUANDO imposto un filtro per cluster ALLORA la dashboard mostra solo i record di log coerenti con il cluster selezionato.",
+      "QUANDO imposto un filtro per periodo temporale ALLORA la dashboard mostra solo i record di log nel periodo selezionato.",
+      "QUANDO un evento di proposta è registrato ALLORA nella dashboard i campi obbligatori risultano popolati per quel record."
+    ],
+    "business_rules": [
+      "I campi minimi del log per evento di proposta sono obbligatori: bundle_id, cliente_id (o riferimento identificativo previsto), cluster_id, motivo_proposta, timestamp, canale.",
+      "La dashboard deve consentire il filtraggio dei log proposte per: bundle, cliente, cluster, periodo temporale."
+    ],
+    "edge_cases": [
+      "Filtro con valori non esistenti (es. bundle_id inesistente): la dashboard restituisce lista vuota senza errori applicativi.",
+      "Periodo temporale non valido (data inizio > data fine): la dashboard blocca l’azione o segnala errore di validazione e non applica il filtro.",
+      "Volume elevato di record nel periodo selezionato: la dashboard continua a consentire l’uso dei filtri senza timeout lato utente (eventuale paginazione/limit non specificati)."
+    ],
+    "assumptions": [
+      "Si assume che il Team Marketing disponga di accesso alla dashboard dei log (ruoli/permessi definiti altrove).",
+      "Si assume che 'cliente_id' possa essere sostituito da un diverso riferimento identificativo, purché consistente e filtrabile, come indicato nel requisito."
+    ],
+    "notes": "Il requisito non specifica formato/valori ammessi per 'motivo_proposta' e 'canale/touchpoint' né le modalità di visualizzazione (paginazione/export); non sono stati introdotti dettagli non presenti. AC condivisi potenzialmente anche con Team Compliance, ma la persona Compliance non è esplicitamente citata nel requisito."
+  }
+]

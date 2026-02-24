@@ -1,0 +1,295 @@
+[
+  {
+    "test_id": "REQ-D-007.TC01",
+    "title": "Registrazione persistente di una proposta generata dal Motore",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato per l'accesso al Motore (es. admin)",
+      "Sono disponibili dati/condizioni minime per generare una proposta tramite il Motore",
+      "Area di persistenza log del Motore attiva"
+    ],
+    "test_data": [
+      "Utente autorizzato: admin01",
+      "Richiesta di generazione proposta: input valido preconfigurato (es. scenario 'STD-PROP-001')"
+    ],
+    "steps": [
+      "Accedere al Motore come utente autorizzato 'admin01'",
+      "Eseguire un'operazione che genera una proposta tramite il Motore usando lo scenario 'STD-PROP-001'",
+      "Recuperare dal Motore i log persistiti relativi all'intervallo temporale dell'operazione (filtro per timestamp)",
+      "Filtrare i log per tipologia evento relativa a proposta generata"
+    ],
+    "expected_results": [
+      "La proposta generata risulta registrata come evento di log persistente",
+      "L'evento di log include almeno la tipologia di evento (proposta generata) e un riferimento univoco/identificativo della proposta (se disponibile nel sistema)",
+      "L'evento è presente nell'area di persistenza consultabile dal Motore"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il canale; si assume consultazione/esportazione via interfaccia/endpoint del Motore (canale indicato come 'web' in senso generico). Non sono definiti i campi obbligatori del log oltre a tipologia e utente (ove applicabile): il test verifica i minimi deducibili."
+  },
+  {
+    "test_id": "REQ-D-007.TC02",
+    "title": "Registrazione di una modifica di configurazione con evidenza dell'utente esecutore",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato con permessi di modifica configurazione (es. admin)",
+      "Configurazione del Motore accessibile in modifica (regole/parametri/matrici)",
+      "Area di persistenza log del Motore attiva"
+    ],
+    "test_data": [
+      "Utente autorizzato: admin01",
+      "Modifica configurazione: parametro 'SogliaRischio' da 0,70 a 0,75"
+    ],
+    "steps": [
+      "Accedere al Motore come utente autorizzato 'admin01'",
+      "Aprire la sezione di configurazione del Motore",
+      "Modificare il parametro 'SogliaRischio' impostandolo da 0,70 a 0,75",
+      "Salvare/applicare la modifica di configurazione",
+      "Recuperare dal Motore i log persistiti relativi all'intervallo temporale della modifica (filtro per timestamp)",
+      "Filtrare i log per tipologia evento relativa a modifica di configurazione"
+    ],
+    "expected_results": [
+      "È presente un evento di log persistente relativo alla modifica di configurazione effettuata",
+      "L'evento di log riporta l'identificativo dell'utente che ha eseguito la modifica (admin01)",
+      "L'evento di log riporta la tipologia di evento (modifica configurazione) e un'evidenza della modifica (almeno riferimento all'oggetto configurazione modificato, es. 'SogliaRischio')",
+      "L'evento è presente nell'area di persistenza consultabile dal Motore"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il dettaglio minimo dell''evidenza' della modifica (es. valori before/after); il test richiede almeno l'oggetto modificato e l'utente esecutore per rendere verificabile l'AC-2."
+  },
+  {
+    "test_id": "REQ-D-007.TC03",
+    "title": "Registrazione di accesso utente autorizzato con timestamp e identificativo utente",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato valido (es. user01)",
+      "Area di persistenza log del Motore attiva"
+    ],
+    "test_data": [
+      "Utente autorizzato: user01",
+      "Credenziali valide per user01"
+    ],
+    "steps": [
+      "Eseguire il login al Motore con l'utente 'user01'",
+      "Recuperare dal Motore i log persistiti relativi all'intervallo temporale del login (filtro per timestamp)",
+      "Filtrare i log per tipologia evento relativa ad accesso/autenticazione"
+    ],
+    "expected_results": [
+      "È presente un evento di log persistente relativo all'accesso effettuato",
+      "L'evento di log include il timestamp dell'accesso",
+      "L'evento di log include l'identificativo utente 'user01'",
+      "L'evento è presente nell'area di persistenza consultabile dal Motore"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Non è specificato se vadano loggati anche tentativi di accesso falliti; questo test copre esclusivamente accessi di utenti autorizzati come da requisito."
+  },
+  {
+    "test_id": "REQ-D-007.TC04",
+    "title": "Persistenza dei log dopo riavvio del Motore (verifica non volatilità)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato (es. admin01)",
+      "Area di persistenza log del Motore attiva",
+      "Disponibile una modalità controllata per riavviare il Motore (restart servizio/pod)"
+    ],
+    "test_data": [
+      "Utente autorizzato: admin01",
+      "Operazione: generazione proposta scenario 'STD-PROP-001'"
+    ],
+    "steps": [
+      "Accedere al Motore come utente autorizzato 'admin01'",
+      "Generare una proposta tramite il Motore usando lo scenario 'STD-PROP-001'",
+      "Annotare il timestamp dell'operazione o un identificativo della proposta generata",
+      "Riavviare il Motore",
+      "Dopo il riavvio, accedere nuovamente al Motore come 'admin01'",
+      "Recuperare dal Motore i log persistiti cercando l'evento relativo alla proposta generata prima del riavvio"
+    ],
+    "expected_results": [
+      "L'evento di log relativo alla proposta generata prima del riavvio è ancora presente e consultabile",
+      "L'evento risulta memorizzato nell'area di persistenza del Motore (non perso a seguito del riavvio)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito richiede conservazione 'persistente'; questo test valida la persistenza rispetto a un riavvio applicativo. Non sono specificati requisiti di retention temporale."
+  },
+  {
+    "test_id": "REQ-D-007.TC05",
+    "title": "Consultazione ed esportazione dei log dall'area di persistenza del Motore",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato con permessi di consultazione log (es. auditor01 o admin01)",
+      "Area di persistenza log del Motore attiva",
+      "Sono presenti log generati in precedenza (proposte, modifiche configurazione, accessi)"
+    ],
+    "test_data": [
+      "Utente autorizzato: auditor01",
+      "Intervallo temporale: ultime 24 ore",
+      "Filtro tipologia evento: proposta generata / modifica configurazione / accesso autorizzato",
+      "Formato esportazione: CSV (se supportato dal Motore) oppure JSON (se supportato dal Motore)"
+    ],
+    "steps": [
+      "Accedere al Motore come utente autorizzato 'auditor01'",
+      "Aprire la funzionalità del Motore per consultare i log persistiti",
+      "Impostare l'intervallo temporale su 'ultime 24 ore'",
+      "Applicare un filtro per tipologia evento 'accesso autorizzato'",
+      "Verificare la presenza di record e aprire il dettaglio di un record",
+      "Eseguire l'operazione di esportazione dei log per l'intervallo e filtro impostati"
+    ],
+    "expected_results": [
+      "Il Motore consente la consultazione dei log salvati nell'area di persistenza",
+      "I record mostrati sono coerenti con i filtri applicati (intervallo temporale e tipologia evento)",
+      "Nel dettaglio del record di accesso sono visibili almeno timestamp e identificativo utente",
+      "L'esportazione produce un file/risorsa scaricabile contenente i record filtrati",
+      "Il contenuto esportato include almeno tipologia evento e, per eventi applicabili, identificativo utente"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica formato, modalità e permessi di esportazione; il test verifica che esista una funzione consultabile/esportabile dal Motore e che l'export contenga i campi minimi deducibili."
+  },
+  {
+    "test_id": "REQ-D-007.TC06",
+    "title": "Accesso non autorizzato alla consultazione log (permessi insufficienti)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autenticabile senza permessi di consultazione log (es. userNoAudit01)",
+      "Area di persistenza log del Motore attiva"
+    ],
+    "test_data": [
+      "Utente: userNoAudit01",
+      "Credenziali valide per userNoAudit01"
+    ],
+    "steps": [
+      "Accedere al Motore con l'utente 'userNoAudit01'",
+      "Tentare di aprire la funzionalità del Motore per consultare/esportare i log persistiti",
+      "Se disponibile un'azione di esportazione, tentare l'esportazione"
+    ],
+    "expected_results": [
+      "L'utente senza permessi non può consultare i log (accesso negato/403 o messaggio equivalente)",
+      "L'utente senza permessi non può esportare i log (operazione negata/403 o messaggio equivalente)",
+      "Non vengono mostrati dati di log all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona 'utenti autorizzati' per gli accessi, ma non definisce ruoli/permessi per consultazione/esportazione log. Il test assume che la consultazione/esportazione sia soggetta ad autorizzazione (best practice audit) per prevenire esposizione dati."
+  },
+  {
+    "test_id": "REQ-D-007.TC07",
+    "title": "Gestione errore di persistenza log non disponibile durante generazione proposta",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato (es. admin01)",
+      "È possibile simulare indisponibilità dell'area di persistenza log (es. storage down, permessi negati, quota esaurita) in ambiente di test"
+    ],
+    "test_data": [
+      "Utente autorizzato: admin01",
+      "Scenario proposta: 'STD-PROP-001'",
+      "Fault injection: persistenza log non disponibile (es. disabilitazione storage o risposta errore dal componente di persistenza)"
+    ],
+    "steps": [
+      "Indurre l'indisponibilità dell'area di persistenza log",
+      "Accedere al Motore come 'admin01'",
+      "Eseguire un'operazione che genera una proposta tramite lo scenario 'STD-PROP-001'",
+      "Verificare l'esito dell'operazione lato Motore",
+      "Ripristinare la disponibilità dell'area di persistenza log",
+      "Recuperare dal Motore i log relativi all'intervallo temporale del test"
+    ],
+    "expected_results": [
+      "Il Motore segnala un errore di logging/persistenza in modo tracciabile (es. errore applicativo, evento di errore interno, risposta di errore) senza indicazioni ambigue",
+      "Non risulta presente un evento di log persistente per la proposta generata durante l'indisponibilità della persistenza",
+      "Dopo il ripristino, l'area di persistenza log torna consultabile dal Motore"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento del Motore quando la persistenza log è indisponibile (fail-open/fail-closed). Il test valida almeno che l'assenza di persistenza sia rilevabile e che non si producano falsi positivi di log persistito."
+  },
+  {
+    "test_id": "REQ-D-007.TC08",
+    "title": "Edge case: registrazione di più eventi consecutivi e presenza di tipologia evento per ciascun record",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore disponibile e raggiungibile",
+      "Esiste un utente autorizzato (es. admin01)",
+      "Area di persistenza log del Motore attiva"
+    ],
+    "test_data": [
+      "Utente autorizzato: admin01",
+      "Sequenza operazioni: login, modifica configurazione 'SogliaRischio' 0,75->0,70, generazione proposta scenario 'STD-PROP-001'"
+    ],
+    "steps": [
+      "Accedere al Motore come 'admin01'",
+      "Modificare il parametro 'SogliaRischio' impostandolo da 0,75 a 0,70",
+      "Salvare/applicare la modifica di configurazione",
+      "Generare una proposta tramite il Motore usando lo scenario 'STD-PROP-001'",
+      "Recuperare dal Motore i log persistiti relativi all'intervallo temporale che include tutte le operazioni",
+      "Verificare che siano presenti almeno tre eventi distinti corrispondenti alle operazioni eseguite",
+      "Per ciascun evento, verificare la presenza del campo tipologia evento e, dove applicabile, identificativo utente"
+    ],
+    "expected_results": [
+      "Sono presenti eventi distinti e persistenti per accesso, modifica configurazione e proposta generata",
+      "Ogni evento contiene la tipologia di evento valorizzata",
+      "Gli eventi di accesso e modifica configurazione riportano l'identificativo utente 'admin01'",
+      "Tutti gli eventi sono consultabili nell'area di persistenza del Motore"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito richiede 'tipologia di evento' e 'utente autorizzato (ove applicabile)'; questo test stressa la corretta valorizzazione dei campi minimi su una sequenza ravvicinata di eventi."
+  }
+]

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-UI-006</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-UI-006</h1>
+  <div class="subtitle">Visualizzazione stato proponibilità e azioni di sanatoria</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:38</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-UI-006</div>
+  <div class="req-field"><strong>Titolo:</strong> Visualizzazione stato proponibilità e azioni di sanatoria</div>
+  <div class="req-field"><strong>Categoria:</strong> INTERFACCIA</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Per ciascun cliente il sistema deve mostrare lo stato di proponibilità/sottoscrivibilità di un prodotto, incluse eventuali condizioni mancanti, e indicare le azioni necessarie per sanare tali condizioni (es. aggiornamento documenti). In canale fisico UP, l&#x27;operatore deve poter eseguire direttamente azioni di sanatoria dove previsto.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>L&#x27;interfaccia cliente e operatore mostra in modo chiaro le condizioni mancanti per la sottoscrivibilità.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Vengono indicate le azioni necessarie per sanare le condizioni e, se possibile, è previsto il workflow di sanatoria a sportello.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Le azioni intraprese per sanare una condizione sono tracciate nei log.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">73</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">33</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Il set direct mantiene la terminologia e i canali del requisito (web vs canale fisico UP) e copre tutti gli AC con meno assunzioni estranee; presenta alcune aggiunte (campi log, autorizzazioni, gestione errori) ma limitate. Il set indirect_persona introduce molte informazioni non tracciabili (App, front-end commerciale, gestione indisponibilità, requisiti di usabilità/performance, idempotenza, policy autorizzative/log) e inoltre rischia disallineamento sul vincolo di canale fisico UP, ottenendo un punteggio di coerenza nettamente inferiore (33 vs 73).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">73</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.TC01</td><td>Assunzione che su canale web non debbano essere mostrate azioni di sanatoria eseguibili a sportello (il requisito dice solo che in UP l&#x27;operatore può eseguire azioni, non che sul web debbano essere nascoste).</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC02</td><td>Specifica campi minimi del log (operatore, cliente, prodotto, tipo azione, timestamp, esito) non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC03</td><td>Introduce esempi di condizioni (&#x27;Valutazione rischio in corso&#x27;) e comportamento UI specifico (pulsante disabilitato con motivazione) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC04</td><td>Introduce gestione errori/validazioni e presuppone che i tentativi falliti debbano mostrare messaggio e restare non sanati; il requisito richiede solo tracciamento delle azioni intraprese nei log, non la UX/gestione errore.</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC05</td><td>Richiede comportamento UI in assenza di condizioni (nessun elenco o messaggio &#x27;nessuna condizione&#x27;) non esplicitato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC06</td><td>Introduce regole di autorizzazione/segregazione (cliente non può avviare workflow UP) non esplicitate nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;Per ciascun cliente il sistema deve mostrare lo stato di proponibilità/sottoscrivibilità di un prodotto&quot;</td><td>Nessun TC verifica esplicitamente che lo stato sia mostrato &#x27;per ciascun cliente&#x27; in senso generale (es. lista clienti/contesto multi-cliente); i TC lo verificano solo in scenari puntuali per singolo cliente/prodotto.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.TC02, REQ-UI-006.TC04</td><td>Entrambi coprono sanatoria a sportello in UP con consultazione log; differiscono per esito (successo vs fallimento) ma condividono gran parte dello scenario E2E.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">33</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.US01.TC01</td><td>Introduce canale &#x27;App&#x27; non citato nel requisito (che parla di interfaccia cliente/operatore e canale fisico UP).</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC01</td><td>Richiede corrispondenza &#x27;esattamente&#x27; tra condizioni/azioni mostrate e quelle restituite dal servizio a monte; il requisito non definisce vincoli di esattezza né dipendenza da un servizio specifico.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC02</td><td>Introduce canale &#x27;App&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC03</td><td>Gestione indisponibilità servizio (timeout/503, &#x27;non determinabile&#x27;) e messaggistica dedicata non menzionate nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC04</td><td>Scenario &#x27;elenco lungo &gt;=25&#x27; e requisiti di usabilità/performance (scroll/paginazione, assenza blocchi) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC05</td><td>Introduce concetto di &#x27;consultazione assistita&#x27; per cliente fisico in UP e una specifica modalità operativa non descritta dal requisito (che parla di operatore in canale fisico UP).</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC01</td><td>Introduce canale/strumento &#x27;front-end commerciale&#x27; non citato nel requisito (che parla di canale fisico UP).</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC02</td><td>Specifica struttura dettagliata dei log (cliente/prodotto/condizione/azione/esito/timestamp) e riferimenti a SIEM/audit DB non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC04</td><td>Introduce gestione errore downstream (HTTP 500) e comportamento UI associato non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC05</td><td>Introduce regola di idempotenza/gestione azione ripetuta e codifiche esito (&#x27;NO-OP/ALREADY_SANITIZED&#x27;) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC06</td><td>Introduce scenario permessi insufficienti e tracciamento &#x27;ACCESS DENIED&#x27; nei log &#x27;se previsto da policy&#x27;; autorizzazioni/policy non sono nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &quot;In canale fisico UP, l&#x27;operatore deve poter eseguire direttamente azioni di sanatoria dove previsto.&quot;</td><td>Il set parla spesso di &#x27;front-end commerciale&#x27; e non verifica esplicitamente il canale fisico UP come tale (terminologia e canale non allineati al requisito), rischiando di non coprire il vincolo di canale richiesto.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.US02.TC01, REQ-UI-006.US02.TC03</td><td>Entrambi verificano che per una condizione non sanabile sia mostrata l&#x27;azione ma non il workflow; TC03 è sostanzialmente un sotto-caso del TC01.</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC02, REQ-UI-006.US02.TC04</td><td>Entrambi verificano sanatoria via workflow e presenza log; differiscono per esito (successo vs errore) ma lo scenario base è molto simile.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-UI-006&quot;,
+  &quot;title&quot;: &quot;Visualizzazione stato proponibilità e azioni di sanatoria&quot;,
+  &quot;description&quot;: &quot;Per ciascun cliente il sistema deve mostrare lo stato di proponibilità/sottoscrivibilità di un prodotto, incluse eventuali condizioni mancanti, e indicare le azioni necessarie per sanare tali condizioni (es. aggiornamento documenti). In canale fisico UP, l&#x27;operatore deve poter eseguire direttamente azioni di sanatoria dove previsto.&quot;,
+  &quot;category&quot;: &quot;INTERFACCIA&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;L&#x27;interfaccia cliente e operatore mostra in modo chiaro le condizioni mancanti per la sottoscrivibilità.&quot;,
+    &quot;Vengono indicate le azioni necessarie per sanare le condizioni e, se possibile, è previsto il workflow di sanatoria a sportello.&quot;,
+    &quot;Le azioni intraprese per sanare una condizione sono tracciate nei log.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.TC01</td><td>Visualizzazione condizioni mancanti e azioni di sanatoria per prodotto non sottoscrivibile (canale web)</td><td>UI</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC02</td><td>Workflow di sanatoria eseguibile dall&#x27;operatore in canale fisico UP (sportello)</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC03</td><td>Assenza di workflow a sportello quando la condizione non è sanabile in UP (solo indicazione azioni)</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC04</td><td>Tracciamento log per tentativo di sanatoria fallito (errore validazione o servizio)</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC05</td><td>Visualizzazione prodotto sottoscrivibile senza condizioni mancanti (assenza elenco e azioni)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.TC06</td><td>Accesso a sanatoria a sportello consentito solo a operatore UP (cliente non può eseguire azioni UP)</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 11 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-006.US01.TC01</td><td>Cliente: prodotto non sottoscrivibile mostra condizioni mancanti e azioni di sanatoria (App/Web)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC02</td><td>Cliente: nessuna condizione mancante non mostra azioni di sanatoria (App/Web)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC03</td><td>Cliente: condizioni mancanti non determinabili (servizio non disponibile) mostra messaggio di indisponibilità (App/Web)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC04</td><td>Cliente: elenco condizioni molto lungo rimane consultabile e chiaro (App/Web)</td><td>UI</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US01.TC05</td><td>Cliente fisico in UP: visualizzazione assistita di condizioni mancanti e azioni (canale UP)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC01</td><td>Operatore: prodotto non sottoscrivibile mostra condizioni mancanti e azioni; workflow disponibile per condizioni sanabili</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC02</td><td>Operatore: esecuzione sanatoria a sportello con esito positivo genera log completo</td><td>Integration</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC03</td><td>Operatore: workflow non disponibile per una condizione mostra solo azione informativa e impedisce esecuzione</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC04</td><td>Operatore: errore durante sanatoria mostra esito negativo, non sana la condizione e traccia evento di errore nei log</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC05</td><td>Operatore: azione ripetuta sulla stessa condizione gestita (idempotenza o messaggio già sanata) e tracciata nei log</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-UI-006.US02.TC06</td><td>Operatore: permessi insufficienti impediscono sanatoria e tracciano la negazione nei log (se previsto)</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 11, 1, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

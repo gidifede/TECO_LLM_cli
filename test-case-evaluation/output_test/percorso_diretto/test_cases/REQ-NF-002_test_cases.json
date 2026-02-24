@@ -1,0 +1,191 @@
+[
+  {
+    "test_id": "REQ-NF-002.TC01",
+    "title": "Inconsistenza simulata tra canali: continuità della proposizione secondo regola locale e tracciamento nei log",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con almeno due canali disponibili (es. Web e App) collegati allo stesso dominio di proposizione offerte",
+      "Esiste un prodotto/offerta 'OFF-1001' proponibile secondo una regola configurata localmente su ciascun canale",
+      "Sono accessibili i log tecnici centralizzati (es. aggregatore log) e ricercabili per correlation-id/request-id",
+      "È disponibile un meccanismo controllato per simulare un'inconsistenza tra canali (es. differente versione regola/config su un canale oppure aggiornamento regola parzialmente applicato)"
+    ],
+    "test_data": [
+      "Canali: Web, App",
+      "Offerta: OFF-1001",
+      "Utente test: user_sync_01 (abilitato alla visualizzazione offerte su entrambi i canali)",
+      "Simulazione: Web con regola versione 'R-10', App con regola versione 'R-11' (inconsistenza temporanea)",
+      "Correlation-ID: generato e propagato nelle richieste (es. 'corr-REQ-NF-002-TC01')"
+    ],
+    "steps": [
+      "Impostare la simulazione di inconsistenza tra canali (Web su regola 'R-10', App su regola 'R-11')",
+      "Eseguire una richiesta di proposizione offerte sul canale Web per l'utente 'user_sync_01' includendo il Correlation-ID",
+      "Eseguire una richiesta di proposizione offerte sul canale App per l'utente 'user_sync_01' includendo lo stesso Correlation-ID",
+      "Recuperare dai log tecnici gli eventi correlati al Correlation-ID usato nel test"
+    ],
+    "expected_results": [
+      "La richiesta sul canale Web restituisce una risposta di proposizione offerte senza errori bloccanti (nessun 5xx/servizio indisponibile) e applica la regola locale 'R-10' (risultato coerente con la configurazione locale Web)",
+      "La richiesta sul canale App restituisce una risposta di proposizione offerte senza errori bloccanti (nessun 5xx/servizio indisponibile) e applica la regola locale 'R-11' (risultato coerente con la configurazione locale App)",
+      "Nei log tecnici è presente almeno un evento che segnala l'anomalia di sincronizzazione/inconsistenza tra canali associato al Correlation-ID",
+      "L'evento di log contiene un timestamp valorizzato e una descrizione dell'anomalia (es. mismatch versione regola/canale)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Gli attori e i canali (Web/App) sono inferiti dal requisito che parla di 'canali' ma non li esplicita. La modalità di simulazione dell'inconsistenza (versioni regola diverse per canale) dipende dagli strumenti disponibili in ambiente di test."
+  },
+  {
+    "test_id": "REQ-NF-002.TC02",
+    "title": "Logging tecnico per evento anomalo: presenza di timestamp e descrizione dettagliata",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Accesso ai log tecnici del servizio di proposizione (o al sistema di log centralizzato)",
+      "È disponibile un trigger controllato per generare un evento di sincronizzazione anomalo (es. fallimento aggiornamento regola su un canale o mismatch di versione)",
+      "Il formato dei log permette di verificare campi (timestamp, messaggio/descrizione, severità, eventuale correlation-id)"
+    ],
+    "test_data": [
+      "Trigger anomalia: fallimento controllato dell'aggiornamento regola su un canale (es. risposta 409/timeout dal componente di sincronizzazione)",
+      "Correlation-ID: 'corr-REQ-NF-002-TC02'"
+    ],
+    "steps": [
+      "Attivare il trigger per generare un evento di sincronizzazione anomalo utilizzando il Correlation-ID indicato",
+      "Eseguire un'operazione che inneschi l'aggiornamento/sincronizzazione regole tra canali (secondo le capacità del sistema in test)",
+      "Ricercare nei log tecnici gli eventi associati al Correlation-ID",
+      "Aprire il dettaglio dell'evento di log relativo all'anomalia di sincronizzazione"
+    ],
+    "expected_results": [
+      "È presente un evento di log tecnico per l'anomalia generata",
+      "L'evento di log include un timestamp valorizzato (data/ora) nel formato previsto dallo standard di logging del sistema",
+      "L'evento di log include una descrizione testuale dell'anomalia sufficientemente dettagliata da identificare la natura del problema (es. canale coinvolto e tipo di incoerenza/fallimento)",
+      "Se previsto dal sistema di logging, l'evento riporta anche il Correlation-ID utilizzato per la tracciabilità end-to-end"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica un formato log o campi obbligatori oltre a timestamp e descrizione; la verifica di severità, componenti e correlation-id è condotta solo se tali campi sono effettivamente presenti nei log del sistema."
+  },
+  {
+    "test_id": "REQ-NF-002.TC03",
+    "title": "Incidente di sincronizzazione simulato: nessun blocco delle funzionalità di proposizione (assenza di sospensione servizio)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test con canale disponibile (almeno uno) e servizio di proposizione attivo",
+      "Disponibile una modalità di simulazione incidente di sincronizzazione (es. disallineamento regole o errore nel processo di aggiornamento)",
+      "Esiste un set di offerte proponibili per l'utente test"
+    ],
+    "test_data": [
+      "Canale: Web (ripetibile anche su App se disponibile)",
+      "Utente test: user_sync_02",
+      "Offerte attese in condizioni normali: OFF-1001, OFF-1002",
+      "Simulazione: errore di sincronizzazione attivo per la durata del test (es. processo update regole in errore)"
+    ],
+    "steps": [
+      "Attivare la simulazione di incidente di sincronizzazione",
+      "Richiedere la proposizione offerte per l'utente 'user_sync_02' sul canale selezionato",
+      "Ripetere la richiesta di proposizione offerte per lo stesso utente dopo 30 secondi mantenendo attivo l'incidente simulato",
+      "Disattivare la simulazione di incidente di sincronizzazione"
+    ],
+    "expected_results": [
+      "Durante l'incidente simulato, la proposizione offerte risponde con esito applicativo valido (nessuna sospensione del servizio e nessun messaggio di blocco funzionale)",
+      "Le richieste ripetute continuano a ricevere una risposta (assenza di degradazione in 'servizio sospeso' o blocco della funzionalità di proposizione)",
+      "Eventuali anomalie riscontrate vengono tracciate nei log tecnici (verificabile tramite ricerca per finestra temporale del test)"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce codici di errore/HTTP specifici; la verifica di 'nessun blocco' è effettuata controllando che la funzionalità di proposizione resti operativa e non venga restituito uno stato di indisponibilità o un messaggio di sospensione."
+  },
+  {
+    "test_id": "REQ-NF-002.TC04",
+    "title": "Race condition nella modifica regola: continuità operativa e tracciamento dell'anomalia",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Disponibile un endpoint o UI amministrativa (o API interna) per modificare una regola di proposizione",
+      "Possibilità di eseguire richieste concorrenti di modifica regola (es. due sessioni/admin o due chiamate API in parallelo)",
+      "Accesso ai log tecnici per verificare la registrazione dell'anomalia"
+    ],
+    "test_data": [
+      "Regola target: RULE-2001",
+      "Modifica A: impostare parametro 'priorità' = 10",
+      "Modifica B: impostare parametro 'priorità' = 20",
+      "Esecuzione concorrente: due richieste inviate entro 100 ms",
+      "Correlation-ID A: 'corr-REQ-NF-002-TC04-A'",
+      "Correlation-ID B: 'corr-REQ-NF-002-TC04-B'"
+    ],
+    "steps": [
+      "Preparare due richieste di modifica della regola 'RULE-2001' con i valori A e B",
+      "Inviare le due richieste in parallelo (entro 100 ms) con i rispettivi Correlation-ID",
+      "Eseguire una richiesta di proposizione offerte che dipenda da 'RULE-2001'",
+      "Ricercare nei log tecnici eventi relativi a race condition/conflitto di aggiornamento associati ai Correlation-ID A e B"
+    ],
+    "expected_results": [
+      "Il sistema rimane operativo e la richiesta di proposizione offerte successiva risponde correttamente (nessun blocco del servizio)",
+      "Nei log tecnici è presente almeno un evento che segnala l'anomalia di aggiornamento concorrente (race condition/conflitto) con timestamp e descrizione",
+      "La regola applicata dalla proposizione è una delle due configurazioni risultanti (A oppure B) coerente con lo stato finale persistito localmente, senza mandare in errore la funzionalità di proposizione"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito cita esplicitamente la race condition come esempio; non specifica la strategia di risoluzione (last-write-wins, lock, versioning). Il test verifica solo: continuità operativa e tracciamento dell'anomalia, senza imporre una politica di conflitto."
+  },
+  {
+    "test_id": "REQ-NF-002.TC05",
+    "title": "Errore del componente di logging/monitoring: la proposizione non viene bloccata",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test in cui sia possibile simulare indisponibilità del sink di logging (es. endpoint log collector non raggiungibile) o errore di scrittura log",
+      "Servizio di proposizione attivo e raggiungibile",
+      "Disponibile un modo per generare un evento di sincronizzazione anomalo (come nei test precedenti)"
+    ],
+    "test_data": [
+      "Simulazione: log collector non raggiungibile (es. blocco rete verso porta del collector) per 2 minuti",
+      "Utente test: user_sync_03",
+      "Offerta: OFF-1001",
+      "Correlation-ID: 'corr-REQ-NF-002-TC05'"
+    ],
+    "steps": [
+      "Attivare la simulazione di indisponibilità del sistema di raccolta log",
+      "Generare un evento di sincronizzazione anomalo utilizzando il Correlation-ID indicato",
+      "Richiedere la proposizione offerte per 'user_sync_03' durante l'indisponibilità del logging",
+      "Disattivare la simulazione di indisponibilità del sistema di raccolta log",
+      "Verificare nei log disponibili localmente o nei meccanismi di fallback (se presenti) eventuali evidenze dell'evento o di errori di emissione log"
+    ],
+    "expected_results": [
+      "La proposizione offerte continua a funzionare e restituisce una risposta valida (nessun blocco della funzionalità) anche se il logging centralizzato è indisponibile",
+      "Non viene attivata alcuna sospensione del servizio o blocco della riproposizione prodotti a causa dell'errore di logging",
+      "Se il sistema prevede fallback (buffer locale/console log), è presente evidenza dell'errore di emissione log o dell'evento anomalo; in caso contrario, l'assenza del log centralizzato non deve comunque impattare la continuità operativa"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito richiede tracciamento nei log tecnici, ma non specifica il comportamento in caso di indisponibilità del sistema di logging. Questo test valida la parte 'nessun blocco del servizio' anche in presenza di failure del logging; la verifica del fallback è condizionata a implementazione esistente."
+  }
+]

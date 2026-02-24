@@ -1,0 +1,171 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-007",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 64,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-007.TC01",
+        "detail": "Introduzione del canale 'web' (campo channels) e assunzione di consultazione via interfaccia/endpoint: il requisito non specifica canali."
+      },
+      {
+        "test_id": "REQ-D-007.TC01",
+        "detail": "Richiesta di 'riferimento univoco/identificativo della proposta' nei log: il requisito non lo richiede esplicitamente (richiede tipologia evento e utente ove applicabile)."
+      },
+      {
+        "test_id": "REQ-D-007.TC02",
+        "detail": "Dettaglio specifico di configurazione (parametro 'SogliaRischio' e valori before/after impliciti): esempi non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.TC04",
+        "detail": "Scenario di 'riavvio del Motore' come prova di persistenza: non esplicitato dal requisito (che richiede persistenza, ma non definisce prove/condizioni come restart)."
+      },
+      {
+        "test_id": "REQ-D-007.TC05",
+        "detail": "Assunzione di formati di export (CSV/JSON) e presenza di funzionalità UI specifica: il requisito dice solo consultabile/esportabile, non formati né UI."
+      },
+      {
+        "test_id": "REQ-D-007.TC06",
+        "detail": "Test di autorizzazione/permessi per consultazione/esportazione log (403/Accesso negato): il requisito non richiede controlli di accesso ai log, solo che i log siano consultabili/esportabili dal Motore."
+      },
+      {
+        "test_id": "REQ-D-007.TC07",
+        "detail": "Comportamento atteso in caso di persistenza non disponibile (segnalazione errore, assenza log, ripristino): il requisito non specifica gestione errori/fallback."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'conservare in modo completo e persistente i log relativi a ... tutte le proposte ... tutte le variazioni ... e gli accessi ...'",
+        "detail": "Nessun TC verifica esplicitamente la nozione di 'completezza' (es. che non vengano persi eventi in condizioni normali o che ogni evento generato venga sempre registrato), oltre a singoli esempi puntuali."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-007.TC01",
+          "REQ-D-007.TC04"
+        ],
+        "detail": "Entrambi verificano logging di proposta + consultabilità in persistenza; TC04 aggiunge solo la variante di riavvio, risultando parzialmente sovrapposto allo scenario base."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 16,
+    "coherence_score": 15,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-007.US01.TC01",
+        "detail": "Introduzione di campi/dati dominio (customer_id, prodotto, importo, valuta) e di un proposal_id atteso: non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC01",
+        "detail": "Assunzione di codifiche tipologia evento ('PROPOSTA_GENERATA') e tolleranza temporale timestamp: il requisito non definisce naming né regole di tolleranza."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC02",
+        "detail": "Assunzione di schema log con config_key, campo e valori precedente/nuovo e tipologia 'CONFIG_MODIFICATA': non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC03",
+        "detail": "Assunzione tipologia evento 'ACCESSO_UTENTE' e che l'accesso sia un 'servizio' specifico: non nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC04",
+        "detail": "Confronto di coerenza tra consultazione ed export (conteggio/sottoinsieme) e formato JSON: il requisito non richiede coerenza quantitativa né formati."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC05",
+        "detail": "Richiesta 'senza crash del Motore' e comportamento deterministico dell'operazione principale durante fault di logging: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC06",
+        "detail": "Scenario di proposta generata automaticamente senza contesto utente e regole su user_id null/omesso: il requisito dice solo 'utente ove applicabile' ma non richiede questo caso né la rappresentazione."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC07",
+        "detail": "Scenario user_id non risolvibile e richiesta di flag/nota di anomalia: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US01.TC08",
+        "detail": "Gestione duplicati/retry, idempotency key/correlation_id e aspettative su deduplica: non nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC01",
+        "detail": "Introduzione di un canale/attore 'Dashboard Marketing' e flusso UI specifico: non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC02",
+        "detail": "Export da dashboard con filtro 'ultimi 7 giorni' e formato CSV: dettagli non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC03",
+        "detail": "Verifica autorizzazioni per negare modifica configurazione: il requisito richiede logging delle modifiche effettuate, non la gestione autorizzativa delle modifiche."
+      },
+      {
+        "test_id": "REQ-D-007.US02.TC04",
+        "detail": "Scenario rollback/annullamento e tracciamento sequenza: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC01",
+        "detail": "Introduzione di 'Dashboard Compliance' come canale e filtri UI: non nel requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC05",
+        "detail": "Negazione consultazione/esportazione log per utente senza permessi: controlli autorizzativi sui log non richiesti dal requisito."
+      },
+      {
+        "test_id": "REQ-D-007.US03.TC06",
+        "detail": "Richiesta di meccanismi per identificare gap/incompletezza (metriche/health/report integrità): non previsti dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-3: 'Ogni accesso di utenti autorizzati è registrato nei log con timestamp e identificativo utente.'",
+        "detail": "Alcuni TC introducono casi di accesso con user_id mancante/non risolvibile (US01.TC07) che, pur tracciati ad AC-3, contraddicono/derivano oltre l'AC (che richiede user_id presente). Non manca copertura, ma manca aderenza al vincolo 'identificativo utente' per l'accesso autorizzato."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-007.US01.TC04",
+          "REQ-D-007.US03.TC04"
+        ],
+        "detail": "Entrambi testano consultazione+export log tramite Motore (con filtri temporali) con expected result molto simili."
+      },
+      {
+        "test_ids": [
+          "REQ-D-007.US01.TC02",
+          "REQ-D-007.US02.TC01",
+          "REQ-D-007.US03.TC02"
+        ],
+        "detail": "Tre TC ripetono lo scenario 'modifica configurazione -> esiste log persistito con user_id' variando solo il canale (API/dashboard) non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-D-007.US01.TC03",
+          "REQ-D-007.US03.TC03"
+        ],
+        "detail": "Entrambi verificano log di accesso con timestamp e user_id, uno via Motore e uno via dashboard."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set 'direct' mantiene copertura completa degli AC con un numero contenuto di assunzioni; le principali deviazioni sono dettagli di canale/formato e alcuni negativi non richiesti. Il set 'indirect_persona' introduce molte informazioni non tracciabili (dashboard, schemi log specifici, deduplica/retry, rollback, permessi, meccanismi di gap) e presenta anche una parziale non-aderenza all'AC-3 tramite scenari con user_id assente; per questo il punteggio di coerenza risulta nettamente inferiore."
+  }
+}

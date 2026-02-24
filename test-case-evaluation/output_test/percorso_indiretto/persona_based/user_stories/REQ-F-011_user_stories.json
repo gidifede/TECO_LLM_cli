@@ -1,0 +1,92 @@
+[
+  {
+    "story_id": "REQ-F-011.US01",
+    "title": "Completare l’acquisto di un bundle tramite funnel unificato",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "utilizzare un unico funnel di vendita per identificazione, sottoscrizione e pagamento della combinazione proposta",
+    "benefit": "ridurre la duplicazione di attività e migliorare l’esperienza di acquisto",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio completare l’acquisto di un bundle tramite un funnel unificato che includa identificazione, sottoscrizione e pagamento\nIn modo che io debba svolgere meno attività ripetitive e l’esperienza di acquisto sia più semplice",
+    "channels": [
+      "digital",
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO seleziono un bundle abilitato ALLORA il sistema mi instrada su un funnel unico che copre identificazione cliente, sottoscrizione e pagamento.",
+      "QUANDO utilizzo il canale digitale (App/Web) per un bundle abilitato ALLORA posso eseguire l’intero funnel unificato end-to-end.",
+      "QUANDO utilizzo il canale fisico (sportello) per un bundle abilitato e il bundle è previsto a sportello ALLORA posso eseguire il funnel unificato end-to-end con l’assistenza dell’operatore."
+    ],
+    "business_rules": [
+      "Il funnel unificato è disponibile solo per i bundle dichiarati/gestiti come “abilitati”.",
+      "La disponibilità del funnel unificato sul canale sportello dipende dalla previsione del bundle per tale canale."
+    ],
+    "edge_cases": [
+      "Bundle non abilitato: il cliente non deve essere instradato al funnel unificato.",
+      "Canale sportello non previsto per quel bundle: il funnel unificato non deve risultare disponibile in UP.",
+      "Interruzione del percorso tra fasi (identificazione/sottoscrizione/pagamento): il sistema deve gestire l’esito senza duplicare attività già completate (dettagli non specificati)."
+    ],
+    "assumptions": [
+      "“Bundle abilitati” e “se previsto da sportello” sono determinati da una configurazione disponibile al motore/canali, non dettagliata nel requisito.",
+      "I dettagli di UI/UX e i passi specifici di identificazione, sottoscrizione e pagamento non sono specificati e saranno definiti nei requisiti di canale."
+    ],
+    "notes": "AC condivisi con REQ-F-011.US02 (Operatore in ufficio postale (sportello/sala)) relativamente all’esistenza del funnel unico e alla testabilità a sportello; AC di logging/tracciamento coperto principalmente dalla US del Motore di Offerte (REQ-F-011.US03)."
+  },
+  {
+    "story_id": "REQ-F-011.US02",
+    "title": "Gestire a sportello la vendita di un bundle con funnel unificato",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "utilizzare un unico percorso operativo per identificazione cliente, sottoscrizione e pagamento per le combinazioni proposte",
+    "benefit": "ridurre duplicazioni operative e rendere più fluida la vendita assistita",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio gestire la vendita di un bundle tramite un funnel unificato che includa identificazione cliente, sottoscrizione e pagamento\nIn modo che io riduca attività ripetitive e possa accompagnare il cliente in un percorso più efficiente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO avvio la vendita assistita di un bundle abilitato ALLORA il sistema rende disponibile un funnel unico che copre identificazione cliente, sottoscrizione e pagamento.",
+      "QUANDO il bundle è previsto per il canale sportello ALLORA il funnel unificato è eseguibile end-to-end dal front-end commerciale."
+    ],
+    "business_rules": [
+      "Il funnel unificato a sportello è disponibile solo per bundle abilitati e previsti sul canale sportello."
+    ],
+    "edge_cases": [
+      "Bundle non abilitato: l’operatore non deve poter avviare il funnel unificato.",
+      "Bundle non previsto a sportello: l’operatore non deve vedere/eseguire il funnel unificato sul canale fisico.",
+      "Errore in una fase del funnel (es. pagamento non completato): il sistema deve gestire lo stato del funnel in modo coerente (dettagli di recovery non specificati)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica se il funnel unificato sostituisca integralmente i flussi esistenti o conviva con alternative: si assume convivenza per i bundle non abilitati/non previsti."
+    ],
+    "notes": "AC condivisi con REQ-F-011.US01 (Cliente (fisico o digitale)) sul concetto di funnel unico e testabilità a sportello; la tracciatura/log delle transizioni è coperta dalla US del Motore di Offerte (REQ-F-011.US03)."
+  },
+  {
+    "story_id": "REQ-F-011.US03",
+    "title": "Abilitare funnel unificato per bundle e tracciare/loggare le transizioni di stato",
+    "persona": "Motore di Offerte",
+    "goal": "abilitare, dove possibile, un funnel unico per bundle abilitati e tracciare/loggare le transizioni di stato del funnel",
+    "benefit": "ridurre duplicazioni nel percorso e garantire tracciabilità/auditabilità del processo",
+    "user_story": "Come Motore di Offerte\nVoglio abilitare un funnel unificato per i bundle abilitati e tracciare/loggare le transizioni di stato del funnel\nIn modo che i canali possano offrire un percorso di vendita più efficiente e il processo sia tracciabile",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO viene richiesto un percorso di vendita per un bundle abilitato ALLORA il motore abilita un funnel unico che copre identificazione cliente, sottoscrizione e pagamento.",
+      "QUANDO il funnel unificato viene eseguito da canali digitali ALLORA il comportamento è testabile end-to-end sui canali digitali (in integrazione).",
+      "QUANDO il funnel unificato viene eseguito da sportello e il bundle è previsto per tale canale ALLORA il comportamento è testabile end-to-end anche da sportello (in integrazione).",
+      "QUANDO il funnel passa da una fase/stato alla successiva ALLORA la transizione di stato viene tracciata e loggata."
+    ],
+    "business_rules": [
+      "Il funnel unificato è applicabile solo “dove possibile”: la regola di eleggibilità (cosa rende possibile l’unificazione) non è definita nel requisito e deve essere configurabile o determinabile dal motore.",
+      "Devono essere loggate le transizioni di stato del funnel (almeno: stato precedente, stato successivo, timestamp; dettagli non specificati)."
+    ],
+    "edge_cases": [
+      "Impossibilità di unificazione per un bundle (non “dove possibile”): il motore non deve abilitare il funnel unico per quel bundle.",
+      "Mancata disponibilità del servizio di logging: il motore deve gestire l’errore senza compromettere la coerenza degli stati (politica non specificata).",
+      "Esecuzioni concorrenti o ripetute della stessa transizione: il motore deve evitare stati incoerenti (meccanismo non specificato)."
+    ],
+    "assumptions": [
+      "I canali (App/Web e front-end sportello) sono responsabili della UI e dell’orchestrazione di dettaglio del funnel; il requisito non specifica i confini applicativi, si assume che il motore esponga/abiliti la logica necessaria e registri gli stati.",
+      "Non sono definiti gli stati del funnel e il modello di stato: si assume esista una macchina a stati o un tracciamento equivalente definibile in analisi tecnica."
+    ],
+    "notes": "Requisito potenzialmente ampio: “dove possibile” richiede criteri di eleggibilità e definizione degli stati del funnel per rendere pienamente testabile l’unificazione. AC di testabilità su canali è condiviso concettualmente con REQ-F-011.US01 e REQ-F-011.US02 (ridondanza intenzionale per tracciabilità per persona)."
+  }
+]

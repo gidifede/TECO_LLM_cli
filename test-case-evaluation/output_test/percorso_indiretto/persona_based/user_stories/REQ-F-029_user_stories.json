@@ -1,0 +1,60 @@
+[
+  {
+    "story_id": "REQ-F-029.US01",
+    "title": "Generare proposte commerciali senza finalizzare vendite né avviare provisioning",
+    "persona": "Motore di Offerte",
+    "goal": "generare e fornire proposte commerciali (alternative, combinazioni e sconti) limitandosi a prezzi e condizioni, senza avviare finalizzazione vendita o provisioning",
+    "benefit": "garantire la separazione delle responsabilità con i sistemi esterni, riducendo rischi operativi e ambiguità di ownership sui flussi di vendita/attivazione",
+    "user_story": "Come Motore di Offerte\nVoglio generare e fornire proposte commerciali (alternative, combinazioni e sconti) senza finalizzare vendite né avviare provisioning\nIn modo che la vendita e l’attivazione restino responsabilità esclusiva dei sistemi esterni e il perimetro del Motore rimanga chiaro e controllabile",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore elabora una richiesta di proposta ALLORA restituisce solo proposte commerciali (liste di alternative/combinazioni/sconti) con prezzi e condizioni, SENZA eseguire alcuna operazione di provisioning o attivazione prodotti/servizi",
+      "QUANDO viene eseguita una proposta end-to-end (dalla generazione alla presentazione sui canali) ALLORA nessun flusso di finalizzazione ordine/vendita risulta implementato o invocato dal Motore e tali flussi risultano gestiti esclusivamente da sistemi esterni",
+      "QUANDO si ispezionano codice, configurazioni e documentazione di integrazione del Motore ALLORA è esplicitata e verificabile l’assenza di chiamate/endpoint/azioni di provisioning o attivazione originate dal Motore"
+    ],
+    "business_rules": [
+      "Il Motore è responsabile esclusivamente di generazione e proposizione di offerte/sconti (prezzi e condizioni incluse), non di finalizzazione vendita",
+      "Il Motore non deve avviare né orchestrare provisioning/attivazione tecnica di prodotti o servizi",
+      "La finalizzazione della vendita e le chiamate di attivazione/provisioning sono responsabilità esclusiva di sistemi esterni di vendita/provisioning"
+    ],
+    "edge_cases": [
+      "Richiesta di proposta che includa parametri/flag riconducibili a finalizzazione ordine o provisioning: il Motore non deve eseguire azioni operative e deve limitarsi a ignorare tali parametri o rifiutare la richiesta secondo le regole di integrazione definite",
+      "Errore o indisponibilità dei sistemi esterni di vendita/provisioning durante il percorso complessivo: il Motore non deve tentare fallback di attivazione/provisioning e deve rimanere nel perimetro di proposizione",
+      "Evoluzioni future di integrazione che introducano nuovi endpoint: devono essere prevenute integrazioni che permettano al Motore di invocare provisioning/attivazione (controllo in review tecnica/documentazione)"
+    ],
+    "assumptions": [
+      "La persona 'Motore di Offerte' è trattata come attore di sistema; non sono stati specificati canali di interazione diretti nel contesto personas, quindi 'channels' è lasciato vuoto",
+      "La 'verifica su codice e documentazione' è interpretata come criterio di accettazione verificabile tramite evidenze (es. review architetturale, elenco dipendenze/chiamate, API catalog, sequence diagram) definite dal team"
+    ],
+    "notes": "Requisito di boundary/ownership: non coinvolge direttamente altre personas operative (Cliente, Operatore, Marketing, Compliance, Loyalty) se non indirettamente come consumatori delle proposte. Gli AC sono in parte di natura ispettiva (codice/documentazione): sono stati resi testabili richiedendo evidenze verificabili in review tecnica e documentazione di integrazione."
+  },
+  {
+    "story_id": "REQ-F-029.US02",
+    "title": "Gestire finalizzazione vendita e provisioning fuori dal Motore di Offerte",
+    "persona": "Verticali di vendita",
+    "goal": "finalizzare la vendita e gestire le chiamate di attivazione/provisioning senza dipendere da azioni operative originate dal Motore",
+    "benefit": "mantenere l’ownership end-to-end dei flussi di ordine e attivazione sui sistemi deputati, evitando duplicazioni e responsabilità ambigue",
+    "user_story": "Come Verticali di vendita\nVoglio finalizzare la vendita e gestire l’attivazione/provisioning tramite i sistemi esterni dedicati senza che il Motore avvii azioni operative\nIn modo che i flussi di completamento ordine e provisioning restino sotto il controllo dei sistemi di vendita/provisioning",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un cliente/operatore seleziona una proposta generata dal Motore ALLORA la finalizzazione dell’ordine e le eventuali chiamate di provisioning/attivazione sono invocate e gestite dai Verticali di vendita (e/o sistemi di provisioning) e non dal Motore",
+      "QUANDO si analizzano i flussi di completamento ordine/provisioning ALLORA non risultano dipendenze da processi interni al Motore per finalizzare la vendita",
+      "QUANDO si verifica la documentazione di integrazione end-to-end ALLORA è esplicitato che il Motore fornisce proposte/prezzi/condizioni e che la finalizzazione e l’attivazione sono responsabilità dei sistemi esterni"
+    ],
+    "business_rules": [
+      "I Verticali di vendita sono responsabili dei flussi di completamento ordine e delle integrazioni operative necessarie all’attivazione/provisioning",
+      "Il Motore non deve essere utilizzato come orchestratore di provisioning/attivazione"
+    ],
+    "edge_cases": [
+      "Proposta scaduta o non più valida al momento della finalizzazione: i Verticali gestiscono il caso secondo le proprie regole, senza richiedere al Motore di eseguire azioni operative",
+      "Incoerenze tra condizioni/prezzi proposti e condizioni applicabili in finalizzazione: il disallineamento non deve essere risolto tramite provisioning dal Motore; deve essere gestito nel perimetro dei sistemi di vendita",
+      "Indisponibilità del Motore al momento della finalizzazione: i Verticali devono poter proseguire/gestire l’ordine senza richiedere al Motore azioni di provisioning"
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia i confini tra 'Verticali di vendita' e 'Sistemi di provisioning' (non presenti come persona nel contesto): si assume che i Verticali orchestrino o invochino i sistemi di provisioning esterni secondo l’architettura esistente"
+    ],
+    "notes": "AC condivisi con REQ-F-029.US01 (separazione responsabilità: nessuna finalizzazione/provisioning nel Motore) replicati dal punto di vista dei Verticali di vendita. Dipendenza esterna: definizione puntuale dei sistemi di provisioning non presente tra le personas fornite."
+  }
+]

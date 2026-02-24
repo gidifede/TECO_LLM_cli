@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-UI-011.US01",
+    "title": "Applicare filtri interattivi su cluster, periodo e canale nella dashboard",
+    "persona": "Team Marketing",
+    "goal": "utilizzare una dashboard interattiva con filtri per cluster di clientela, intervalli temporali e canali di vendita, combinandoli tra loro",
+    "benefit": "esplorare rapidamente i dati e prendere decisioni di marketing basate su informazioni aggiornate e pertinenti",
+    "user_story": "Come Team Marketing\nVoglio utilizzare una dashboard interattiva con filtri su cluster, periodo e canale, combinandoli tra loro\nIn modo che possa esplorare rapidamente i dati e prendere decisioni di marketing su informazioni pertinenti",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard ALLORA visualizzo controlli di filtro per cluster di clientela, periodo (intervallo temporale) e canale di vendita.",
+      "QUANDO seleziono o modifico un filtro (cluster e/o periodo e/o canale) ALLORA le visualizzazioni della dashboard si aggiornano in modo interattivo senza richiedere consultazione di tabelle statiche come unico output.",
+      "QUANDO applico una combinazione di filtri ALLORA i dati mostrati nelle visualizzazioni corrispondono ai soli record coerenti con tutti i filtri selezionati.",
+      "QUANDO cambio uno o più filtri ALLORA le visualizzazioni risultanti riflettono correttamente i nuovi filtri selezionati."
+    ],
+    "business_rules": [
+      "I filtri disponibili includono almeno: cluster di clientela, periodo (intervallo temporale) e canale di vendita, come da requisito.",
+      "È consentita la combinazione dei filtri (applicazione congiunta)."
+    ],
+    "edge_cases": [
+      "QUANDO applico filtri che producono zero risultati ALLORA la dashboard mostra uno stato 'nessun dato' coerente e non presenta dati non filtrati.",
+      "QUANDO seleziono un intervallo temporale non valido (es. fine < inizio), se supportato dalla UI ALLORA la UI impedisce la selezione o mostra un errore di validazione e non applica il filtro.",
+      "QUANDO il caricamento/aggiornamento interattivo fallisce per errore tecnico ALLORA la UI mostra un messaggio di errore e mantiene coerentemente l’ultimo stato valido visualizzato (o uno stato vuoto), senza mostrare dati incongruenti con i filtri selezionati."
+    ],
+    "assumptions": [
+      "Il requisito non specifica quali visualizzazioni (grafici/KPI/tabelle) compongano la dashboard: si assume che il comportamento di filtro/aggiornamento si applichi a tutte le visualizzazioni presenti.",
+      "Il requisito non definisce i valori ammessi per cluster e canale: si assume che i valori siano popolati da una sorgente dati/configurazione esistente."
+    ],
+    "notes": "Il requisito è focalizzato sull’interattività e correttezza del filtering, ma non dettaglia tipologie di grafici, prestazioni attese (tempi di refresh) né la semantica esatta di 'cluster' e 'canale'; tali aspetti vanno chiariti in refinement per completare i test non funzionali e i dataset di verifica."
+  },
+  {
+    "story_id": "REQ-UI-011.US02",
+    "title": "Consultare la dashboard con filtri interattivi per audit e verifica",
+    "persona": "Team Compliance",
+    "goal": "consultare una dashboard interattiva applicando filtri per cluster, periodo e canale per analizzare i dati rilevanti",
+    "benefit": "verificare rapidamente informazioni pertinenti alle attività di controllo, riducendo ambiguità e tempi di analisi",
+    "user_story": "Come Team Compliance\nVoglio consultare una dashboard interattiva con filtri su cluster, periodo e canale\nIn modo che possa verificare rapidamente i dati rilevanti per le attività di controllo",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard ALLORA visualizzo controlli di filtro per cluster di clientela, periodo (intervallo temporale) e canale di vendita.",
+      "QUANDO seleziono o modifico un filtro (cluster e/o periodo e/o canale) ALLORA le visualizzazioni della dashboard si aggiornano in modo interattivo.",
+      "QUANDO applico una combinazione di filtri ALLORA i dati mostrati nelle visualizzazioni corrispondono ai soli record coerenti con tutti i filtri selezionati.",
+      "QUANDO cambio uno o più filtri ALLORA le visualizzazioni risultanti riflettono correttamente i nuovi filtri selezionati."
+    ],
+    "business_rules": [
+      "I filtri disponibili includono almeno: cluster di clientela, periodo (intervallo temporale) e canale di vendita, come da requisito.",
+      "È consentita la combinazione dei filtri (applicazione congiunta)."
+    ],
+    "edge_cases": [
+      "QUANDO applico filtri che producono zero risultati ALLORA la dashboard mostra uno stato 'nessun dato' coerente e non presenta dati non filtrati.",
+      "QUANDO seleziono un intervallo temporale non valido (es. fine < inizio), se supportato dalla UI ALLORA la UI impedisce la selezione o mostra un errore di validazione e non applica il filtro.",
+      "QUANDO il caricamento/aggiornamento interattivo fallisce per errore tecnico ALLORA la UI mostra un messaggio di errore e non visualizza dati incoerenti con i filtri selezionati."
+    ],
+    "assumptions": [
+      "Il requisito non specifica permessi/limitazioni per Compliance sulla dashboard: si assume che Compliance abbia accesso almeno in lettura alle medesime funzionalità di filtro richieste.",
+      "Il requisito non specifica quali visualizzazioni siano presenti: si assume che tutte le visualizzazioni disponibili rispettino i filtri."
+    ],
+    "notes": "Gli acceptance criteria di questa US sono condivisi con REQ-UI-011.US01 (persona: Team Marketing) perché il requisito descrive capacità UI trasversali di filtering/aggiornamento; eventuali differenze di visibilità dati per ruolo sono demandate a requisiti specifici sui permessi."
+  }
+]

@@ -1,0 +1,160 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-009",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 58,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-009.TC01",
+        "detail": "Introduce il canale 'api' e l'invocazione via API, non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.TC01",
+        "detail": "Assume metadati di risposta (score/ordinamento) come evidenza, non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-009.TC02",
+        "detail": "Assume un identificativo di regola marketing (es. 'MK-OVR-001') e la sua tracciabilità via metadati/log; il requisito richiede tracciabilità ma non definisce identificativi o come esporli."
+      },
+      {
+        "test_id": "REQ-F-009.TC03",
+        "detail": "Assume meccanismo di correlazione (correlationId o chiave cliente+timestamp) e campi specifici del log (modelId/ruleId), non definiti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.TC04",
+        "detail": "Specifica comportamento in assenza di cluster/propensity (errore vs 'nessuna proposta') e richiede motivazione/codice errore/reason; il requisito non definisce la gestione dell'assenza dati."
+      },
+      {
+        "test_id": "REQ-F-009.TC05",
+        "detail": "Introduce una policy di comportamento in caso di indisponibilità del log (fail-closed vs fail-open con warning/flag) e scenari tecnici (timeout/503), non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.TC06",
+        "detail": "Introduce concetti di 'soglia operativa' di propensity e gestione di lista vuota vs proposta del 'miglior non posseduto'; il requisito non parla di soglie né di fallback quando restano solo prodotti a bassa propensity."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"Le proposte devono escludere prodotti già posseduti, salvo eccezioni configurate dal marketing come specificato in REQ-F-004)\"",
+        "detail": "I test coprono l'eccezione marketing (TC02), ma non validano esplicitamente che la configurazione dell'eccezione sia 'configurata dal marketing' (si assume esista). In assenza di REQ-F-004 non è verificabile il collegamento alla configurazione marketing oltre alla presenza della regola."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-009.TC04",
+          "REQ-F-009.TC06"
+        ],
+        "detail": "Entrambi includono esiti alternativi (lista vuota vs proposta alternativa) e richiesta di tracciamento nel log; scenari diversi ma parzialmente sovrapposti sulla verifica di 'nessuna proposta/alternativa + log'."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 15,
+    "coherence_score": 17,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-009.US01.TC01",
+        "detail": "Richiede lista proposte 'non vuota' e verifica di ranking/ordine; il requisito non impone non-vuoto né specifica ordinamento."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC01",
+        "detail": "Introduce 'mappatura valida tra cluster/modello e catalogo prodotti proponibili' come precondizione, non esplicitata nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC02",
+        "detail": "Introduce 'regola di fallback configurata' e possibilità di 'logica alternativa' quando mancano cluster/propensity; il requisito non prevede fallback."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC03",
+        "detail": "Richiede che il log contenga anche il cluster e dettagli del modello/parametro di propensity; AC-3 richiede solo tracciabilità della regola/modello che ha generato la proposta, non l'obbligo di loggare il cluster."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC04",
+        "detail": "Scenario 'cluster non mappato' e tracciamento anomalia specifica; non derivabile dal requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC05",
+        "detail": "Definisce validazioni di formato/range della propensity (null, >1, stringa) e gestione errore; il requisito non tratta la validità del dato."
+      },
+      {
+        "test_id": "REQ-F-009.US01.TC06",
+        "detail": "Introduce 'policy di resilienza' (retry, circuit breaker, canale alternativo, log applicativo) in caso di log indisponibile; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC01",
+        "detail": "Introduce una 'dashboard di configurazione Marketing', utente marketing e operazioni UI (crea/attiva/salva/pubblica); il requisito cita solo eccezioni configurate dal marketing (REQ-F-004) ma non canali/strumenti/utenti."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC01",
+        "detail": "Aggiunge expected result: 'nessun impatto non previsto su prodotti non coinvolti dalla regola'; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC02",
+        "detail": "Indica canale 'dashboard' pur essendo scenario di generazione NBO; il requisito non definisce canali."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC04",
+        "detail": "Richiede tracciabilità della 'non-applicazione' di una regola marketing; AC-3 richiede tracciabilità della regola/modello che genera la proposta, non delle regole valutate e scartate."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC05",
+        "detail": "Introduce conflitto tra regole marketing e logica di precedenza/priorità; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US02.TC06",
+        "detail": "Introduce concetto di 'fonte di verità' del possesso e gestione discrepanze tra fonti; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC01",
+        "detail": "Introduce ruolo 'Compliance', permessi e dashboard di consultazione log; il requisito richiede tracciabilità nel log, non la consultazione via UI né ruoli."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC04",
+        "detail": "Richiede che il sistema evidenzi record 'non auditabile' in dashboard; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-009.US03.TC05",
+        "detail": "Introduce requisiti di autorizzazione/access control e sicurezza messaggi per accesso ai log; non presenti nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-009.US01.TC02",
+          "REQ-F-009.US01.TC04",
+          "REQ-F-009.US01.TC05"
+        ],
+        "detail": "Tre casi diversi (dati mancanti/cluster non mappato/propensity non valida) convergono sullo stesso pattern: 'non applica NBO cluster/propensity' + 'fallback' + 'log anomalia'."
+      },
+      {
+        "test_ids": [
+          "REQ-F-009.US03.TC01",
+          "REQ-F-009.US03.TC02",
+          "REQ-F-009.US03.TC03"
+        ],
+        "detail": "Tutti verificano in dashboard la presenza di riferimenti nel log (rule/model/cluster/marketing) con variazioni minime."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1/2/3). Tuttavia il set indirect_persona introduce molte più informazioni non tracciabili al requisito (ruoli Compliance/Marketing, dashboard, autorizzazioni, fallback, resilienza, conflitti regole, fonte di verità), accumulando numerose 'added_info' e alcune ridondanze, con conseguente punteggio molto più basso (17). Il set direct resta più vicino al requisito: le aggiunte sono soprattutto assunzioni tecniche minime (API, correlationId, campi log) e alcuni negativi non richiesti, ma complessivamente con meno deviazioni (score 58)."
+  }
+}

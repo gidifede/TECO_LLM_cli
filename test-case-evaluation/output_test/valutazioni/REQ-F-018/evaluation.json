@@ -1,0 +1,113 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-018",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 61,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-018.TC03",
+        "detail": "Assume un requisito negativo non esplicitato: che la proposta non debba mai comparire per la prima volta in checkout (il requisito dice solo che il trigger deve avvenire prima del checkout)."
+      },
+      {
+        "test_id": "REQ-F-018.TC05",
+        "detail": "Introduce una regola anti-duplicati su reload pagina (refresh) non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.TC06",
+        "detail": "Introduce gestione errori/timeout del motore bundle e requisito 'non bloccare il flusso' (inclusi HTTP 503, soglia timeout, messaggi non bloccanti) non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.TC02",
+        "detail": "Specifica una pagina alternativa concreta (/cart) e meccanismi di configurazione/feature flag per spostare il trigger: dettagli non definiti dal requisito (che parla genericamente di 'pagina precedente alla finalizzazione')."
+      },
+      {
+        "test_id": "REQ-F-018.TC01",
+        "detail": "Dettaglia SKU, nomi prodotto, URL e modalità di verifica tramite log/telemetria: non richiesti dal requisito (ammissibili come dati di test, ma non tracciabili come vincoli)."
+      },
+      {
+        "test_id": "REQ-F-018.TC08",
+        "detail": "Introduce esplicitamente il canale 'app' come canale digitale: il requisito parla di 'canale digitale' senza elencare canali specifici."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_id": "REQ-F-018.TC01",
+        "detail": "Scenario molto sovrapposto a REQ-F-018.TC07: entrambi verificano comparsa pop-up dopo primo add-to-cart prima del checkout su web."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 47,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-018.US01.TC01",
+        "detail": "Assume contenuto minimo della proposta (almeno 1 prodotto aggiuntivo proposto) e che la chiusura del pop-up non blocchi la navigazione: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC02",
+        "detail": "Come sopra: introduce canale 'App' e aspettative su contenuto proposta e non-blocco del funnel non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC03",
+        "detail": "Introduce vincolo 'il pop-up non compare in checkout' (comportamento negativo) non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC05",
+        "detail": "Introduce deep link 'myapp://checkout' e relativo scenario: non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US01.TC06",
+        "detail": "Introduce gestione indisponibilità servizio proposta e requisito di non-blocco del flusso fino al checkout: non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC01",
+        "detail": "Introduce requisiti/strumenti tecnici (logging con correlation-id, tracciamento eventi abilitato) e una soglia temporale '2s': non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC02",
+        "detail": "Assume che l'evento add-to-cart possa 'non essere disponibile verso il motore' e definisce un trigger alternativo specifico (pagina riepilogo): dettaglio non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC05",
+        "detail": "Introduce comportamento atteso in caso di latenza (non inviare dopo ingresso in checkout) e non-blocco del checkout: il requisito non definisce gestione latenza/annullamento invio."
+      },
+      {
+        "test_id": "REQ-F-018.US02.TC06",
+        "detail": "Introduce idempotenza/retry e gestione duplicati a livello evento (event-id): non nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1",
+        "detail": "Molti TC tracciano solo AC-2/AC-3 e verificano la comparsa del pop-up, ma non sempre verificano esplicitamente che 'il motore genera e invia la proposta al canale digitale prima del checkout' (AC-1) se non tramite assunzioni; la copertura di AC-1 è concentrata su pochi TC (US01.TC06, US02.TC01/02/03/05) e non è uniforme sugli scenari principali US01.TC01/TC02/TC03."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-F-018.US01.TC01",
+        "detail": "Molto simile a REQ-F-018.US02.TC03 (entrambi E2E/functional su web con add-to-cart e verifica pop-up prima del checkout)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (6 aggiunte vs 9) e meno ridondanze (1 vs 1) e non presenta lacune dichiarate; il set indirect_persona aggiunge piu assunzioni tecniche e funzionali (contenuto minimo della proposta, deep link, correlation-id, soglie temporali, idempotenza) e include anche una mancanza di esplicitazione di AC-1 su diversi scenari principali. Per questo il punteggio di coerenza del direct risulta superiore (61 vs 47)."
+  }
+}

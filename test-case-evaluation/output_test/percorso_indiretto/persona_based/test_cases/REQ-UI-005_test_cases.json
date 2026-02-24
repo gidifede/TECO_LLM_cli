@@ -1,0 +1,625 @@
+[
+  {
+    "story_id": "REQ-UI-005.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-005.US01.TC01",
+        "title": "Marketing autenticato visualizza elenco log consentiti in dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile da rete interna/SSO aziendale",
+          "Esiste un utente con ruolo 'Marketing' attivo e autenticabile",
+          "Nel sistema esistono log con visibilità 'Marketing' (o comunque visibili al ruolo Marketing)",
+          "Il servizio di backend dei log è disponibile e risponde correttamente"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "Dataset log: almeno 5 record visibili a Marketing, con timestamp negli ultimi 7 giorni"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Aprire la dashboard log",
+          "Attendere il caricamento dell'elenco log"
+        ],
+        "expected_results": [
+          "La dashboard è accessibile senza errori per l'utente Marketing autenticato",
+          "Viene mostrato un elenco di log",
+          "Nell'elenco non sono presenti log o sezioni non autorizzate al ruolo Marketing"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificati campi/attributi dei log né la matrice di visibilità; si verifica la non esposizione di dati non autorizzati in base ai permessi del ruolo."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC02",
+        "title": "Marketing filtra i log e visualizza solo risultati coerenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Marketing' autenticato",
+          "Nel sistema esistono log visibili a Marketing distribuiti su più date e con almeno due livelli di severità (es. INFO, ERROR) o categorie equivalenti",
+          "Il servizio di backend dei log supporta i filtri esposti in UI"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "Filtro data: da 2026-02-01 a 2026-02-15",
+          "Filtro severità: ERROR"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Aprire la dashboard log",
+          "Impostare il filtro data con intervallo 2026-02-01 - 2026-02-15",
+          "Impostare il filtro severità su 'ERROR'",
+          "Applicare i filtri"
+        ],
+        "expected_results": [
+          "L'elenco mostra solo log con severità 'ERROR'",
+          "Ogni log mostrato ha timestamp compreso tra 2026-02-01 e 2026-02-15 (inclusi)",
+          "Non vengono mostrati log fuori dai criteri impostati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "I filtri specifici non sono definiti dal requisito; il test assume la disponibilità di almeno un filtro per data e un filtro per severità/categoria equivalente."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC03",
+        "title": "Marketing tenta accesso a vista/funzionalità riservata a Compliance: accesso negato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Marketing' autenticato",
+          "Esiste almeno una vista o funzionalità riservata al ruolo 'Compliance' (es. sezione 'Audit/Compliance')"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "URL/azione: accesso diretto a vista compliance (es. /logs/compliance) oppure click su voce di menu riservata"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Tentare di accedere alla vista/funzionalità riservata a Compliance tramite URL diretto o voce di menu (se presente)",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "Il sistema nega l'accesso alla vista/funzionalità riservata",
+          "Viene mostrato un messaggio esplicito di permesso insufficiente oppure una pagina di accesso negato (es. 403)",
+          "Non vengono mostrati dati o dettagli della vista riservata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica quali viste siano riservate a Compliance; è necessario disporre di almeno un endpoint o sezione marcata come 'Compliance-only' per validare la segregazione."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC04",
+        "title": "Marketing applica filtri che non restituiscono risultati: stato vuoto e reset filtri",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Marketing' autenticato",
+          "Il sistema consente di applicare filtri e di azzerarli/modificarli"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "Filtro data: da 1900-01-01 a 1900-01-02 (intervallo senza log)",
+          "Filtro severità: ERROR (opzionale)"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Aprire la dashboard log",
+          "Impostare un intervallo data noto per non avere log (1900-01-01 - 1900-01-02)",
+          "Applicare i filtri",
+          "Cliccare su 'Azzera filtri' (o azione equivalente)",
+          "Applicare nuovamente (se richiesto) e osservare l'elenco"
+        ],
+        "expected_results": [
+          "Dopo l'applicazione dei filtri, la dashboard mostra uno stato vuoto (nessun risultato) senza errori",
+          "Lo stato vuoto indica chiaramente che non ci sono log per i criteri impostati",
+          "È possibile modificare o azzerare i filtri",
+          "Dopo l'azzeramento, l'elenco torna a mostrare i log disponibili secondo i permessi Marketing"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo dello stato vuoto non è specificato; si verifica la presenza di un'indicazione di 'nessun risultato' e la possibilità di recuperare la vista tramite reset/modifica filtri."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC05",
+        "title": "Servizio log/dashboard indisponibile: errore gestito senza dati parziali",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Marketing' autenticato",
+          "È possibile simulare indisponibilità/errore del servizio backend dei log (es. 500/timeout) tramite ambiente di test o mock"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "Simulazione backend: timeout > 30s oppure risposta HTTP 500 alla chiamata 'lista log'"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Configurare la simulazione di errore/timeout del servizio log per la chiamata di recupero elenco",
+          "Aprire la dashboard log",
+          "Attendere la risposta/timeout"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore gestito (non un errore tecnico non formattato)",
+          "Non vengono mostrati log parziali o dati incompleti",
+          "Non vengono esposti dati non autorizzati o dettagli sensibili (es. stack trace, query, token)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: possibilità di fault injection o mock del servizio log. Il requisito non definisce contenuto del messaggio; si verifica che l'errore sia gestito e non esponga dati."
+      },
+      {
+        "test_id": "REQ-UI-005.US01.TC06",
+        "title": "Sessione scaduta: richiesta di re-auth prima di mostrare i log",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Marketing'",
+          "È possibile simulare sessione scaduta (es. scadenza token/SSO) prima del caricamento dei log"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing)",
+          "Sessione: token scaduto o invalidato"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Invalidare la sessione (es. attendere scadenza o forzare invalidazione token)",
+          "Tentare di aprire la dashboard log o ricaricare la pagina",
+          "Completare la procedura di re-auth quando richiesta",
+          "Attendere il caricamento dell'elenco log"
+        ],
+        "expected_results": [
+          "Prima della re-auth, la dashboard non mostra alcun log",
+          "Il sistema richiede nuovamente autenticazione (redirect a login/SSO o prompt equivalente)",
+          "Dopo re-auth riuscita, la dashboard mostra l'elenco log secondo i permessi Marketing"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Modalità di re-auth dipende dall'implementazione (SSO, token refresh). Il test valida che non vi sia esposizione di log a sessione scaduta."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-005.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-005.US02.TC01",
+        "title": "Compliance autenticato visualizza elenco log consentiti in dashboard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile da rete interna/SSO aziendale",
+          "Esiste un utente con ruolo 'Compliance' attivo e autenticabile",
+          "Nel sistema esistono log con visibilità 'Compliance' (o comunque visibili al ruolo Compliance)",
+          "Il servizio di backend dei log è disponibile e risponde correttamente"
+        ],
+        "test_data": [
+          "Utente: compliance.user1 (ruolo: Compliance)",
+          "Dataset log: almeno 5 record visibili a Compliance, con timestamp negli ultimi 30 giorni"
+        ],
+        "steps": [
+          "Autenticarsi come utente compliance.user1",
+          "Aprire la dashboard log",
+          "Attendere il caricamento dell'elenco log"
+        ],
+        "expected_results": [
+          "La dashboard è accessibile senza errori per l'utente Compliance autenticato",
+          "Viene mostrato un elenco di log",
+          "Nell'elenco non sono presenti log o sezioni non autorizzate al ruolo Compliance"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificati campi/attributi dei log né la matrice di visibilità; si verifica la non esposizione di dati non autorizzati in base ai permessi del ruolo."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC02",
+        "title": "Compliance filtra i log e visualizza solo risultati coerenti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Compliance' autenticato",
+          "Nel sistema esistono log visibili a Compliance distribuiti su più date e con almeno due livelli di severità (es. INFO, ERROR) o categorie equivalenti",
+          "Il servizio di backend dei log supporta i filtri esposti in UI"
+        ],
+        "test_data": [
+          "Utente: compliance.user1 (ruolo: Compliance)",
+          "Filtro data: da 2026-01-01 a 2026-01-31",
+          "Filtro severità: INFO"
+        ],
+        "steps": [
+          "Autenticarsi come utente compliance.user1",
+          "Aprire la dashboard log",
+          "Impostare il filtro data con intervallo 2026-01-01 - 2026-01-31",
+          "Impostare il filtro severità su 'INFO'",
+          "Applicare i filtri"
+        ],
+        "expected_results": [
+          "L'elenco mostra solo log con severità 'INFO'",
+          "Ogni log mostrato ha timestamp compreso tra 2026-01-01 e 2026-01-31 (inclusi)",
+          "Non vengono mostrati log fuori dai criteri impostati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "I filtri specifici non sono definiti dal requisito; il test assume la disponibilità di almeno un filtro per data e un filtro per severità/categoria equivalente."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC03",
+        "title": "Compliance tenta accesso a vista/funzionalità riservata a Marketing: accesso negato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Compliance' autenticato",
+          "Esiste almeno una vista o funzionalità riservata al ruolo 'Marketing' (es. sezione 'Campagne/Marketing')"
+        ],
+        "test_data": [
+          "Utente: compliance.user1 (ruolo: Compliance)",
+          "URL/azione: accesso diretto a vista marketing (es. /logs/marketing) oppure click su voce di menu riservata"
+        ],
+        "steps": [
+          "Autenticarsi come utente compliance.user1",
+          "Tentare di accedere alla vista/funzionalità riservata a Marketing tramite URL diretto o voce di menu (se presente)",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "Il sistema nega l'accesso alla vista/funzionalità riservata",
+          "Viene mostrato un messaggio esplicito di permesso insufficiente oppure una pagina di accesso negato (es. 403)",
+          "Non vengono mostrati dati o dettagli della vista riservata"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica quali viste siano riservate a Marketing; è necessario disporre di almeno un endpoint o sezione marcata come 'Marketing-only' per validare la segregazione."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC04",
+        "title": "Utente senza ruolo Compliance tenta accesso alla dashboard: accesso negato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente autenticabile senza ruolo Compliance (es. ruolo 'Employee' o 'Marketing')",
+          "L'utente è connesso alla rete interna (condizione di contesto) ma non possiede permessi Compliance"
+        ],
+        "test_data": [
+          "Utente: employee.user1 (ruolo: Employee, non Compliance)"
+        ],
+        "steps": [
+          "Autenticarsi come utente employee.user1",
+          "Tentare di aprire la dashboard log",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "Il sistema nega l'accesso alla dashboard se l'utente non ha un ruolo autorizzato",
+          "Viene mostrato un messaggio di accesso negato o permessi insufficienti (oppure redirect a pagina non autorizzata)",
+          "Non vengono mostrati log o dati della dashboard"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola 'accesso consentito solo a ruoli autorizzati' non dettaglia l'elenco ruoli; questo test valida che un utente autenticato ma non autorizzato non acceda ai log."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC05",
+        "title": "Compliance applica filtri che non restituiscono risultati: stato vuoto e reset filtri",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Compliance' autenticato",
+          "Il sistema consente di applicare filtri e di azzerarli/modificarli"
+        ],
+        "test_data": [
+          "Utente: compliance.user1 (ruolo: Compliance)",
+          "Filtro data: da 1900-01-01 a 1900-01-02 (intervallo senza log)"
+        ],
+        "steps": [
+          "Autenticarsi come utente compliance.user1",
+          "Aprire la dashboard log",
+          "Impostare un intervallo data noto per non avere log (1900-01-01 - 1900-01-02)",
+          "Applicare i filtri",
+          "Cliccare su 'Azzera filtri' (o azione equivalente)",
+          "Applicare nuovamente (se richiesto) e osservare l'elenco"
+        ],
+        "expected_results": [
+          "Dopo l'applicazione dei filtri, la dashboard mostra uno stato vuoto (nessun risultato) senza errori",
+          "È possibile modificare o azzerare i filtri",
+          "Dopo l'azzeramento, l'elenco torna a mostrare i log disponibili secondo i permessi Compliance"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo dello stato vuoto non è specificato; si verifica la presenza di un'indicazione di 'nessun risultato' e la possibilità di recuperare la vista tramite reset/modifica filtri."
+      },
+      {
+        "test_id": "REQ-UI-005.US02.TC06",
+        "title": "Servizio log/dashboard indisponibile: errore gestito senza dati parziali",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una dashboard log accessibile",
+          "Esiste un utente con ruolo 'Compliance' autenticato",
+          "È possibile simulare indisponibilità/errore del servizio backend dei log (es. 500/timeout) tramite ambiente di test o mock"
+        ],
+        "test_data": [
+          "Utente: compliance.user1 (ruolo: Compliance)",
+          "Simulazione backend: timeout > 30s oppure risposta HTTP 500 alla chiamata 'lista log'"
+        ],
+        "steps": [
+          "Autenticarsi come utente compliance.user1",
+          "Configurare la simulazione di errore/timeout del servizio log per la chiamata di recupero elenco",
+          "Aprire la dashboard log",
+          "Attendere la risposta/timeout"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore gestito (non un errore tecnico non formattato)",
+          "Non vengono mostrati log parziali o dati incompleti",
+          "Non vengono esposti dati non autorizzati o dettagli sensibili (es. stack trace, query, token)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: possibilità di fault injection o mock del servizio log. Il requisito non definisce contenuto del messaggio; si verifica che l'errore sia gestito e non esponga dati."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-UI-005.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-005.US03.TC01",
+        "title": "Configurazione frequenza esportazione valida: pianificazione creata secondo configurazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un meccanismo di configurazione della frequenza di esportazione (UI o configurazione di sistema) accessibile in ambiente di test",
+          "Esiste un utente autorizzato a modificare la configurazione di esportazione (ruolo da definire)",
+          "Il job scheduler (o componente equivalente) è attivo e osservabile (es. tabella job, API, log di scheduling)",
+          "Esiste una destinazione di audit configurata (endpoint o coda) raggiungibile in ambiente di test o mock"
+        ],
+        "test_data": [
+          "Utente: export.admin1 (ruolo: autorizzato alla configurazione)",
+          "Frequenza: quotidiana alle 02:00",
+          "Fuso orario: Europe/Rome"
+        ],
+        "steps": [
+          "Autenticarsi come utente export.admin1",
+          "Aprire la sezione di configurazione esportazione log (UI o interfaccia prevista)",
+          "Impostare frequenza 'Quotidiana' e orario '02:00' con fuso 'Europe/Rome'",
+          "Salvare la configurazione",
+          "Verificare nel sistema di scheduling la presenza/aggiornamento del job di esportazione"
+        ],
+        "expected_results": [
+          "La configurazione viene salvata con successo",
+          "Il sistema crea o aggiorna una pianificazione di esportazione coerente con frequenza 'quotidiana alle 02:00 Europe/Rome'",
+          "La pianificazione risulta attiva (non in stato disabilitato/errore) e associata al processo di esportazione log"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica quale attore/UI configuri la frequenza; si assume esista un'interfaccia interna e un ruolo autorizzato. La verifica della pianificazione può avvenire via log del scheduler/API/DB in base all'implementazione."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC02",
+        "title": "Esecuzione pianificata: esportazione automatica inviata ai sistemi di audit",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "È configurata una frequenza di esportazione valida e il job è pianificato",
+          "Esistono log da esportare nel periodo considerato",
+          "Il sistema di audit aziendale (o mock) è raggiungibile e accetta richieste",
+          "Sono disponibili strumenti per verificare l'avvenuta esportazione (es. ricevuta lato audit, log di integrazione, metriche)"
+        ],
+        "test_data": [
+          "Frequenza: esecuzione ogni 5 minuti (configurazione personalizzata per test) oppure trigger manuale del job in ambiente QA",
+          "Mock audit endpoint: https://audit-mock.company.local/ingest con risposta 200",
+          "Correlazione: export_run_id generato dal sistema (se disponibile)"
+        ],
+        "steps": [
+          "Configurare una frequenza di esportazione ravvicinata (o predisporre un trigger del job) per consentire l'esecuzione in test",
+          "Attendere lo scatto dell'esecuzione pianificata (o avviare il job se previsto in QA)",
+          "Verificare sul mock/sistema di audit la ricezione della richiesta di esportazione",
+          "Verificare nei log applicativi l'esito dell'esportazione"
+        ],
+        "expected_results": [
+          "All'orario/scatto pianificato il sistema avvia automaticamente il processo di esportazione",
+          "Il sistema invia i log verso il sistema di audit configurato",
+          "Il sistema registra un esito di esportazione 'successo' (o equivalente) con riferimento temporale all'esecuzione"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Dipendenza esterna: definizione interfaccia con sistemi di audit (endpoint, autenticazione, formato). In assenza del sistema reale, usare un mock verificabile."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC03",
+        "title": "Utente non autorizzato tenta modifica configurazione esportazione: operazione negata",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un meccanismo di configurazione della frequenza di esportazione (UI o configurazione di sistema)",
+          "Esiste un utente autenticabile non autorizzato alla modifica della configurazione (es. ruolo Marketing o utente generico)",
+          "La segregazione ruoli Marketing/Compliance è applicata anche alle operazioni di configurazione esportazione"
+        ],
+        "test_data": [
+          "Utente: marketing.user1 (ruolo: Marketing, non autorizzato)",
+          "Nuova frequenza tentata: settimanale (lunedì 03:00)"
+        ],
+        "steps": [
+          "Autenticarsi come utente marketing.user1",
+          "Tentare di accedere alla sezione di configurazione esportazione log (UI o endpoint diretto)",
+          "Tentare di impostare una nuova frequenza (settimanale lunedì 03:00)",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'accesso alla configurazione oppure impedisce il salvataggio",
+          "Viene mostrato un messaggio di permesso insufficiente o viene restituito un errore di autorizzazione (es. 403)",
+          "La configurazione di esportazione rimane invariata rispetto al valore precedente"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica i ruoli autorizzati alla configurazione; si assume che un utente Marketing non lo sia, coerentemente con la segregazione dei ruoli."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC04",
+        "title": "Configurazione frequenza non valida: salvataggio rifiutato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un meccanismo di configurazione della frequenza di esportazione (UI o configurazione di sistema)",
+          "Esiste un utente autorizzato a modificare la configurazione di esportazione",
+          "Sono definite regole di validazione per frequenza personalizzata (intervallo minimo/massimo o formato)"
+        ],
+        "test_data": [
+          "Utente: export.admin1 (ruolo: autorizzato)",
+          "Frequenza personalizzata: intervallo '0 minuti' oppure formato cron non valido '*/AA * * * *'"
+        ],
+        "steps": [
+          "Autenticarsi come utente export.admin1",
+          "Aprire la sezione di configurazione esportazione log",
+          "Selezionare frequenza 'Personalizzata'",
+          "Inserire un valore non valido (0 minuti o cron '*/AA * * * *')",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema rifiuta il salvataggio della configurazione",
+          "Viene mostrato un messaggio di validazione che indica che la frequenza inserita non è ammessa",
+          "Non viene creata o aggiornata alcuna pianificazione con la configurazione non valida"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce i vincoli esatti (min/max, formato cron); il test valida che input malformati o intervalli non ammessi vengano rifiutati."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC05",
+        "title": "Sistema di audit non raggiungibile durante export: fallimento gestito e evento tracciato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È configurata una frequenza di esportazione valida e il job è pianificato",
+          "Esistono log da esportare",
+          "È possibile simulare indisponibilità del sistema di audit (es. timeout, DNS failure, 503) tramite mock o configurazione di rete",
+          "Sono accessibili i log applicativi/monitoring per verificare la tracciatura dell'errore"
+        ],
+        "test_data": [
+          "Mock audit endpoint: https://audit-mock.company.local/ingest non raggiungibile (timeout > 30s) oppure risposta HTTP 503",
+          "Frequenza: esecuzione ogni 5 minuti (per test)"
+        ],
+        "steps": [
+          "Configurare il sistema di audit (o mock) in stato non raggiungibile o in errore 503",
+          "Attendere lo scatto dell'esecuzione pianificata (o avviare il job se previsto in QA)",
+          "Osservare l'esito dell'esportazione",
+          "Consultare i log applicativi/eventi per la tracciatura dell'errore"
+        ],
+        "expected_results": [
+          "L'esportazione fallisce in modo gestito (senza crash del processo o blocco della dashboard/servizio)",
+          "Il sistema registra un evento di errore relativo all'esportazione (con timestamp e motivazione/HTTP status o indicazione timeout)",
+          "Non viene indicato un esito 'successo' per l'esecuzione fallita"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito richiede gestione del fallimento e tracciatura nei log; non specifica meccanismi di retry/backoff. La verifica si limita a fallimento gestito e logging dell'evento."
+      },
+      {
+        "test_id": "REQ-UI-005.US03.TC06",
+        "title": "Timeout/interruzione durante export: esecuzione successiva evita duplicazioni o inconsistenze (comportamento da definire)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È configurata una frequenza di esportazione valida e il job è pianificato",
+          "Esistono log da esportare in un intervallo noto (es. 100 record)",
+          "È possibile simulare interruzione/timeout a metà trasferimento (es. chiusura connessione dopo N record o dopo N secondi)",
+          "È possibile eseguire una seconda esecuzione successiva e osservare cosa viene inviato al sistema di audit (mock con conteggio/ID ricevuti)"
+        ],
+        "test_data": [
+          "Mock audit: registra gli ID log ricevuti",
+          "Simulazione: interruzione dopo 50 record su 100",
+          "Esecuzione successiva: run successivo pianificato o trigger manuale"
+        ],
+        "steps": [
+          "Configurare il mock audit per interrompere la connessione dopo aver ricevuto 50 record (o dopo un timeout controllato)",
+          "Avviare/attendere una prima esecuzione di esportazione",
+          "Verificare che la prima esecuzione risulti fallita o parziale",
+          "Ripristinare il mock audit in modalità stabile (risposta 200)",
+          "Avviare/attendere l'esecuzione successiva",
+          "Confrontare gli ID/record ricevuti dal mock audit tra prima e seconda esecuzione"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'interruzione senza corrompere lo stato interno dell'esportazione",
+          "Alla successiva esecuzione, il sistema non genera duplicazioni evidenti nel sistema di audit oppure applica una strategia di idempotenza/deduplicazione coerente con l'implementazione",
+          "L'esito della seconda esecuzione è tracciato come successo se completata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito indica che il comportamento per evitare duplicazioni/inconsistenze è 'da definire'. Questo test case formalizza la necessità di una strategia (checkpointing/idempotenza) ma potrebbe richiedere aggiornamento una volta definita l'implementazione."
+      }
+    ]
+  }
+]

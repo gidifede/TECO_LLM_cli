@@ -1,0 +1,63 @@
+[
+  {
+    "story_id": "REQ-V-003.US01",
+    "title": "Applicare policy aziendali di retention e privacy ai log del Motore di Offerte",
+    "persona": "Motore di Offerte",
+    "goal": "tracciare e conservare i log applicando le policy aziendali di retention e privacy (inclusa eventuale anonimizzazione) senza override locali",
+    "benefit": "garantire conformità normativa e aziendale e rendere i log utilizzabili e difendibili in sede di audit",
+    "user_story": "Come Motore di Offerte\nVoglio tracciare e conservare i log applicando le policy aziendali di retention e privacy, inclusa l'eventuale anonimizzazione, senza override locali\nIn modo che il sistema sia conforme alle direttive interne e i log siano verificabili in sede di audit",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte persiste o archivia log ALLORA applica i tempi di retention previsti dalle policy aziendali senza consentire override locali della durata di conservazione",
+      "QUANDO un evento di logging include dati personali ALLORA il Motore di Offerte applica le regole di gestione privacy previste dalle direttive interne (inclusa l'eventuale anonimizzazione) prima della conservazione o dell'esposizione dei log",
+      "QUANDO viene richiesto un controllo di audit ALLORA sono disponibili evidenze documentali e configurative che descrivono modalità di accesso e conservazione dei log e risultano verificabili"
+    ],
+    "business_rules": [
+      "La retention dei log deve seguire esclusivamente le policy aziendali in vigore (nessun override locale della durata o delle regole di conservazione).",
+      "Il trattamento di dati personali nei log deve rispettare le direttive interne di privacy, includendo l'eventuale anonimizzazione quando prevista.",
+      "Devono esistere procedure documentate di accesso e conservazione idonee a verifiche di audit."
+    ],
+    "edge_cases": [
+      "Policy aziendali non disponibili/recuperabili al momento della configurazione o dell'esecuzione: il Motore di Offerte deve impedire configurazioni locali non conformi e segnalare l'impossibilità di applicare la policy.",
+      "Log contenenti dati personali non riconosciuti/strutturati: applicazione incompleta dell'anonimizzazione; necessità di blocco o segnalazione per non conformità (comportamento da confermare).",
+      "Richiesta di modifica della retention a livello applicativo da parte di utenti/servizi: la modifica deve essere rifiutata perché costituisce override locale."
+    ],
+    "assumptions": [
+      "Il requisito non specifica dove e come siano rese disponibili le policy aziendali (es. configurazione centralizzata, servizio dedicato, standard interno); si assume esista una fonte aziendale autoritativa consultabile/applicabile dal sistema.",
+      "Il requisito non definisce quali campi nei log siano considerati dati personali né le tecniche di anonimizzazione; si assume che tali regole siano definite nelle direttive interne richiamate dal requisito.",
+      "I canali di interazione non sono esplicitati per questa persona; si assume che l'applicazione delle policy avvenga a livello backend/servizio di logging."
+    ],
+    "notes": "Requisito di tipo vincolo e trasversale. Gli acceptance criteria sono in parte dichiarativi (es. 'conforme alle direttive interne'): sono stati resi testabili traducendoli in verifiche su applicazione della retention senza override, applicazione di regole privacy/anonimizzazione e disponibilità di documentazione/evidenze per audit. Dipendenza esterna: disponibilità e dettaglio delle policy/direttive interne di Poste Italiane."
+  },
+  {
+    "story_id": "REQ-V-003.US02",
+    "title": "Consultare log e documentazione di conservazione in modo auditabile e conforme",
+    "persona": "Team Compliance",
+    "goal": "accedere ai log e alla documentazione di accesso/conservazione secondo policy di retention e privacy per svolgere verifiche di conformità",
+    "benefit": "effettuare audit e controlli regolatori con evidenze verificabili e coerenti con le policy aziendali",
+    "user_story": "Come Team Compliance\nVoglio poter consultare i log e la documentazione di accesso e conservazione nel rispetto di retention e privacy\nIn modo che possa verificare la conformità in sede di audit",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Team Compliance effettua una verifica ALLORA può accedere a evidenze documentate sulle procedure di accesso e conservazione dei log e tali evidenze sono utilizzabili in sede di audit",
+      "QUANDO il Team Compliance consulta i log ALLORA i dati personali presenti risultano gestiti secondo le direttive interne (inclusa l'eventuale anonimizzazione prevista) rendendo l'accesso conforme"
+    ],
+    "business_rules": [
+      "L'accesso ai log per finalità di audit deve rispettare le policy aziendali di privacy e le eventuali regole di anonimizzazione applicabili.",
+      "Le procedure di accesso e conservazione devono essere documentate e mantenute aggiornate per risultare verificabili."
+    ],
+    "edge_cases": [
+      "Documentazione di procedure non disponibile o non aggiornata: l'audit non è verificabile; deve emergere come non conformità.",
+      "Log non disponibili perché fuori finestra di retention: il Team Compliance non deve poterli recuperare oltre quanto previsto dalle policy.",
+      "Incoerenza tra log visualizzati e regole di anonimizzazione attese: deve essere rilevabile come anomalia di conformità."
+    ],
+    "assumptions": [
+      "Il requisito non specifica lo strumento con cui il Team Compliance accede a log e documentazione; si assume una dashboard o repository documentale aziendale accessibile al ruolo Compliance.",
+      "Il requisito non dettaglia i permessi/granularità di accesso; si assume che il Team Compliance disponga delle autorizzazioni necessarie in base alle policy interne."
+    ],
+    "notes": "AC condivisi con REQ-V-003.US01 (retention senza override, privacy/anonimizzazione, auditabilità). Ridondanza intenzionale per coprire la prospettiva di controllo del Team Compliance. Dipendenza esterna: disponibilità delle direttive interne e del perimetro di dati personali nei log."
+  }
+]

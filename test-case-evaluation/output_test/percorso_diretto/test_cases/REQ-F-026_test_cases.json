@@ -1,0 +1,223 @@
+[
+  {
+    "test_id": "REQ-F-026.TC01",
+    "title": "Applicazione override: cliente target con campagna che consente riproposizione immediata",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "La regola di frequenza/intervallo standard è attiva (es. intervallo minimo 30 giorni tra riproposizioni per lo stesso cliente e la stessa iniziativa).",
+      "Esiste una campagna speciale configurabile denominata 'CAMP-SPECIAL-IMMEDIATE' con proprietà 'override regola di frequenza' = abilitato e 'riproposizione immediata' = consentita.",
+      "Esiste un cliente 'CL-1001' presente nella lista target della campagna 'CAMP-SPECIAL-IMMEDIATE'.",
+      "Il cliente 'CL-1001' ha ricevuto una riproposizione dell'iniziativa 'OFFERTA-A' meno di 30 giorni fa (es. 2 giorni fa).",
+      "Il Motore (servizio di decisione/riproposizione) è disponibile e raggiungibile."
+    ],
+    "test_data": [
+      "Campagna: CAMP-SPECIAL-IMMEDIATE",
+      "Cliente target: CL-1001",
+      "Iniziativa/offerta: OFFERTA-A",
+      "Ultima riproposizione OFFERTA-A per CL-1001: T-2 giorni",
+      "Intervallo standard: 30 giorni"
+    ],
+    "steps": [
+      "Associare al cliente CL-1001 il flag/campagna 'CAMP-SPECIAL-IMMEDIATE' (tramite configurazione prevista).",
+      "Richiedere al Motore la valutazione/riproposizione per cliente CL-1001 e iniziativa OFFERTA-A.",
+      "Registrare l'esito della decisione del Motore (consentito/negato) e le motivazioni/metadata restituiti (se disponibili)."
+    ],
+    "expected_results": [
+      "Il cliente CL-1001 risulta associato alla campagna 'CAMP-SPECIAL-IMMEDIATE'.",
+      "Il Motore consente la riproposizione di OFFERTA-A per CL-1001 anche se l'intervallo standard (30 giorni) non è rispettato.",
+      "L'esito della decisione indica che è stato applicato un override della regola di frequenza (tramite campo/causale/log verificabile)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-4"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Attori/canali non esplicitati nel requisito: si assume configurazione e invocazione del Motore via canali backend/API o console amministrativa. Il requisito non specifica il formato dei log/metadata: l'expected result sull'indicazione di override va verificato tramite il meccanismo di tracciamento disponibile (audit/log/eventi)."
+  },
+  {
+    "test_id": "REQ-F-026.TC02",
+    "title": "Nessun override: cliente non target mantiene la regola di frequenza",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "La regola di frequenza/intervallo standard è attiva (es. intervallo minimo 30 giorni).",
+      "La campagna 'CAMP-SPECIAL-IMMEDIATE' è configurata con override abilitato e riproposizione immediata consentita.",
+      "Esiste un cliente 'CL-2002' NON presente nella lista target della campagna 'CAMP-SPECIAL-IMMEDIATE'.",
+      "Il cliente 'CL-2002' ha ricevuto una riproposizione dell'iniziativa 'OFFERTA-A' meno di 30 giorni fa (es. 2 giorni fa).",
+      "Il Motore è disponibile e raggiungibile."
+    ],
+    "test_data": [
+      "Campagna: CAMP-SPECIAL-IMMEDIATE",
+      "Cliente non target: CL-2002",
+      "Iniziativa/offerta: OFFERTA-A",
+      "Ultima riproposizione OFFERTA-A per CL-2002: T-2 giorni",
+      "Intervallo standard: 30 giorni"
+    ],
+    "steps": [
+      "Verificare che CL-2002 non sia incluso tra i clienti target della campagna 'CAMP-SPECIAL-IMMEDIATE'.",
+      "Richiedere al Motore la valutazione/riproposizione per cliente CL-2002 e iniziativa OFFERTA-A.",
+      "Registrare l'esito della decisione del Motore (consentito/negato) e le motivazioni/metadata restituiti (se disponibili)."
+    ],
+    "expected_results": [
+      "Il Motore nega la riproposizione di OFFERTA-A per CL-2002 perché l'intervallo minimo (30 giorni) non è rispettato.",
+      "Non risulta applicato alcun override della regola di frequenza per CL-2002 (tramite causale/log verificabile)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-4"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non specifica come identificare formalmente i 'clienti target': si assume esista una lista di targeting o una regola di inclusione verificabile. Se l'associazione campagna-cliente avviene tramite flag sul cliente, qui si verifica che tale flag non sia presente."
+  },
+  {
+    "test_id": "REQ-F-026.TC03",
+    "title": "Configurazione campagna: tracciamento (audit) della creazione/modifica dell'override",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un meccanismo di configurazione campagne/override (UI o API) abilitato in ambiente di test.",
+      "È disponibile un sistema di tracciamento/audit consultabile (es. tabella audit, log applicativi, event store).",
+      "Esiste un utente/servizio con permessi di configurazione campagne."
+    ],
+    "test_data": [
+      "Campagna: CAMP-AUDIT-001",
+      "Proprietà: override regola di frequenza = abilitato",
+      "Proprietà: riproposizione immediata = consentita",
+      "Target clienti: [CL-3003]"
+    ],
+    "steps": [
+      "Creare una nuova campagna 'CAMP-AUDIT-001' abilitando l'override della regola di frequenza e impostando il target a CL-3003.",
+      "Salvare la configurazione.",
+      "Modificare la campagna 'CAMP-AUDIT-001' cambiando il target da CL-3003 a CL-3003 e CL-3004.",
+      "Salvare la modifica.",
+      "Consultare il tracciamento/audit relativo alle operazioni eseguite sulla campagna 'CAMP-AUDIT-001'."
+    ],
+    "expected_results": [
+      "La creazione della campagna 'CAMP-AUDIT-001' risulta registrata nel tracciamento/audit con data/ora e dettaglio delle proprietà rilevanti (override abilitato, riproposizione immediata, target iniziale).",
+      "La modifica della campagna risulta registrata nel tracciamento/audit con data/ora e dettaglio della variazione (aggiunta CL-3004 al target).",
+      "Le registrazioni di audit sono distinguibili e correlabili alla campagna 'CAMP-AUDIT-001' (es. tramite ID campagna)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "AC-3 è parzialmente dichiarativo: si interpreta 'tracciata' come presenza di audit/log consultabile con almeno timestamp, identificativo campagna e dettaglio delle modifiche. Il requisito non definisce campi minimi dell'audit: adeguare le verifiche ai campi effettivamente disponibili."
+  },
+  {
+    "test_id": "REQ-F-026.TC04",
+    "title": "Reversibilità: disabilitare/rimuovere l'override e ripristinare la regola di frequenza",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "La regola di frequenza/intervallo standard è attiva (es. 30 giorni).",
+      "Esiste una campagna 'CAMP-REV-001' con override abilitato e cliente target CL-4004.",
+      "Il cliente CL-4004 ha ricevuto OFFERTA-A meno di 30 giorni fa (es. 2 giorni fa).",
+      "Il Motore è disponibile e raggiungibile.",
+      "È disponibile un meccanismo di modifica della configurazione campagna (UI o API) e relativo audit/log."
+    ],
+    "test_data": [
+      "Campagna: CAMP-REV-001",
+      "Cliente target: CL-4004",
+      "Iniziativa/offerta: OFFERTA-A",
+      "Ultima riproposizione: T-2 giorni",
+      "Intervallo standard: 30 giorni"
+    ],
+    "steps": [
+      "Richiedere al Motore la valutazione/riproposizione per CL-4004 e OFFERTA-A e salvare l'esito.",
+      "Disabilitare l'override della regola di frequenza per la campagna 'CAMP-REV-001' oppure rimuovere CL-4004 dal target della campagna (secondo funzionalità disponibile).",
+      "Salvare la configurazione aggiornata.",
+      "Richiedere nuovamente al Motore la valutazione/riproposizione per CL-4004 e OFFERTA-A.",
+      "Consultare il tracciamento/audit della modifica effettuata su 'CAMP-REV-001'."
+    ],
+    "expected_results": [
+      "Prima della modifica, il Motore consente la riproposizione per CL-4004 nonostante l'intervallo non rispettato (override attivo).",
+      "Dopo la disabilitazione/rimozione, il Motore nega la riproposizione per CL-4004 perché l'intervallo minimo (30 giorni) non è rispettato.",
+      "La modifica (disabilitazione override o rimozione dal target) risulta tracciata nell'audit/log con data/ora e dettaglio della variazione."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non specifica se la reversibilità avvenga tramite 'disabilita override' o 'rimuovi cliente dal target': il test è scritto in modo alternativo e va adattato al comportamento implementato."
+  },
+  {
+    "test_id": "REQ-F-026.TC05",
+    "title": "Edge case: campagna con override abilitato ma riproposizione immediata non prevista",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "La regola di frequenza/intervallo standard è attiva (es. 30 giorni).",
+      "Esiste una campagna 'CAMP-OVR-NO-IMM' con proprietà 'override regola di frequenza' = abilitato ma 'riproposizione immediata' = non consentita/non prevista.",
+      "Esiste un cliente 'CL-5005' presente nel target della campagna 'CAMP-OVR-NO-IMM'.",
+      "Il cliente CL-5005 ha ricevuto OFFERTA-A meno di 30 giorni fa (es. 2 giorni fa).",
+      "Il Motore è disponibile e raggiungibile."
+    ],
+    "test_data": [
+      "Campagna: CAMP-OVR-NO-IMM",
+      "Cliente target: CL-5005",
+      "Iniziativa/offerta: OFFERTA-A",
+      "Ultima riproposizione: T-2 giorni",
+      "Intervallo standard: 30 giorni"
+    ],
+    "steps": [
+      "Associare/verificare l'associazione della campagna 'CAMP-OVR-NO-IMM' al cliente CL-5005.",
+      "Richiedere al Motore la valutazione/riproposizione per CL-5005 e OFFERTA-A.",
+      "Registrare l'esito della decisione del Motore e le motivazioni/metadata restituiti (se disponibili)."
+    ],
+    "expected_results": [
+      "Il Motore nega la riproposizione immediata per CL-5005 se la campagna non la prevede, mantenendo l'applicazione della regola di intervallo standard.",
+      "L'esito della decisione è coerente con la configurazione della campagna (assenza di riproposizione immediata), senza applicare override non consentiti."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Interpretazione necessaria di AC-2: 'se la campagna lo prevede' implica che esista una proprietà di campagna che abilita/disabilita la riproposizione immediata. Se tale proprietà non esiste, questo test va riallineato alla modalità con cui il sistema esprime 'lo prevede'."
+  },
+  {
+    "test_id": "REQ-F-026.TC06",
+    "title": "Robustezza: servizio di configurazione campagne non disponibile durante la modifica dell'override",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste una campagna 'CAMP-ERR-001' già configurata.",
+      "La modifica della campagna avviene tramite un servizio di configurazione (API/servizio) che può risultare non disponibile (es. simulazione 503/timeout).",
+      "Esiste un utente/servizio con permessi di configurazione campagne."
+    ],
+    "test_data": [
+      "Campagna: CAMP-ERR-001",
+      "Modifica richiesta: abilitare override regola di frequenza = true",
+      "Errore simulato: HTTP 503 Service Unavailable (o timeout > 30s)"
+    ],
+    "steps": [
+      "Simulare l'indisponibilità del servizio di configurazione campagne (es. forzare risposta 503 o timeout).",
+      "Tentare di salvare la modifica della campagna 'CAMP-ERR-001' per abilitare l'override della regola di frequenza.",
+      "Ripristinare la disponibilità del servizio di configurazione.",
+      "Rileggere la configurazione corrente della campagna 'CAMP-ERR-001'."
+    ],
+    "expected_results": [
+      "Il salvataggio della modifica fallisce con un errore esplicito e verificabile (es. 503/timeout gestito) senza applicare parzialmente la configurazione.",
+      "Dopo il ripristino del servizio, la configurazione della campagna 'CAMP-ERR-001' risulta invariata rispetto a prima del tentativo fallito (override non abilitato se non lo era)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non dettaglia la gestione errori; questo test valida un comportamento minimo atteso per garantire reversibilità/consistenza della configurazione (AC-3) in presenza di failure del componente di configurazione."
+  }
+]

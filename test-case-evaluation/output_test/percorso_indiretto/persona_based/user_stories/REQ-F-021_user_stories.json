@@ -1,0 +1,34 @@
+[
+  {
+    "story_id": "REQ-F-021.US01",
+    "title": "Compilazione obbligatoria del questionario nel checkout per prodotti che lo richiedono",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "visualizzare e compilare il questionario richiesto subito dopo aver selezionato un prodotto, all’interno del checkout",
+    "benefit": "poter completare la sottoscrizione fornendo correttamente le informazioni richieste senza interruzioni del percorso",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio che, quando seleziono un prodotto che richiede un questionario, mi venga mostrato e reso compilabile nel percorso di checkout subito dopo la selezione\nIn modo che io possa fornire le informazioni richieste e completare correttamente la sottoscrizione.",
+    "channels": [
+      "digital (App, Web)",
+      "front-end commerciale (ufficio postale: sportello/sala)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO seleziono un prodotto contrassegnato come \"richiede questionario\" ALLORA il sistema mi presenta il questionario immediatamente dopo la selezione del prodotto e prima delle fasi finali del checkout.",
+      "QUANDO il prodotto selezionato richiede il questionario E non ho completato la compilazione ALLORA il sistema impedisce il completamento della sottoscrizione.",
+      "QUANDO seguo il funnel di checkout per un prodotto che richiede questionario ALLORA il questionario risulta integrato nel funnel di checkout (stesso percorso) e non come schermata separata non collegata al checkout."
+    ],
+    "business_rules": [
+      "La presentazione del questionario è condizionata al flag di prodotto \"richiede questionario\".",
+      "Il completamento della sottoscrizione è bloccato finché il questionario richiesto non risulta compilato (secondo le regole di completezza definite dal questionario)."
+    ],
+    "edge_cases": [
+      "Prodotto non contrassegnato come \"richiede questionario\": il questionario non deve essere mostrato e il checkout procede senza blocchi.",
+      "Interruzione del flusso (abbandono/refresh/chiusura app) dopo l’apertura del questionario: al rientro nel checkout il sistema ripropone il questionario prima delle fasi finali.",
+      "Errore tecnico nel caricamento del questionario: il sistema non consente di completare la sottoscrizione e mostra un messaggio di errore coerente con il blocco del processo."
+    ],
+    "assumptions": [
+      "Il requisito non specifica i campi/validazioni del questionario: si assume che esista una definizione di \"questionario compilato\" (es. tutti i campi obbligatori valorizzati) fornita dal sistema che gestisce il questionario.",
+      "Il requisito non distingue esplicitamente tra canale digitale e fisico: si assume che l’obbligatorietà valga in entrambi i canali quando il prodotto è contrassegnato come \"richiede questionario\"."
+    ],
+    "notes": "Il requisito non indica quale componente/sistema gestisca il questionario (es. verticale di prodotto) né le modalità di persistenza delle risposte; dipendenza esterna da chiarire in refinement."
+  }
+]

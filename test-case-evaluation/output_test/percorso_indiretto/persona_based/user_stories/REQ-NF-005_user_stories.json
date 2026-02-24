@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-NF-005.US01",
+    "title": "Export log consentito solo a utenti autorizzati (Marketing)",
+    "persona": "Team Marketing",
+    "goal": "avviare l’export dei log solo se in possesso delle autorizzazioni previste",
+    "benefit": "esportare i dati necessari in modo controllato e conforme alle policy di accesso",
+    "user_story": "Come Team Marketing\nVoglio avviare l’export dei log solo se sono autorizzato\nIn modo che l’accesso ai dati esportati sia controllato secondo le policy aziendali",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing tenta di avviare un export dei log ALLORA il sistema consente l’operazione solo se l’utente risulta autorizzato all’export.",
+      "QUANDO un utente del Team Marketing non autorizzato tenta di avviare un export dei log ALLORA il sistema blocca l’operazione e non genera alcun file esportato.",
+      "QUANDO un utente del Team Marketing autorizzato completa un export dei log ALLORA l’operazione viene registrata nei log di sistema includendo l’identificativo dell’utente e data/ora dell’operazione."
+    ],
+    "business_rules": [
+      "L’abilitazione all’export dei log è determinata dalle autorizzazioni associate all’utente (controllo accessi).",
+      "Ogni export deve generare una traccia audit nei log di sistema con identificativo utente e timestamp."
+    ],
+    "edge_cases": [
+      "Utente autenticato ma senza permessi di export: operazione negata.",
+      "Utente con permessi revocati durante la sessione: al tentativo di export l’operazione deve essere negata.",
+      "Errore di scrittura nei log di sistema durante l’export: l’operazione deve fallire o essere gestita in modo che non risulti un export non tracciato (comportamento da chiarire)."
+    ],
+    "assumptions": [
+      "Si assume che esista un meccanismo di autenticazione e autorizzazione (ruoli/permessi) già disponibile per la dashboard.",
+      "Si assume che l’“identificativo dell’utente” sia univoco e disponibile al momento dell’export (es. userId).",
+      "Si assume che la funzionalità di export sia fruibile tramite dashboard per il Team Marketing."
+    ],
+    "notes": "AC condivisi con REQ-NF-005.US02 (persona: Team Compliance): controllo accessi sull’export e tracciamento dell’operazione con utente e timestamp."
+  },
+  {
+    "story_id": "REQ-NF-005.US02",
+    "title": "Export log consentito solo a utenti autorizzati (Compliance) e tracciamento audit",
+    "persona": "Team Compliance",
+    "goal": "avviare l’export dei log solo se autorizzato e avere evidenza audit dell’operazione",
+    "benefit": "garantire controlli e verifiche regolatorie su esportazioni e accessi ai log",
+    "user_story": "Come Team Compliance\nVoglio avviare l’export dei log solo se sono autorizzato e avere traccia dell’operazione\nIn modo che le esportazioni siano auditabili e conformi ai requisiti di controllo",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Compliance tenta di avviare un export dei log ALLORA il sistema consente l’operazione solo se l’utente risulta autorizzato all’export.",
+      "QUANDO un utente del Team Compliance non autorizzato tenta di avviare un export dei log ALLORA il sistema blocca l’operazione e non genera alcun file esportato.",
+      "QUANDO un utente del Team Compliance autorizzato completa un export dei log ALLORA l’operazione viene registrata nei log di sistema includendo l’identificativo dell’utente e data/ora dell’operazione."
+    ],
+    "business_rules": [
+      "L’abilitazione all’export dei log è determinata dalle autorizzazioni associate all’utente (controllo accessi).",
+      "Ogni export deve generare una traccia audit nei log di sistema con identificativo utente e timestamp."
+    ],
+    "edge_cases": [
+      "Utente autenticato ma senza permessi di export: operazione negata.",
+      "Utente con permessi revocati durante la sessione: al tentativo di export l’operazione deve essere negata.",
+      "Errore di scrittura nei log di sistema durante l’export: l’operazione deve fallire o essere gestita in modo che non risulti un export non tracciato (comportamento da chiarire)."
+    ],
+    "assumptions": [
+      "Si assume che esista un meccanismo di autenticazione e autorizzazione (ruoli/permessi) già disponibile per la dashboard.",
+      "Si assume che l’“identificativo dell’utente” sia univoco e disponibile al momento dell’export (es. userId).",
+      "Si assume che la funzionalità di export sia fruibile tramite dashboard per il Team Compliance."
+    ],
+    "notes": "AC condivisi con REQ-NF-005.US01 (persona: Team Marketing): controllo accessi sull’export e tracciamento dell’operazione con utente e timestamp."
+  }
+]

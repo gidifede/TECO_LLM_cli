@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-UI-004</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-UI-004</h1>
+  <div class="subtitle">Evidenziazione grafica tramite colori e icone per sconti e urgenze</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:32</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-UI-004</div>
+  <div class="req-field"><strong>Titolo:</strong> Evidenziazione grafica tramite colori e icone per sconti e urgenze</div>
+  <div class="req-field"><strong>Categoria:</strong> INTERFACCIA</div>
+  <div class="req-field"><strong>Priorita:</strong> medium</div>
+  <div class="req-desc">Le card e gli elementi dell&#x27;interfaccia devono utilizzare colori e icone per evidenziare offerte con sconti rilevanti o situazioni di urgenza (es. scadenze imminenti). L&#x27;uso di questi segnali visivi deve rendere immediatamente identificabili le offerte che richiedono attenzione speciale da parte dell&#x27;operatore.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Le offerte con sconto significativo o scadenza mostrano una marcatura grafica evidente (colore e/o icona).</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Sono definite e implementate icone specifiche per segnali come &#x27;offerta top&#x27; o &#x27;scadenza imminente&#x27;.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Test di usabilità confermano che gli operatori riconoscono correttamente le evidenze grafiche e reagiscono di conseguenza.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">70</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">48</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set direct introduce meno informazioni non tracciabili (meno assunzioni extra come fallback asset, variabilità display, esclusività tra segnali) e quindi ottiene un punteggio di coerenza più alto (70 vs 48). Entrambi mancano la copertura esplicita di &#x27;altri elementi dell&#x27;interfaccia&#x27; oltre alle card, ma l&#x27;indirect_persona aggiunge più scenari non richiesti dal requisito, penalizzando maggiormente la coerenza.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">70</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.TC01</td><td>Introduce canale &#x27;web&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC01</td><td>Introduce precondizioni di autenticazione/abilitazioni dell&#x27;operatore e di navigazione a una &#x27;sezione lista offerte&#x27; non specificate nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC01</td><td>Assume una regola/implementazione tecnica per &#x27;sconto significativo&#x27; tramite flag (flagScontoSignificativo=true) e dati percentuali (30%) non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC02</td><td>Introduce canale &#x27;web&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC02</td><td>Assume una regola/implementazione tecnica per &#x27;scadenza imminente&#x27; tramite flag (flagScadenzaImminente=true) e soglia (1 giorno) non definita dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC03</td><td>Introduce canale &#x27;web&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC03</td><td>Aggiunge requisiti di rendering non esplicitati (no placeholder/fallback, non sovrapposte) come criteri di accettazione del test.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC04</td><td>Introduce canale &#x27;web&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC05</td><td>Introduce canale &#x27;web&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC05</td><td>Aggiunge vincoli su leggibilità di elementi specifici della card (titolo, prezzo/valore, CTA) e assenza di indicatori &#x27;contraddittori&#x27;, non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC06</td><td>Introduce vincoli di ambiente (no refresh automatico, ordine stabile), compito temporizzato (30 secondi), dimensione campione (&gt;=5) e soglia quantitativa di successo (&gt;=80%) non definiti dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC06</td><td>Introduce la categoria &#x27;offerta top&#x27; anche nella parte di usabilità come se fosse sempre parte del set di segnali richiesti dall&#x27;AC-3; nel requisito è un esempio in AC-2, non un obbligo esplicito per la prova di usabilità.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &#x27;Le card e gli elementi dell&#x27;interfaccia...&#x27;</td><td>I test validano solo le card nella lista offerte; non coprono altri &#x27;elementi dell&#x27;interfaccia&#x27; che potrebbero usare gli stessi segnali visivi.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.TC01, REQ-UI-004.TC02</td><td>Stesso flusso (accesso, lista card, osservazione marcatura) su due condizioni diverse; parzialmente ridondanti nella struttura.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">48</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.US01.TC01</td><td>Introduce canale/contesto &#x27;front-end commerciale&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC01</td><td>Introduce precondizioni di autenticazione/profilo abilitato non specificate nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC01</td><td>Aggiunge un vincolo negativo specifico: &#x27;Non è mostrata l’icona di scadenza imminente&#x27; per un’offerta con sconto; il requisito non richiede esplicitamente esclusività tra segnali.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC02</td><td>Introduce canale/contesto &#x27;front-end commerciale&#x27; non citato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC02</td><td>Aggiunge un vincolo negativo specifico: &#x27;Non è mostrata marcatura di sconto significativo&#x27; per un’offerta urgente; il requisito non richiede esplicitamente esclusività tra segnali.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC03</td><td>Introduce precondizione &#x27;risorse UI (set icone) distribuite e disponibili&#x27; e riferimento a design system/documentazione per assert puntuale: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC04</td><td>Introduce precondizione &#x27;risorse UI (set icone) distribuite e disponibili&#x27; e dettagli per automazione (selettore UI/attributo accessibile): non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC05</td><td>Introduce la possibilità di &#x27;rappresentazione combinata prevista&#x27; come alternativa e dettagli su coesistenza/assenza artefatti grafici oltre quanto richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC06</td><td>Estende la negativa includendo l’assenza delle icone specifiche &#x27;offerta top&#x27; e &#x27;scadenza imminente&#x27; anche quando la condizione è neutra; il requisito non definisce quando &#x27;offerta top&#x27; debba o non debba comparire (non è legata a sconto/urgenza).</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC07</td><td>Scenario di fallback quando le icone non sono disponibili (CDN, 404, timeout) e requisiti di continuità operativa: non tracciabile al requisito.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC08</td><td>Test su rese cromatiche diverse/leggibilità minima su configurazioni display: il requisito non menziona accessibilità/contrasto o variabilità hardware.</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC09</td><td>Introduce &#x27;protocollo di usabilità approvato&#x27; con azioni attese e scenario operativo dettagliato; il requisito richiede solo conferma da test di usabilità, senza prescrivere protocollo/azioni.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &#x27;Le card e gli elementi dell&#x27;interfaccia...&#x27;</td><td>Come nel set direct, i test sono focalizzati sulle card; non coprono altri elementi UI che dovrebbero usare colori/icone.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.US01.TC03, REQ-UI-004.US01.TC04</td><td>Stesso scenario di verifica icona specifica, duplicato per due stati diversi; ridondanza strutturale.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-UI-004&quot;,
+  &quot;title&quot;: &quot;Evidenziazione grafica tramite colori e icone per sconti e urgenze&quot;,
+  &quot;description&quot;: &quot;Le card e gli elementi dell&#x27;interfaccia devono utilizzare colori e icone per evidenziare offerte con sconti rilevanti o situazioni di urgenza (es. scadenze imminenti). L&#x27;uso di questi segnali visivi deve rendere immediatamente identificabili le offerte che richiedono attenzione speciale da parte dell&#x27;operatore.&quot;,
+  &quot;category&quot;: &quot;INTERFACCIA&quot;,
+  &quot;priority&quot;: &quot;medium&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Le offerte con sconto significativo o scadenza mostrano una marcatura grafica evidente (colore e/o icona).&quot;,
+    &quot;Sono definite e implementate icone specifiche per segnali come &#x27;offerta top&#x27; o &#x27;scadenza imminente&#x27;.&quot;,
+    &quot;Test di usabilità confermano che gli operatori riconoscono correttamente le evidenze grafiche e reagiscono di conseguenza.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 6 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.TC01</td><td>Visualizzazione marcatura grafica per offerta con sconto significativo</td><td>UI</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC02</td><td>Visualizzazione marcatura grafica per offerta con scadenza imminente</td><td>UI</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC03</td><td>Presenza e corretto rendering delle icone specifiche &#x27;offerta top&#x27; e &#x27;scadenza imminente&#x27; sulle card</td><td>UI</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC04</td><td>Assenza di marcature grafiche su offerte senza sconto significativo e senza urgenza</td><td>Negative</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC05</td><td>Gestione combinata: offerta con sconto significativo e scadenza imminente mostra segnali coerenti e non confliggenti</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.TC06</td><td>Test di usabilità: riconoscimento corretto dei segnali visivi e decisione operativa su un set di offerte miste</td><td>E2E</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 9 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-UI-004.US01.TC01</td><td>Visualizzazione marcatura grafica per offerta con sconto significativo</td><td>UI</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC02</td><td>Visualizzazione marcatura grafica per offerta con scadenza imminente</td><td>UI</td><td>MEDIUM</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC03</td><td>Icona specifica per stato &#x27;offerta top&#x27; mostrata sulla card</td><td>UI</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC04</td><td>Icona specifica per stato &#x27;scadenza imminente&#x27; mostrata sulla card</td><td>UI</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC05</td><td>Compresenza segnali: offerta con sconto significativo e scadenza imminente senza ambiguità</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC06</td><td>Nessuna marcatura per offerta senza sconto significativo e senza scadenza imminente</td><td>Negative</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC07</td><td>Fallback UI quando le risorse icone non sono disponibili</td><td>Negative</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC08</td><td>Distinguibilità delle marcature grafiche su diverse rese cromatiche (leggibilità minima)</td><td>Edge Case</td><td>LOW</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-UI-004.US01.TC09</td><td>Conferma tramite test di usabilità: riconoscimento segnali e azione conseguente</td><td>E2E</td><td>MEDIUM</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 12, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 12, 1, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

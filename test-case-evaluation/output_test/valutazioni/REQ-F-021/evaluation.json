@@ -1,0 +1,139 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-021",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 81,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-021.TC01",
+        "detail": "Introduce verifiche su URL/breadcrumb/stepper come indicatori di integrazione nel funnel: il requisito richiede integrazione nel checkout ma non specifica tali artefatti UI/tecnici."
+      },
+      {
+        "test_id": "REQ-F-021.TC02",
+        "detail": "Assume la presenza di messaggi di validazione che indicano i campi obbligatori/mancanti; il requisito dice solo che non si può completare senza compilazione, non che debbano esserci messaggi o dettaglio campi."
+      },
+      {
+        "test_id": "REQ-F-021.TC03",
+        "detail": "Assume esistenza di una 'schermata di conferma di esito positivo' come risultato del checkout; il requisito non descrive la conferma."
+      },
+      {
+        "test_id": "REQ-F-021.TC05",
+        "detail": "Assume che il checkout abbia controlli di navigazione avanti/indietro (o stepper) e che il requisito AC-3 implichi tale comportamento; non esplicitato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.TC06",
+        "detail": "Introduce dipendenza da un servizio/endpoint del questionario, scenari di timeout/5xx e la regola 'non viene creato alcun ordine'; non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "Il requisito richiede che test di flusso verifichino che il questionario non sia una schermata separata non collegata al checkout. I TC lo interpretano tramite indicatori (URL/breadcrumb/stepper) e navigazione avanti/indietro, ma non coprono esplicitamente un caso negativo in cui il questionario sia effettivamente 'separato/non collegato' (es. apertura fuori funnel) per dimostrare il vincolo."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-021.TC01",
+          "REQ-F-021.TC03"
+        ],
+        "detail": "Entrambi verificano che il questionario compaia dopo selezione prodotto e prima delle fasi finali; TC03 lo ripete in E2E."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 8,
+    "coherence_score": 44,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-021.US01.TC01",
+        "detail": "Aggiunge il canale App oltre al web; il requisito non cita canali specifici né l'App."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC01",
+        "detail": "Assume utente autenticato/identificato e 'abilitato al checkout'; non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC01",
+        "detail": "Introduce un servizio/componente che restituisce il questionario; non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC01",
+        "detail": "Introduce azioni di 'salvataggio' del questionario; non richieste dal requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC02",
+        "detail": "Aggiunge il canale App e precondizioni di autenticazione/abilitazione; non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC02",
+        "detail": "Parla di 'regole di completezza del questionario' oltre alla semplice obbligatorietà; non specificate nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC03",
+        "detail": "Aggiunge il canale App e la verifica di 'stessa sessione/funnel' e navigazione indietro; il requisito chiede integrazione nel funnel ma non specifica sessione o back-navigation."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC04",
+        "detail": "Introduce un canale fisico/front-end commerciale (sportello/sala) e un operatore; non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC05",
+        "detail": "Come TC04, introduce canale front-end commerciale e operatore; non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC06",
+        "detail": "Estende la verifica a App/front-end commerciale; canali non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC07",
+        "detail": "Introduce requisito di ripresa sessione/ripristino carrello dopo refresh/riapertura app; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-021.US01.TC08",
+        "detail": "Introduce fault injection, timeout >30s, HTTP 500 e canali App/front-end commerciale; non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-3",
+        "detail": "Come nel set direct, non viene coperto esplicitamente un caso negativo che dimostri che il questionario non è una schermata separata non collegata; la verifica è indiretta (continuità/sessione/navigazione) e dipende da assunzioni."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-021.US01.TC01",
+          "REQ-F-021.US01.TC03"
+        ],
+        "detail": "Entrambi verificano presenza del questionario nel flusso; TC03 lo ripete in E2E aggiungendo controlli di continuità."
+      },
+      {
+        "test_ids": [
+          "REQ-F-021.US01.TC02",
+          "REQ-F-021.US01.TC05"
+        ],
+        "detail": "Stesso scenario di blocco per questionario non compilato, duplicato su canale diverso introdotto dai TC (front-end commerciale) non richiesto dal requisito."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct risulta piu coerente (81 vs 44): copre tutti gli AC con meno informazioni aggiunte e introduce meno canali/attori non presenti nel requisito. Il set indirect_persona, pur coprendo gli AC, aggiunge numerose assunzioni (App, front-end commerciale, operatore, autenticazione, ripresa sessione, dettagli tecnici del servizio questionario), riducendo significativamente la tracciabilita al requisito."
+  }
+}

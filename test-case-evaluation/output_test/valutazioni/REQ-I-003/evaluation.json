@@ -1,0 +1,130 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-003",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 68,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-003.TC01",
+        "detail": "Introduce attori/ruoli non citati nel requisito (\"utente abilitato\", \"consumatore del motore bundle\"), segmenti cliente (STANDARD) e canale \"web\" non menzionati."
+      },
+      {
+        "test_id": "REQ-I-003.TC01",
+        "detail": "Assume dettagli operativi non presenti nel requisito: concetto di \"pubblicare/applicare\" la regola, disponibilità log/telemetria e verificabilità della chiamata, assenza di altre regole per isolare il test, identificativi proposte/regole (P-BASE-001, P-ADD-009, R-EXC-ADD-009)."
+      },
+      {
+        "test_id": "REQ-I-003.TC02",
+        "detail": "Assume comportamenti non specificati: efficacia immediata post-pubblicazione, nessun caching/non invalidazione cache; inoltre mantiene canale \"web\" e segmentazione cliente non citati."
+      },
+      {
+        "test_id": "REQ-I-003.TC03",
+        "detail": "Specifica un effetto di personalizzazione come \"prioritizzazione/ordinamento\" e introduce segmenti (PREMIUM) e regole di ambito per segmento, non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-I-003.TC04",
+        "detail": "Introduce gestione errore/fallback in caso di indisponibilità dashboard (HTTP 503/timeout 10s) e requisiti su come il motore debba reagire; il requisito non menziona scenari di indisponibilità né policy di resilienza."
+      },
+      {
+        "test_id": "REQ-I-003.TC05",
+        "detail": "Richiede contenuti documentali aggiuntivi non richiesti esplicitamente dagli AC (pull/push, identificativi/parametri principali, gestione errori/caching)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: \"la logica ... non deve essere duplicata ma deve essere ottenuta o consultata dalla dashboard ...\"",
+        "detail": "Non esiste un TC che verifichi in modo diretto l'assenza di duplicazione della logica (oltre a inferenze da log/telemetria). I TC la trattano come evidenza indiretta o checklist documentale, ma non coprono un criterio operativo verificabile (es. configurazioni locali disabilitate/assenti) perché non definito nel requisito."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-I-003.TC01 / REQ-I-003.TC02",
+        "detail": "Scenari molto simili (toggle attiva/disattiva della stessa regola di esclusione) con passi e attese quasi identici; cambia solo lo stato della regola e l'asserzione su presenza/assenza della proposta."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 54,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-003.US01.TC01",
+        "detail": "Introduce stati di workflow regole (Bozza/Disattiva/Attiva), \"Team Marketing\", e una validità temporale (oggi..oggi+7 giorni) non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC01",
+        "detail": "Mappa in modo discutibile i criteri: traccia AC-3 ma il test verifica log/telemetria e consultazione runtime; AC-3 richiede specifica in documentazione tecnica dei punti di lettura."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC02",
+        "detail": "Presuppone un \"canale cliente\" (es. web) ma poi indica il canale solo come \"dashboard\"; inoltre introduce concetti di \"presentazione proposte\" non specificati come canali nel requisito."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC03",
+        "detail": "Introduce parametri commerciali specifici (sconto 10%, prezzo/sconto/label campagna) non definiti dal requisito, che parla genericamente di personalizzazioni/parametri commerciali."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC04",
+        "detail": "Aggiunge scenario \"stato non attivo non viene applicata\" come regola generale: coerente in senso comune, ma non esplicitato nel requisito (che parla di regole 'gestite' e 'quando applicabile', non di stati)."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC05",
+        "detail": "Introduce concetto di non-applicabilità per mismatch target (T5 vs T6) e rappresentazione della priorità: non esplicitati nel requisito."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC06",
+        "detail": "Verifica documentazione solo su interdipendenza (AC-1) ma non sui punti specifici di lettura (AC-3); inoltre introduce canale \"dashboard\" non pertinente alla documentazione."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC01",
+        "detail": "Introduce affermazione verificabile \"non è necessario configurare nel Motore una regola duplicata\" (assunzione su configurabilità interna) non descritta dal requisito."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC02",
+        "detail": "Introduce concetti di baseline e 'propagazione' con eventuale SLA/tempo finestra; il requisito non parla di tempi di propagazione né SLA."
+      },
+      {
+        "test_id": "REQ-I-003.US02.TC03",
+        "detail": "Introduce una tassonomia di punti del flusso (pre-selezione, post-filtri, pricing/personalizzazione) non presente nel requisito; AC-3 richiede che i punti siano specificati, ma non quali."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: \"È documentata l'interdipendenza operativa...\"",
+        "detail": "I TC runtime (es. US01.TC02-05, US02.TC01-02) non coprono esplicitamente la parte 'documentata' dell'interdipendenza; è coperta solo da test documentali (US01.TC06, US02.TC04). Manca una tracciabilità più coerente tra runtime e AC-1 (non è una mancanza di copertura AC, ma una lacuna di allineamento scenario↔criterio)."
+      },
+      {
+        "source": "Descrizione requisito: \"...non devono essere duplicate ma devono essere ottenute o consultate dalla dashboard...\"",
+        "detail": "Come nel set direct, l'assenza di duplicazione è solo inferita; non c'è un TC che la verifichi in modo osservabile e non ambiguo (oltre a log/trace)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_id": "REQ-I-003.US01.TC06 / REQ-I-003.US02.TC04",
+        "detail": "Entrambi verificano la stessa cosa: documentazione che esplicita l'interdipendenza operativa Motore↔Dashboard (AC-1) con passi/attese molto simili."
+      },
+      {
+        "test_id": "REQ-I-003.US01.TC02 / REQ-I-003.US02.TC02",
+        "detail": "Entrambi verificano che l'attivazione di una regola di esclusione in dashboard produca un effetto osservabile sulle proposte (AC-2), con struttura di test sovrapponibile (baseline/effetto)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili e ha meno ridondanze complessive. Il set indirect_persona aggiunge numerosi dettagli non presenti nel requisito (workflow stati, validità temporali, sconti %, SLA propagazione, tassonomie di flusso) e presenta ridondanze documentali e funzionali più marcate, portando a un punteggio di coerenza inferiore (54 vs 68)."
+  }
+}

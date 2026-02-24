@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-029</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-029</h1>
+  <div class="subtitle">Responsabilità limitata: il Motore propone offerte e sconti ma non finalizza vendite né esegue provisioning</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:49</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-029</div>
+  <div class="req-field"><strong>Titolo:</strong> Responsabilità limitata: il Motore propone offerte e sconti ma non finalizza vendite né esegue provisioning</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il Motore di Offerte (motore di sconti) deve limitare la propria responsabilità alla generazione e proposizione di combinazioni di prodotti, alternative commerciali e scontistiche personalizzate. Non deve eseguire operazioni di finalizzazione della vendita, non deve avviare provisioning di servizi/prodotti né sostituirsi ai sistemi di vendita o provisioning. La finalizzazione della vendita, le chiamate per attivazione/provisioning e la gestione operativa correlata rimangono esclusiva responsabilità dei sistemi di vendita/provisioning esterni. Il comportamento del Motore deve essere coerente con questa separazione dei compiti: fornisce proposte, prezzi e condizioni; non compie azioni che comportino l&#x27;attivazione o erogazione tecnica di prodotti/servizi.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Il Motore produce proposte commerciali (liste di alternative, combinazioni e sconti) senza eseguire operazioni di provisioning o attivazione dei prodotti</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Non esistono processi nel motore che effettuino la finalizzazione della vendita: tutti i flussi di completamento ordine/provisioning sono invocati e gestiti da altri sistemi</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Verifica che il codice e la documentazione mostrino esplicitamente l&#x27;assenza di chiamate di provisioning o di azioni di attivazione originate dal Motore</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#16a34a">83</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">55</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1/2/3). Tuttavia il set direct introduce meno informazioni non tracciabili (added_info piu contenute e piu legate a dettagli di testabilità) e presenta meno ridondanze. Il set indirect_persona amplia molto lo scope con elementi non richiesti (Verticale, UX, TTL proposta, CI/SBOM/allowlist, comportamenti di resilienza), accumulando molte added_info e quindi un punteggio di coerenza inferiore (55 vs 83).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#dcfce7;color:#16a34a">
+          <div class="score-value">83</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">5</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-029.TC01</td><td>Introduce canale &#x27;web&#x27; e dati cliente/segmento/area/data non citati nel requisito (il requisito non parla di canali né di segmentazione cliente).</td></tr>
+<tr><td class='mono'>REQ-F-029.TC01</td><td>Assume invocazione via API/servizio applicativo e presenza di telemetria/audit per tracciare chiamate in uscita: il requisito non specifica modalità di integrazione né strumenti di osservabilità.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC01</td><td>Assume esistenza di sistemi esterni &#x27;order management&#x27; e &#x27;provisioning&#x27; interrogabili o mockabili con meccanismi di rilevazione richieste: non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC02</td><td>Assume endpoint e semantiche HTTP specifiche (es. POST /orders/complete, 404/405): il requisito richiede assenza di finalizzazione, ma non impone protocolli, path o codici di risposta.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC03</td><td>Assume esistenza/configurabilità di un mock server provisioning e pattern di errore (timeout/500) per dimostrare assenza chiamate; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC03</td><td>Afferma che il Motore &#x27;restituisce comunque la proposta&#x27; anche con provisioning in errore: il requisito non dichiara alcuna dipendenza o comportamento in caso di indisponibilità di sistemi esterni.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC04</td><td>Introduce parametri extra (action/confirm/submitOrder) e comportamento di validazione (400 Bad Request): il requisito non definisce contratto API né gestione parametri non previsti.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC05</td><td>Introduce dettagli implementativi/organizzativi non richiesti: nomi package aziendali (com.company.*), SBOM/strumenti specifici, e lista keyword estesa (OMS/CRM/fulfillment) non citata nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.TC05</td><td>Type &#x27;Authorization&#x27; e presupposti di accesso al repository/documentazione: il requisito chiede verifica su codice/documentazione (AC-3) ma non parla di permessi/ruoli o modalità di accesso.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &#x27;La finalizzazione della vendita, le chiamate per attivazione/provisioning e la gestione operativa correlata rimangono esclusiva responsabilità dei sistemi di vendita/provisioning esterni.&#x27;</td><td>I TC verificano bene l’assenza di azioni originate dal Motore, ma non validano esplicitamente (con un test dedicato) che tali azioni siano effettivamente gestite da sistemi esterni nel flusso reale; resta implicito o demandato a controlli indiretti su mock/log.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-029.TC01, REQ-F-029.TC03</td><td>Entrambi validano la generazione proposta e l’assenza di chiamate a provisioning/ordine tramite log/trace e controllo su sistemi esterni/mock; TC03 aggiunge solo la simulazione errore/timeout.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">55</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">12</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-029.US01.TC01</td><td>Assume endpoint specifici (es. /proposals), header (X-Correlation-Id) e APM/tracing: non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC01</td><td>Precondizione &#x27;non esistono credenziali/configurazioni nel Motore per invocare provisioning/attivazione&#x27;: il requisito chiede assenza di chiamate/azioni originate dal Motore, non vincoli di configurazione/credenziali.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC02</td><td>Introduce regole di integrazione non definite (&#x27;ignorare o rifiutare&#x27;, 4xx con messaggio esplicito) e parametri finalizeOrder/provisioning/action: il requisito non specifica contratto né gestione input.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC03</td><td>Introduce canali/consumer specifici (portale web o app) e scenario di presentazione UI: il requisito non menziona canali o UX.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC04</td><td>Assume esistenza di host/endpoint esterni specifici e possibilità di blocco rete/DNS (sales.example.local, prov.example.local): non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC04</td><td>Afferma che il Motore dovrebbe restituire proposta o fallire solo per motivi interni: il requisito non definisce resilienza/comportamento in caso di indisponibilità esterna.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC05</td><td>Introduce pipeline CI, SBOM, allowlist endpoint, archiviazione evidenze per release: non richiesti dal requisito (che chiede solo evidenza di assenza chiamate in codice/documentazione).</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC01</td><td>Introduce attore &#x27;Verticale di vendita&#x27;, flusso di selezione proposta e checkout E2E con tracing multi-sistema: il requisito parla di &#x27;sistemi esterni di vendita/provisioning&#x27; in generale, non definisce Verticali né step di checkout.</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC02</td><td>Richiede accesso a configurazioni/diagrammi del Verticale e lista endpoint consentiti: non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC03</td><td>Introduce concetto di proposta con TTL/scadenza e gestione UX lato Verticale: non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC04</td><td>Introduce requisito implicito di continuità del checkout con Motore indisponibile e opzioni di comportamento (prosegue/mette in attesa): non nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC05</td><td>Introduce struttura documentale specifica E2E (sezioni checklist, sequence diagram checkout) e vincoli di versioning documentazione: non specificati dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-3: &#x27;Verifica che il codice e la documentazione mostrino esplicitamente l&#x27;assenza di chiamate di provisioning o di azioni di attivazione originate dal Motore&#x27;</td><td>Coperto, ma la parte &#x27;codice&#x27; è mescolata con molte assunzioni di processo (CI/SBOM/allowlist/archiviazione evidenze). Non manca copertura, ma manca un focus minimo e diretto sull’evidenza &#x27;esplicita&#x27; richiesta (es. dichiarazione architetturale del confine) senza introdurre requisiti di governance non richiesti.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-029.US01.TC01, REQ-F-029.US01.TC03</td><td>Entrambi verificano che durante la generazione proposta non partano chiamate a provisioning/finalizzazione; TC03 aggiunge solo il contesto E2E con canale di presentazione.</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC04, REQ-F-029.US01.TC02</td><td>Entrambi mirano a dimostrare assenza di azioni operative anche in condizioni &#x27;anomale&#x27; (parametri di finalizzazione vs indisponibilità endpoint esterni), con expected molto simili centrati su &#x27;nessuna chiamata/side-effect&#x27;.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-029&quot;,
+  &quot;title&quot;: &quot;Responsabilità limitata: il Motore propone offerte e sconti ma non finalizza vendite né esegue provisioning&quot;,
+  &quot;description&quot;: &quot;Il Motore di Offerte (motore di sconti) deve limitare la propria responsabilità alla generazione e proposizione di combinazioni di prodotti, alternative commerciali e scontistiche personalizzate. Non deve eseguire operazioni di finalizzazione della vendita, non deve avviare provisioning di servizi/prodotti né sostituirsi ai sistemi di vendita o provisioning. La finalizzazione della vendita, le chiamate per attivazione/provisioning e la gestione operativa correlata rimangono esclusiva responsabilità dei sistemi di vendita/provisioning esterni. Il comportamento del Motore deve essere coerente con questa separazione dei compiti: fornisce proposte, prezzi e condizioni; non compie azioni che comportino l&#x27;attivazione o erogazione tecnica di prodotti/servizi.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Il Motore produce proposte commerciali (liste di alternative, combinazioni e sconti) senza eseguire operazioni di provisioning o attivazione dei prodotti&quot;,
+    &quot;Non esistono processi nel motore che effettuino la finalizzazione della vendita: tutti i flussi di completamento ordine/provisioning sono invocati e gestiti da altri sistemi&quot;,
+    &quot;Verifica che il codice e la documentazione mostrino esplicitamente l&#x27;assenza di chiamate di provisioning o di azioni di attivazione originate dal Motore&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 5 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-029.TC01</td><td>Generazione proposta commerciale: il Motore restituisce alternative/combinazioni/sconti senza attivare o provisionare</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-029.TC02</td><td>Tentativo di finalizzazione vendita: assenza di funzionalità/endpoint di checkout o completamento ordine nel Motore</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.TC03</td><td>Integrazione: durante la proposta non devono partire chiamate verso sistemi di provisioning/attivazione (timeout/errore simulato)</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.TC04</td><td>Edge case: input con flag/parametri che suggeriscono attivazione non deve causare provisioning o finalizzazione</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.TC05</td><td>Verifica statica: codice e documentazione evidenziano l&#x27;assenza di chiamate di provisioning/attivazione originate dal Motore</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 10 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-029.US01.TC01</td><td>Generazione proposta: restituisce solo alternative/combinazioni/sconti con prezzi e condizioni (nessun provisioning/attivazione)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC02</td><td>Richiesta con flag/parametri di finalizzazione o provisioning: il Motore non esegue azioni operative</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC03</td><td>E2E generazione→presentazione: nessuna invocazione di flussi di finalizzazione vendita dal Motore</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC04</td><td>Indisponibilità sistemi esterni di vendita/provisioning: il Motore non tenta fallback di attivazione/provisioning</td><td>Integration</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US01.TC05</td><td>Verifica ispettiva: codice/configurazioni/documentazione evidenziano assenza di chiamate di provisioning/attivazione originate dal Motore</td><td>Integration</td><td>HIGH</td><td>AC-3, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC01</td><td>Selezione proposta: finalizzazione ordine e provisioning gestiti dai Verticali/sistemi esterni, non dal Motore</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC02</td><td>Analisi dipendenze: nessuna dipendenza da processi interni al Motore per finalizzare la vendita</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC03</td><td>Proposta scaduta/non valida in finalizzazione: gestione nel Verticale senza azioni operative dal Motore</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC04</td><td>Indisponibilità del Motore al momento della finalizzazione: il Verticale gestisce l’ordine senza richiedere provisioning dal Motore</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-029.US02.TC05</td><td>Documentazione integrazione E2E: responsabilità esplicitate (Motore propone, sistemi esterni finalizzano/attivano)</td><td>Integration</td><td>MEDIUM</td><td>AC-3, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 9, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 12, 1, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

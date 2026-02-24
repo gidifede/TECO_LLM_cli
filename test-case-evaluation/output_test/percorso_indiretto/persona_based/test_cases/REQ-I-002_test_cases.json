@@ -1,0 +1,843 @@
+[
+  {
+    "story_id": "REQ-I-002.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-002.US01.TC01",
+        "title": "Visualizzazione pricing/scontistica personalizzato per bundle in base a profilo cliente e canale",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione attiva di pricing/scontistica per la terna bundle=BUNDLE-STARTER-001, tipologia cliente=PRIVATO, canale=Web",
+          "Il cliente CUST-1001 è identificato come tipologia cliente=PRIVATO",
+          "Il canale Web è abilitato alla consultazione del bundle"
+        ],
+        "test_data": [
+          "Cliente: CUST-1001 (tipologia cliente=PRIVATO)",
+          "Canale: Web",
+          "Bundle: BUNDLE-STARTER-001",
+          "Configurazione pricing attesa: Prezzo listino 49,90 EUR; sconto 10%; prezzo finale atteso 44,91 EUR"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CUST-1001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-STARTER-001",
+          "Individuare la sezione pricing/scontistica applicata"
+        ],
+        "expected_results": [
+          "Il sistema visualizza il prezzo finale 44,91 EUR per il bundle BUNDLE-STARTER-001 per il profilo PRIVATO su canale Web",
+          "Il sistema visualizza la scontistica applicata coerente con configurazione (sconto 10% sul listino 49,90 EUR)",
+          "Non vengono visualizzati valori di pricing riferiti a canali o tipologie cliente differenti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il requisito non specifica il layout UI; la verifica si basa sulla presenza in pagina di prezzo finale e sconto applicato."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC02",
+        "title": "Visualizzazione benefici Connect (extra-cashback e punti) associati al bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-2001 è aderente a Connect e autenticato",
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002, tipologia cliente=PRIVATO, canale=App con benefici: extra-cashback e punti",
+          "Il canale App è abilitato alla consultazione del bundle"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001 (Connect attivo, tipologia cliente=PRIVATO)",
+          "Canale: App",
+          "Bundle: BUNDLE-PLUS-002",
+          "Benefici attesi: Extra-cashback 5,00 EUR; Punti Connect 200"
+        ],
+        "steps": [
+          "Aprire l'App ed effettuare l'accesso come cliente CUST-2001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-PLUS-002",
+          "Individuare la sezione benefici Connect"
+        ],
+        "expected_results": [
+          "Il sistema visualizza il dettaglio del beneficio cashback associato al bundle (valore 5,00 EUR)",
+          "Il sistema visualizza il dettaglio del beneficio punti associato al bundle (valore 200 punti)",
+          "I benefici visualizzati risultano coerenti con la configurazione per bundle/cliente/canale"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Si assume che la visibilità dei benefici configurati rientri in AC-3 (visibilità dettagli). Il requisito non specifica unità/arrotondamenti; usare il formato previsto dal canale."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC03",
+        "title": "Visualizzazione condizioni temporali di maturazione benefici Connect (contestuale o entro finestra)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-2001 è aderente a Connect e autenticato",
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002, tipologia cliente=PRIVATO, canale=Web con regola temporale definita",
+          "La regola temporale per i benefici del bundle è configurata come 'entro 7 giorni dall'acquisto del prodotto principale' (o equivalente)"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001 (Connect attivo)",
+          "Canale: Web",
+          "Bundle: BUNDLE-PLUS-002",
+          "Regola temporale attesa: maturazione benefici solo se acquisto entro 7 giorni"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CUST-2001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-PLUS-002",
+          "Aprire la sezione informativa/condizioni dei benefici Connect"
+        ],
+        "expected_results": [
+          "Il sistema rende consultabile la condizione temporale associata ai benefici Connect",
+          "La condizione temporale visualizzata è coerente con la configurazione (es. 'entro 7 giorni dall'acquisto')",
+          "La condizione temporale è visibile senza richiedere azioni di acquisto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il requisito non specifica dove compaiano le condizioni; il test verifica che siano consultabili nella scheda bundle o in una sezione condizioni accessibile dal bundle."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC04",
+        "title": "Visualizzazione dettagli erogazione cashback/punti al cliente dopo registrazione nel sistema",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-2001 è aderente a Connect",
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002 con benefici cashback e punti",
+          "È disponibile un evento di erogazione registrato per CUST-2001 relativo a BUNDLE-PLUS-002 (proveniente da Connect o dal Motore) con stato 'Erogato'",
+          "Il canale App è abilitato alla consultazione dei dettagli erogazione per il cliente"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001",
+          "Canale: App",
+          "Riferimento erogazione atteso: Bundle BUNDLE-PLUS-002; Cashback 5,00 EUR; Punti 200; Stato Erogato"
+        ],
+        "steps": [
+          "Aprire l'App ed effettuare l'accesso come cliente CUST-2001",
+          "Navigare alla sezione in cui sono resi disponibili i dettagli di erogazione (es. area Connect/Loyalty o equivalente)",
+          "Ricercare/filtrare l'erogazione associata al bundle BUNDLE-PLUS-002",
+          "Aprire il dettaglio dell'erogazione"
+        ],
+        "expected_results": [
+          "Il sistema mostra un record di erogazione associato al cliente CUST-2001 e al bundle BUNDLE-PLUS-002",
+          "Nel dettaglio sono visibili almeno tipo beneficio (cashback/punti) e valore (5,00 EUR e 200 punti)",
+          "Il dettaglio risulta coerente con l'erogazione registrata (stato 'Erogato')"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story non specifica la sezione esatta; si assume esista un'area consultabile dal cliente dove vedere le erogazioni. Il set minimo dei campi è assunto (tipo, valore, riferimento combinazione)."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC05",
+        "title": "Cliente non aderente a Connect: consultazione bundle con comunicazione coerente sui benefici",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-3001 NON è aderente a Connect",
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002 che prevederebbe benefici Connect per clienti aderenti",
+          "Il canale Web è abilitato alla consultazione del bundle"
+        ],
+        "test_data": [
+          "Cliente: CUST-3001 (Connect non attivo)",
+          "Canale: Web",
+          "Bundle: BUNDLE-PLUS-002"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CUST-3001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-PLUS-002",
+          "Individuare la sezione benefici Connect"
+        ],
+        "expected_results": [
+          "Il sistema non mostra valori di cashback/punti come se fossero maturabili dal cliente non aderente",
+          "Il sistema mostra una comunicazione coerente che indica l'inapplicabilità dei benefici Connect (o l'assenza di benefici) per il cliente non aderente",
+          "La consultazione del pricing del bundle rimane disponibile"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Edge case con comportamento 'non mostrabili o non applicabili' non chiarito: il test verifica che non vengano presentati benefici come ottenibili e che ci sia un messaggio coerente."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC06",
+        "title": "Framework Connect in errore: pricing consultabile e messaggio di indisponibilità per dettagli erogazione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-2001 è aderente a Connect e autenticato",
+          "Esiste una configurazione pricing valida per bundle=BUNDLE-STARTER-001 per tipologia cliente=PRIVATO e canale=App",
+          "La consultazione dei dettagli di erogazione richiede integrazione con Framework Connect (o servizio correlato)",
+          "Framework Connect (o servizio di recupero dettagli erogazione) è non disponibile o risponde 5xx/timeout"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001",
+          "Canale: App",
+          "Bundle: BUNDLE-STARTER-001",
+          "Simulazione errore: timeout chiamata a Connect per recupero dettagli erogazione"
+        ],
+        "steps": [
+          "Aprire l'App ed effettuare l'accesso come cliente CUST-2001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-STARTER-001",
+          "Navigare alla sezione dettagli erogazione/benefici (se disponibile dal canale)",
+          "Attendere la risposta del sistema alla richiesta dei dettagli"
+        ],
+        "expected_results": [
+          "Il sistema visualizza correttamente il pricing del bundle nonostante l'indisponibilità di Connect",
+          "Il sistema mostra un messaggio di indisponibilità/errore per i dettagli di erogazione senza bloccare la consultazione del bundle",
+          "Non vengono mostrati dettagli di erogazione incompleti o incoerenti"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La user story indica 'senza bloccare la consultazione del pricing (se previsto)': si assume che il pricing sia indipendente dalla disponibilità di Connect; se l'architettura reale è diversa, aggiornare il test."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC07",
+        "title": "Configurazione mancante per bundle/cliente/canale: gestione risposta coerente senza sconti/benefici",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Non esiste alcuna configurazione attiva per la terna bundle=BUNDLE-NOCONFIG-999, tipologia cliente=PRIVATO, canale=Web",
+          "Il cliente CUST-1001 è tipologia cliente=PRIVATO",
+          "Il bundle BUNDLE-NOCONFIG-999 è consultabile su Web"
+        ],
+        "test_data": [
+          "Cliente: CUST-1001 (PRIVATO)",
+          "Canale: Web",
+          "Bundle: BUNDLE-NOCONFIG-999"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CUST-1001",
+          "Aprire la scheda di dettaglio della combinazione/bundle BUNDLE-NOCONFIG-999",
+          "Verificare la sezione pricing/scontistica e benefici"
+        ],
+        "expected_results": [
+          "Il sistema non applica sconti/benefici non configurati per la terna bundle/cliente/canale",
+          "Il sistema mostra un comportamento coerente e controllato (es. prezzo base senza sconto oppure messaggio di configurazione non disponibile) senza errori tecnici a video"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Il requisito non definisce se applicare default o errore controllato: il test accetta entrambe le opzioni purché il comportamento sia controllato e non applichi benefici non configurati."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC08",
+        "title": "Acquisto fuori finestra temporale: assenza erogazione benefici e UI coerente",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il cliente CUST-2001 è aderente a Connect",
+          "Esiste una configurazione per bundle=BUNDLE-PLUS-002 con regola temporale 'entro 7 giorni'",
+          "È presente un acquisto del prodotto principale con data T0",
+          "È presente un tentativo/acquisto del componente subordinato con data T0+10 giorni (fuori finestra)",
+          "Il sistema registra l'esito di non maturazione (nessuna erogazione) oppure non crea record di erogazione"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001",
+          "Canale: Web",
+          "Bundle: BUNDLE-PLUS-002",
+          "Date: T0=2026-01-01; T0+10=2026-01-11"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente CUST-2001",
+          "Aprire la sezione di consultazione erogazioni/benefici",
+          "Ricercare l'erogazione associata al bundle BUNDLE-PLUS-002 per il periodo T0..T0+15"
+        ],
+        "expected_results": [
+          "Il sistema non mostra un'erogazione cashback/punti in stato 'Erogato' per l'acquisto fuori finestra temporale",
+          "Se il sistema mostra uno stato, questo indica chiaramente la non maturazione/assenza di erogazione (o equivalente) senza valori di cashback/punti accreditati"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La user story richiede che la UI rifletta l'assenza di erogazione; lo stato testuale esatto non è definito."
+      },
+      {
+        "test_id": "REQ-I-002.US01.TC09",
+        "title": "Canale fisico (UP): visualizzazione pricing e benefici con supporto operatore",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un punto vendita/UP con accesso al sistema di consultazione offerte",
+          "L'operatore è autenticato e abilitato a consultare offerte per conto del cliente",
+          "Il cliente CUST-2001 è identificabile nel canale fisico e risulta aderente a Connect",
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002, tipologia cliente=PRIVATO, canale=UP con pricing e benefici"
+        ],
+        "test_data": [
+          "Cliente: CUST-2001",
+          "Canale: UP (canale fisico)",
+          "Bundle: BUNDLE-PLUS-002",
+          "Benefici attesi: Extra-cashback 5,00 EUR; Punti 200"
+        ],
+        "steps": [
+          "L'operatore accede al sistema del canale UP con credenziali valide",
+          "L'operatore seleziona il cliente CUST-2001",
+          "L'operatore apre la combinazione/bundle BUNDLE-PLUS-002",
+          "L'operatore mostra al cliente il riepilogo pricing e benefici"
+        ],
+        "expected_results": [
+          "Il sistema mostra pricing/scontistica coerenti con la configurazione per canale UP e profilo cliente",
+          "Il sistema mostra i benefici Connect associati al bundle (cashback e/o punti) ove applicabili",
+          "Le condizioni temporali (se presenti) risultano consultabili anche nel canale UP"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "UP (canale fisico)"
+        ],
+        "notes": "Il touchpoint fisico non è specificato; si assume consultazione tramite interfaccia operatore. Adeguare i passi allo strumento effettivo in UP."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-002.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-002.US02.TC01",
+        "title": "Creazione configurazione pricing per bundle/cliente/canale da dashboard marketing",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente marketing MKT-01 con ruolo abilitato alla configurazione offerte",
+          "La dashboard marketing è disponibile e raggiungibile",
+          "Esiste il bundle BUNDLE-STARTER-001 nel catalogo configurabile"
+        ],
+        "test_data": [
+          "Utente: MKT-01",
+          "Bundle: BUNDLE-STARTER-001",
+          "Tipologia cliente: PRIVATO",
+          "Canale: Web",
+          "Prezzo listino: 49,90 EUR",
+          "Sconto: 10%",
+          "Prezzo finale atteso: 44,91 EUR"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-01",
+          "Aprire la sezione di configurazione pricing/benefici per bundle",
+          "Selezionare il bundle BUNDLE-STARTER-001",
+          "Selezionare la tipologia cliente PRIVATO",
+          "Selezionare il canale Web",
+          "Inserire prezzo listino 49,90 EUR",
+          "Inserire sconto 10%",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema salva una configurazione di pricing associata alla terna bundle=BUNDLE-STARTER-001, tipologia cliente=PRIVATO, canale=Web",
+          "Il sistema mostra conferma di salvataggio e rende la configurazione recuperabile in consultazione",
+          "I valori salvati corrispondono a quelli inseriti (49,90 EUR e 10%)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il modello dati della configurazione non è specificato; il test usa campi minimi (listino e sconto) coerenti con la story."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC02",
+        "title": "Configurazione benefici extra-cashback e punti per bundle/cliente/canale da dashboard marketing",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente marketing MKT-01 autenticato e autorizzato",
+          "Esiste una configurazione base del bundle BUNDLE-PLUS-002 modificabile",
+          "Il bundle BUNDLE-PLUS-002 è associabile a benefici Connect"
+        ],
+        "test_data": [
+          "Bundle: BUNDLE-PLUS-002",
+          "Tipologia cliente: PRIVATO",
+          "Canale: App",
+          "Extra-cashback: 5,00 EUR",
+          "Punti Connect: 200"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-01",
+          "Aprire la sezione di configurazione benefici Connect per bundle",
+          "Selezionare il bundle BUNDLE-PLUS-002",
+          "Selezionare la tipologia cliente PRIVATO",
+          "Selezionare il canale App",
+          "Inserire extra-cashback pari a 5,00 EUR",
+          "Inserire punti Connect pari a 200",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema salva i benefici Connect (cashback e punti) associandoli alla terna bundle/cliente/canale",
+          "In consultazione, la configurazione mostra extra-cashback 5,00 EUR e punti 200 per il canale App e tipologia PRIVATO"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia validazioni numeriche (min/max); eventuali vincoli vanno aggiunti quando disponibili."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC03",
+        "title": "Associazione regola temporale ai benefici Connect in configurazione bundle",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente marketing MKT-01 autenticato e autorizzato",
+          "Esiste una configurazione benefici per bundle BUNDLE-PLUS-002 modificabile"
+        ],
+        "test_data": [
+          "Bundle: BUNDLE-PLUS-002",
+          "Tipologia cliente: PRIVATO",
+          "Canale: Web",
+          "Regola temporale: 'entro 7 giorni dall'acquisto del prodotto principale'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-01",
+          "Aprire la configurazione del bundle BUNDLE-PLUS-002 per tipologia PRIVATO e canale Web",
+          "Selezionare/compilare la regola temporale dei benefici",
+          "Impostare la regola 'entro 7 giorni dall'acquisto del prodotto principale'",
+          "Salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema salva la regola temporale associata ai benefici Connect per la terna bundle/cliente/canale",
+          "In consultazione, la configurazione mostra la regola temporale impostata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il tipo di regola (contestuale vs finestra) e i campi disponibili non sono specificati; il test assume che sia possibile selezionare una finestra in giorni."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC04",
+        "title": "Consultazione log erogazione da dashboard marketing con dettagli riconducibili a bundle/cliente/canale",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente marketing MKT-02 con permesso di consultazione log autenticato",
+          "Esistono log di erogazione generati per un cliente (CUST-2001) e bundle (BUNDLE-PLUS-002)",
+          "Il servizio di logging è disponibile"
+        ],
+        "test_data": [
+          "Utente: MKT-02",
+          "Filtro bundle: BUNDLE-PLUS-002",
+          "Filtro cliente: CUST-2001",
+          "Dettagli attesi in log: canale=App; beneficio=cashback 5,00 EUR e/o punti 200; esito=SUCCESS"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-02",
+          "Aprire la sezione 'Log erogazioni' (o equivalente)",
+          "Impostare filtro per bundle BUNDLE-PLUS-002",
+          "Impostare filtro per cliente CUST-2001",
+          "Eseguire la ricerca",
+          "Aprire il dettaglio di un record di log"
+        ],
+        "expected_results": [
+          "Il sistema mostra almeno un record di log relativo a CUST-2001 e BUNDLE-PLUS-002",
+          "Nel dettaglio del log sono presenti informazioni che riconducono l'erogazione a bundle/cliente/canale",
+          "Nel dettaglio del log sono presenti tipo beneficio (cashback/punti), valore e esito dell'operazione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il set di filtri e il dettaglio minimo del log non sono specificati; il test verifica la presenza di riferimenti a bundle/cliente/canale e dei campi essenziali (tipo, valore, esito)."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC05",
+        "title": "Tentativo di salvataggio configurazione incompleta (manca canale o tipologia cliente)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente marketing MKT-01 autenticato e autorizzato",
+          "Dashboard marketing disponibile"
+        ],
+        "test_data": [
+          "Bundle: BUNDLE-STARTER-001",
+          "Tipologia cliente: (non selezionata)",
+          "Canale: Web",
+          "Sconto: 10%"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-01",
+          "Aprire la sezione di configurazione pricing/benefici per bundle",
+          "Selezionare il bundle BUNDLE-STARTER-001",
+          "Selezionare il canale Web",
+          "Lasciare non selezionata la tipologia cliente",
+          "Inserire sconto 10%",
+          "Tentare il salvataggio della configurazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della configurazione incompleta oppure richiede esplicitamente i campi obbligatori mancanti",
+          "Il sistema mostra un messaggio di validazione che indica la mancanza della tipologia cliente (o del canale, se mancante)",
+          "Non viene creata una configurazione parziale applicabile in produzione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story indica 'impedire il salvataggio o gestire default (da chiarire)'; questo test assume che i campi siano obbligatori per evitare ambiguità. Se esistono default, aggiornare expected results."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC06",
+        "title": "Conflitto configurazioni per stessa terna bundle/cliente/canale: gestione controllata",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente marketing MKT-01 autenticato e autorizzato",
+          "Esiste già una configurazione attiva per bundle=BUNDLE-STARTER-001, tipologia cliente=PRIVATO, canale=Web",
+          "Dashboard marketing disponibile"
+        ],
+        "test_data": [
+          "Configurazione esistente: sconto 10%",
+          "Nuova configurazione in conflitto: sconto 15% per stessa terna"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-01",
+          "Aprire la configurazione esistente per bundle BUNDLE-STARTER-001, tipologia PRIVATO, canale Web",
+          "Tentare di creare una seconda configurazione attiva per la stessa terna con sconto 15%",
+          "Salvare"
+        ],
+        "expected_results": [
+          "Il sistema gestisce il conflitto in modo controllato (es. blocco con messaggio, richiesta di override, o disattivazione automatica della precedente) senza creare ambiguità operative",
+          "Dopo l'operazione, la consultazione mostra una situazione consistente (una sola configurazione effettivamente applicabile per la terna)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La regola di risoluzione conflitti non è specificata; il test verifica la non coesistenza ambigua di più configurazioni attive per la stessa terna."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC07",
+        "title": "Servizio logging non disponibile: consultazione log marketing con gestione errore e possibilità di retry",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente marketing MKT-02 autenticato e autorizzato alla consultazione log",
+          "Il servizio di logging (o API di consultazione log) è non disponibile o risponde 5xx/timeout"
+        ],
+        "test_data": [
+          "Utente: MKT-02",
+          "Simulazione errore: 503 Service Unavailable su endpoint log"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing MKT-02",
+          "Aprire la sezione 'Log erogazioni' (o equivalente)",
+          "Eseguire una ricerca log senza filtri (o con filtri minimi)",
+          "Osservare la risposta del sistema",
+          "Eseguire un'azione di retry/nuovo tentativo (es. pulsante 'Riprova' o refresh della ricerca)"
+        ],
+        "expected_results": [
+          "Il sistema mostra un messaggio di errore/indisponibilità relativo alla consultazione log",
+          "Il sistema non va in crash e mantiene l'utente nella dashboard",
+          "È possibile ripetere la richiesta (retry) e, se il servizio torna disponibile, i log vengono visualizzati"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di retry non è specificata; può essere un pulsante o la ripetizione della ricerca."
+      },
+      {
+        "test_id": "REQ-I-002.US02.TC08",
+        "title": "Autorizzazione: utente non marketing non può accedere alla configurazione pricing/benefici",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente NON marketing USER-READ-01 senza permessi di configurazione",
+          "Dashboard marketing disponibile"
+        ],
+        "test_data": [
+          "Utente: USER-READ-01"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utente USER-READ-01",
+          "Tentare di aprire la sezione di configurazione pricing/benefici",
+          "Tentare di creare o modificare una configurazione bundle/cliente/canale"
+        ],
+        "expected_results": [
+          "L'utente non autorizzato non può accedere alla sezione di configurazione oppure vede la sezione in sola lettura senza possibilità di salvataggio",
+          "In caso di tentativo di modifica/salvataggio, il sistema restituisce errore di autorizzazione controllato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non definisce ruoli/permessi; il test introduce una verifica minima di segregazione tra chi configura e chi non è abilitato."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-002.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-002.US03.TC01",
+        "title": "Applicazione pricing/scontistica configurato dal Motore per bundle/cliente/canale",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione pricing attiva per bundle=BUNDLE-STARTER-001, tipologia cliente=PRIVATO, canale=Web (sconto 10%)",
+          "Il Motore di Offerte riceve in input tipologia cliente, canale e identificativo bundle",
+          "Sono disponibili endpoint/servizi interni per recupero configurazione pricing"
+        ],
+        "test_data": [
+          "Input Motore: cliente=CUST-1001 (tipologia PRIVATO), canale=Web, bundle=BUNDLE-STARTER-001",
+          "Prezzo listino: 49,90 EUR",
+          "Sconto configurato: 10%",
+          "Prezzo atteso calcolato: 44,91 EUR"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di determinazione/composizione per bundle BUNDLE-STARTER-001 con cliente CUST-1001 e canale Web",
+          "Acquisire l'output del Motore relativo a pricing/scontistica applicata"
+        ],
+        "expected_results": [
+          "Il Motore applica lo sconto configurato per la terna bundle/cliente/canale",
+          "L'output del Motore include il prezzo finale atteso 44,91 EUR (o campi equivalenti che lo determinano) coerente con la configurazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story US03 non definisce canali; il test è a livello componente/integrazione del Motore."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC02",
+        "title": "Condizioni soddisfatte: il Motore richiede registrazione/erogazione benefici a Framework Connect",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione attiva per bundle=BUNDLE-PLUS-002, tipologia cliente=PRIVATO, canale=App con extra-cashback 5,00 EUR e punti 200",
+          "La condizione temporale è soddisfatta (acquisto contestuale o entro finestra)",
+          "Framework Connect è disponibile e accetta richieste di registrazione/erogazione",
+          "È disponibile un identificativo transazione/acquisto univoco TX-90001"
+        ],
+        "test_data": [
+          "Input Motore: cliente=CUST-2001 (PRIVATO), canale=App, bundle=BUNDLE-PLUS-002, transazione=TX-90001",
+          "Benefici attesi: cashback 5,00 EUR; punti 200",
+          "Esito atteso Connect: SUCCESS con id operazione CONNECT-OP-12345"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento/decisione di acquisto per bundle BUNDLE-PLUS-002 con transazione TX-90001 e canale App",
+          "Verificare che il Motore invochi il Framework Connect per registrazione/erogazione dei benefici",
+          "Raccogliere la risposta del Framework Connect"
+        ],
+        "expected_results": [
+          "Il Motore invia a Connect una richiesta contenente riferimenti a cliente, bundle e benefici (cashback/punti) coerenti con configurazione",
+          "Connect risponde con esito SUCCESS (o equivalente) e un identificativo operazione",
+          "Il Motore considera l'operazione completata secondo l'esito di Connect"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Le API di Connect non sono specificate; il test valida l'esistenza della chiamata e la coerenza dei dati scambiati a livello contrattuale."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC03",
+        "title": "Tracciamento log: esito e dettagli operazione verso Connect registrati e consultabili",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È abilitato il logging delle operazioni di registrazione/erogazione verso Framework Connect",
+          "È disponibile un'operazione eseguita dal Motore verso Connect per transazione TX-90001",
+          "Il sistema di logging è disponibile"
+        ],
+        "test_data": [
+          "Transazione: TX-90001",
+          "Cliente: CUST-2001",
+          "Bundle: BUNDLE-PLUS-002",
+          "Canale: App",
+          "Dettagli attesi in log: beneficio=cashback 5,00 EUR e/o punti 200; esito=SUCCESS; timestamp; id operazione Connect CONNECT-OP-12345"
+        ],
+        "steps": [
+          "Eseguire (o usare) una richiesta del Motore verso Connect per l'erogazione benefici relativa a TX-90001",
+          "Accedere al sistema di consultazione log (dashboard marketing o tool tecnico previsto)",
+          "Ricercare il record di log per transazione TX-90001",
+          "Aprire il dettaglio del record"
+        ],
+        "expected_results": [
+          "Esiste un record di log relativo all'interazione Motore-Connect per TX-90001",
+          "Il record contiene esito dell'operazione (SUCCESS/FAIL) e dettagli del beneficio (cashback/punti e valori)",
+          "Il record è riconducibile a bundle/cliente/canale (campi presenti o correlabili)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story richiede tracciamento nei log e visibilità a cliente/marketing; qui si valida il tracciamento e la presenza dei dettagli minimi."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC04",
+        "title": "Framework Connect non raggiungibile: fallimento tracciato nei log e risposta controllata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione benefici attiva per bundle=BUNDLE-PLUS-002",
+          "Il Motore tenta una chiamata a Framework Connect per transazione TX-90002",
+          "Framework Connect è non raggiungibile o risponde con timeout/5xx",
+          "Il sistema di logging è disponibile"
+        ],
+        "test_data": [
+          "Transazione: TX-90002",
+          "Errore simulato: timeout 30s verso Connect"
+        ],
+        "steps": [
+          "Inviare al Motore l'evento/decisione di acquisto per bundle BUNDLE-PLUS-002 con transazione TX-90002",
+          "Attendere l'esito del tentativo di integrazione verso Connect",
+          "Ricercare nei log l'operazione relativa a TX-90002"
+        ],
+        "expected_results": [
+          "Il Motore gestisce l'errore di Connect in modo controllato (es. restituisce esito di fallimento tecnico o stato pending secondo implementazione) senza generare doppie erogazioni",
+          "Nei log è presente un record con esito FAIL (o equivalente) e dettaglio dell'errore (timeout/5xx) associato a TX-90002",
+          "Il log consente di ricondurre il fallimento a cliente/bundle/canale"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Meccanismi di retry/compensazione non specificati: il test verifica almeno logging del fallimento e gestione controllata dell'errore."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC05",
+        "title": "Evento acquisto oltre finestra: il Motore non richiede erogazione a Connect e traccia l'esito",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una configurazione benefici per bundle=BUNDLE-PLUS-002 con regola temporale 'entro 7 giorni'",
+          "Il Motore riceve evento acquisto subordinato oltre finestra (T0+10 giorni)",
+          "Il sistema di logging è disponibile"
+        ],
+        "test_data": [
+          "Transazione: TX-90003",
+          "Cliente: CUST-2001",
+          "Bundle: BUNDLE-PLUS-002",
+          "T0=2026-01-01; evento=2026-01-11 (oltre finestra)",
+          "Esito atteso: nessuna chiamata a Connect per erogazione"
+        ],
+        "steps": [
+          "Inviare al Motore un evento di acquisto relativo al bundle BUNDLE-PLUS-002 con data oltre la finestra prevista e transazione TX-90003",
+          "Monitorare le chiamate in uscita dal Motore verso Framework Connect",
+          "Ricercare nei log la gestione di TX-90003"
+        ],
+        "expected_results": [
+          "Il Motore non invia alcuna richiesta di erogazione a Framework Connect per TX-90003",
+          "Nei log è presente una traccia della decisione (benefici non attivati) con motivazione riconducibile alla finestra temporale non soddisfatta (se prevista dall'implementazione)",
+          "Non risultano record di erogazione SUCCESS per TX-90003"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La motivazione testuale nel log non è obbligatoria nel requisito; è richiesta dalla story come edge case 'se previsto'. Il test accetta almeno l'assenza di chiamata a Connect e una traccia minima dell'esito."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC06",
+        "title": "Incoerenza dati input (tipologia cliente/canale) rispetto a configurazione: errore controllato e logging",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste configurazione per bundle=BUNDLE-STARTER-001 solo per tipologia cliente=PRIVATO e canale=Web",
+          "Il Motore riceve una richiesta con tipologia cliente o canale non coerenti (es. BUSINESS o canale non previsto)",
+          "Il sistema di logging è disponibile"
+        ],
+        "test_data": [
+          "Input Motore: cliente=CUST-4001 (tipologia=BUSINESS), canale=Web, bundle=BUNDLE-STARTER-001",
+          "Transazione: TX-90004"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di determinazione bundle BUNDLE-STARTER-001 per cliente CUST-4001 (BUSINESS) e transazione TX-90004",
+          "Acquisire la risposta del Motore",
+          "Ricercare nei log l'elaborazione di TX-90004"
+        ],
+        "expected_results": [
+          "Il Motore non applica una configurazione non corrispondente (non usa quella PRIVATO per BUSINESS)",
+          "Il Motore restituisce un errore controllato o un esito di 'nessuna configurazione applicabile' (secondo implementazione) senza eccezioni non gestite",
+          "Nei log è presente una traccia dell'evento con indicazione di configurazione non trovata/incoerenza input"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La modalità di risposta in assenza configurazione non è definita; il test accetta errore controllato o default purché non venga applicata una configurazione errata e sia tracciato l'evento."
+      },
+      {
+        "test_id": "REQ-I-002.US03.TC07",
+        "title": "Visibilità dettagli erogazione a cliente e marketing a partire dai log tracciati",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "È presente un'operazione di erogazione completata con log tracciato per transazione TX-90001",
+          "Il cliente CUST-2001 può accedere al canale App o Web per consultare le proprie erogazioni",
+          "Il team marketing può accedere alla dashboard per consultare i log",
+          "Il sistema di logging/consultazione è disponibile"
+        ],
+        "test_data": [
+          "Transazione: TX-90001",
+          "Cliente: CUST-2001",
+          "Bundle: BUNDLE-PLUS-002",
+          "Dettagli attesi: cashback 5,00 EUR e/o punti 200; esito SUCCESS"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente marketing abilitato",
+          "Ricercare il log relativo a TX-90001 e aprire il dettaglio",
+          "Accedere come cliente CUST-2001 su App (o Web) alla sezione di consultazione erogazioni",
+          "Ricercare l'erogazione associata a BUNDLE-PLUS-002 e aprire il dettaglio"
+        ],
+        "expected_results": [
+          "Il marketing visualizza nei log i dettagli dell'erogazione per TX-90001 (tipo beneficio, valore, esito) riconducibili a bundle/cliente/canale",
+          "Il cliente visualizza un dettaglio di erogazione coerente con quanto tracciato (tipo beneficio e valore associati al bundle)",
+          "I dettagli risultano consistenti tra vista marketing e vista cliente (al netto di eventuali campi non esposti al cliente)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La story indica visibilità secondo rispettivi canali, ma non definisce esattamente le schermate; il test valida la disponibilità dei dettagli su entrambi i fronti partendo dallo stesso evento/log."
+      }
+    ]
+  }
+]

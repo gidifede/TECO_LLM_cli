@@ -1,0 +1,63 @@
+[
+  {
+    "story_id": "REQ-V-001.US01",
+    "title": "Configurare combinazioni vietate nella matrice per vincoli regolatori",
+    "persona": "Team Marketing",
+    "goal": "impostare nella matrice di configurazione lo stato 'vietata' per specifiche combinazioni e gestire eventuali eccezioni manuali secondo i ruoli autorizzati",
+    "benefit": "garantire che le offerte configurate rispettino i vincoli regolatori e che eventuali deroghe siano tracciabili e controllate",
+    "user_story": "Come Team Marketing\nVoglio impostare nella matrice di configurazione lo stato 'vietata' per una combinazione e, se previsto, creare eccezioni manuali solo con ruoli autorizzati\nIn modo che il Motore di Offerte non proponga combinazioni non conformi e le eventuali deroghe siano governate da autorizzazioni",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla matrice di configurazione delle combinazioni ALLORA posso impostare in modo chiaro e persistente lo stato 'vietata' per una combinazione.",
+      "QUANDO tento di creare o modificare un'eccezione manuale che autorizza la proposta di una combinazione 'vietata' ALLORA il sistema consente l'operazione solo se il mio ruolo è autorizzato secondo RBAC.",
+      "QUANDO non dispongo del ruolo autorizzato ALLORA il sistema impedisce la creazione/modifica dell'eccezione manuale e mostra un messaggio di autorizzazione insufficiente."
+    ],
+    "business_rules": [
+      "Una combinazione marcata come 'vietata' rappresenta un vincolo regolatorio obbligatorio.",
+      "Le eccezioni manuali che consentono di proporre combinazioni vietate sono ammesse solo se previste dalle funzionalità di eccezione e solo per ruoli autorizzati (RBAC)."
+    ],
+    "edge_cases": [
+      "Tentativo di impostare 'vietata' su una combinazione non esistente o non selezionabile nella matrice.",
+      "Concorrenza: due utenti modificano lo stato della stessa combinazione (vietata/non vietata) in parallelo.",
+      "Tentativo di creare eccezione manuale su combinazione non marcata come 'vietata' (comportamento da chiarire).",
+      "Assenza/indisponibilità del servizio di autorizzazione RBAC: l'operazione di eccezione deve essere negata per default (assunzione)."
+    ],
+    "assumptions": [
+      "La 'matrice di configurazione' e le 'funzionalità di eccezione' sono parte della dashboard usata dal Team Marketing.",
+      "Il requisito RBAC (ruoli autorizzati) è definito altrove e disponibile al momento dell'implementazione; in caso contrario si applica un comportamento fail-safe (negazione)."
+    ],
+    "notes": "AC condivisi con US02: il vincolo 'vietata' deve essere rispettato dal Motore di Offerte e le eccezioni manuali sono consentite solo con ruoli autorizzati."
+  },
+  {
+    "story_id": "REQ-V-001.US02",
+    "title": "Escludere dalle proposte le combinazioni vietate, salvo eccezioni autorizzate",
+    "persona": "Motore di Offerte",
+    "goal": "considerare i flag 'vietata' come vincoli obbligatori nella generazione delle proposte e applicare eventuali eccezioni manuali solo se autorizzate",
+    "benefit": "evitare la proposizione di combinazioni non conformi sui canali supportati e garantire governance delle deroghe",
+    "user_story": "Come Motore di Offerte\nVoglio escludere dalle proposte tutte le combinazioni marcate come 'vietata' e applicare eventuali eccezioni manuali solo se autorizzate\nIn modo che le offerte proposte ai clienti rispettino i vincoli regolatori e le deroghe siano controllate",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO genero proposte per un cliente su un canale supportato ALLORA non includo combinazioni etichettate come 'vietata'.",
+      "QUANDO esiste un'eccezione manuale valida che autorizza una combinazione 'vietata' ALLORA posso includere tale combinazione nelle proposte solo in presenza dell'eccezione creata da ruoli autorizzati secondo RBAC.",
+      "QUANDO non esiste un'eccezione manuale valida ALLORA una combinazione 'vietata' non viene proposta in nessun caso."
+    ],
+    "business_rules": [
+      "Il flag 'vietata' ha priorità come vincolo obbligatorio nella logica di proposta.",
+      "Le eccezioni manuali sono l'unico meccanismo ammesso per derogare al vincolo e sono soggette a RBAC."
+    ],
+    "edge_cases": [
+      "Configurazione incoerente: combinazione marcata come 'vietata' ma con eccezione manuale presente (il comportamento deve seguire la regola di eccezione solo se autorizzata).",
+      "Mancata disponibilità della matrice/configurazione al momento della generazione: il motore deve fallire in modo sicuro escludendo le combinazioni potenzialmente vietate (assunzione).",
+      "Eccezione manuale presente ma non verificabile rispetto ai ruoli autorizzati (es. metadati mancanti): l'eccezione deve essere ignorata (assunzione)."
+    ],
+    "assumptions": [
+      "I 'canali supportati' includono almeno i canali digitali (App/Web) e il canale assistito in UP; l'elenco puntuale dei canali sarà definito in requisiti di canale/integrativi.",
+      "Il Motore di Offerte ha accesso alla matrice di configurazione e alle eccezioni manuali (o a un servizio che le espone) con informazioni sufficienti per determinare se l'eccezione è stata creata da ruoli autorizzati."
+    ],
+    "notes": "AC condivisi con US01: definizione e gestione del flag 'vietata' nella matrice e governance delle eccezioni manuali tramite RBAC."
+  }
+]

@@ -1,0 +1,99 @@
+[
+  {
+    "story_id": "REQ-UI-001.US01",
+    "title": "Visualizzare le offerte generate dal Motore su App/Web",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare sui canali digitali (App/Web) le offerte generate dal Motore con le informazioni minime necessarie",
+    "benefit": "valutare rapidamente la proposta e decidere se procedere con l’acquisto in modalità self-service",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare sui canali App/Web le offerte generate dal Motore con le informazioni essenziali\nIn modo che possa valutarle rapidamente e decidere se procedere all’acquisto",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore genera un’offerta per il cliente ALLORA l’offerta è resa disponibile al canale digitale tramite meccanismi concordati (es. API/endpoint/canale di integrazione).",
+      "QUANDO il cliente accede alla visualizzazione offerte su App/Web ALLORA l’offerta generata dal Motore risulta visualizzabile correttamente (verificabile in demo/esercitazione su mockup App/Web).",
+      "QUANDO un’offerta è visualizzata su App/Web ALLORA sono presenti almeno: prodotto suggerito, eventuale sconto/condizione, motivazione (se prevista) secondo quanto concordato con il Team Marketing."
+    ],
+    "business_rules": [
+      "Le informazioni minime da mostrare (prodotto suggerito, eventuale sconto/condizione, motivazione se prevista) devono essere allineate a quanto concordato con il Team Marketing.",
+      "La disponibilità dell’offerta sul canale digitale dipende dall’esposizione tramite meccanismi di integrazione (API/endpoint/canali concordati) tra Motore e canale."
+    ],
+    "edge_cases": [
+      "Assenza di offerte generate per il cliente: il canale digitale non mostra offerte e gestisce lo stato 'nessuna offerta disponibile' senza errori.",
+      "Meccanismo di integrazione non disponibile (es. API non raggiungibile): il canale digitale gestisce errore/timeout e non mostra dati parziali non coerenti.",
+      "Offerta ricevuta ma con campi minimi mancanti: l’offerta non è considerata 'visualizzabile correttamente' e deve essere gestita come anomalia (es. non visualizzata o visualizzata con fallback da definire)."
+    ],
+    "assumptions": [
+      "I touchpoint/posizione esatta in App/Web in cui l’offerta è visualizzata non è specificata nel requisito e verrà definita a livello di UX/UI dei canali digitali.",
+      "Il dettaglio del contratto dati (schema) e del canale tecnico (API vs altro) non è specificato: si assume che verrà definito tra Motore e canali digitali."
+    ],
+    "notes": "AC condivisi con REQ-UI-001.US02 e REQ-UI-001.US03: esposizione tramite meccanismi concordati e presenza delle informazioni minime. Il requisito è focalizzato sulla visibilità; non copre azioni utente (accetta/ignora) né aggiornamenti di stato."
+  },
+  {
+    "story_id": "REQ-UI-001.US02",
+    "title": "Visualizzare le offerte nel front-end commerciale per operatore (sportello/sala)",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare nel front end commerciale le offerte generate dal Motore con le informazioni minime necessarie",
+    "benefit": "presentare proposte coerenti e complete al cliente nel canale fisico",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio visualizzare nel front end commerciale le offerte generate dal Motore con le informazioni essenziali\nIn modo che possa presentare correttamente le proposte al cliente in ufficio postale",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore genera un’offerta per un cliente ALLORA l’offerta è resa disponibile al front end commerciale tramite meccanismi concordati (es. API/endpoint/canale di integrazione).",
+      "QUANDO l’operatore consulta le offerte nel front end commerciale ALLORA le offerte generate dal Motore risultano visualizzabili correttamente (verificabile in demo/esercitazione su mockup front end).",
+      "QUANDO un’offerta è visualizzata nel front end commerciale ALLORA sono presenti almeno: prodotto suggerito, eventuale sconto/condizione, motivazione (se prevista) secondo quanto concordato con il Team Marketing."
+    ],
+    "business_rules": [
+      "Le informazioni minime da mostrare devono rispettare gli accordi con il Team Marketing.",
+      "La visibilità nel front end commerciale è subordinata alla disponibilità di un meccanismo di integrazione concordato con il Motore."
+    ],
+    "edge_cases": [
+      "Nessuna offerta disponibile per il cliente: il front end gestisce lo scenario senza errori e senza mostrare dati incoerenti.",
+      "Integrazione non disponibile (es. endpoint non raggiungibile): il front end gestisce errore/timeout e consente all’operatore di proseguire senza visualizzazione offerte.",
+      "Offerta con dati minimi incompleti: l’offerta non è considerata visualizzabile correttamente e deve essere gestita come anomalia (comportamento di UI da definire)."
+    ],
+    "assumptions": [
+      "Il requisito cita OSP/OFE/figure di sala; si assume che tutti utilizzino un front end commerciale che espone la stessa capacità di visualizzazione offerte (eventuali differenze per profilo/ruolo non sono specificate).",
+      "Non sono specificate le modalità di ricerca/aggancio del cliente nel front end per recuperare le offerte: si assume esistano già nel front end o verranno definite in analisi di integrazione."
+    ],
+    "notes": "AC condivisi con REQ-UI-001.US01 e REQ-UI-001.US03: esposizione tramite meccanismi concordati e presenza delle informazioni minime. Questa US copre la prospettiva dell’operatore (sportello/sala) indipendentemente dalla sotto-tipologia (OSP/OFE/figure di sala)."
+  },
+  {
+    "story_id": "REQ-UI-001.US03",
+    "title": "Esportare/trasmettere le offerte ai canali digitali e al front-end commerciale",
+    "persona": "Motore di Offerte",
+    "goal": "rendere disponibili le offerte generate ai canali digitali e al front end commerciale tramite meccanismi concordati",
+    "benefit": "garantire la visibilità omnicanale delle offerte e la coerenza delle informazioni minime esposte",
+    "user_story": "Come Motore di Offerte\nVoglio trasmettere le offerte generate ai canali digitali e al front end commerciale tramite meccanismi concordati\nIn modo che le offerte siano visibili correttamente sui canali e includano le informazioni minime richieste",
+    "channels": [
+      "API/endpoint",
+      "integrazione verso App/Web",
+      "integrazione verso front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore genera un’offerta ALLORA esiste un meccanismo concordato (API/endpoint/canale) per trasmetterla ai canali digitali cliente.",
+      "QUANDO il Motore genera un’offerta ALLORA esiste un meccanismo concordato (API/endpoint/canale) per trasmetterla al front end commerciale degli uffici postali.",
+      "QUANDO viene effettuata una demo/esercitazione end-to-end su mockup App/Web e mockup front end ALLORA le offerte generate dal Motore risultano visualizzabili correttamente su entrambi i canali.",
+      "QUANDO il Motore espone un’offerta ai canali ALLORA l’offerta include almeno: prodotto suggerito, eventuale sconto/condizione, motivazione (se prevista) secondo quanto concordato con il Team Marketing."
+    ],
+    "business_rules": [
+      "Il payload esposto deve includere i campi minimi concordati con il Team Marketing (prodotto suggerito, eventuale sconto/condizione, motivazione se prevista).",
+      "Il Motore deve supportare la distribuzione delle offerte verso entrambi i domini canale: digitale (App/Web) e fisico (front end commerciale)."
+    ],
+    "edge_cases": [
+      "Canale destinatario non disponibile o non raggiungibile: il Motore gestisce l’errore di consegna/esposizione secondo le modalità tecniche previste (da definire).",
+      "Offerta generata senza motivazione: se la motivazione non è prevista per quella tipologia, il campo può essere assente; se è prevista e manca, l’offerta non soddisfa i requisiti minimi di visualizzazione.",
+      "Versioning/compatibilità payload: se un canale non supporta il formato aggiornato, la visualizzazione potrebbe fallire (necessario definire gestione versioni)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica se l’esposizione sia push o pull: si assume che la scelta (API pull, eventing, ecc.) sia demandata alla definizione di integrazione 'concordata'.",
+      "Non sono specificati i dettagli di sicurezza/autenticazione tra Motore e canali: si assume che siano gestiti da standard aziendali e definiti in progettazione tecnica."
+    ],
+    "notes": "Questa US copre l’AC 'meccanismi per trasmettere le offerte' e la completezza dei dati minimi. AC di demo/mockup condiviso con le US dei canali (REQ-UI-001.US01, REQ-UI-001.US02) come verifica end-to-end. Dipendenza esterna: definizione 'come concordato con il Team Marketing' per contenuto minimo e formati."
+  }
+]

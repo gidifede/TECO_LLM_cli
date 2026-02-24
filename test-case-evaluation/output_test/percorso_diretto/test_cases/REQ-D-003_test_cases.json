@@ -1,0 +1,318 @@
+[
+  {
+    "test_id": "REQ-D-003.TC01",
+    "title": "Creazione log minimo per evento di proposta bundle con tutti i campi obbligatori popolati",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di logging attivo e raggiungibile dall'applicazione che genera l'evento di proposta",
+      "Esiste un cliente con identificativo 'CLI-10001' associato al cluster 'CL-07'",
+      "Esiste un bundle con identificativo 'BND-2003'",
+      "È disponibile un meccanismo per generare un evento di proposta bundle (es. API/servizio interno o azione applicativa) in ambiente di test"
+    ],
+    "test_data": [
+      "bundle_id: BND-2003",
+      "cliente_id: CLI-10001",
+      "cluster_id: CL-07",
+      "motivo_proposta: regola_marketing",
+      "canale: web"
+    ],
+    "steps": [
+      "Generare un evento di proposta bundle per il cliente 'CLI-10001' con bundle 'BND-2003', motivo 'regola_marketing' e canale 'web'",
+      "Recuperare il record di log più recente relativo all'evento generato (tramite storage log o API di consultazione log)",
+      "Verificare la presenza dei campi nel record di log"
+    ],
+    "expected_results": [
+      "È presente un nuovo record di log associabile all'evento di proposta appena generato",
+      "Il record contiene i campi: bundle_id, cliente_id (o riferimento identificativo previsto), cluster_id, motivo_proposta, timestamp, canale",
+      "bundle_id = 'BND-2003'",
+      "cliente_id (o riferimento identificativo previsto) = 'CLI-10001'",
+      "cluster_id = 'CL-07'",
+      "motivo_proposta = 'regola_marketing'",
+      "canale = 'web'",
+      "timestamp è valorizzato e rappresenta una data/ora valida (formato coerente con lo standard di logging adottato) ed è compreso tra l'inizio e la fine dell'esecuzione del test"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori/canali sono inferiti dal requisito (touchpoint/canale). Il requisito non specifica formato del timestamp né il mezzo di consultazione dei log: il test assume esista un metodo affidabile per recuperare il record (query su storage log o API)."
+  },
+  {
+    "test_id": "REQ-D-003.TC02",
+    "title": "Dashboard: filtro log proposte per bundle",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard di consultazione log disponibile",
+      "Esistono almeno 2 record di log proposte con bundle_id diversi, inclusi: BND-2003 e BND-9999",
+      "L'utente di test ha accesso alla dashboard e ai log proposte"
+    ],
+    "test_data": [
+      "Filtro bundle_id: BND-2003"
+    ],
+    "steps": [
+      "Accedere alla dashboard di consultazione log proposte",
+      "Impostare il filtro 'bundle' con valore 'BND-2003'",
+      "Applicare i filtri",
+      "Aprire il dettaglio di almeno un record restituito"
+    ],
+    "expected_results": [
+      "La lista dei log mostrata contiene solo record con bundle_id = 'BND-2003'",
+      "Nessun record con bundle_id diverso da 'BND-2003' è presente nei risultati",
+      "Nel dettaglio del record sono visibili i campi previsti dallo schema minimo (bundle_id, cliente_id/riferimento, cluster_id, motivo_proposta, timestamp, canale)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il nome esatto dei controlli UI (campi filtro) né l'ordinamento di default: il test verifica il comportamento funzionale del filtro."
+  },
+  {
+    "test_id": "REQ-D-003.TC03",
+    "title": "Dashboard: filtro log proposte per cliente",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard di consultazione log disponibile",
+      "Esistono record di log proposte per i clienti 'CLI-10001' e 'CLI-20002'",
+      "L'utente di test ha accesso alla dashboard e ai log proposte"
+    ],
+    "test_data": [
+      "Filtro cliente_id (o riferimento identificativo previsto): CLI-10001"
+    ],
+    "steps": [
+      "Accedere alla dashboard di consultazione log proposte",
+      "Impostare il filtro 'cliente' con valore 'CLI-10001'",
+      "Applicare i filtri",
+      "Verificare i valori del campo cliente_id (o riferimento identificativo previsto) su almeno 3 record (se presenti)"
+    ],
+    "expected_results": [
+      "La lista dei log mostrata contiene solo record associati al cliente 'CLI-10001' (cliente_id o riferimento identificativo previsto)",
+      "Nessun record associato a clienti diversi da 'CLI-10001' è presente nei risultati"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito ammette 'cliente_id (o riferimento identificativo previsto)': il test accetta uno dei due, purché coerente e filtrabile dalla dashboard."
+  },
+  {
+    "test_id": "REQ-D-003.TC04",
+    "title": "Dashboard: filtro log proposte per cluster",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard di consultazione log disponibile",
+      "Esistono record di log proposte per cluster 'CL-07' e 'CL-99'",
+      "L'utente di test ha accesso alla dashboard e ai log proposte"
+    ],
+    "test_data": [
+      "Filtro cluster_id: CL-07"
+    ],
+    "steps": [
+      "Accedere alla dashboard di consultazione log proposte",
+      "Impostare il filtro 'cluster' con valore 'CL-07'",
+      "Applicare i filtri",
+      "Verificare i valori del campo cluster_id su almeno 3 record (se presenti)"
+    ],
+    "expected_results": [
+      "La lista dei log mostrata contiene solo record con cluster_id = 'CL-07'",
+      "Nessun record con cluster_id diverso da 'CL-07' è presente nei risultati"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": ""
+  },
+  {
+    "test_id": "REQ-D-003.TC05",
+    "title": "Dashboard: filtro log proposte per periodo temporale (range inclusivo)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard di consultazione log disponibile",
+      "Esistono record di log proposte con timestamp distribuiti su almeno 3 giorni consecutivi (es. 2026-02-20, 2026-02-21, 2026-02-22)",
+      "L'utente di test ha accesso alla dashboard e ai log proposte"
+    ],
+    "test_data": [
+      "Periodo: dal 2026-02-21 00:00:00 al 2026-02-21 23:59:59 (timezone coerente con la dashboard)"
+    ],
+    "steps": [
+      "Accedere alla dashboard di consultazione log proposte",
+      "Impostare il filtro periodo con data/ora inizio '2026-02-21 00:00:00'",
+      "Impostare il filtro periodo con data/ora fine '2026-02-21 23:59:59'",
+      "Applicare i filtri",
+      "Controllare i timestamp di un campione di record restituiti",
+      "Verificare che record fuori intervallo non siano presenti"
+    ],
+    "expected_results": [
+      "La lista dei log mostrata contiene solo record con timestamp compreso nel range impostato (inclusi gli estremi, se la dashboard li supporta come inclusivi)",
+      "Nessun record con timestamp precedente a '2026-02-21 00:00:00' o successivo a '2026-02-21 23:59:59' è presente nei risultati"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica timezone e inclusività degli estremi del range: il test verifica l'assenza di record palesemente fuori intervallo e richiede coerenza con la configurazione della dashboard."
+  },
+  {
+    "test_id": "REQ-D-003.TC06",
+    "title": "Evento di proposta: gestione campo obbligatorio mancante (cliente_id/riferimento) e non scrittura log incompleto",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di logging attivo e raggiungibile",
+      "È disponibile un meccanismo per generare un evento di proposta bundle in ambiente di test",
+      "Esiste un bundle con identificativo 'BND-2003'"
+    ],
+    "test_data": [
+      "bundle_id: BND-2003",
+      "cliente_id: (assente/null)",
+      "cluster_id: CL-07",
+      "motivo_proposta: modello_propensity",
+      "canale: app"
+    ],
+    "steps": [
+      "Tentare di generare un evento di proposta bundle omettendo il cliente_id (o riferimento identificativo previsto)",
+      "Recuperare i record di log relativi al periodo del test e filtrare per bundle_id 'BND-2003' e timestamp del test",
+      "Verificare l'eventuale presenza di record generati dall'azione"
+    ],
+    "expected_results": [
+      "Il sistema non persiste un record di log con campi obbligatori mancanti (in particolare cliente_id/riferimento)",
+      "Se l'applicazione espone un esito dell'operazione, l'evento viene rifiutato con errore di validazione (es. 4xx o messaggio applicativo) indicando il campo mancante",
+      "Non esistono record nel log in cui cliente_id/riferimento sia nullo/vuoto per l'evento appena tentato"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito non esplicita il comportamento in caso di campi obbligatori mancanti (rifiuto evento vs defaulting): il test assume che non sia ammessa la scrittura di log incompleti e che l'evento venga bloccato o segnalato con errore."
+  },
+  {
+    "test_id": "REQ-D-003.TC07",
+    "title": "Evento di proposta: gestione campo obbligatorio mancante (motivo_proposta) e non scrittura log incompleto",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Sistema di logging attivo e raggiungibile",
+      "È disponibile un meccanismo per generare un evento di proposta bundle in ambiente di test",
+      "Esiste un cliente 'CLI-10001' nel cluster 'CL-07'",
+      "Esiste un bundle 'BND-2003'"
+    ],
+    "test_data": [
+      "bundle_id: BND-2003",
+      "cliente_id: CLI-10001",
+      "cluster_id: CL-07",
+      "motivo_proposta: (assente/null)",
+      "canale: web"
+    ],
+    "steps": [
+      "Tentare di generare un evento di proposta bundle omettendo il motivo_proposta",
+      "Recuperare i record di log relativi al periodo del test e filtrare per cliente_id 'CLI-10001' e timestamp del test",
+      "Verificare l'eventuale presenza di record generati dall'azione"
+    ],
+    "expected_results": [
+      "Il sistema non persiste un record di log con motivo_proposta nullo/vuoto per l'evento appena tentato",
+      "Se l'applicazione espone un esito dell'operazione, l'evento viene rifiutato con errore di validazione indicando il campo mancante"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Assunzione: motivo_proposta è un campo obbligatorio sempre popolato e non può essere derivato automaticamente se mancante."
+  },
+  {
+    "test_id": "REQ-D-003.TC08",
+    "title": "Integrazione: indisponibilità del sistema di logging durante evento di proposta",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile un meccanismo per generare un evento di proposta bundle in ambiente di test",
+      "Esiste un cliente 'CLI-10001' nel cluster 'CL-07'",
+      "Esiste un bundle 'BND-2003'",
+      "Il sistema di logging (o endpoint/collector) può essere reso indisponibile (es. stop servizio, blocco rete) per il tempo del test"
+    ],
+    "test_data": [
+      "bundle_id: BND-2003",
+      "cliente_id: CLI-10001",
+      "cluster_id: CL-07",
+      "motivo_proposta: stato_sottoscrivibilita",
+      "canale: web"
+    ],
+    "steps": [
+      "Rendere indisponibile il sistema di logging/collector",
+      "Generare un evento di proposta bundle con i dati di test",
+      "Ripristinare la disponibilità del sistema di logging/collector",
+      "Verificare se il record di log dell'evento è presente dopo il ripristino"
+    ],
+    "expected_results": [
+      "Durante l'indisponibilità, il sistema gestisce l'errore di logging senza generare record parziali o corrotti",
+      "Dopo il ripristino, il sistema non presenta record di log con campi obbligatori mancanti per l'evento",
+      "Se è previsto un meccanismo di retry/buffer, il record viene scritto integralmente dopo il ripristino; in caso contrario, l'assenza del record è tracciata tramite un errore applicativo/monitoring (se disponibile)"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la strategia in caso di failure del logging (retry, coda, best-effort). Il test verifica almeno che non vengano creati log incompleti e che l'errore sia gestito in modo controllato."
+  },
+  {
+    "test_id": "REQ-D-003.TC09",
+    "title": "Edge case: verifica formato/valorizzazione timestamp e ordinabilità in dashboard su eventi ravvicinati",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Sistema di logging attivo e raggiungibile",
+      "Dashboard di consultazione log disponibile",
+      "Esiste un cliente 'CLI-10001' nel cluster 'CL-07'",
+      "Esiste un bundle 'BND-2003'"
+    ],
+    "test_data": [
+      "Generare 3 eventi di proposta per lo stesso cliente e bundle a distanza di ~1 secondo l'uno dall'altro",
+      "motivo_proposta: modello_propensity",
+      "canale: web"
+    ],
+    "steps": [
+      "Generare il primo evento di proposta bundle",
+      "Attendere circa 1 secondo",
+      "Generare il secondo evento di proposta bundle",
+      "Attendere circa 1 secondo",
+      "Generare il terzo evento di proposta bundle",
+      "Aprire la dashboard e filtrare per cliente 'CLI-10001' e periodo che includa i 3 eventi",
+      "Ordinare i risultati per timestamp (se la dashboard supporta l'ordinamento) o verificare la visualizzazione del timestamp nei record"
+    ],
+    "expected_results": [
+      "Ogni record di log generato contiene un timestamp valorizzato e coerente (nessun valore nullo/vuoto)",
+      "I timestamp dei tre record sono distinguibili e coerenti con la sequenza di generazione (non decrescenti rispetto all'ordine di creazione)",
+      "La dashboard visualizza i record con timestamp leggibile e utilizzabile per filtraggio/ordinamento"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce granularità del timestamp (secondi/millisecondi). Il test verifica coerenza e utilizzabilità operativa in dashboard."
+  }
+]

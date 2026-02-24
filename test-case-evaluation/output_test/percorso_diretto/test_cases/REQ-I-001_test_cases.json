@@ -1,0 +1,269 @@
+[
+  {
+    "test_id": "REQ-I-001.TC01",
+    "title": "Integrazione: ricezione di una lista ordinata di raccomandazioni tramite canale esposto",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale di integrazione per l’ingestione raccomandazioni esterne è disponibile e raggiungibile (endpoint attivo o coda attiva).",
+      "Sono disponibili credenziali/chiavi di accesso valide per il sistema esterno (se previste dal canale).",
+      "Logging applicativo abilitato per tracciare richiesta e risposta/correlation-id."
+    ],
+    "test_data": [
+      "Cliente: customerId=12345",
+      "Lista raccomandazioni ordinata (3 elementi): [{productId=SKU-1001, priority=1, cluster=CL_A, reason='Up-sell basato su storico acquisti'}, {productId=SKU-2002, priority=2, cluster=CL_A, reason='Prodotto complementare'}, {productId=SKU-3003, priority=3, cluster=CL_A, reason='Trend del cluster'}]"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione una richiesta contenente customerId e la lista ordinata di raccomandazioni con i campi previsti.",
+      "Acquisire l’esito della chiamata (HTTP status/ack messaggio) e l’eventuale correlation-id restituito.",
+      "Verificare nei log o in un’area di persistenza tecnica che la richiesta sia stata ricevuta e associata al customerId."
+    ],
+    "expected_results": [
+      "Il canale accetta la richiesta e restituisce un esito di ricezione positivo (es. HTTP 2xx o ACK).",
+      "Il sistema registra che è stata ricevuta una lista di raccomandazioni per customerId=12345.",
+      "L’ordine di input è acquisito dal motore come lista ordinata (priority 1..3) senza riordinamenti in fase di ricezione."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non specifica il tipo di canale (REST, messaging, file). Il test va adattato all’implementazione effettiva mantenendo invariati controlli su ricezione e preservazione dell’ordinamento."
+  },
+  {
+    "test_id": "REQ-I-001.TC02",
+    "title": "Validazione payload: supporto dei campi productId, priorità, cluster cliente e motivazione",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale di integrazione è disponibile.",
+      "È disponibile un meccanismo di ispezione del payload validato (es. schema validation, log strutturati o persistenza della richiesta)."
+    ],
+    "test_data": [
+      "Cliente: customerId=67890",
+      "Raccomandazioni (2 elementi): [{productId=SKU-5555, priority=1, cluster=CL_B, reason='Propensione alta su categoria X'}, {productId=SKU-6666, priority=2, cluster=CL_B, reason='Acquisti recenti correlati'}]"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione una richiesta con i campi productId, priority, cluster e reason valorizzati per ogni raccomandazione.",
+      "Recuperare dal sistema la rappresentazione interna dell’input (log/persistenza tecnica/evento interno) associata alla richiesta.",
+      "Verificare la presenza e la corretta mappatura dei campi per ciascun elemento della lista."
+    ],
+    "expected_results": [
+      "Per ogni raccomandazione ricevuta, il sistema rende disponibili internamente i campi: identificatore prodotto, ordine/priorità, cluster cliente e motivazione.",
+      "I valori dei campi sono mappati senza alterazioni (es. productId=SKU-5555, priority=1, cluster=CL_B, reason come da input)."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non definisce vincoli di formato (lunghezze, enum, obbligatorietà per campo). Il test verifica il supporto e la mappatura, non la validazione sintattica dettagliata."
+  },
+  {
+    "test_id": "REQ-I-001.TC03",
+    "title": "Elaborazione: applicazione delle configurazioni locali (filtri/matrix/regole frequenza) alle raccomandazioni esterne",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale di integrazione è disponibile.",
+      "Sono attive configurazioni locali di elaborazione (definite altrove) che impattano l’output: un filtro prodotti e una regola di frequenza.",
+      "È disponibile un modo per ottenere l’output del motore (es. API di lettura raccomandazioni elaborate, evento in uscita, persistenza)."
+    ],
+    "test_data": [
+      "Configurazione locale: filtro che esclude productId=SKU-2002",
+      "Configurazione locale: regola di frequenza che limita a massimo 2 raccomandazioni restituibili",
+      "Cliente: customerId=12345",
+      "Input ordinato: [{productId=SKU-1001, priority=1, cluster=CL_A, reason='Up-sell'}, {productId=SKU-2002, priority=2, cluster=CL_A, reason='Complementare'}, {productId=SKU-3003, priority=3, cluster=CL_A, reason='Trend'}]"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione la lista ordinata di raccomandazioni per customerId=12345.",
+      "Attendere il completamento dell’elaborazione secondo i tempi previsti (o consumare l’evento di output).",
+      "Recuperare l’elenco di raccomandazioni elaborate prodotte dal motore per customerId=12345.",
+      "Verificare che le configurazioni locali siano state applicate al set di raccomandazioni risultante."
+    ],
+    "expected_results": [
+      "Il motore elabora le raccomandazioni ricevute come input primario esterno e produce un output coerente con le configurazioni locali attive.",
+      "Il prodotto SKU-2002 non è presente nell’output (applicazione filtro).",
+      "L’output contiene al massimo 2 raccomandazioni (applicazione regola di frequenza).",
+      "Tra le raccomandazioni rimanenti, l’ordine rispetta la priorità di input per gli elementi non esclusi (SKU-1001 prima di SKU-3003)."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Le specifiche delle configurazioni locali (filtri/matrix/frequenza) sono in altri requisiti: questo test richiede che almeno una configurazione escluda un prodotto e una limiti la numerosità per poter verificare l’applicazione delle regole."
+  },
+  {
+    "test_id": "REQ-I-001.TC04",
+    "title": "Negativo: payload non valido con campi obbligatori mancanti (productId o priorità)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale di integrazione è disponibile.",
+      "È definito un meccanismo di validazione del payload (schema o validazione applicativa) e una modalità di risposta errore (HTTP 4xx o messaggio di scarto)."
+    ],
+    "test_data": [
+      "Cliente: customerId=99999",
+      "Raccomandazioni: [{productId=null, priority=1, cluster=CL_X, reason='Test missing productId'}]",
+      "Variante: [{productId=SKU-7777, priority=null, cluster=CL_X, reason='Test missing priority'}]"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione il payload con productId mancante.",
+      "Rilevare la risposta del canale o l’esito di ingestione (errore/scarto).",
+      "Inviare al canale di integrazione il payload con priority mancante.",
+      "Rilevare la risposta del canale o l’esito di ingestione (errore/scarto)."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta o scarta il payload con productId mancante, restituendo un errore di validazione (es. HTTP 400 o motivo di scarto tracciato).",
+      "Il sistema rifiuta o scarta il payload con priority mancante, restituendo un errore di validazione (es. HTTP 400 o motivo di scarto tracciato).",
+      "Non viene avviata l’elaborazione per i payload rifiutati (nessun output raccomandazioni generato per customerId=99999)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito dichiara che il payload 'supporta' i campi ma non esplicita obbligatorietà/gestione errori. Assunzione per rendere testabile: productId e priority sono necessari per elaborare una lista ordinata; in mancanza il payload deve essere rifiutato o scartato con motivazione tracciabile."
+  },
+  {
+    "test_id": "REQ-I-001.TC05",
+    "title": "Edge case: priorità duplicate o non sequenziali nella lista ordinata",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Il canale di integrazione è disponibile.",
+      "È disponibile un modo per osservare l’ordine risultante dopo la ricezione/elaborazione (output o log strutturati)."
+    ],
+    "test_data": [
+      "Cliente: customerId=24680",
+      "Input con priorità duplicate: [{productId=SKU-1111, priority=1, cluster=CL_C, reason='R1'}, {productId=SKU-2222, priority=1, cluster=CL_C, reason='R2'}]",
+      "Input con priorità non sequenziali: [{productId=SKU-3333, priority=10, cluster=CL_C, reason='R3'}, {productId=SKU-4444, priority=20, cluster=CL_C, reason='R4'}]"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione la lista con priorità duplicate.",
+      "Recuperare l’esito di ingestione e l’eventuale output prodotto.",
+      "Inviare al canale di integrazione la lista con priorità non sequenziali.",
+      "Recuperare l’esito di ingestione e l’eventuale output prodotto."
+    ],
+    "expected_results": [
+      "Il sistema gestisce in modo deterministico l’input con priorità duplicate secondo la regola implementata (rifiuto con errore di validazione oppure accettazione mantenendo un ordinamento ripetibile).",
+      "Il sistema accetta l’input con priorità non sequenziali e preserva l’ordinamento relativo coerente con i valori di priorità (10 prima di 20), salvo applicazione di configurazioni locali."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non specifica come trattare priorità duplicate/non sequenziali. Il test verifica che il comportamento sia deterministico e osservabile; la regola attesa va allineata alla decisione di design (validazione vs accettazione)."
+  },
+  {
+    "test_id": "REQ-I-001.TC06",
+    "title": "Authorization: accesso al canale di integrazione con credenziali non valide o mancanti",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Il canale di integrazione prevede un meccanismo di autenticazione/autorizzazione (es. API key, OAuth2, mTLS).",
+      "È disponibile una credenziale valida e una credenziale non valida (o assenza di credenziale)."
+    ],
+    "test_data": [
+      "Richiesta con credenziale mancante",
+      "Richiesta con credenziale non valida: apiKey='INVALID-KEY-000'",
+      "Payload valido: [{productId=SKU-1001, priority=1, cluster=CL_A, reason='Up-sell'}]"
+    ],
+    "steps": [
+      "Inviare una richiesta al canale di integrazione con payload valido ma senza credenziali.",
+      "Rilevare l’esito della chiamata.",
+      "Inviare una richiesta al canale di integrazione con payload valido ma con credenziale non valida.",
+      "Rilevare l’esito della chiamata."
+    ],
+    "expected_results": [
+      "La richiesta senza credenziali è rifiutata con errore di autorizzazione (es. HTTP 401/403 o equivalente sul canale).",
+      "La richiesta con credenziale non valida è rifiutata con errore di autorizzazione (es. HTTP 401/403 o equivalente sul canale).",
+      "Nessuna raccomandazione viene acquisita/elaborata dal motore per le richieste rifiutate."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non menziona esplicitamente sicurezza/ruoli; questo test è incluso come controllo standard per un canale di integrazione enterprise. Se il canale è intenzionalmente pubblico, il test va adattato/omesso in base alle specifiche di security."
+  },
+  {
+    "test_id": "REQ-I-001.TC07",
+    "title": "Negativo: indisponibilità del canale/servizio di ingestione (timeout/errore) e gestione dell’esito",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "È possibile simulare l’indisponibilità del canale o del servizio che riceve le raccomandazioni (es. spegnimento servizio, fault injection, rete bloccata).",
+      "Sono definiti retry/timeout lato client o lato canale (se applicabili) e un tracciamento degli errori."
+    ],
+    "test_data": [
+      "Cliente: customerId=13579",
+      "Payload valido: [{productId=SKU-8888, priority=1, cluster=CL_D, reason='Test resilienza'}]"
+    ],
+    "steps": [
+      "Rendere indisponibile il servizio/canale di ingestione (o introdurre un fault che generi timeout).",
+      "Inviare il payload valido al canale di integrazione.",
+      "Rilevare l’esito lato chiamante (timeout/errore) e verificare la presenza di log/metriche di errore sul motore.",
+      "Ripristinare la disponibilità del servizio/canale."
+    ],
+    "expected_results": [
+      "La richiesta non viene accettata quando il canale/servizio è indisponibile e viene restituito un errore o un timeout coerente con la configurazione.",
+      "L’errore è tracciato in modo osservabile (log/metriche) con informazioni sufficienti a correlare la richiesta (es. correlation-id o dettagli richiesta).",
+      "Non viene prodotto output di raccomandazioni per customerId=13579 a seguito della richiesta fallita."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non definisce requisiti di resilienza (retry, DLQ, idempotenza). Il test si limita a verificare gestione dell’indisponibilità e tracciabilità dell’errore."
+  },
+  {
+    "test_id": "REQ-I-001.TC08",
+    "title": "E2E: ingestione raccomandazioni esterne con info addizionali e produzione output elaborato secondo regole locali",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale di integrazione attivo.",
+      "Configurazioni locali di elaborazione attive (almeno un filtro o regola) e osservabili nell’output.",
+      "Disponibile un endpoint/evento/report per consultare l’output finale delle raccomandazioni per un cliente."
+    ],
+    "test_data": [
+      "Cliente: customerId=11223",
+      "Input ordinato (3 elementi): [{productId=SKU-9100, priority=1, cluster=CL_E, reason='Motivo 1'}, {productId=SKU-9200, priority=2, cluster=CL_E, reason='Motivo 2'}, {productId=SKU-9300, priority=3, cluster=CL_E, reason='Motivo 3'}]",
+      "Configurazione locale: filtro che esclude SKU-9200 (o altra regola equivalente verificabile)"
+    ],
+    "steps": [
+      "Inviare al canale di integrazione l’input ordinato con cluster e motivazioni per customerId=11223.",
+      "Attendere la fine dell’elaborazione.",
+      "Recuperare l’output finale delle raccomandazioni per customerId=11223.",
+      "Verificare che l’output rifletta l’ordine di input per gli elementi ammessi e l’applicazione delle regole locali."
+    ],
+    "expected_results": [
+      "Il flusso end-to-end completa senza errori dalla ricezione dell’input alla disponibilità dell’output finale.",
+      "L’output non contiene SKU-9200 (o il prodotto previsto dalla regola locale configurata).",
+      "L’output mantiene l’ordinamento coerente con la priorità di input per i prodotti non esclusi (es. SKU-9100 prima di SKU-9300)."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "integrazione"
+    ],
+    "notes": "Il requisito non specifica come e dove il motore esponga l’output; il test E2E va adattato al punto di uscita disponibile (API/evento/persistenza)."
+  }
+]

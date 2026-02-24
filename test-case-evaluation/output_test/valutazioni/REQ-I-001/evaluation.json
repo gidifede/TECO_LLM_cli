@@ -1,0 +1,114 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-I-001",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 55,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-001.TC01",
+        "detail": "Assume meccanismi specifici non citati (HTTP status/ACK, correlation-id, persistenza tecnica e logging) come parte dell’esito del canale."
+      },
+      {
+        "test_id": "REQ-I-001.TC03",
+        "detail": "Introduce dettagli di configurazioni locali specifiche e verifiche puntuali (filtro che esclude SKU-2002, limite massimo 2 raccomandazioni) non presenti nel requisito, che cita solo esempi generici."
+      },
+      {
+        "test_id": "REQ-I-001.TC04",
+        "detail": "Introduce regole di obbligatorietà e gestione errori (rifiuto/scarto con HTTP 400) per productId/priority non definite dal requisito (che dice solo che il payload 'supporta' i campi)."
+      },
+      {
+        "test_id": "REQ-I-001.TC05",
+        "detail": "Introduce casi e attese su priorità duplicate/non sequenziali e una 'regola implementata' di gestione, non descritta dal requisito."
+      },
+      {
+        "test_id": "REQ-I-001.TC06",
+        "detail": "Introduce requisiti di autenticazione/autorizzazione (API key/OAuth2/mTLS, 401/403) non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-I-001.TC07",
+        "detail": "Introduce requisiti di resilienza/errore canale (timeout, retry, metriche, correlation-id per errori) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-001.TC08",
+        "detail": "Assume l’esistenza di un punto di uscita specifico consultabile (endpoint/evento/report) per l’output; il requisito non specifica come l’output sia esposto."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-001.TC03",
+          "REQ-I-001.TC08"
+        ],
+        "detail": "Entrambi verificano ingestione + applicazione regole locali + controllo output/ordinamento; TC08 è sostanzialmente un E2E che ricopre lo scenario già coperto da TC03 con variazioni minori."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 9,
+    "coherence_score": 65,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-I-001.US01.TC01",
+        "detail": "Assume modalità di verifica tramite log/storage/interfaccia di monitoraggio per confrontare l’ordine; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC03",
+        "detail": "Introduce un dettaglio di configurazione locale specifica (filtro che esclude P-9999) e concetto di 'batch'/'attivare elaborazione', non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC04",
+        "detail": "Gestione di lista vuota e aspettativa su output assente/vuoto: scenario non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC05",
+        "detail": "Definisce una regola di gestione errore per elemento non valido ('scarto dell’elemento senza bloccare il batch') non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC06",
+        "detail": "Assume che in caso di priorità duplicata il comportamento minimo sia preservare l’ordine ricevuto; il requisito non definisce la gestione di duplicati."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC07",
+        "detail": "Assume opzionalità di cluster/motivazione e introduce 'fallback' per cluster/motivazione; il requisito non specifica obbligatorietà né fallback."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC08",
+        "detail": "Introduce DLQ/stato batch e logiche di retry come varianti; resilienza non prevista dal requisito."
+      },
+      {
+        "test_id": "REQ-I-001.US01.TC09",
+        "detail": "Introduce autenticazione/autorizzazione (API key/OAuth/mTLS, 401/403) non menzionata nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-I-001.US01.TC01",
+          "REQ-I-001.US01.TC06"
+        ],
+        "detail": "Entrambi verificano preservazione/gestione dell’ordine e determinismo dell’ordinamento in ricezione; TC06 è una variante molto vicina (duplicati) che ricade nello stesso ambito di controllo dell’ordine."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "indirect_persona",
+    "ranking": [
+      "indirect_persona",
+      "direct"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3). Il set direct introduce meno casi 'inventati' in termini di regole di business (ma aggiunge security/resilienza e vincoli di validazione) e presenta una ridondanza E2E vs integrazione (TC03/TC08). Il set indirect_persona aggiunge piu scenari extra (lista vuota, scarto elemento, fallback cluster/motivazione), ma nel complesso mantiene una tracciabilita piu aderente agli AC senza imporre obbligatorieta forti su campi (es. non introduce un rifiuto totale del payload come TC04 del set direct) e ha una ridondanza meno impattante. Per questo ottiene un punteggio di coerenza superiore (65 vs 55)."
+  }
+}

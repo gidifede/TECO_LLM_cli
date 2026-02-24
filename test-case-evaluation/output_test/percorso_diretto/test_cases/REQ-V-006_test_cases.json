@@ -1,0 +1,216 @@
+[
+  {
+    "test_id": "REQ-V-006.TC01",
+    "title": "Esclusione di combinazioni con flag regolatorio 'vietato' dalla proposta (canali supportati)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile e configuratore accessibile.",
+      "Esiste almeno una combinazione C_VIETATA contrassegnata con flag regolatorio 'vietato'.",
+      "Esiste almeno una combinazione C_CONSENTITA identica per famiglia/prodotto ma non contrassegnata come 'vietato'.",
+      "Motore di generazione offerte attivo e collegato al configuratore."
+    ],
+    "test_data": [
+      "C_VIETATA: Prodotto=Auto, Garanzia=Kasko, Franchigia=0 EUR, FlagRegolatorio=vietato",
+      "C_CONSENTITA: Prodotto=Auto, Garanzia=Kasko, Franchigia=250 EUR, FlagRegolatorio=consentito",
+      "Canali da validare: web, app (se disponibili nell'ambiente di test)"
+    ],
+    "steps": [
+      "Avvia la generazione di un'offerta sul canale web per il prodotto Auto con parametri che renderebbero selezionabile C_VIETATA.",
+      "Osserva le combinazioni/varianti proposte dal Motore nella UI/API del canale web.",
+      "Avvia la generazione di un'offerta sul canale app per il prodotto Auto con gli stessi parametri.",
+      "Osserva le combinazioni/varianti proposte dal Motore nella UI/API del canale app."
+    ],
+    "expected_results": [
+      "Sul canale web, C_VIETATA non è presente tra le combinazioni proposte/selezionabili.",
+      "Sul canale app, C_VIETATA non è presente tra le combinazioni proposte/selezionabili.",
+      "C_CONSENTITA risulta proponibile (se coerente con gli altri vincoli di configurazione), a dimostrazione che l'esclusione è dovuta al flag 'vietato' e non a indisponibilità generale."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "I canali supportati non sono elencati nel requisito; sono stati inferiti come web/app perché tipici del contesto. Se nell'ambiente di test sono presenti altri canali supportati, estendere l'esecuzione replicando gli stessi passi."
+  },
+  {
+    "test_id": "REQ-V-006.TC02",
+    "title": "Blocco automatico: rifiuto proposta con combinazione vietata senza override autorizzato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile.",
+      "Esiste una combinazione C_VIETATA contrassegnata con flag regolatorio 'vietato'.",
+      "Esiste un utente U_STANDARD senza permessi di override su combinazioni vietate.",
+      "È possibile inviare al Motore una richiesta di proposta che includa esplicitamente la combinazione (via UI o API)."
+    ],
+    "test_data": [
+      "Utente: U_STANDARD (ruolo: SalesBase, permesso override_vietato=false)",
+      "Richiesta proposta: include C_VIETATA (es. Prodotto=Auto, Garanzia=Kasko, Franchigia=0 EUR)"
+    ],
+    "steps": [
+      "Autenticati come U_STANDARD sul canale disponibile (web o app) oppure prepara la chiamata API con le credenziali di U_STANDARD.",
+      "Invia una richiesta di generazione proposta che includa/forzi C_VIETATA.",
+      "Acquisisci l'esito della generazione proposta (stato risposta, messaggio di errore, eventuale ID proposta)."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta la proposta: non viene creata alcuna proposta valida contenente C_VIETATA.",
+      "L'esito restituito indica chiaramente il rifiuto per vincolo regolatorio (codice/causale coerente e verificabile).",
+      "Non esiste nel sistema una proposta in stato 'proposta/attiva' che contenga C_VIETATA per la richiesta effettuata."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica codici errore o messaggistica; l'atteso richiede almeno una causale verificabile riconducibile al vincolo 'vietato'. Se l'inclusione 'esplicita' della combinazione non è possibile da UI, eseguire via API/integration test."
+  },
+  {
+    "test_id": "REQ-V-006.TC03",
+    "title": "Override manuale autorizzato: proposta consentita e audit trail registrato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile.",
+      "Esiste una combinazione C_VIETATA contrassegnata con flag regolatorio 'vietato'.",
+      "Esiste un utente U_OVERRIDE con permesso esplicito di override per combinazioni vietate configurato nei ruoli/permessi.",
+      "È disponibile un meccanismo di override manuale (azione utente o parametro richiesta) e un audit trail consultabile (log applicativo o tabella audit)."
+    ],
+    "test_data": [
+      "Utente: U_OVERRIDE (ruolo: Supervisor, permesso override_vietato=true)",
+      "Richiesta proposta: include C_VIETATA e indicazione di override manuale=true",
+      "Metadati audit attesi: utente=U_OVERRIDE, azione=override_vietato, combinazione=C_VIETATA, timestamp valorizzato"
+    ],
+    "steps": [
+      "Autenticati come U_OVERRIDE sul canale disponibile (web o app) oppure prepara la chiamata API con le credenziali di U_OVERRIDE.",
+      "Esegui l'azione di override manuale prevista (es. selezione 'Override' in UI o parametro override=true nella richiesta).",
+      "Invia la richiesta di generazione proposta includendo C_VIETATA con override attivo.",
+      "Recupera l'offerta/proposta generata e verifica le combinazioni incluse.",
+      "Consulta l'audit trail relativo all'operazione (per ID proposta o correlazione richiesta)."
+    ],
+    "expected_results": [
+      "La proposta viene generata con successo includendo C_VIETATA solo perché l'override è autorizzato.",
+      "L'audit trail contiene un record dell'azione di override con almeno: identificativo utente, azione di override, riferimento alla combinazione vietata e timestamp.",
+      "La tracciatura è associabile in modo univoco alla proposta generata (es. tramite ID proposta o correlation-id)."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica dove sia consultabile l'audit trail né i campi minimi; sono stati assunti campi standard (utente, azione, riferimento combinazione, timestamp) per rendere l'AC verificabile."
+  },
+  {
+    "test_id": "REQ-V-006.TC04",
+    "title": "Tentativo di override manuale senza autorizzazione: proposta rifiutata e nessun audit di override valido",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile.",
+      "Esiste una combinazione C_VIETATA contrassegnata con flag regolatorio 'vietato'.",
+      "Esiste un utente U_STANDARD senza permessi di override su combinazioni vietate.",
+      "È disponibile un meccanismo di override manuale (azione utente o parametro richiesta) e un audit trail consultabile."
+    ],
+    "test_data": [
+      "Utente: U_STANDARD (ruolo: SalesBase, permesso override_vietato=false)",
+      "Richiesta proposta: include C_VIETATA e indicazione di override manuale=true"
+    ],
+    "steps": [
+      "Autenticati come U_STANDARD sul canale disponibile (web o app) oppure prepara la chiamata API con le credenziali di U_STANDARD.",
+      "Tenta di attivare l'override manuale (UI) oppure invia la richiesta con override=true includendo C_VIETATA.",
+      "Acquisisci l'esito della richiesta (stato risposta, messaggio di errore, eventuale ID proposta).",
+      "Consulta l'audit trail per verificare eventuali tracce dell'operazione."
+    ],
+    "expected_results": [
+      "Il sistema rifiuta la proposta perché l'override non è autorizzato e C_VIETATA resta proibita.",
+      "Non viene generata alcuna proposta valida contenente C_VIETATA.",
+      "Non risulta alcun audit trail che attesti un override riuscito per U_STANDARD sulla combinazione C_VIETATA (eventuali log di tentativo fallito sono accettabili se previsti dal sistema, ma non devono risultare come override applicato)."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito richiede audit trail per l'eccezione autorizzata, ma non specifica la gestione del tentativo non autorizzato; il test verifica almeno l'assenza di un override 'applicato'."
+  },
+  {
+    "test_id": "REQ-V-006.TC05",
+    "title": "Integrazione: indisponibilità del servizio/configuratore dei flag 'vietato' durante la generazione proposta",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile.",
+      "Il Motore recupera i flag regolatori 'vietato' dal configuratore o servizio esterno (dipendenza).",
+      "È possibile simulare indisponibilità/timeout del servizio configuratore (es. tramite mock, fault injection o disabilitazione controllata)."
+    ],
+    "test_data": [
+      "Scenario fault: configuratore non raggiungibile (HTTP 503) oppure timeout > 10s",
+      "Richiesta proposta: parametri standard per generazione offerta Auto"
+    ],
+    "steps": [
+      "Configura la simulazione di indisponibilità/timeout del servizio configuratore per il recupero dei flag regolatori.",
+      "Invia una richiesta di generazione proposta al Motore.",
+      "Raccogli l'esito della richiesta e verifica l'eventuale presenza di una proposta generata."
+    ],
+    "expected_results": [
+      "Il sistema non propone combinazioni potenzialmente vietate in assenza di verifica dei flag: la generazione proposta viene bloccata o fallisce in modo controllato.",
+      "L'esito restituito indica un errore tecnico/di dipendenza esterna coerente e verificabile (es. servizio configuratore non disponibile).",
+      "Non viene creata una proposta valida che possa includere combinazioni vietate senza controllo."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non esplicita la strategia in caso di dipendenza esterna non disponibile; è stata applicata un'assunzione di sicurezza (fail-closed) coerente con 'vincolo normativo inderogabile'. Se il sistema adotta una strategia diversa, chiarire tramite requisiti/non-funzionali."
+  },
+  {
+    "test_id": "REQ-V-006.TC06",
+    "title": "Edge case: aggiornamento del flag a 'vietato' dopo una proposta preliminare e rigenerazione/riquotazione",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test disponibile.",
+      "Esiste una combinazione C_DINAMICA inizialmente non vietata (flag=consentito).",
+      "È possibile modificare il flag della combinazione nel configuratore da consentito a vietato.",
+      "È possibile rigenerare/riquotare una proposta esistente o ripetere la generazione con stessi parametri."
+    ],
+    "test_data": [
+      "C_DINAMICA: Prodotto=Auto, Garanzia=FurtoIncendio, Massimale=25.000 EUR (inizialmente consentito, poi vietato)",
+      "Utente: U_STANDARD (override_vietato=false)"
+    ],
+    "steps": [
+      "Genera una proposta includendo C_DINAMICA quando il flag è impostato su consentito.",
+      "Verifica che la proposta sia stata generata e che includa C_DINAMICA.",
+      "Modifica nel configuratore il flag di C_DINAMICA da consentito a vietato.",
+      "Esegui una rigenerazione/riquotazione della proposta oppure ripeti la generazione con gli stessi parametri.",
+      "Raccogli l'esito della rigenerazione/nuova generazione."
+    ],
+    "expected_results": [
+      "Dopo l'aggiornamento a 'vietato', C_DINAMICA non viene più proposta/selezionata nelle nuove generazioni.",
+      "La rigenerazione/riquotazione senza override viene rifiutata oppure produce una proposta che esclude C_DINAMICA.",
+      "Non risulta alcuna proposta valida post-aggiornamento che includa C_DINAMICA senza override autorizzato."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non specifica la gestione di proposte già create prima del cambio flag; il test si concentra su nuove generazioni/rigenerazioni, coerentemente con 'generazione delle offerte'."
+  }
+]

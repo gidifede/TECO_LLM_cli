@@ -1,0 +1,227 @@
+[
+  {
+    "test_id": "REQ-F-019.TC01",
+    "title": "Visualizzazione CTA 'Aggiungi al carrello' nel trigger bundle (pop-up) e aggiunta immediata prodotto senza varianti",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente anonimo o autenticato (non rilevante ai fini del requisito) con sessione attiva",
+      "Carrello vuoto o con articoli pre-esistenti (registrare stato iniziale)",
+      "Configurazione attiva: esiste un trigger di proposta bundle che mostra un pop-up/tasca a comparsa con un prodotto suggerito acquistabile",
+      "Il prodotto suggerito non richiede selezione di varianti/opzioni (es. taglia/colore) ed è disponibile a stock"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1001",
+      "Prodotto suggerito nel bundle (senza varianti): SKU BUNDLE-2001, quantità 1, stock >= 10"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1001",
+      "Eseguire l'azione che attiva il trigger bundle (es. visualizzazione del pop-up/tasca a comparsa)",
+      "Verificare la presenza nel pop-up di un controllo azionabile per l'aggiunta al carrello (es. pulsante 'Aggiungi al carrello')",
+      "Cliccare il pulsante 'Aggiungi al carrello' nel pop-up",
+      "Aprire/visualizzare il carrello (mini-cart o pagina carrello)",
+      "Verificare la presenza del prodotto SKU BUNDLE-2001 nel carrello"
+    ],
+    "expected_results": [
+      "Nel pop-up è presente un pulsante o controllo chiaramente azionabile che consente l'aggiunta immediata del prodotto suggerito al carrello",
+      "Al click su 'Aggiungi al carrello' l'azione viene accettata dal sistema senza messaggi di errore",
+      "Il carrello risulta aggiornato e include SKU BUNDLE-2001 con quantità 1 (oltre agli eventuali articoli pre-esistenti)",
+      "Il contatore carrello/mini-cart (se presente) riflette l'aggiunta coerentemente con lo stato del carrello"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori non sono esplicitati nel requisito: si assume un utente e-commerce standard. Il requisito cita 'popup, tasca a comparsa o altro': il test è applicato al caso pop-up; per altri pattern UI equivalenti i controlli/risultati attesi restano invariati."
+  },
+  {
+    "test_id": "REQ-F-019.TC02",
+    "title": "E2E: aggiunta dal trigger bundle aggiorna il carrello senza errori (verifica end-to-end)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Servizi di carrello/checkout e catalogo disponibili (nessun degrado)",
+      "Utente con sessione attiva",
+      "Configurazione attiva: trigger bundle disponibile e prodotto suggerito acquistabile",
+      "Il prodotto suggerito non richiede varianti/opzioni ed è disponibile a stock"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1002",
+      "Prodotto suggerito nel bundle (senza varianti): SKU BUNDLE-2002, quantità 1, stock >= 5"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1002",
+      "Attivare il trigger bundle e visualizzare il pop-up/tasca",
+      "Cliccare 'Aggiungi al carrello' per SKU BUNDLE-2002",
+      "Aprire la pagina carrello",
+      "Verificare che SKU BUNDLE-2002 sia presente nel carrello",
+      "Ricaricare la pagina carrello",
+      "Verificare nuovamente che SKU BUNDLE-2002 sia presente nel carrello con quantità invariata"
+    ],
+    "expected_results": [
+      "L'operazione di aggiunta si completa senza errori applicativi o di rete visibili all'utente",
+      "La pagina carrello mostra SKU BUNDLE-2002 con quantità 1",
+      "Dopo ricarica pagina, lo stato del carrello è persistente e continua a includere SKU BUNDLE-2002 con quantità 1"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 richiede verifica end-to-end: il test valida la persistenza dello stato carrello lato utente. Eventuali verifiche tecniche (API/cart service) possono essere aggiunte come assert di automazione, ma non sono richieste dal requisito."
+  },
+  {
+    "test_id": "REQ-F-019.TC03",
+    "title": "Gestione varianti: aggiunta dal trigger bundle con selezione opzioni guidata e non bloccante",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente con sessione attiva",
+      "Configurazione attiva: trigger bundle disponibile e prodotto suggerito acquistabile",
+      "Il prodotto suggerito richiede selezione di varianti/opzioni (es. Taglia e Colore)",
+      "Le combinazioni di varianti usate nel test sono disponibili a stock"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1003",
+      "Prodotto suggerito nel bundle (con varianti): SKU BUNDLE-3001",
+      "Variante selezionata: Taglia = M, Colore = Nero, quantità 1"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1003",
+      "Attivare il trigger bundle e visualizzare il pop-up/tasca",
+      "Cliccare 'Aggiungi al carrello' per SKU BUNDLE-3001",
+      "Verificare che il sistema richieda la selezione delle opzioni/varianti necessarie",
+      "Selezionare Taglia = M",
+      "Selezionare Colore = Nero",
+      "Confermare l'aggiunta al carrello (azione di conferma prevista dal flusso varianti)",
+      "Aprire/visualizzare il carrello",
+      "Verificare la presenza nel carrello della variante selezionata di SKU BUNDLE-3001"
+    ],
+    "expected_results": [
+      "Dopo il click su 'Aggiungi al carrello', il sistema guida l'utente alla selezione delle varianti richieste (senza chiudere il flusso in errore)",
+      "Non vengono mostrati errori bloccanti durante la selezione delle opzioni",
+      "Dopo la conferma, il carrello si aggiorna e contiene SKU BUNDLE-3001 con Taglia M e Colore Nero, quantità 1"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica come venga presentata la selezione varianti (modale, step nel pop-up, redirect PDP): il test accetta qualsiasi UI purché il flusso sia guidato e porti all'aggiunta in carrello senza interruzioni."
+  },
+  {
+    "test_id": "REQ-F-019.TC04",
+    "title": "Negativo: click su 'Aggiungi al carrello' con prodotto suggerito non disponibile (out of stock)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente con sessione attiva",
+      "Configurazione attiva: trigger bundle disponibile",
+      "Il prodotto suggerito risulta non disponibile a stock al momento dell'aggiunta (stock = 0)"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1004",
+      "Prodotto suggerito nel bundle: SKU BUNDLE-2003, stock = 0"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1004",
+      "Attivare il trigger bundle e visualizzare il pop-up/tasca",
+      "Cliccare 'Aggiungi al carrello' per SKU BUNDLE-2003",
+      "Aprire/visualizzare il carrello",
+      "Verificare che SKU BUNDLE-2003 non sia presente nel carrello"
+    ],
+    "expected_results": [
+      "Il sistema non aggiunge al carrello un prodotto non disponibile",
+      "Viene mostrato un messaggio di errore o informativo coerente (es. 'Prodotto non disponibile') senza crash dell'interfaccia",
+      "Lo stato del carrello rimane invariato rispetto allo stato iniziale"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce i messaggi d'errore: ci si limita a verificare assenza di errori applicativi e mancata aggiunta al carrello."
+  },
+  {
+    "test_id": "REQ-F-019.TC05",
+    "title": "Negativo: servizio carrello non disponibile/timeout durante l'aggiunta dal trigger bundle",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente con sessione attiva",
+      "Configurazione attiva: trigger bundle disponibile e prodotto suggerito acquistabile",
+      "Simulazione indisponibilità del servizio carrello (es. risposta 5xx o timeout) al momento della richiesta di aggiunta"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1005",
+      "Prodotto suggerito nel bundle: SKU BUNDLE-2004, quantità 1"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1005",
+      "Attivare il trigger bundle e visualizzare il pop-up/tasca",
+      "Cliccare 'Aggiungi al carrello' per SKU BUNDLE-2004",
+      "Attendere l'esito dell'operazione",
+      "Aprire/visualizzare il carrello"
+    ],
+    "expected_results": [
+      "In caso di errore/timeout del servizio carrello, l'applicazione gestisce l'errore senza blocchi o crash",
+      "Il prodotto SKU BUNDLE-2004 non risulta aggiunto al carrello",
+      "È mostrato un feedback utente di fallimento dell'operazione (messaggio o notifica) che consente di riprovare o proseguire la navigazione"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: disponibilità del servizio carrello. Il requisito non specifica i codici errore né il testo del messaggio; il test verifica comportamento osservabile e integrità dello stato carrello."
+  },
+  {
+    "test_id": "REQ-F-019.TC06",
+    "title": "Edge case: doppio click rapido su 'Aggiungi al carrello' nel pop-up non genera duplicazioni indesiderate",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Canale web disponibile e raggiungibile",
+      "Utente con sessione attiva",
+      "Configurazione attiva: trigger bundle disponibile e prodotto suggerito acquistabile",
+      "Il prodotto suggerito non richiede varianti/opzioni ed è disponibile a stock"
+    ],
+    "test_data": [
+      "Prodotto base che attiva il trigger: SKU BASE-1006",
+      "Prodotto suggerito nel bundle: SKU BUNDLE-2005, quantità attesa 1"
+    ],
+    "steps": [
+      "Aprire la pagina del prodotto SKU BASE-1006",
+      "Attivare il trigger bundle e visualizzare il pop-up/tasca",
+      "Eseguire un doppio click rapido sul pulsante 'Aggiungi al carrello'",
+      "Aprire/visualizzare il carrello",
+      "Verificare la quantità di SKU BUNDLE-2005 nel carrello"
+    ],
+    "expected_results": [
+      "L'interfaccia gestisce correttamente click ripetuti (es. disabilitando il pulsante durante la richiesta o ignorando richieste duplicate)",
+      "Nel carrello, SKU BUNDLE-2005 risulta aggiunto una sola volta con quantità 1 (assenza di duplicazioni indesiderate)",
+      "Non vengono mostrati errori applicativi"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento su click multipli; il test introduce una verifica di robustezza per evitare effetti collaterali sull'aggiornamento del carrello."
+  }
+]

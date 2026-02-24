@@ -1,0 +1,272 @@
+[
+  {
+    "test_id": "REQ-D-005.TC01",
+    "title": "Visualizzazione su APP e sito delle offerte non accettate dal pop-up nella sezione Loyalty di Gruppo",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su APP e su sito web (stesso profilo)",
+      "Motore di offerte attivo e integrato con i canali APP e web",
+      "Configurazione marketing presente nel motore offerte per generare un'offerta applicabile al cliente",
+      "Disponibile un evento/condizione che innesca la comparsa del pop-up offerta (secondo configurazione motore)"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta configurata nel motore: ID OFF-77881, nome 'Sconto 20% Prodotto X', immagine 'prodottoX.png', prezzo scontato '7,99 EUR'",
+      "Condizione di innesco: evento di navigazione/acquisto definito dal motore (es. visualizzazione pagina Prodotto X)"
+    ],
+    "steps": [
+      "Su APP, l'utente esegue l'azione che innesca il pop-up dell'offerta",
+      "Nel pop-up, l'utente chiude il pop-up senza aggiungere il prodotto e senza accettare l'offerta",
+      "Su APP, l'utente naviga alla sezione 'Loyalty di Gruppo'",
+      "Verifica la presenza dell'offerta OFF-77881 nell'elenco",
+      "Su sito web, l'utente accede con lo stesso account",
+      "Su sito web, l'utente naviga alla sezione 'Loyalty di Gruppo'",
+      "Verifica la presenza dell'offerta OFF-77881 nell'elenco"
+    ],
+    "expected_results": [
+      "Dopo la chiusura del pop-up senza accettazione, l'offerta OFF-77881 risulta disponibile nella sezione 'Loyalty di Gruppo' su APP",
+      "L'offerta OFF-77881 risulta disponibile nella sezione 'Loyalty di Gruppo' anche su sito web per lo stesso account",
+      "Su entrambi i canali, l'offerta visualizzata è la stessa (stesso identificativo offerta OFF-77881)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Gli attori (cliente, utente marketing) e la condizione di innesco del pop-up sono stati inferiti dalla descrizione; il requisito non specifica l'esatto evento di trigger. Il test presuppone che la non-accettazione equivalga a chiusura del pop-up senza azione."
+  },
+  {
+    "test_id": "REQ-D-005.TC02",
+    "title": "Persistenza dell'offerta salvata con campo scadenza valorizzato e validità rispettata prima della scadenza",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato (canale a scelta) e motore offerte attivo",
+      "Disponibile accesso a un endpoint/API o log applicativi per leggere i dettagli dell'offerta salvata (incluso campo scadenza)",
+      "Configurazione marketing nel motore: offerta con scadenza relativa '10 giorni dalla vendita del primo prodotto' (o equivalente regola di scadenza)"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta: ID OFF-88990, nome 'Promo 10 giorni', immagine 'promo10.png', prezzo scontato '4,50 EUR'",
+      "Regola scadenza: 10 giorni dalla data/ora della vendita del primo prodotto (T0)",
+      "Vendita primo prodotto (T0): 2026-02-01 10:15:00 (ora locale sistema)"
+    ],
+    "steps": [
+      "Eseguire la vendita del primo prodotto che attiva la regola di scadenza per l'offerta OFF-88990 registrando T0",
+      "Innescare la proposta offerta e chiudere il pop-up senza accettare",
+      "Accedere alla sezione 'Loyalty di Gruppo' e individuare l'offerta OFF-88990",
+      "Recuperare tramite API/log il record dell'offerta salvata associata al cliente e all'offerta OFF-88990",
+      "Verificare il valore del campo scadenza nel record dell'offerta salvata",
+      "Impostare/avanzare l'orologio di test a T0 + 9 giorni (senza superare la scadenza) oppure attendere in ambiente controllato",
+      "Ricaricare la sezione 'Loyalty di Gruppo' e verificare che OFF-88990 sia ancora presente"
+    ],
+    "expected_results": [
+      "Nel record salvato dell'offerta OFF-88990 è presente un campo di scadenza valorizzato (non nullo)",
+      "Il valore del campo scadenza corrisponde a T0 + 10 giorni secondo la regola configurata (con gestione coerente di fuso orario/ora locale del sistema)",
+      "Prima della scadenza (a T0 + 9 giorni) l'offerta OFF-88990 risulta ancora disponibile in 'Loyalty di Gruppo'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Dipendenza esterna: disponibilità di API/log o strumenti di backoffice per verificare il campo scadenza dell'offerta salvata. L'AC-2 è parzialmente dichiarativo: si assume che la regola '10 giorni dalla vendita del primo prodotto' sia configurabile e che T0 sia determinabile in modo univoco."
+  },
+  {
+    "test_id": "REQ-D-005.TC03",
+    "title": "Rimozione dell'offerta dalla sezione Loyalty di Gruppo alla scadenza e coerenza dei dettagli fino alla scadenza (APP)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su APP",
+      "Motore offerte attivo e integrato con APP",
+      "Offerta configurata con dettagli stabili (nome, immagine, prezzo scontato) e con scadenza deterministica",
+      "Ambiente di test con possibilità di avanzamento tempo (time travel) o esecuzione in finestra temporale controllata"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta: ID OFF-99001, nome originario 'Sconto 15% Prodotto Y', immagine originaria 'prodottoY.png', prezzo scontato originario '9,90 EUR'",
+      "Scadenza: Texp = 2026-02-10 23:59:59"
+    ],
+    "steps": [
+      "Innescare la proposta dell'offerta OFF-99001 su APP e visualizzare il pop-up",
+      "Annotare i dettagli mostrati nel pop-up: nome, immagine, prezzo scontato",
+      "Chiudere il pop-up senza accettare e senza aggiungere il prodotto",
+      "Aprire la sezione 'Loyalty di Gruppo' su APP",
+      "Aprire il dettaglio dell'offerta OFF-99001 (se disponibile) oppure verificare i dettagli mostrati in lista",
+      "Confrontare nome, immagine e prezzo scontato con quelli annotati dal pop-up",
+      "Avanzare l'orario di sistema/ambiente a Texp + 1 secondo",
+      "Ricaricare la sezione 'Loyalty di Gruppo' su APP",
+      "Ricercare l'offerta OFF-99001 nell'elenco"
+    ],
+    "expected_results": [
+      "Prima della scadenza, l'offerta OFF-99001 è presente in 'Loyalty di Gruppo' su APP",
+      "I dettagli dell'offerta in 'Loyalty di Gruppo' (nome, immagine, prezzo scontato) sono coerenti con quelli mostrati originariamente nel pop-up",
+      "Dopo la scadenza (Texp + 1s), l'offerta OFF-99001 non è più disponibile nella sezione 'Loyalty di Gruppo' su APP"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "L'AC-3 richiede coerenza dei dettagli con quanto mostrato originariamente: si assume che i dettagli siano confrontabili (stesso asset immagine o stesso URL/ID media) e che l'offerta sia identificabile univocamente (ID OFF-99001)."
+  },
+  {
+    "test_id": "REQ-D-005.TC04",
+    "title": "Rimozione dell'offerta dalla sezione Loyalty di Gruppo alla scadenza e coerenza dei dettagli fino alla scadenza (sito web)",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su sito web",
+      "Motore offerte attivo e integrato con sito web",
+      "Offerta configurata con dettagli stabili (nome, immagine, prezzo scontato) e con scadenza deterministica",
+      "Ambiente di test con possibilità di avanzamento tempo (time travel) o esecuzione in finestra temporale controllata"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta: ID OFF-99002, nome originario 'Sconto 5 EUR Prodotto Z', immagine originaria 'prodottoZ.png', prezzo scontato originario '12,00 EUR'",
+      "Scadenza: Texp = 2026-02-10 23:59:59"
+    ],
+    "steps": [
+      "Innescare la proposta dell'offerta OFF-99002 su sito web e visualizzare il pop-up",
+      "Annotare i dettagli mostrati nel pop-up: nome, immagine, prezzo scontato",
+      "Chiudere il pop-up senza accettare e senza aggiungere il prodotto",
+      "Aprire la sezione 'Loyalty di Gruppo' su sito web",
+      "Aprire il dettaglio dell'offerta OFF-99002 (se disponibile) oppure verificare i dettagli mostrati in lista",
+      "Confrontare nome, immagine e prezzo scontato con quelli annotati dal pop-up",
+      "Avanzare l'orario di sistema/ambiente a Texp + 1 secondo",
+      "Ricaricare la sezione 'Loyalty di Gruppo' su sito web",
+      "Ricercare l'offerta OFF-99002 nell'elenco"
+    ],
+    "expected_results": [
+      "Prima della scadenza, l'offerta OFF-99002 è presente in 'Loyalty di Gruppo' su sito web",
+      "I dettagli dell'offerta in 'Loyalty di Gruppo' (nome, immagine, prezzo scontato) sono coerenti con quelli mostrati originariamente nel pop-up",
+      "Dopo la scadenza (Texp + 1s), l'offerta OFF-99002 non è più disponibile nella sezione 'Loyalty di Gruppo' su sito web"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Test separato per canale web per coprire esplicitamente il requisito di visibilità su sito. L'AC-3 è formulato come 'I test verificano...': è stato interpretato come comportamento atteso del sistema (rimozione a scadenza e coerenza dettagli)."
+  },
+  {
+    "test_id": "REQ-D-005.TC05",
+    "title": "Offerta scaduta non deve essere mostrata in Loyalty di Gruppo anche se precedentemente non accettata (verifica immediata post-scadenza)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su APP o sito web",
+      "Motore offerte attivo",
+      "Esiste un'offerta precedentemente proposta e non accettata, con scadenza già trascorsa"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta: ID OFF-77110, scadenza: 2026-02-05 00:00:00 (già trascorsa al momento del test)",
+      "Canale di verifica: APP (replicabile su web)"
+    ],
+    "steps": [
+      "Accedere alla sezione 'Loyalty di Gruppo' sul canale scelto",
+      "Cercare l'offerta OFF-77110 nell'elenco (tramite scroll o ricerca se disponibile)",
+      "Tentare di aprire direttamente il dettaglio dell'offerta tramite deep link/URL (se supportato dall'applicazione in test)"
+    ],
+    "expected_results": [
+      "L'offerta OFF-77110 non è presente nell'elenco della sezione 'Loyalty di Gruppo' perché scaduta",
+      "Se si tenta l'accesso diretto al dettaglio (deep link/URL), il sistema non mostra i contenuti dell'offerta e restituisce una schermata/stato coerente (es. 'Offerta non disponibile' o equivalente) senza esporre dettagli di prezzo/immagine"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Il comportamento su accesso diretto (deep link/URL) non è esplicitato nel requisito; è stato incluso come controllo negativo per evitare bypass della scadenza. Se l'applicazione non supporta deep link/URL ai dettagli offerta, eseguire solo la verifica su elenco."
+  },
+  {
+    "test_id": "REQ-D-005.TC06",
+    "title": "Gestione indisponibilità/timeout del motore offerte durante il caricamento della sezione Loyalty di Gruppo",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su APP o sito web",
+      "La sezione 'Loyalty di Gruppo' richiede dati al motore offerte (direttamente o tramite backend)",
+      "Possibilità di simulare indisponibilità del motore offerte (es. mock, fault injection, blocco rete, risposta 5xx/timeout)"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Simulazione errore: timeout 30s verso il servizio motore offerte oppure risposta HTTP 503"
+    ],
+    "steps": [
+      "Abilitare la simulazione di indisponibilità del motore offerte (timeout o 503)",
+      "Aprire la sezione 'Loyalty di Gruppo' sul canale scelto",
+      "Attendere il completamento del tentativo di caricamento (fino a timeout applicativo)",
+      "Ripristinare la disponibilità del motore offerte",
+      "Ricaricare la sezione 'Loyalty di Gruppo'"
+    ],
+    "expected_results": [
+      "In caso di timeout/503, la sezione 'Loyalty di Gruppo' non mostra dati incompleti o incoerenti e segnala l'impossibilità di caricare le offerte (messaggio di errore o stato vuoto gestito)",
+      "Dopo il ripristino del servizio, al refresh la sezione carica correttamente le offerte applicabili e in corso di validità"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Il requisito non descrive esplicitamente la gestione errori; questo test copre lo scenario obbligatorio di servizio esterno non disponibile (motore offerte). La modalità di simulazione dipende dall'infrastruttura di test."
+  },
+  {
+    "test_id": "REQ-D-005.TC07",
+    "title": "Offerta non accettata: verifica che i dettagli mostrati in Loyalty di Gruppo coincidano con quelli del pop-up originario (coerenza dati cross-canale)",
+    "type": "Functional",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Cliente esistente con account attivo",
+      "Cliente autenticato su APP e su sito web (stesso profilo)",
+      "Motore offerte attivo",
+      "Offerta disponibile e non accettata dal pop-up"
+    ],
+    "test_data": [
+      "Cliente: ID 10004567",
+      "Offerta: ID OFF-66220, nome 'Bundle Risparmio', immagine 'bundle.png', prezzo scontato '19,99 EUR'"
+    ],
+    "steps": [
+      "Su APP, innescare il pop-up dell'offerta OFF-66220",
+      "Annotare nome, riferimento immagine (es. nome file/URL) e prezzo scontato mostrati nel pop-up",
+      "Chiudere il pop-up senza accettare",
+      "Su APP, aprire 'Loyalty di Gruppo' e individuare OFF-66220",
+      "Verificare che nome, immagine e prezzo scontato corrispondano a quanto annotato",
+      "Su sito web, aprire 'Loyalty di Gruppo' e individuare OFF-66220",
+      "Verificare che nome, immagine e prezzo scontato corrispondano a quanto annotato nel pop-up su APP"
+    ],
+    "expected_results": [
+      "Su APP, i dettagli di OFF-66220 in 'Loyalty di Gruppo' sono coerenti con quelli del pop-up originario",
+      "Su sito web, i dettagli di OFF-66220 in 'Loyalty di Gruppo' sono coerenti con quelli del pop-up originario mostrato su APP (coerenza cross-canale)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "app",
+      "web"
+    ],
+    "notes": "Il requisito non esplicita una necessità di coerenza cross-canale, ma richiede coerenza con l'originale e visibilità su entrambi i canali; questo test consolida la verifica dati tra APP e web."
+  }
+]

@@ -1,0 +1,390 @@
+[
+  {
+    "test_id": "REQ-F-007.TC01",
+    "title": "Generazione automatica della bozza di descrizione per un suggerimento",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste almeno un 'suggerimento' nel sistema con ID univoco (derivato/creato secondo REQ-F-006).",
+      "La funzionalità di generazione automatica descrizioni è abilitata (feature attiva).",
+      "Il servizio/engine di generazione descrizioni è disponibile e raggiungibile."
+    ],
+    "test_data": [
+      "Suggerimento ID: SUG-1001",
+      "Tipologia offerta (metadato del suggerimento): 'Carta di credito'",
+      "Cluster (metadato del suggerimento): 'Giovani 18-25'"
+    ],
+    "steps": [
+      "Recuperare il suggerimento con ID 'SUG-1001' tramite l'applicazione (lista suggerimenti o dettaglio suggerimento).",
+      "Attendere il completamento del processo di generazione automatica della descrizione associata al suggerimento.",
+      "Aprire il dettaglio del suggerimento 'SUG-1001' e visualizzare la sezione 'Descrizione/Bozza'."
+    ],
+    "expected_results": [
+      "Per il suggerimento 'SUG-1001' risulta creata una bozza di descrizione associata al suggerimento.",
+      "La bozza è visualizzabile nel dettaglio del suggerimento e contiene un testo non vuoto.",
+      "La bozza risulta identificabile come generata automaticamente (es. flag/metadato 'generata automaticamente' o stato equivalente, se presente in UI)."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito fa riferimento a una integrazione con REQ-F-006 ma non specifica trigger/tempi di generazione (sincrona vs asincrona) né lo stato/flag di generazione; il test verifica la presenza di una bozza associata e visualizzabile. Attori inferiti: 'team marketing' come utente della dashboard."
+  },
+  {
+    "test_id": "REQ-F-007.TC02",
+    "title": "Modifica di una bozza generata tramite dashboard di editing e salvataggio",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un suggerimento 'SUG-1002' con bozza generata automaticamente già disponibile.",
+      "Esiste un utente con ruolo 'Marketing' abilitato all'accesso alla dashboard.",
+      "L'utente Marketing è autenticato."
+    ],
+    "test_data": [
+      "Utente Marketing: marketing.user1",
+      "Suggerimento ID: SUG-1002",
+      "Testo bozza originale (esistente): 'Scopri i vantaggi della nostra carta...'",
+      "Modifica da applicare: sostituire la frase iniziale con 'Richiedi oggi la carta e ottieni vantaggi esclusivi.'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente 'marketing.user1'.",
+      "Aprire il dettaglio del suggerimento 'SUG-1002'.",
+      "Aprire la bozza in modalità editing.",
+      "Modificare il testo della bozza applicando la sostituzione indicata nei dati di test.",
+      "Salvare le modifiche."
+    ],
+    "expected_results": [
+      "La dashboard consente l'apertura della bozza in modalità editing.",
+      "Il salvataggio va a buon fine senza errori.",
+      "Riaprendo la bozza, il testo risulta aggiornato con la modifica applicata.",
+      "La bozza modificata risulta associata al suggerimento 'SUG-1002'."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Non sono specificati campi obbligatori, validazioni o workflow di approvazione; il test si limita a verificare editing e persistenza. Attori inferiti (team marketing) e canale inferito (dashboard web)."
+  },
+  {
+    "test_id": "REQ-F-007.TC03",
+    "title": "Creazione di una descrizione da zero e salvataggio come nuova variante",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' abilitato all'accesso alla dashboard.",
+      "L'utente Marketing è autenticato.",
+      "La dashboard espone una funzione per creare una nuova descrizione/variante (azione 'Nuova variante' o equivalente)."
+    ],
+    "test_data": [
+      "Utente Marketing: marketing.user1",
+      "Nome variante: 'Variante A - Carta Giovani'",
+      "Testo descrizione (nuova): 'Una carta pensata per chi è sempre in movimento: pagamenti rapidi, gestione da app e cashback selezionato.'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente 'marketing.user1'.",
+      "Selezionare l'azione per creare una nuova descrizione da zero.",
+      "Inserire il nome variante 'Variante A - Carta Giovani'.",
+      "Inserire il testo descrizione indicato nei dati di test.",
+      "Salvare la nuova descrizione come variante."
+    ],
+    "expected_results": [
+      "La dashboard consente la creazione di una descrizione senza partire da una bozza generata.",
+      "Il salvataggio crea una nuova variante persistita nel sistema.",
+      "La nuova variante è visibile nell'elenco varianti/versioni con il nome 'Variante A - Carta Giovani' e il testo inserito."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica se le varianti siano globali o legate a un suggerimento/offerta; il test verifica la creazione e la visibilità in dashboard."
+  },
+  {
+    "test_id": "REQ-F-007.TC04",
+    "title": "Gestione versioni/varianti: creazione di una nuova versione a partire da una variante esistente",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard.",
+      "Esiste una variante salvata 'Variante B - Carta Standard' associata a una tipologia offerta o disponibile nel catalogo varianti."
+    ],
+    "test_data": [
+      "Variante esistente: 'Variante B - Carta Standard'",
+      "Nuova versione (nome): 'Variante B v2'",
+      "Modifica: aggiungere la frase finale 'Offerta valida fino al 31/12/2026.'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing.",
+      "Aprire la sezione di gestione versioni/varianti.",
+      "Selezionare la variante 'Variante B - Carta Standard'.",
+      "Eseguire l'azione di creazione nuova versione/duplicazione (se disponibile) e nominare la nuova versione 'Variante B v2'.",
+      "Applicare la modifica indicata e salvare."
+    ],
+    "expected_results": [
+      "La dashboard consente di gestire più versioni/varianti della descrizione (almeno visualizzazione distinta).",
+      "Dopo il salvataggio, 'Variante B v2' risulta presente e separata dalla variante originale.",
+      "La variante originale rimane invariata.",
+      "La nuova versione contiene la modifica inserita."
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona 'controllo delle versioni' ma non definisce operazioni specifiche (es. duplicazione, storico, rollback). Il test interpreta la gestione versioni come possibilità di mantenere più varianti/versioni distinte e crearne una nuova a partire da una esistente."
+  },
+  {
+    "test_id": "REQ-F-007.TC05",
+    "title": "Assegnazione di una variante a una tipologia di offerta",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard.",
+      "Esiste almeno una tipologia di offerta configurata nel sistema (es. 'Mutuo', 'Carta di credito').",
+      "Esiste almeno una variante disponibile (es. 'Variante A - Carta Giovani')."
+    ],
+    "test_data": [
+      "Variante da assegnare: 'Variante A - Carta Giovani'",
+      "Tipologia offerta target: 'Carta di credito'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing.",
+      "Aprire la sezione di gestione varianti/versioni.",
+      "Selezionare la variante 'Variante A - Carta Giovani'.",
+      "Selezionare l'azione 'Assegna' (o equivalente).",
+      "Scegliere la tipologia offerta 'Carta di credito'.",
+      "Confermare l'assegnazione."
+    ],
+    "expected_results": [
+      "La dashboard consente l'assegnazione di una variante a una tipologia di offerta.",
+      "L'assegnazione viene salvata e risulta visibile (es. elenco assegnazioni o dettaglio variante).",
+      "Riaprendo la variante, la tipologia 'Carta di credito' risulta tra le assegnazioni attive."
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica cardinalità e regole di conflitto (una variante per tipologia? più varianti?). Il test verifica solo la possibilità di assegnare e persistere l'associazione."
+  },
+  {
+    "test_id": "REQ-F-007.TC06",
+    "title": "Assegnazione di una variante a un cluster di clientela",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard.",
+      "Esiste almeno un cluster di clientela configurato nel sistema (es. 'Giovani 18-25').",
+      "Esiste almeno una variante disponibile (es. 'Variante A - Carta Giovani')."
+    ],
+    "test_data": [
+      "Variante da assegnare: 'Variante A - Carta Giovani'",
+      "Cluster target: 'Giovani 18-25'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing.",
+      "Aprire la sezione di gestione varianti/versioni.",
+      "Selezionare la variante 'Variante A - Carta Giovani'.",
+      "Selezionare l'azione 'Assegna' (o equivalente).",
+      "Scegliere il cluster 'Giovani 18-25'.",
+      "Confermare l'assegnazione."
+    ],
+    "expected_results": [
+      "La dashboard consente l'assegnazione di una variante a un cluster di clientela.",
+      "L'assegnazione viene salvata e risulta visibile nel dettaglio variante o in un elenco assegnazioni.",
+      "Riaprendo la variante, il cluster 'Giovani 18-25' risulta tra le assegnazioni attive."
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce priorità/precedenza tra assegnazione per tipologia e per cluster; il test verifica solo l'associazione al cluster."
+  },
+  {
+    "test_id": "REQ-F-007.TC07",
+    "title": "Autorizzazione: utente non Marketing non può modificare una bozza in dashboard",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un suggerimento 'SUG-1003' con bozza generata automaticamente già disponibile.",
+      "Esiste un utente autenticato senza permessi Marketing (es. ruolo 'Sales' o 'Viewer').",
+      "L'utente non Marketing può accedere all'applicazione (almeno in lettura) oppure tenta accesso diretto alla dashboard."
+    ],
+    "test_data": [
+      "Utente non Marketing: viewer.user1",
+      "Suggerimento ID: SUG-1003"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'viewer.user1'.",
+      "Tentare di accedere alla dashboard di editing marketing oppure aprire il dettaglio del suggerimento 'SUG-1003' e cercare l'azione di modifica bozza.",
+      "Tentare di entrare in modalità editing e salvare una modifica."
+    ],
+    "expected_results": [
+      "L'utente non Marketing non può accedere alle funzionalità di editing (accesso negato o funzioni disabilitate).",
+      "Il sistema impedisce il salvataggio di modifiche alla bozza da parte dell'utente non autorizzato.",
+      "Non vengono create nuove versioni/varianti come effetto del tentativo non autorizzato."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita ruoli/permessi; questo test interpreta 'il team marketing deve poter intervenire' come vincolo di autorizzazione (solo marketing). Se il sistema prevede permessi differenti, adeguare di conseguenza."
+  },
+  {
+    "test_id": "REQ-F-007.TC08",
+    "title": "Negativo: creazione descrizione da zero con testo mancante non consentita",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard.",
+      "La dashboard espone la funzione di creazione di una nuova descrizione/variante."
+    ],
+    "test_data": [
+      "Nome variante: 'Variante Vuota - Test'",
+      "Testo descrizione: '' (stringa vuota)"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing.",
+      "Selezionare l'azione per creare una nuova descrizione da zero.",
+      "Inserire il nome variante 'Variante Vuota - Test'.",
+      "Lasciare vuoto il campo testo descrizione.",
+      "Cliccare su 'Salva'."
+    ],
+    "expected_results": [
+      "Il sistema non consente il salvataggio di una variante con testo descrizione vuoto.",
+      "Viene mostrato un messaggio di validazione che indica che la descrizione è obbligatoria.",
+      "La variante 'Variante Vuota - Test' non risulta creata nell'elenco varianti."
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dichiara esplicitamente le validazioni dei campi; si assume che una descrizione non possa essere vuota per essere utilizzabile. Se il sistema consente bozze vuote, aggiornare l'atteso."
+  },
+  {
+    "test_id": "REQ-F-007.TC09",
+    "title": "Integration: generazione automatica fallita per servizio non disponibile e comportamento della dashboard",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un suggerimento 'SUG-1004' per cui deve essere generata una bozza.",
+      "Il servizio/engine di generazione descrizioni è simulato come non disponibile (timeout/HTTP 5xx) tramite configurazione ambiente di test o mock.",
+      "Esiste un utente Marketing autenticato in dashboard."
+    ],
+    "test_data": [
+      "Suggerimento ID: SUG-1004",
+      "Errore simulato servizio generazione: timeout (es. 30s) oppure HTTP 503"
+    ],
+    "steps": [
+      "Attivare la condizione di errore del servizio di generazione (timeout/503) per il suggerimento 'SUG-1004'.",
+      "Aprire il suggerimento 'SUG-1004' nell'applicazione/dashbord e attendere l'esito della generazione automatica.",
+      "Verificare lo stato della bozza/descrizione per 'SUG-1004'.",
+      "Tentare, dalla dashboard, di creare manualmente una descrizione da zero per 'SUG-1004' (o come variante disponibile).",
+      "Salvare la descrizione manuale."
+    ],
+    "expected_results": [
+      "In caso di indisponibilità del servizio di generazione, il sistema non crea una bozza automatica per 'SUG-1004'.",
+      "Il sistema segnala l'errore di generazione in modo visibile e tracciabile (es. messaggio in UI o stato 'generazione fallita').",
+      "Il malfunzionamento del servizio di generazione non impedisce al team marketing di creare e salvare una descrizione manuale.",
+      "La descrizione manuale salvata risulta persistita e disponibile come variante/descrizione associabile."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la gestione errori del servizio di generazione; il test introduce un comportamento atteso minimo: segnalazione errore e possibilità di fallback manuale. Dipendenza esterna irrisolta: dettagli integrazione REQ-F-006 e specifiche del servizio di generazione."
+  },
+  {
+    "test_id": "REQ-F-007.TC10",
+    "title": "Edge case: assegnazione della stessa variante a tipologia e cluster senza duplicazioni",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard.",
+      "Esiste la variante 'Variante C - Multiassegnazione'.",
+      "Esistono la tipologia offerta 'Prestito personale' e il cluster 'Clienti Premium'."
+    ],
+    "test_data": [
+      "Variante: 'Variante C - Multiassegnazione'",
+      "Tipologia offerta: 'Prestito personale'",
+      "Cluster: 'Clienti Premium'"
+    ],
+    "steps": [
+      "Accedere alla dashboard come utente Marketing.",
+      "Selezionare la variante 'Variante C - Multiassegnazione'.",
+      "Assegnare la variante alla tipologia offerta 'Prestito personale' e confermare.",
+      "Assegnare la stessa variante anche al cluster 'Clienti Premium' e confermare.",
+      "Riaprire il dettaglio della variante e visualizzare le assegnazioni."
+    ],
+    "expected_results": [
+      "La variante risulta assegnata sia alla tipologia 'Prestito personale' sia al cluster 'Clienti Premium'.",
+      "Le assegnazioni risultano elencate una sola volta ciascuna (assenza di duplicati visivi o record duplicati evidenti).",
+      "La variante rimane modificabile/gestibile dopo le assegnazioni."
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce vincoli di unicità o conflitto nelle assegnazioni; il test verifica un comportamento di qualità atteso (no duplicazioni) coerente con 'gestione' e 'assegnazione' in dashboard."
+  },
+  {
+    "test_id": "REQ-F-007.TC11",
+    "title": "E2E: da generazione automatica a modifica marketing e assegnazione variante a cluster",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un suggerimento 'SUG-1005' con metadati di tipologia offerta e cluster.",
+      "La generazione automatica descrizioni è abilitata e il servizio è disponibile.",
+      "Esiste un utente con ruolo 'Marketing' autenticato in dashboard."
+    ],
+    "test_data": [
+      "Suggerimento ID: SUG-1005",
+      "Cluster: 'Famiglie'",
+      "Modifica testo: aggiungere 'Soluzione ideale per le spese quotidiane della famiglia.'",
+      "Nome variante salvata: 'Variante Famiglie v1'"
+    ],
+    "steps": [
+      "Aprire il suggerimento 'SUG-1005' e attendere la generazione automatica della bozza.",
+      "Accedere alla dashboard come utente Marketing.",
+      "Aprire la bozza del suggerimento 'SUG-1005' in modalità editing.",
+      "Applicare la modifica testo indicata nei dati di test.",
+      "Salvare la bozza come variante con nome 'Variante Famiglie v1' (o tramite funzione equivalente di salvataggio variante).",
+      "Assegnare 'Variante Famiglie v1' al cluster 'Famiglie'.",
+      "Riaprire la variante e verificare testo e assegnazione."
+    ],
+    "expected_results": [
+      "La bozza viene generata automaticamente per 'SUG-1005' ed è disponibile in dashboard.",
+      "La modifica del testo viene salvata correttamente.",
+      "La variante 'Variante Famiglie v1' risulta creata/presente nella gestione varianti/versioni.",
+      "La variante risulta assegnata al cluster 'Famiglie' e l'assegnazione è persistente alla riapertura."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3",
+      "AC-4"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia se 'salvare come nuova variante' sia disponibile anche a partire da una bozza modificata; il test assume che la dashboard consenta di trasformare una bozza editata in variante gestibile/assegnabile, coerentemente con AC-3 e AC-4."
+  }
+]

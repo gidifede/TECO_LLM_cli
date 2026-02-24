@@ -1,0 +1,156 @@
+[
+  {
+    "story_id": "REQ-V-007.US01",
+    "title": "Bloccare la proposta commerciale quando una combinazione è in attesa di revisione regolatoria",
+    "persona": "Motore di Offerte",
+    "goal": "bloccare la generazione/esposizione di combinazioni in presenza di incertezza sul vincolo regolatorio e marcarle come 'in attesa di revisione manuale' finché non viene approvata da ruoli autorizzati",
+    "benefit": "evitare l’esposizione di proposte potenzialmente non conformi e garantire controllo manuale prima della riabilitazione",
+    "user_story": "Come Motore di Offerte\nVoglio bloccare la proposta commerciale di una combinazione quando rilevo un’incertezza sul vincolo regolatorio e marcarla come 'in attesa di revisione manuale'\nIn modo che la combinazione non venga proposta finché un ruolo autorizzato non effettua una revisione/approvazione esplicita",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO si verifica uno scenario di incertezza sul vincolo regolatorio per una combinazione ALLORA il Motore di Offerte non deve includere tale combinazione tra le proposte generate verso canali digitali o canale fisico (operatori).",
+      "QUANDO una combinazione viene bloccata per incertezza regolatoria ALLORA il Motore di Offerte deve persistere/gestire lo stato della combinazione come 'in attesa di revisione manuale'.",
+      "QUANDO il Motore di Offerte riceve l’esito di una revisione/approvazione esplicita da un ruolo autorizzato ALLORA la combinazione può essere riabilitata e tornare proponibile.",
+      "QUANDO non esiste un’azione esplicita di revisione/approvazione da parte di ruoli autorizzati ALLORA la combinazione deve rimanere non proponibile."
+    ],
+    "business_rules": [
+      "In presenza di incertezza sul vincolo regolatorio, la regola di default è il blocco della proposta (fail-safe).",
+      "Lo stato 'in attesa di revisione manuale' impedisce la proposta della combinazione verso qualsiasi destinatario (clienti e operatori).",
+      "La riabilitazione è consentita solo a seguito di un’azione esplicita di revisione/approvazione eseguita da ruoli autorizzati (es. Compliance o Marketing)."
+    ],
+    "edge_cases": [
+      "Incertezza rilevata dopo che la combinazione era precedentemente proponibile: la combinazione deve essere rimossa dalle proposte successive e marcata 'in attesa di revisione manuale'.",
+      "Ricezione di un esito di revisione da un soggetto non autorizzato: la combinazione resta bloccata e l’esito non deve produrre riabilitazione.",
+      "Esiti di revisione duplicati o ripetuti: lo stato finale deve rimanere coerente (idempotenza dell’operazione di approvazione/riabilitazione).",
+      "Errore tecnico nel salvataggio dello stato di blocco: la combinazione non deve essere proposta (comportamento conservativo)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica come il Motore di Offerte rilevi tecnicamente l’“incertezza” (es. regole, controlli di coerenza, segnali da altri sistemi): si assume esista un meccanismo di detection che produce un esito booleano di incertezza per combinazione.",
+      "Il requisito non specifica il modello dati (combinazione vs proposta): si assume che lo stato 'in attesa di revisione manuale' sia tracciabile a livello di combinazione o entità equivalente gestita dal Motore.",
+      "I canali del Motore di Offerte non sono esplicitati nelle personas: si assume integrazione con canali digitali e canale fisico tramite i consueti punti di integrazione del Motore."
+    ],
+    "notes": "AC del requisito coperti integralmente. Story trasversale: impatta la non-proposizione verso Cliente digitale e Operatore in ufficio postale (sportello/sala); gli AC relativi alla non esposizione sono condivisi concettualmente con le US di tali personas."
+  },
+  {
+    "story_id": "REQ-V-007.US02",
+    "title": "Non visualizzare combinazioni bloccate per incertezza regolatoria durante la journey digitale",
+    "persona": "Cliente digitale",
+    "goal": "vedere solo combinazioni/offerte proponibili e non quelle in stato 'in attesa di revisione manuale'",
+    "benefit": "evitare proposte non conformi e ricevere un’esperienza coerente con le regole normative",
+    "user_story": "Come Cliente digitale\nVoglio che le combinazioni incerte dal punto di vista regolatorio non mi vengano proposte\nIn modo che io veda solo offerte conformi e acquistabili",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO esistono scenari di incertezza simulati su una combinazione ALLORA come Cliente digitale non devo visualizzare tale combinazione tra le offerte/proposte disponibili su App/Web.",
+      "QUANDO una combinazione è marcata dal sistema come 'in attesa di revisione manuale' ALLORA non deve risultare proponibile/visibile nella mia esperienza digitale.",
+      "QUANDO una combinazione precedentemente bloccata viene riabilitata solo dopo revisione/approvazione esplicita da ruoli autorizzati ALLORA può tornare ad essere proposta/visibile nei touchpoint digitali."
+    ],
+    "business_rules": [
+      "Le combinazioni in stato 'in attesa di revisione manuale' non devono essere esposte al Cliente digitale.",
+      "La visibilità al Cliente digitale è consentita solo dopo approvazione esplicita da ruoli autorizzati (es. Compliance o Marketing)."
+    ],
+    "edge_cases": [
+      "La combinazione diventa bloccata mentre l’utente sta navigando: al successivo refresh/richiesta proposte non deve più comparire.",
+      "Dati di proposta in cache lato canale digitale: non devono causare visualizzazione di combinazioni bloccate (prevale lo stato aggiornato).",
+      "Errore nel recupero dello stato della combinazione: la combinazione non deve essere mostrata (comportamento conservativo)."
+    ],
+    "assumptions": [
+      "Il requisito non definisce messaggi UI o spiegazioni al cliente: si assume solo la non esposizione della combinazione, senza obbligo di comunicazione del motivo."
+    ],
+    "notes": "AC condivisi con US Operatore in ufficio postale (sportello/sala) e Motore di Offerte relativamente alla non-proposizione in caso di incertezza."
+  },
+  {
+    "story_id": "REQ-V-007.US03",
+    "title": "Non proporre al cliente in ufficio postale combinazioni bloccate per incertezza regolatoria",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare e proporre solo combinazioni non bloccate per incertezza regolatoria",
+    "benefit": "evitare di proporre offerte non conformi e ridurre il rischio operativo in fase di vendita assistita",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio che le combinazioni incerte dal punto di vista regolatorio non mi vengano proposte tra le offerte vendibili\nIn modo che io possa presentare al cliente solo combinazioni conformi e sottoscrivibili",
+    "channels": [
+      "front-end commerciale per OSP/OFE/figure di sala"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO esistono scenari di incertezza simulati su una combinazione ALLORA come Operatore in ufficio postale (sportello/sala) non devo vedere tale combinazione tra le proposte/offerte disponibili per il cliente.",
+      "QUANDO una combinazione è marcata dal sistema come 'in attesa di revisione manuale' ALLORA non deve risultare proponibile/selecionabile nel mio front-end.",
+      "QUANDO una combinazione precedentemente bloccata viene riabilitata solo dopo revisione/approvazione esplicita da ruoli autorizzati ALLORA può tornare ad essere proposta nel mio front-end."
+    ],
+    "business_rules": [
+      "Le combinazioni in stato 'in attesa di revisione manuale' non devono essere rese disponibili all’operatore per la proposta commerciale.",
+      "La riabilitazione della proponibilità è subordinata ad approvazione esplicita da ruoli autorizzati (es. Compliance o Marketing)."
+    ],
+    "edge_cases": [
+      "L’operatore ha già aperto una schermata con la combinazione: al successivo aggiornamento lista proposte la combinazione deve scomparire se nel frattempo è stata bloccata.",
+      "Errore di sincronizzazione tra motore e front-end: non deve consentire la proposta di combinazioni bloccate.",
+      "Ricerca/filtri nel front-end: non devono far emergere combinazioni bloccate."
+    ],
+    "assumptions": [
+      "Il requisito non specifica se l’operatore debba vedere un indicatore di blocco: si assume che la combinazione non sia proprio proposta/mostrata come vendibile."
+    ],
+    "notes": "AC condivisi con US Cliente digitale e Motore di Offerte relativamente alla non-proposizione in caso di incertezza."
+  },
+  {
+    "story_id": "REQ-V-007.US04",
+    "title": "Revisionare e approvare manualmente combinazioni bloccate per incertezza regolatoria",
+    "persona": "Team Compliance",
+    "goal": "eseguire una revisione manuale esplicita delle combinazioni bloccate e approvarne la riabilitazione",
+    "benefit": "garantire controllo regolatorio prima della ripresa della proposizione commerciale",
+    "user_story": "Come Team Compliance\nVoglio poter effettuare una revisione manuale esplicita delle combinazioni bloccate per incertezza regolatoria e approvarne la riabilitazione\nIn modo che solo combinazioni conformi tornino ad essere proposte",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO una combinazione è bloccata per incertezza regolatoria ALLORA deve risultare nello stato 'in attesa di revisione manuale' e essere identificabile come tale durante la revisione.",
+      "QUANDO un utente del Team Compliance (ruolo autorizzato) esegue un’azione esplicita di revisione/approvazione ALLORA la combinazione può essere riabilitata e tornare proponibile.",
+      "QUANDO non viene eseguita alcuna azione esplicita di revisione/approvazione ALLORA la combinazione deve rimanere bloccata e non proponibile."
+    ],
+    "business_rules": [
+      "Solo ruoli autorizzati possono effettuare l’azione esplicita di revisione/approvazione che riabilita la combinazione.",
+      "L’azione di revisione/approvazione deve essere esplicita (non implicita o automatica)."
+    ],
+    "edge_cases": [
+      "Utente Compliance non autorizzato (permessi insufficienti): non deve poter approvare/riabilitare.",
+      "Concorrenza: due revisioni simultanee sulla stessa combinazione; lo stato finale deve essere consistente e l’ultima azione valida deve determinare l’esito.",
+      "Errore durante l’azione di approvazione: la combinazione deve rimanere in stato bloccato finché l’approvazione non risulta completata."
+    ],
+    "assumptions": [
+      "Il requisito cita Compliance come esempio di responsabile della revisione ma non descrive UI, workflow o audit: si assume esista un’azione applicativa (es. su dashboard o API) che registra l’approvazione e sblocca la combinazione."
+    ],
+    "notes": "AC 2 e 3 del requisito sono centrali in questa US; la non-proposizione verso clienti/operatori è coperta nelle rispettive US ed è conseguenza dell’approvazione/non approvazione."
+  },
+  {
+    "story_id": "REQ-V-007.US05",
+    "title": "Revisionare e approvare manualmente combinazioni bloccate per incertezza regolatoria (ruolo Marketing)",
+    "persona": "Team Marketing",
+    "goal": "eseguire una revisione manuale esplicita delle combinazioni bloccate e approvarne la riabilitazione quando autorizzato",
+    "benefit": "ripristinare rapidamente la proponibilità di combinazioni corrette, riducendo impatti commerciali nel rispetto dei vincoli",
+    "user_story": "Come Team Marketing\nVoglio poter effettuare una revisione manuale esplicita delle combinazioni bloccate per incertezza regolatoria e approvarne la riabilitazione quando autorizzato\nIn modo che le combinazioni conformi tornino ad essere proposte senza rischi normativi",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO una combinazione è bloccata per incertezza regolatoria ALLORA deve risultare nello stato 'in attesa di revisione manuale' e essere identificabile come tale durante la revisione.",
+      "QUANDO un utente del Team Marketing (ruolo autorizzato) esegue un’azione esplicita di revisione/approvazione ALLORA la combinazione può essere riabilitata e tornare proponibile.",
+      "QUANDO non viene eseguita alcuna azione esplicita di revisione/approvazione ALLORA la combinazione deve rimanere bloccata e non proponibile."
+    ],
+    "business_rules": [
+      "Solo ruoli autorizzati possono effettuare l’azione esplicita di revisione/approvazione che riabilita la combinazione.",
+      "L’azione di revisione/approvazione deve essere esplicita (non implicita o automatica)."
+    ],
+    "edge_cases": [
+      "Utente Marketing senza autorizzazione specifica alla revisione: non deve poter riabilitare la combinazione.",
+      "Approvazione effettuata su combinazione che nel frattempo è stata modificata: la riabilitazione deve applicarsi alla versione/istanza corretta (coerenza dello stato).",
+      "Errore di propagazione dell’esito di approvazione: fino a conferma, la combinazione resta non proponibile."
+    ],
+    "assumptions": [
+      "Il requisito cita Marketing come esempio di responsabile della revisione ma non definisce responsabilità dettagliate tra Marketing e Compliance: si assume che entrambi possano essere 'ruoli autorizzati' in base a configurazione permessi."
+    ],
+    "notes": "AC condivisi con US Team Compliance per la parte di revisione/approvazione. La non-proposizione verso clienti/operatori è coperta nelle rispettive US ed è conseguenza dello stato bloccato."
+  }
+]

@@ -1,0 +1,285 @@
+[
+  {
+    "test_id": "REQ-I-002.TC01",
+    "title": "Applicazione corretta di pricing/cashback/punti configurati per bundle-cliente-canale (web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un bundle 'BUNDLE-SMART-01' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' con tipologia 'Retail' abilitato all'acquisto su web",
+      "È presente una configurazione attiva per (bundle=BUNDLE-SMART-01, tipologia cliente=Retail, canale=web) con: prezzo scontato, extra-cashback e punti",
+      "Framework Connect è raggiungibile e risponde correttamente (ambiente di test o stub certificato)"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-01",
+      "Tipologia cliente: Retail",
+      "Canale: web",
+      "Configurazione: Prezzo base 100,00 EUR; Prezzo scontato 85,00 EUR; Extra-cashback 5,00 EUR; Punti 150",
+      "Metodo pagamento: carta di credito test (es. 4111 1111 1111 1111)"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-01",
+      "Aggiungere il bundle al carrello",
+      "Aprire il riepilogo carrello/checkout",
+      "Confermare l'ordine completando il pagamento",
+      "Aprire la pagina di dettaglio ordine appena concluso"
+    ],
+    "expected_results": [
+      "Nel carrello/checkout il prezzo del bundle è 85,00 EUR (scontistica applicata per Retail+web+BUNDLE-SMART-01)",
+      "L'ordine viene creato con totale coerente con il prezzo scontato (85,00 EUR, al netto di eventuali spese esplicitamente configurate nel sistema)",
+      "Nel dettaglio ordine sono visibili le informazioni di extra-cashback (5,00 EUR) e punti (150) associati all'acquisto",
+      "Viene avviata la registrazione dell'erogazione cashback/punti verso Framework Connect (evento/record associato all'ordine)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori (cliente, marketing) e canali sono stati inferiti dal requisito. Il requisito non specifica dove siano mostrati prezzo/cashback/punti: si assume visibilità nel checkout e/o nel dettaglio ordine. Il requisito non definisce regole di rounding/IVA: le verifiche si basano sui valori configurati."
+  },
+  {
+    "test_id": "REQ-I-002.TC02",
+    "title": "Variazione corretta per tipologia cliente a parità di bundle e canale (web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-01' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' con tipologia 'Retail'",
+      "Esiste un cliente 'CLI-PRO-001' con tipologia 'Business/Pro'",
+      "È presente una configurazione attiva per (BUNDLE-SMART-01, Retail, web): Prezzo 85,00 EUR; Extra-cashback 5,00 EUR; Punti 150",
+      "È presente una configurazione attiva per (BUNDLE-SMART-01, Pro, web): Prezzo 80,00 EUR; Extra-cashback 10,00 EUR; Punti 250",
+      "Framework Connect è raggiungibile e risponde correttamente"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-01",
+      "Canale: web",
+      "Retail: Prezzo 85,00 EUR; Cashback 5,00 EUR; Punti 150",
+      "Pro: Prezzo 80,00 EUR; Cashback 10,00 EUR; Punti 250"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-01",
+      "Verificare prezzo e benefit (cashback/punti) mostrati",
+      "Effettuare logout",
+      "Accedere al canale web come cliente CLI-PRO-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-01",
+      "Verificare prezzo e benefit (cashback/punti) mostrati"
+    ],
+    "expected_results": [
+      "Per CLI-RET-001 il sistema mostra prezzo 85,00 EUR, extra-cashback 5,00 EUR e punti 150",
+      "Per CLI-PRO-001 il sistema mostra prezzo 80,00 EUR, extra-cashback 10,00 EUR e punti 250",
+      "Non si verificano contaminazioni di configurazione tra tipologie cliente (i valori visualizzati corrispondono alla configurazione della tipologia corrente)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i punti di UI in cui i benefit sono mostrati: si assume scheda prodotto e/o carrello. Attori inferiti."
+  },
+  {
+    "test_id": "REQ-I-002.TC03",
+    "title": "Variazione corretta per canale a parità di bundle e tipologia cliente (web vs app)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-01' acquistabile su web e app",
+      "Esiste un cliente 'CLI-RET-001' tipologia 'Retail' abilitato a web e app",
+      "È presente una configurazione attiva per (BUNDLE-SMART-01, Retail, web): Prezzo 85,00 EUR; Cashback 5,00 EUR; Punti 150",
+      "È presente una configurazione attiva per (BUNDLE-SMART-01, Retail, app): Prezzo 83,00 EUR; Cashback 6,00 EUR; Punti 160",
+      "Framework Connect è raggiungibile e risponde correttamente"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-01",
+      "Cliente: CLI-RET-001 (Retail)",
+      "Web: Prezzo 85,00 EUR; Cashback 5,00 EUR; Punti 150",
+      "App: Prezzo 83,00 EUR; Cashback 6,00 EUR; Punti 160"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-01",
+      "Verificare prezzo e benefit (cashback/punti) mostrati",
+      "Accedere al canale app come cliente CLI-RET-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-01",
+      "Verificare prezzo e benefit (cashback/punti) mostrati"
+    ],
+    "expected_results": [
+      "Su web il sistema mostra prezzo 85,00 EUR, extra-cashback 5,00 EUR e punti 150",
+      "Su app il sistema mostra prezzo 83,00 EUR, extra-cashback 6,00 EUR e punti 160",
+      "Il canale influenza correttamente i valori applicati secondo configurazione"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "app"
+    ],
+    "notes": "Il requisito non esplicita i canali; 'canale' è citato in descrizione e AC-1, quindi si includono web e app come esempi tipici. Se i canali reali differiscono, adeguare i test."
+  },
+  {
+    "test_id": "REQ-I-002.TC04",
+    "title": "Integrazione con Framework Connect: registrazione ed erogazione cashback/punti per acquisto contestuale",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-01' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' tipologia 'Retail'",
+      "Configurazione attiva per (BUNDLE-SMART-01, Retail, web) con extra-cashback e punti abilitati per erogazione contestuale all'acquisto",
+      "Sono disponibili credenziali/chiavi di integrazione verso Framework Connect in ambiente di test",
+      "È attiva la tracciatura dei log applicativi e di integrazione (correlation-id) per le chiamate a Framework Connect"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-01",
+      "Cliente: CLI-RET-001",
+      "Extra-cashback: 5,00 EUR",
+      "Punti: 150",
+      "OrderId: generato a runtime",
+      "Correlation-Id: generato a runtime"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Acquistare il bundle BUNDLE-SMART-01 completando il checkout",
+      "Recuperare dai log applicativi il Correlation-Id associato all'ordine",
+      "Verificare nei log di integrazione la richiesta inviata a Framework Connect per cashback e punti usando il Correlation-Id",
+      "Verificare la risposta di Framework Connect nei log di integrazione usando il Correlation-Id",
+      "Verificare in Framework Connect (tramite API/console di test) l'esistenza del record di erogazione associato all'OrderId"
+    ],
+    "expected_results": [
+      "È presente almeno una chiamata verso Framework Connect per la registrazione/erogazione di cashback e/o punti associata all'ordine",
+      "La richiesta verso Framework Connect contiene riferimenti all'ordine (OrderId) e al cliente (id cliente o identificativo concordato) e i valori di cashback/punti previsti",
+      "Framework Connect restituisce esito positivo (codice successo) e l'esito è registrato nei log",
+      "In Framework Connect risulta creato/aggiornato un record di erogazione coerente con l'ordine"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il contratto API del Framework Connect né i campi minimi obbligatori: le verifiche su payload devono essere allineate alle specifiche d'integrazione disponibili. La dicitura 'registrazione e l'erogazione' è stata interpretata come chiamata/e con esito tracciato e record consultabile in Connect."
+  },
+  {
+    "test_id": "REQ-I-002.TC05",
+    "title": "Gestione errore integrazione: Framework Connect non disponibile durante l'acquisto",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-01' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' tipologia 'Retail'",
+      "Configurazione attiva per (BUNDLE-SMART-01, Retail, web) con extra-cashback e punti",
+      "Framework Connect è simulato come non disponibile (timeout o HTTP 503) tramite stub/proxy o indisponibilità controllata",
+      "È attiva la tracciatura dei log applicativi e di integrazione"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-01",
+      "Errore Connect simulato: timeout 30s o HTTP 503",
+      "Correlation-Id: generato a runtime"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Acquistare il bundle BUNDLE-SMART-01 completando il checkout",
+      "Verificare l'esito del checkout lato utente",
+      "Consultare i log applicativi e di integrazione relativi alla transazione"
+    ],
+    "expected_results": [
+      "L'ordine viene creato e confermato oppure viene bloccato in modo controllato secondo la gestione errori prevista dal sistema (comportamento da confermare con analisi tecnica)",
+      "In caso di ordine confermato, il sistema registra nei log un errore di integrazione verso Framework Connect con dettagli tecnici (es. timeout/503) e riferimento all'ordine/correlation-id",
+      "Non vengono registrati nei log esiti di erogazione 'success' verso Framework Connect per la stessa transazione",
+      "Il cliente non visualizza informazioni fuorvianti che indichino erogazione avvenuta se l'integrazione è fallita"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce la strategia in caso di down di Framework Connect (retry, coda, compensazione, blocco ordine). Il test verifica almeno tracciamento e assenza di falso positivo lato cliente; l'esito ordine va allineato ai requisiti non forniti."
+  },
+  {
+    "test_id": "REQ-I-002.TC06",
+    "title": "Tracciamento e visibilità: dettagli erogazione cashback/punti visibili a cliente e marketing",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-01' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' tipologia 'Retail'",
+      "Esiste un utente 'MKT-001' con ruolo marketing e accesso alle viste/report di erogazione",
+      "Configurazione attiva per (BUNDLE-SMART-01, Retail, web) con extra-cashback 5,00 EUR e punti 150",
+      "Framework Connect è raggiungibile e risponde correttamente",
+      "Sono attivi log applicativi consultabili (es. ELK/Splunk) per la componente che gestisce l'erogazione"
+    ],
+    "test_data": [
+      "Cliente: CLI-RET-001",
+      "Utente marketing: MKT-001",
+      "Bundle: BUNDLE-SMART-01",
+      "Extra-cashback atteso: 5,00 EUR",
+      "Punti attesi: 150"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Acquistare il bundle BUNDLE-SMART-01 completando il checkout",
+      "Aprire l'area cliente e accedere alla sezione dove sono mostrati cashback/punti associati agli acquisti (es. dettaglio ordine o wallet/loyalty)",
+      "Verificare che siano presenti i dettagli di erogazione relativi all'ordine effettuato",
+      "Accedere come utente MKT-001 all'area marketing/reportistica",
+      "Ricercare l'ordine del cliente CLI-RET-001 o il relativo evento di erogazione",
+      "Consultare i log applicativi filtrando per OrderId o Correlation-Id dell'ordine"
+    ],
+    "expected_results": [
+      "Il cliente visualizza i dettagli di erogazione associati all'ordine (importo cashback 5,00 EUR e punti 150, con riferimento all'ordine o data operazione)",
+      "L'utente marketing visualizza lo stesso evento/record di erogazione con dettagli coerenti (cashback/punti e riferimento ordine/cliente)",
+      "Nei log applicativi è presente una traccia dell'erogazione con esito, timestamp e riferimento a ordine/cliente (e Correlation-Id se previsto)"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica le schermate/endpoint per la visibilità a cliente e marketing: il test va mappato alle UI/servizi effettivi. 'Visibili al marketing' è stato interpretato come accesso a una vista/report con ricerca per ordine/cliente."
+  },
+  {
+    "test_id": "REQ-I-002.TC07",
+    "title": "Caso negativo configurazione: assenza di configurazione per bundle-cliente-canale",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste il bundle 'BUNDLE-SMART-02' acquistabile sul canale web",
+      "Esiste un cliente 'CLI-RET-001' tipologia 'Retail'",
+      "Non esiste alcuna configurazione attiva per (bundle=BUNDLE-SMART-02, tipologia cliente=Retail, canale=web) relativa a pricing/cashback/punti",
+      "Framework Connect è raggiungibile e risponde correttamente"
+    ],
+    "test_data": [
+      "Bundle: BUNDLE-SMART-02",
+      "Cliente: CLI-RET-001",
+      "Canale: web"
+    ],
+    "steps": [
+      "Accedere al canale web come cliente CLI-RET-001",
+      "Aprire la scheda prodotto del bundle BUNDLE-SMART-02",
+      "Aggiungere il bundle al carrello",
+      "Aprire il checkout e verificare il riepilogo",
+      "Concludere l'acquisto"
+    ],
+    "expected_results": [
+      "Il sistema non applica valori di sconto/cashback/punti non configurati per la combinazione corrente",
+      "Il prezzo mostrato e applicato corrisponde al pricing di default del bundle (se previsto dal sistema) oppure il sistema segnala in modo controllato l'impossibilità di determinare la scontistica (comportamento da confermare con analisi funzionale)",
+      "Non viene inviata a Framework Connect alcuna richiesta di erogazione extra-cashback/punti per questa combinazione, oppure viene inviata con valori null/zero secondo regole di default (da allineare alle regole di dominio)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce il comportamento di fallback quando manca la configurazione; il test evidenzia i punti da chiarire (prezzo default vs blocco). Non introduce nuove funzionalità, ma verifica assenza di applicazioni indebite."
+  }
+]

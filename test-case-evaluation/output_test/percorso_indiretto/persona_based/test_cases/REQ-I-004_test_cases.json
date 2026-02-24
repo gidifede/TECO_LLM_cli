@@ -1,0 +1,631 @@
+[
+  {
+    "story_id": "REQ-I-004.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-004.US01.TC01",
+        "title": "Recupero regole dal repository/matrice centralizzata in ambiente di integrazione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Matrice centralizzata raggiungibile e popolata con una configurazione attiva per uno scenario di valutazione",
+          "Motore di Offerte deployato e configurato per leggere dalla matrice centralizzata (endpoint/credenziali)",
+          "Logging/telemetria abilitati per tracciare chiamate verso la matrice (o evidenze equivalenti)"
+        ],
+        "test_data": [
+          "Input valutazione regole: ClienteId=CL-10001, Prodotto=PROD-A, Canale=APP, DataOraRichiesta=2026-02-23T10:00:00Z",
+          "Configurazione in matrice: Regola=FrequenzaPresentazione, Valore=1 ogni 7 giorni, Eccezione=ClienteSegmento=VIP -> 1 ogni 1 giorno, Versione=42, Timestamp=2026-02-20T09:00:00Z"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte per valutare le regole operative con i dati di input",
+          "Raccogliere evidenza delle chiamate del Motore di Offerte verso la matrice centralizzata (log/APM/audit tecnico)",
+          "Raccogliere l’esito di valutazione restituito dal Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte effettua una lettura della configurazione dalla matrice centralizzata per la valutazione richiesta",
+          "L’esito di valutazione riflette i valori presenti in matrice (inclusa frequenza ed eventuale eccezione applicabile)",
+          "Non risultano letture da fonti alternative locali/per-canale per le stesse regole (assenza di evidenze di fallback a regole divergenti)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non specifica l’architettura (accesso diretto dei canali vs tramite Motore). Il test verifica l’integrazione Motore→Matrice e l’uso della fonte centralizzata in integrazione."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC02",
+        "title": "Coerenza decisionale del Motore tra due canali a parità di input rilevanti",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Matrice centralizzata popolata con configurazione attiva e stabile per la durata del test",
+          "Sono disponibili due canali di test che invocano il Motore di Offerte (es. App e Sportello) oppure due client tecnici che simulano i canali",
+          "Definita la lista degli 'input rilevanti' da mantenere identici tra canali (es. cliente, prodotto, segmento, contesto)"
+        ],
+        "test_data": [
+          "ClienteId=CL-20002, Segmento=STANDARD",
+          "Prodotto=PROD-B",
+          "Contesto: DataOraRichiesta=2026-02-23T11:00:00Z",
+          "Configurazione in matrice: Regola=AmmissibilitaOffertaX=TRUE, Frequenza=1 ogni 30 giorni, Versione=77, Timestamp=2026-02-22T08:30:00Z"
+        ],
+        "steps": [
+          "Eseguire una richiesta di valutazione offerte dal Canale 1 (es. App) con gli input definiti",
+          "Registrare l’esito (offerte ammesse/non ammesse e motivazioni/flag di frequenza se presenti)",
+          "Eseguire una richiesta equivalente dal Canale 2 (es. Sportello) mantenendo identici gli input rilevanti",
+          "Registrare l’esito del Canale 2",
+          "Confrontare gli esiti dei due canali"
+        ],
+        "expected_results": [
+          "Gli esiti di valutazione risultano coerenti tra i due canali per gli input rilevanti (stesse decisioni di ammissibilità e stessa applicazione della frequenza/eccezioni, se applicabili)",
+          "Eventuali differenze sono assenti; in caso di differenze il test fallisce perché non sono previste deviazioni per-canale"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Gli 'input rilevanti' non sono definiti nel requisito: il test richiede che siano concordati (es. cliente/segmento/prodotto/timestamp)."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC03",
+        "title": "Propagazione modifica matrice: nuova configurazione disponibile entro la finestra prevista",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Politica di propagazione definita e misurabile (immediata oppure con tempo massimo T)",
+          "Matrice centralizzata modificabile in test (utenza/ruolo tecnico abilitato)",
+          "Motore di Offerte e canali/client di test disponibili per invocazioni ripetute"
+        ],
+        "test_data": [
+          "Politica di propagazione: T=300 secondi (esempio; sostituire con valore reale)",
+          "Configurazione iniziale in matrice: Regola=FrequenzaPresentazione, Valore=1 ogni 30 giorni, Versione=10",
+          "Configurazione aggiornata: Regola=FrequenzaPresentazione, Valore=1 ogni 7 giorni, Versione=11"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte e verificare che applichi la configurazione iniziale",
+          "Aggiornare la configurazione in matrice centralizzata alla nuova versione",
+          "Invocare il Motore di Offerte immediatamente dopo l’aggiornamento e registrare l’esito",
+          "Ripetere l’invocazione a intervalli regolari fino a T secondi dall’aggiornamento e registrare l’esito",
+          "Misurare il tempo trascorso tra aggiornamento e prima applicazione della nuova configurazione"
+        ],
+        "expected_results": [
+          "La nuova configurazione viene applicata dal Motore di Offerte immediatamente oppure entro T secondi, in accordo alla politica di propagazione",
+          "Dopo l’avvenuta propagazione, le invocazioni successive applicano stabilmente la nuova configurazione (assenza di oscillazioni tra versioni)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La politica di propagazione non è dettagliata nel requisito; il test richiede il parametro T e le regole di caching/refresh per poter essere automatizzato."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC04",
+        "title": "Tracciabilità decisione: riferimento a versione/timestamp della matrice per audit storico",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Matrice centralizzata con versioning e/o timestamp abilitati",
+          "Motore di Offerte configurato per includere in output o in audit log un riferimento alla versione/timestamp usati"
+        ],
+        "test_data": [
+          "ClienteId=CL-30003, Prodotto=PROD-C, Canale=WEB",
+          "Configurazione in matrice: Versione=105, Timestamp=2026-02-21T14:15:00Z"
+        ],
+        "steps": [
+          "Invocare il Motore di Offerte per una valutazione regole con i dati di input",
+          "Recuperare la risposta del Motore di Offerte e/o l’audit log associato alla valutazione",
+          "Identificare il riferimento a versione e/o timestamp della matrice usato per la decisione"
+        ],
+        "expected_results": [
+          "Per la decisione è disponibile un riferimento univoco alla versione e/o al timestamp della matrice centralizzata utilizzata",
+          "Il riferimento consente di risalire alla configurazione applicata (ricostruibilità storica)"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il requisito non impone che versione/timestamp siano esposti a canali/utente; è sufficiente evidenza tecnica (response metadata o audit log)."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC05",
+        "title": "Errore matrice non raggiungibile: gestione errore senza applicare regole divergenti per canale",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Possibilità di simulare indisponibilità della matrice centralizzata (timeout/DNS/HTTP 5xx)",
+          "Motore di Offerte deployato e raggiungibile"
+        ],
+        "test_data": [
+          "Simulazione errore matrice: timeout 10s oppure HTTP 503",
+          "Input valutazione: ClienteId=CL-40004, Prodotto=PROD-A, Canale=APP"
+        ],
+        "steps": [
+          "Forzare l’indisponibilità della matrice centralizzata",
+          "Invocare il Motore di Offerte per valutare le regole con i dati di input",
+          "Ripetere l’invocazione variando solo il canale (es. Canale=SPORTELLO) mantenendo invariati gli altri input",
+          "Raccogliere gli esiti e gli errori restituiti dal Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte non restituisce decisioni basate su regole alternative locali/per-canale quando la matrice è indisponibile",
+          "Il Motore di Offerte restituisce un errore gestito e consistente (stesso tipo/codice di errore o stessa categoria) indipendentemente dal canale indicato, a parità di input",
+          "Le evidenze di log indicano il fallimento della lettura dalla matrice come causa"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica il comportamento di fallback; il test verifica almeno l’assenza di divergenze per-canale e la gestione controllata dell’errore."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC06",
+        "title": "Configurazione priva di versione/timestamp: impossibilità di ricostruzione storica rilevata",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Possibilità di inserire in matrice una configurazione senza versione/timestamp (oppure simulare risposta priva di tali campi)",
+          "Motore di Offerte configurato per validare la presenza del riferimento storico"
+        ],
+        "test_data": [
+          "Configurazione in matrice: Regola=FrequenzaPresentazione, Valore=1 ogni 7 giorni, Versione=NULL, Timestamp=NULL",
+          "Input valutazione: ClienteId=CL-50005, Prodotto=PROD-A, Canale=WEB"
+        ],
+        "steps": [
+          "Preparare in matrice una configurazione attiva priva di versione/timestamp per lo scenario",
+          "Invocare il Motore di Offerte per valutare le regole con i dati di input",
+          "Recuperare risposta e/o audit log della valutazione"
+        ],
+        "expected_results": [
+          "Il sistema segnala l’assenza del riferimento storico (errore o warning tracciato) rendendo non possibile associare la decisione a una versione/timestamp",
+          "Non viene prodotto un riferimento storico fittizio o ambiguo"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica se l’assenza di versione/timestamp debba bloccare la decisione; il test valida almeno che l’anomalia sia rilevabile e non mascherata."
+      },
+      {
+        "test_id": "REQ-I-004.US01.TC07",
+        "title": "Aggiornamento matrice durante valutazione: lettura consistente di una singola versione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Possibilità di eseguire aggiornamento matrice in concorrenza con una valutazione (test di race condition)",
+          "Motore di Offerte produce in output/audit il riferimento a versione/timestamp usato"
+        ],
+        "test_data": [
+          "Versione N: Regola=AmmissibilitaOffertaX=FALSE, Versione=200",
+          "Versione N+1: Regola=AmmissibilitaOffertaX=TRUE, Versione=201",
+          "Input valutazione: ClienteId=CL-60006, Prodotto=PROD-X, Canale=APP"
+        ],
+        "steps": [
+          "Impostare in matrice la Versione N come attiva",
+          "Avviare una richiesta di valutazione al Motore di Offerte",
+          "Durante l’elaborazione della richiesta, aggiornare la matrice alla Versione N+1",
+          "Recuperare esito della valutazione e riferimento versione/timestamp usato",
+          "Ripetere il test più volte per aumentare la probabilità di concorrenza"
+        ],
+        "expected_results": [
+          "Ogni singola valutazione risulta associata a una sola versione/timestamp (N oppure N+1) senza combinazioni incoerenti di regole tra versioni",
+          "Il riferimento versione/timestamp riportato è coerente con la decisione restituita"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il requisito non descrive i meccanismi di atomicità/consistenza; il test verifica l’assenza di 'mixed version read' osservabile tramite decisione e riferimento storico."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-004.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-004.US02.TC01",
+        "title": "Coerenza regole tra App e Sportello: stessa fonte centralizzata in integrazione",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "App (o canale digitale equivalente) disponibile e collegata ai servizi di offerta in test",
+          "Canale fisico assistito (front-end commerciale per operatore) disponibile in test",
+          "Matrice centralizzata popolata con configurazione attiva per lo scenario"
+        ],
+        "test_data": [
+          "ClienteId=CL-70007, Segmento=STANDARD, ConsensiMarketing=TRUE",
+          "ProdottoTarget=PROD-OFF-1",
+          "Configurazione in matrice: Offerta=OFF-123 abilitata, Frequenza=1 ogni 14 giorni, Versione=310, Timestamp=2026-02-22T10:00:00Z"
+        ],
+        "steps": [
+          "Accedere in App con l’utenza del cliente CL-70007",
+          "Navigare alla sezione che mostra le proposte/offerte per il cliente",
+          "Registrare le offerte proposte e l’eventuale applicazione della regola di frequenza/eccezioni",
+          "Accedere al front-end commerciale come operatore abilitato",
+          "Ricercare lo stesso cliente CL-70007 e aprire la sezione proposte/offerte",
+          "Registrare le offerte proposte e l’eventuale applicazione della regola di frequenza/eccezioni",
+          "Confrontare i risultati tra App e Sportello"
+        ],
+        "expected_results": [
+          "Le regole applicate alle proposte osservate in App e in Sportello risultano derivare dalla stessa configurazione (comportamento coerente a parità di condizioni rilevanti)",
+          "Non si osservano differenze ingiustificate tra canali per offerte ammesse/bloccate e per frequenza/eccezioni applicate"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital",
+          "front-end commerciale"
+        ],
+        "notes": "Il cliente non vede la 'fonte' direttamente; la verifica della stessa fonte è indiretta tramite coerenza di comportamento e/o evidenze tecniche (log/tracing) se disponibili."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC02",
+        "title": "Propagazione modifica matrice: variazione comportamento riproducibile su App e Sportello entro finestra",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Politica di propagazione definita con tempo massimo T",
+          "Accesso per modificare la matrice centralizzata in test",
+          "App e Sportello disponibili e funzionanti"
+        ],
+        "test_data": [
+          "Politica di propagazione: T=300 secondi (esempio; sostituire con valore reale)",
+          "ClienteId=CL-80008",
+          "Configurazione iniziale: Offerta OFF-777 visibile=FALSE, Versione=400",
+          "Configurazione aggiornata: Offerta OFF-777 visibile=TRUE, Versione=401"
+        ],
+        "steps": [
+          "Verificare in App che OFF-777 non sia proposta al cliente CL-80008",
+          "Verificare in Sportello che OFF-777 non sia proposta allo stesso cliente",
+          "Aggiornare la matrice centralizzata impostando OFF-777 visibile=TRUE",
+          "Verificare in App l’apparizione di OFF-777 immediatamente dopo l’aggiornamento e poi a intervalli regolari fino a T secondi",
+          "Verificare in Sportello l’apparizione di OFF-777 immediatamente dopo l’aggiornamento e poi a intervalli regolari fino a T secondi",
+          "Registrare i tempi di primo allineamento per ciascun canale"
+        ],
+        "expected_results": [
+          "Entrambi i canali riflettono la modifica immediatamente oppure entro T secondi, secondo la politica di propagazione",
+          "La variazione di comportamento è riproducibile ripetendo il test (stesso esito con stessi tempi entro tolleranze concordate)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "digital",
+          "front-end commerciale"
+        ],
+        "notes": "Richiede definizione di T e delle tolleranze di test (es. jitter ammesso)."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC03",
+        "title": "Audit interno: correlazione comportamento osservato a versione/timestamp della matrice",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Sono disponibili log/audit trail o un endpoint interno per consultare la versione/timestamp della matrice usata per una decisione",
+          "App o Web disponibile per generare un evento/decisione tracciabile"
+        ],
+        "test_data": [
+          "ClienteId=CL-90009",
+          "Canale digitale: WEB",
+          "Configurazione in matrice: Versione=512, Timestamp=2026-02-21T16:45:00Z"
+        ],
+        "steps": [
+          "Eseguire una richiesta di proposte/offerte da canale digitale per il cliente CL-90009",
+          "Acquisire l’identificativo di correlazione della richiesta/decisione (requestId/correlationId) se disponibile",
+          "Consultare il sistema di audit/log interno usando l’identificativo di correlazione o filtri temporali",
+          "Recuperare il riferimento a versione/timestamp della matrice associato alla decisione"
+        ],
+        "expected_results": [
+          "È possibile associare il comportamento/decisione osservata a una specifica versione e/o timestamp della matrice centralizzata",
+          "Il riferimento recuperato è consistente con la configurazione attiva in matrice al momento della decisione"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "digital",
+          "front-end commerciale"
+        ],
+        "notes": "La visibilità della versione/timestamp può essere solo interna: il test valida la tracciabilità tecnica, non una UI cliente."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC04",
+        "title": "Edge case: cambio canale durante finestra di propagazione con possibile incoerenza temporanea tracciabile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Politica di propagazione definita con finestra T e comportamento atteso durante la finestra (ammessa incoerenza temporanea)",
+          "Accesso per aggiornare la matrice centralizzata",
+          "App e Sportello disponibili"
+        ],
+        "test_data": [
+          "Politica di propagazione: T=300 secondi (esempio)",
+          "ClienteId=CL-91010",
+          "Aggiornamento: regola di frequenza da 30 giorni (Versione=600) a 7 giorni (Versione=601)"
+        ],
+        "steps": [
+          "Verificare in App l’applicazione della regola di frequenza con Versione=600",
+          "Aggiornare la matrice alla Versione=601",
+          "Entro la finestra di propagazione, ripetere la verifica in Sportello e registrare il comportamento osservato",
+          "Continuare a verificare entrambi i canali fino al termine di T secondi dall’aggiornamento",
+          "Raccogliere (se disponibile) evidenza della versione/timestamp usata da ciascun canale/decisione tramite audit interno"
+        ],
+        "expected_results": [
+          "Entro la finestra di propagazione, eventuali differenze di comportamento tra canali sono spiegabili dalla diversa versione/timestamp applicata (tracciabile via audit)",
+          "Entro T secondi entrambi i canali convergono alla stessa configurazione e il comportamento torna coerente"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-4"
+        ],
+        "channels": [
+          "digital",
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito ammette propagazione non immediata; questo test valida la riproducibilità e la tracciabilità durante la finestra."
+      },
+      {
+        "test_id": "REQ-I-004.US02.TC05",
+        "title": "Coerenza tra touchpoint digitali: App e Web applicano la stessa configurazione",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "App e Web disponibili e configurati per usare i servizi di offerta in test",
+          "Matrice centralizzata popolata con configurazione attiva"
+        ],
+        "test_data": [
+          "ClienteId=CL-92011, Segmento=VIP",
+          "Configurazione in matrice: Eccezione VIP -> Frequenza=1 ogni 1 giorno, Versione=700"
+        ],
+        "steps": [
+          "Accedere in App come cliente CL-92011 e consultare le proposte/offerte",
+          "Registrare l’esito relativo a frequenza/eccezione VIP",
+          "Accedere in Web come lo stesso cliente e consultare le proposte/offerte",
+          "Registrare l’esito relativo a frequenza/eccezione VIP",
+          "Confrontare gli esiti App vs Web"
+        ],
+        "expected_results": [
+          "App e Web applicano la stessa eccezione prevista in matrice per il segmento VIP",
+          "Il comportamento osservato è coerente tra i due canali digitali a parità di input rilevanti"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "La user story raggruppa App/Web sotto 'digital'; il test esplicita entrambi i touchpoint per coprire il rischio di incoerenza tra canali digitali."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-004.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-004.US03.TC01",
+        "title": "Sportello applica regole da matrice centralizzata in integrazione (assenza di logiche locali divergenti)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Front-end commerciale (sportello/sala) disponibile e collegato ai servizi di offerta",
+          "Matrice centralizzata popolata con configurazione attiva per lo scenario",
+          "Operatore con profilo abilitato all’uso del front-end commerciale"
+        ],
+        "test_data": [
+          "OperatoreId=OP-1001 (profilo standard sportello)",
+          "ClienteId=CL-93012",
+          "Configurazione in matrice: Offerta OFF-555 ammissibile=TRUE, Frequenza=1 ogni 30 giorni, Versione=800"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come OP-1001",
+          "Ricercare il cliente CL-93012",
+          "Aprire la sezione proposte/offerte",
+          "Registrare le offerte proposte e l’applicazione di frequenza/eccezioni",
+          "Raccogliere evidenze tecniche disponibili (log/tracing) che attestino la lettura da fonte centralizzata (se disponibili)"
+        ],
+        "expected_results": [
+          "Le proposte visualizzate/propagate in sportello risultano coerenti con la configurazione presente in matrice (inclusa frequenza/eccezioni)",
+          "Non sono applicate regole locali divergenti non previste dalla matrice centralizzata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La user story non specifica come provare la 'stessa fonte' dal canale sportello; la verifica può essere indiretta (coerenza) o tramite evidenze tecniche se presenti."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC02",
+        "title": "Coerenza E2E tra Sportello e App a parità di input rilevanti",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "App disponibile per test",
+          "Front-end commerciale disponibile per test",
+          "Matrice centralizzata con configurazione attiva e stabile",
+          "Definizione degli input rilevanti da mantenere identici tra canali"
+        ],
+        "test_data": [
+          "ClienteId=CL-94013, Segmento=STANDARD",
+          "Configurazione in matrice: Offerta OFF-888 ammissibile=FALSE (eccezione: Segmento=VIP -> TRUE), Versione=850"
+        ],
+        "steps": [
+          "Accedere in App come cliente CL-94013 e consultare le proposte/offerte",
+          "Registrare se OFF-888 è proposta o esclusa",
+          "Accedere al front-end commerciale come operatore e aprire le proposte/offerte per CL-94013",
+          "Registrare se OFF-888 è proposta o esclusa",
+          "Confrontare i risultati App vs Sportello"
+        ],
+        "expected_results": [
+          "OFF-888 risulta esclusa (o trattata in modo equivalente) sia in App sia in Sportello per cliente STANDARD, a parità di condizioni rilevanti",
+          "Non emergono differenze per-canale non previste dalla configurazione centralizzata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il canale digitale (App) è coinvolto nel flusso E2E anche se la US è sullo sportello; serve per validare la coerenza cross-canale richiesta."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC03",
+        "title": "Propagazione modifica matrice: comportamento in sportello aggiornato entro la finestra prevista",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Politica di propagazione definita con tempo massimo T",
+          "Accesso per modificare la matrice centralizzata in test",
+          "Front-end commerciale disponibile"
+        ],
+        "test_data": [
+          "Politica di propagazione: T=300 secondi (esempio; sostituire con valore reale)",
+          "ClienteId=CL-95014",
+          "Configurazione iniziale: OFF-321 visibile=TRUE, Versione=900",
+          "Configurazione aggiornata: OFF-321 visibile=FALSE, Versione=901"
+        ],
+        "steps": [
+          "Verificare in sportello che OFF-321 sia proposta per CL-95014 con la configurazione iniziale",
+          "Aggiornare la matrice centralizzata impostando OFF-321 visibile=FALSE",
+          "Verificare in sportello immediatamente dopo l’aggiornamento l’effetto della modifica",
+          "Ripetere la verifica a intervalli regolari fino a T secondi dall’aggiornamento",
+          "Registrare il tempo di primo allineamento del canale sportello"
+        ],
+        "expected_results": [
+          "La modifica della matrice si riflette in sportello immediatamente oppure entro T secondi secondo la politica di propagazione",
+          "Dopo l’allineamento, OFF-321 non viene più proposta in sportello (comportamento stabile)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Richiede definizione di T e delle modalità di refresh/caching del canale sportello."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC04",
+        "title": "Audit a posteriori: ricostruzione versione/timestamp matrice usata per una proposta in sportello",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Front-end commerciale genera eventi/decisioni tracciabili (correlationId o identificativo pratica/sessione)",
+          "Disponibile sistema di audit/log interno consultabile da ruolo interno"
+        ],
+        "test_data": [
+          "OperatoreId=OP-2002",
+          "ClienteId=CL-96015",
+          "Configurazione in matrice: Versione=950, Timestamp=2026-02-22T12:00:00Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come OP-2002",
+          "Aprire le proposte/offerte per il cliente CL-96015 e generare una valutazione (visualizzazione lista offerte)",
+          "Recuperare l’identificativo di correlazione della sessione/decisione (se disponibile)",
+          "Consultare l’audit/log interno relativo alla decisione",
+          "Recuperare la versione/timestamp della matrice associati alla decisione"
+        ],
+        "expected_results": [
+          "La decisione/proposta in sportello è associabile a una specifica versione e/o timestamp della matrice centralizzata",
+          "Il riferimento consente la ricostruzione dello stato storico della configurazione applicata"
+        ],
+        "traced_criteria": [
+          "AC-4"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Non è richiesto che l’operatore veda la versione/timestamp in UI; è sufficiente tracciabilità tecnica consultabile internamente."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC05",
+        "title": "Connettività degradata/indisponibilità matrice: sportello gestisce errore senza regole locali alternative",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Possibilità di simulare degrado rete o indisponibilità verso la matrice centralizzata dal canale sportello o dal Motore di Offerte",
+          "Front-end commerciale disponibile"
+        ],
+        "test_data": [
+          "Simulazione errore: perdita connettività o HTTP 503 verso matrice per 5 minuti",
+          "OperatoreId=OP-3003",
+          "ClienteId=CL-97016"
+        ],
+        "steps": [
+          "Forzare la condizione di connettività degradata/indisponibilità verso la matrice",
+          "Accedere al front-end commerciale come OP-3003",
+          "Ricercare il cliente CL-97016 e aprire la sezione proposte/offerte",
+          "Registrare il messaggio/errore visualizzato e l’eventuale presenza di offerte proposte",
+          "Ripristinare la connettività e ripetere l’operazione"
+        ],
+        "expected_results": [
+          "In caso di indisponibilità, il canale sportello non mostra proposte basate su regole locali alternative non provenienti dalla matrice",
+          "Viene mostrato un errore gestito o uno stato di indisponibilità che impedisce decisioni incoerenti",
+          "Dopo il ripristino, il canale sportello torna a proporre offerte in base alla matrice centralizzata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non definisce UX di errore; il test valida l’assenza di divergenze e la gestione controllata dell’indisponibilità."
+      },
+      {
+        "test_id": "REQ-I-004.US03.TC06",
+        "title": "Canale sportello non allineato oltre la finestra: incoerenza rilevabile e non conforme alla politica",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente di integrazione test disponibile",
+          "Politica di propagazione definita con tempo massimo T",
+          "Accesso per modificare la matrice centralizzata",
+          "App e Sportello disponibili per confronto E2E"
+        ],
+        "test_data": [
+          "Politica di propagazione: T=300 secondi (esempio)",
+          "ClienteId=CL-98017",
+          "Aggiornamento matrice: OFF-999 ammissibile da TRUE (Versione=1000) a FALSE (Versione=1001)"
+        ],
+        "steps": [
+          "Verificare in App e in Sportello che OFF-999 sia proposta con Versione=1000",
+          "Aggiornare la matrice alla Versione=1001 (OFF-999 non ammissibile)",
+          "Attendere T secondi dall’aggiornamento",
+          "Verificare in App l’applicazione della nuova configurazione",
+          "Verificare in Sportello l’applicazione della nuova configurazione",
+          "Confrontare i risultati tra canali"
+        ],
+        "expected_results": [
+          "Entro T secondi entrambi i canali dovrebbero essere allineati; se lo Sportello continua ad applicare la configurazione precedente oltre T, il test rileva una non conformità alla politica di propagazione",
+          "L’incoerenza oltre la finestra è evidenziabile tramite differenza di comportamento tra App e Sportello"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Test negativo orientato a rilevare il rischio descritto negli edge cases; richiede che la politica di propagazione sia definita e misurabile."
+      }
+    ]
+  }
+]

@@ -1,0 +1,640 @@
+[
+  {
+    "story_id": "REQ-F-011.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-011.US01.TC01",
+        "title": "Instradamento su funnel unificato per bundle abilitato (canale digitale)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Canale digitale (Web o App) disponibile e raggiungibile",
+          "Ambiente di test con integrazioni attive verso Motore di Offerte e servizi di pagamento (anche simulati)"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001 (abilitato)",
+          "Canale: Web",
+          "Cliente: CF RSSMRA80A01H501U (dati anagrafici disponibili per identificazione)"
+        ],
+        "steps": [
+          "Accedere al canale digitale (Web) come cliente",
+          "Selezionare il bundle 'BND-ABIL-001'",
+          "Confermare l'avvio dell'acquisto del bundle",
+          "Verificare l'avvio del percorso guidato di acquisto",
+          "Completare la fase di identificazione cliente secondo le modalità disponibili sul canale",
+          "Completare la fase di sottoscrizione secondo le modalità disponibili sul canale",
+          "Completare la fase di pagamento secondo le modalità disponibili sul canale",
+          "Confermare la conclusione del processo"
+        ],
+        "expected_results": [
+          "Alla selezione del bundle abilitato, il sistema instrada l'utente su un unico funnel che include identificazione, sottoscrizione e pagamento",
+          "Le tre fasi (identificazione, sottoscrizione, pagamento) risultano eseguibili in sequenza nello stesso percorso senza reindirizzamenti a flussi separati",
+          "Il funnel si conclude con esito di completamento acquisto (ordine/pratica in stato completato o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "I dettagli operativi delle fasi (UI/UX e campi) non sono specificati: il test verifica la presenza del funnel unico e la possibilità di completare end-to-end sul canale digitale, indipendentemente dalle schermate specifiche."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC02",
+        "title": "Esecuzione end-to-end del funnel unificato su App per bundle abilitato",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "App disponibile e connessa ai servizi backend",
+          "Ambiente di test con integrazioni attive verso Motore di Offerte e servizi di pagamento (anche simulati)"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001 (abilitato)",
+          "Canale: App",
+          "Cliente: CF VRDLGI85C10F205X (dati anagrafici disponibili per identificazione)"
+        ],
+        "steps": [
+          "Aprire l'App e accedere come cliente",
+          "Navigare alla sezione di acquisto bundle/offerte",
+          "Selezionare il bundle 'BND-ABIL-001'",
+          "Avviare il processo di acquisto",
+          "Completare identificazione cliente",
+          "Completare sottoscrizione",
+          "Completare pagamento",
+          "Verificare l'esito finale dell'acquisto"
+        ],
+        "expected_results": [
+          "Il funnel unificato è eseguibile end-to-end su App per il bundle abilitato",
+          "L'esito finale indica completamento dell'acquisto senza necessità di ripetere attività tra fasi"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il canale 'digital' include App/Web: questo caso valida esplicitamente l'esecuzione su App. La verifica 'senza ripetere attività' è limitata a quanto osservabile (assenza di richieste di reinserimento dati già confermati) poiché le regole di recovery non sono dettagliate."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC03",
+        "title": "Esecuzione end-to-end del funnel unificato a sportello per bundle abilitato e previsto",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-SP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-SP-001' configurato come 'previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide e abilitazioni alla vendita assistita",
+          "Ambiente di test con integrazioni attive verso Motore di Offerte e servizi di pagamento (anche simulati)"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-SP-001 (abilitato, previsto sportello)",
+          "Canale: front-end commerciale",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare una vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Selezionare il bundle 'BND-ABIL-SP-001'",
+          "Avviare il funnel unificato",
+          "Eseguire la fase di identificazione cliente con l'assistenza dell'operatore",
+          "Eseguire la fase di sottoscrizione con l'assistenza dell'operatore",
+          "Eseguire la fase di pagamento con l'assistenza dell'operatore",
+          "Confermare la conclusione del processo"
+        ],
+        "expected_results": [
+          "Per bundle abilitato e previsto a sportello, il funnel unificato è disponibile ed eseguibile end-to-end dal front-end commerciale",
+          "Il percorso include identificazione, sottoscrizione e pagamento in un unico flusso",
+          "Il processo si conclude con esito di completamento acquisto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Questo test copre il requisito 'cliente fisico con assistenza operatore' usando il canale front-end commerciale. I dettagli delle schermate non sono specificati."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC04",
+        "title": "Bundle non abilitato: il cliente non viene instradato al funnel unificato (digitale)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-NO-UNI-001' configurato come 'non abilitato' al funnel unificato",
+          "Canale digitale (Web) disponibile"
+        ],
+        "test_data": [
+          "Bundle: BND-NO-UNI-001 (non abilitato)",
+          "Canale: Web",
+          "Cliente: CF RSSMRA80A01H501U"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente",
+          "Selezionare il bundle 'BND-NO-UNI-001'",
+          "Tentare di avviare l'acquisto del bundle"
+        ],
+        "expected_results": [
+          "Il sistema non instrada l'utente al funnel unificato per il bundle non abilitato",
+          "Il funnel unificato non risulta selezionabile/avviabile per il bundle non abilitato (assenza di entry-point o messaggio di non disponibilità)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "La user story non specifica quale flusso alternativo debba essere proposto: il test verifica solo la NON disponibilità del funnel unificato."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC05",
+        "title": "Bundle non previsto a sportello: funnel unificato non disponibile sul front-end commerciale",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-NOSP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-NOSP-001' configurato come 'non previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-NOSP-001 (abilitato, NON previsto sportello)",
+          "Canale: front-end commerciale",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare una vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Ricercare e selezionare il bundle 'BND-ABIL-NOSP-001'",
+          "Verificare le opzioni disponibili per l'avvio del percorso di vendita"
+        ],
+        "expected_results": [
+          "Per bundle non previsto a sportello, il funnel unificato non risulta disponibile/avviabile nel front-end commerciale",
+          "Il sistema non consente l'esecuzione end-to-end del funnel unificato a sportello per tale bundle"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "L'edge case cita 'non deve risultare disponibile in UP': si verifica l'assenza dell'opzione funnel unificato a sportello."
+      },
+      {
+        "test_id": "REQ-F-011.US01.TC06",
+        "title": "Interruzione tra fasi: ripresa del funnel senza duplicare attività già completate (digitale)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Canale digitale (Web) disponibile",
+          "Ambiente di test che consenta di simulare interruzione sessione (chiusura browser/app) e ripresa"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001 (abilitato)",
+          "Canale: Web",
+          "Cliente: CF RSSMRA80A01H501U"
+        ],
+        "steps": [
+          "Accedere al canale Web come cliente",
+          "Selezionare il bundle 'BND-ABIL-001' e avviare il funnel unificato",
+          "Completare la fase di identificazione cliente",
+          "Interrompere il percorso (chiudere il browser o terminare la sessione) prima di completare la sottoscrizione",
+          "Riaprire il canale Web e accedere nuovamente come lo stesso cliente",
+          "Riprendere l'acquisto del bundle (da area pratiche/in corso o entry-point equivalente disponibile)"
+        ],
+        "expected_results": [
+          "Alla ripresa, lo stato del funnel risulta coerente e non richiede di ripetere l'identificazione già completata",
+          "Il sistema consente di proseguire dalla fase successiva (sottoscrizione) o da un punto di ripresa equivalente, senza duplicare attività già completate"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "digital"
+        ],
+        "notes": "Il requisito non specifica meccanismi di recovery né dove si riprenda il funnel: il test valida solo l'assenza di duplicazione di attività completate, dove osservabile."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-011.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-011.US02.TC01",
+        "title": "Avvio vendita assistita: funnel unificato disponibile per bundle abilitato (sportello)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-SP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-SP-001' configurato come 'previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide e abilitazioni alla vendita assistita"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-SP-001 (abilitato, previsto sportello)",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare una nuova vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Selezionare il bundle 'BND-ABIL-SP-001'",
+          "Verificare la disponibilità dell'opzione di avvio del funnel unificato",
+          "Avviare il funnel unificato"
+        ],
+        "expected_results": [
+          "Il sistema rende disponibile un funnel unico per il bundle abilitato che copre identificazione, sottoscrizione e pagamento",
+          "Il funnel unificato risulta avviato nel front-end commerciale"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC02",
+        "title": "Esecuzione end-to-end del funnel unificato dal front-end commerciale (bundle previsto sportello)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-SP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-SP-001' configurato come 'previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide",
+          "Servizi di pagamento disponibili (anche simulati)"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-SP-001 (abilitato, previsto sportello)",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z",
+          "Metodo pagamento: POS/contanti (secondo modalità supportata in ambiente di test)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare la vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Selezionare il bundle 'BND-ABIL-SP-001' e avviare il funnel unificato",
+          "Completare la fase di identificazione cliente",
+          "Completare la fase di sottoscrizione",
+          "Completare la fase di pagamento",
+          "Confermare la chiusura della pratica/ordine"
+        ],
+        "expected_results": [
+          "Il funnel unificato è eseguibile end-to-end dal front-end commerciale per bundle previsto a sportello",
+          "L'esito finale indica completamento dell'acquisto e chiusura coerente della pratica/ordine"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Le modalità specifiche di pagamento a sportello non sono definite: usare una modalità supportata dall'ambiente di test."
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC03",
+        "title": "Bundle non abilitato: l'operatore non può avviare il funnel unificato a sportello",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-NO-UNI-001' configurato come 'non abilitato' al funnel unificato",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide"
+        ],
+        "test_data": [
+          "Bundle: BND-NO-UNI-001 (non abilitato)",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare una nuova vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Selezionare il bundle 'BND-NO-UNI-001'",
+          "Verificare la presenza dell'opzione di avvio del funnel unificato",
+          "Tentare di avviare il funnel unificato (se l'azione è esposta)"
+        ],
+        "expected_results": [
+          "Il funnel unificato non è disponibile per bundle non abilitato",
+          "Se l'azione viene forzata (deep link/azione esposta), il sistema nega l'avvio e mantiene l'operatore fuori dal funnel unificato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Test classificato come Authorization perché verifica una condizione di abilitazione (eligibility) che limita l'accesso al funnel unificato."
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC04",
+        "title": "Bundle non previsto a sportello: l'operatore non vede né esegue il funnel unificato sul canale fisico",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-NOSP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-NOSP-001' configurato come 'non previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-NOSP-001 (abilitato, NON previsto sportello)",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare una nuova vendita assistita per il cliente CF BNCLCU90D15H501Z",
+          "Selezionare il bundle 'BND-ABIL-NOSP-001'",
+          "Verificare le opzioni disponibili per il percorso di vendita"
+        ],
+        "expected_results": [
+          "Il funnel unificato non risulta disponibile/avviabile per bundle non previsto a sportello",
+          "Non è possibile eseguire end-to-end il funnel unificato dal front-end commerciale per tale bundle"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-011.US02.TC05",
+        "title": "Errore in fase di pagamento a sportello: stato del funnel coerente e non completato",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Bundle 'BND-ABIL-SP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-SP-001' configurato come 'previsto per sportello'",
+          "Front-end commerciale disponibile",
+          "Operatore di sportello con credenziali valide",
+          "Ambiente di test che consenta di simulare un pagamento rifiutato/KO"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-SP-001",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z",
+          "Pagamento: esito KO simulato (es. 'transazione rifiutata')"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore OP001",
+          "Avviare la vendita assistita e il funnel unificato per il bundle 'BND-ABIL-SP-001'",
+          "Completare identificazione cliente",
+          "Completare sottoscrizione",
+          "Avviare il pagamento e forzare l'esito KO",
+          "Verificare lo stato della pratica/ordine dopo l'esito KO"
+        ],
+        "expected_results": [
+          "Il funnel non risulta completato a seguito del pagamento KO",
+          "Lo stato della pratica/ordine risulta coerente con un pagamento non completato (es. 'in corso', 'pagamento fallito' o equivalente) senza indicare completamento acquisto"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La user story non specifica le regole di recovery: il test verifica solo coerenza di stato e assenza di completamento in caso di KO pagamento."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-011.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-011.US03.TC01",
+        "title": "Motore di Offerte abilita funnel unificato quando richiesto per bundle abilitato",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' presente nel catalogo e configurato come 'abilitato' al funnel unificato",
+          "Endpoint/API del Motore di Offerte disponibile in ambiente di test",
+          "Credenziali/chiavi di accesso tecniche per invocare l'API (se previste)"
+        ],
+        "test_data": [
+          "Richiesta percorso vendita: bundleId=BND-ABIL-001",
+          "Canale chiamante: digital",
+          "CorrelationId: 7b1b5c2a-2a6b-4c2b-9b3a-1d2f3a4b5c6d"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di percorso di vendita per bundle 'BND-ABIL-001' indicando il canale 'digital'",
+          "Acquisire la risposta del Motore di Offerte",
+          "Verificare nella risposta l'indicazione di funnel unificato abilitato e le fasi previste"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte abilita un funnel unico per il bundle abilitato",
+          "La risposta indica che il funnel copre identificazione cliente, sottoscrizione e pagamento (come fasi/stati o metadati equivalenti)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Non sono definiti contratti API e modello stati: il test verifica la presenza di un'indicazione esplicita di 'funnel unificato' e delle tre macro-fasi, secondo il payload effettivamente implementato."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC02",
+        "title": "Integrazione digitale: esecuzione end-to-end del funnel unificato con Motore di Offerte (Web/App)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Canali digitali integrati con Motore di Offerte in ambiente di test",
+          "Servizi necessari al completamento del funnel disponibili (identificazione, sottoscrizione, pagamento) anche tramite stub/simulatori"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001",
+          "Cliente: CF RSSMRA80A01H501U",
+          "Canale: Web (ripetibile anche su App)"
+        ],
+        "steps": [
+          "Dal canale digitale, avviare l'acquisto del bundle 'BND-ABIL-001'",
+          "Verificare che il canale richieda al Motore di Offerte il percorso di vendita per il bundle",
+          "Completare identificazione, sottoscrizione e pagamento fino al termine del funnel",
+          "Raccogliere evidenze tecniche della chiamata/e al Motore di Offerte e dell'esito finale (log applicativi o tracing)"
+        ],
+        "expected_results": [
+          "Il funnel unificato risulta completabile end-to-end su canale digitale in integrazione con il Motore di Offerte",
+          "Le interazioni canale↔motore risultano coerenti con l'abilitazione del funnel unificato per il bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non elenca canali; questo è un test di integrazione cross-sistema. La verifica delle chiamate dipende dagli strumenti di observability disponibili (es. correlationId)."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC03",
+        "title": "Integrazione sportello: esecuzione end-to-end del funnel unificato con Motore di Offerte (bundle previsto sportello)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-SP-001' configurato come 'abilitato' al funnel unificato",
+          "Bundle 'BND-ABIL-SP-001' configurato come 'previsto per sportello'",
+          "Front-end commerciale integrato con Motore di Offerte in ambiente di test",
+          "Servizi necessari al completamento del funnel disponibili (anche tramite stub/simulatori)"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-SP-001",
+          "Operatore: OP001",
+          "Cliente: CF BNCLCU90D15H501Z"
+        ],
+        "steps": [
+          "Dal front-end commerciale, avviare la vendita assistita del bundle 'BND-ABIL-SP-001'",
+          "Verificare che il front-end richieda al Motore di Offerte il percorso di vendita per il bundle",
+          "Completare identificazione, sottoscrizione e pagamento fino al termine del funnel",
+          "Raccogliere evidenze tecniche della chiamata/e al Motore di Offerte e dell'esito finale"
+        ],
+        "expected_results": [
+          "Il funnel unificato risulta completabile end-to-end da sportello in integrazione con il Motore di Offerte per bundle previsto a sportello",
+          "Le interazioni front-end↔motore risultano coerenti con l'abilitazione del funnel unificato per il bundle"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito parla di testabilità da sportello 'se previsto': questo test richiede configurazione esplicita 'previsto per sportello'."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC04",
+        "title": "Logging transizioni: ogni passaggio di stato del funnel viene tracciato con stato precedente/successivo e timestamp",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Servizio di logging/audit accessibile (es. log centralizzato o tabella audit) in ambiente di test",
+          "Disponibilità di un identificativo univoco del funnel/pratica (funnelId o orderId) ottenibile durante l'esecuzione"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001",
+          "Canale: Web",
+          "Cliente: CF RSSMRA80A01H501U"
+        ],
+        "steps": [
+          "Avviare il funnel unificato per il bundle 'BND-ABIL-001' fino ad almeno due transizioni di fase (es. da identificazione a sottoscrizione, da sottoscrizione a pagamento)",
+          "Recuperare l'identificativo del funnel/pratica generato",
+          "Consultare il repository di logging/audit per l'identificativo del funnel/pratica",
+          "Verificare la presenza degli eventi di transizione relativi alle fasi attraversate"
+        ],
+        "expected_results": [
+          "Per ogni transizione di stato attraversata, esiste un record di log/tracciatura associato al funnel/pratica",
+          "Ogni record contiene almeno: stato precedente, stato successivo e timestamp valorizzato",
+          "L'ordine temporale dei record è coerente con la sequenza di esecuzione del funnel"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Gli stati del funnel non sono definiti: il test verifica la presenza di eventi di transizione coerenti con le fasi effettivamente implementate e la presenza dei campi minimi (prev/next/timestamp) come da assunzione della user story."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC05",
+        "title": "Bundle non eleggibile ('dove possibile' falso): il motore non abilita il funnel unificato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Bundle 'BND-NO-ELIG-001' presente nel catalogo",
+          "Bundle 'BND-NO-ELIG-001' configurato come non eleggibile all'unificazione (criterio tecnico/configurazione disponibile in ambiente di test)",
+          "Endpoint/API del Motore di Offerte disponibile"
+        ],
+        "test_data": [
+          "Richiesta percorso vendita: bundleId=BND-NO-ELIG-001",
+          "Canale chiamante: digital",
+          "CorrelationId: 1c2d3e4f-5a6b-7c8d-9e0f-112233445566"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di percorso di vendita per bundle 'BND-NO-ELIG-001'",
+          "Acquisire la risposta del Motore di Offerte",
+          "Verificare nella risposta l'assenza dell'abilitazione al funnel unificato"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte non abilita il funnel unificato per il bundle non eleggibile ('dove possibile' non soddisfatto)",
+          "La risposta indica un percorso alternativo o la non disponibilità del funnel unificato (secondo implementazione), senza dichiarare le tre fasi come funnel unico"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La regola di eleggibilità non è definita nel requisito: il test richiede una configurazione di ambiente che permetta di marcare un bundle come non eleggibile e verificare la non abilitazione."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC06",
+        "title": "Servizio di logging non disponibile: gestione errore senza stati incoerenti del funnel",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Possibilità di simulare indisponibilità del servizio di logging (timeout/5xx) in ambiente di test",
+          "Canale (Web o front-end commerciale) disponibile per avviare il funnel"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001",
+          "Canale: Web",
+          "Modalità fault: logging service timeout per 60s"
+        ],
+        "steps": [
+          "Configurare il fault per rendere indisponibile il servizio di logging",
+          "Avviare il funnel unificato per il bundle 'BND-ABIL-001'",
+          "Eseguire una transizione di fase (es. completare identificazione per passare a sottoscrizione)",
+          "Osservare l'esito dell'operazione lato canale e lo stato corrente del funnel/pratica"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'errore di logging senza generare stati incoerenti del funnel/pratica",
+          "Lo stato del funnel/pratica dopo l'azione risulta deterministico (o transizione completata o transizione non applicata), senza duplicazioni di stato",
+          "Eventuali messaggi di errore/alert tecnici non impediscono la coerenza del processo (politica di proseguimento/stop non specificata)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "La politica in caso di logging down non è specificata (fail-open vs fail-closed): il test verifica solo la coerenza degli stati, non l'esito funzionale atteso (blocco o prosecuzione)."
+      },
+      {
+        "test_id": "REQ-F-011.US03.TC07",
+        "title": "Transizioni ripetute/concorrenti: prevenzione stati incoerenti e logging non duplicato in modo anomalo",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Bundle 'BND-ABIL-001' configurato come 'abilitato' al funnel unificato",
+          "Disponibilità di strumenti per invocare in parallelo la stessa transizione (es. due richieste simultanee di avanzamento fase)",
+          "Repository logging/audit consultabile"
+        ],
+        "test_data": [
+          "Bundle: BND-ABIL-001",
+          "Fase target: avanzamento da identificazione a sottoscrizione (o equivalente)",
+          "Numero richieste concorrenti: 2"
+        ],
+        "steps": [
+          "Avviare un funnel unificato e posizionarlo in uno stato che consenta una transizione (es. fine identificazione pronta ad avanzare)",
+          "Inviare due richieste concorrenti di avanzamento alla stessa transizione (tramite API o azioni canale in parallelo)",
+          "Recuperare lo stato finale del funnel/pratica",
+          "Consultare i log/audit per l'identificativo del funnel/pratica"
+        ],
+        "expected_results": [
+          "Lo stato finale del funnel/pratica è coerente e non presenta avanzamenti multipli non previsti",
+          "La transizione risulta applicata al massimo una volta (o gestita con idempotenza equivalente) senza generare una sequenza di stati impossibile",
+          "I log di transizione non mostrano duplicazioni anomale per la stessa transizione (al netto di eventuali retry tecnici tracciati come tali)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il meccanismo di concorrenza/idempotenza non è specificato: il test valida l'assenza di stati incoerenti e di duplicazioni anomale nel logging."
+      }
+    ]
+  }
+]

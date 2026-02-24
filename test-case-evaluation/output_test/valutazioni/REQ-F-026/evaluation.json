@@ -1,0 +1,147 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-026",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 80,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-026.TC01",
+        "detail": "Introduce dettagli non presenti nel requisito: intervallo standard '30 giorni', iniziativa/offerta specifica, nomi campagne e clienti, e l'aspettativa di 'metadata/causale/log' restituiti dal Motore."
+      },
+      {
+        "test_id": "REQ-F-026.TC02",
+        "detail": "Assume modalità verificabile per identificare 'clienti target' (lista target verificabile/flag assente) e la presenza di motivazioni/metadata/log sull'esito."
+      },
+      {
+        "test_id": "REQ-F-026.TC03",
+        "detail": "Aggiunge concetti non esplicitati: UI/API di configurazione, 'utente con permessi', campi minimi audit (timestamp, dettagli proprietà), e meccanismi specifici (tabella audit/event store)."
+      },
+      {
+        "test_id": "REQ-F-026.TC04",
+        "detail": "Introduce alternativa implementativa non specificata ('disabilitare override' oppure 'rimuovere cliente dal target') e verifica di audit/log con dettagli non definiti."
+      },
+      {
+        "test_id": "REQ-F-026.TC05",
+        "detail": "Assume una proprietà di campagna separata 'riproposizione immediata consentita/non consentita' come configurazione esplicita; il requisito dice solo 'se la campagna lo prevede' senza definire tale attributo."
+      },
+      {
+        "test_id": "REQ-F-026.TC06",
+        "detail": "Gestione errori/robustezza (503/timeout, no partial apply) non richiesta dal requisito; è un comportamento inventato per AC-3."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: \"Deve essere possibile configurare quali campagne o eventi esterni abilitano l'override temporaneo\"",
+        "detail": "I TC validano la configurazione di singole campagne, ma non coprono esplicitamente lo scenario di selezione/abilitazione di quali 'eventi esterni' (oltre a campagne) possano attivare l'override (es. distinzione campagna vs evento esterno)."
+      },
+      {
+        "source": "Descrizione: \"annullare temporaneamente la regola di intervallo\"",
+        "detail": "Non viene testata esplicitamente la natura 'temporanea' dell'override (es. validità limitata nel tempo o legata alla durata della campagna/evento), oltre alla semplice presenza/assenza del targeting."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-026.TC01",
+          "REQ-F-026.TC04"
+        ],
+        "detail": "Entrambi verificano che per un cliente target con override attivo il Motore consenta riproposizione entro l'intervallo e che, dopo modifica, la regola standard torni in vigore (TC04 estende con reversibilità/audit)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 52,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-026.US01.TC01",
+        "detail": "Introduce attore e canale non citati (\"Utente Team Marketing\", \"dashboard\"), e un modello operativo UI-specifico non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC02",
+        "detail": "Assume che la dashboard esponga 'storico/versioni' e che l'audit contenga 'chi/quando/cosa'; il requisito richiede tracciabilità e reversibilità ma non impone UI/versioning né campi specifici."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC03",
+        "detail": "Introduce una funzionalità specifica di rollback/versioning (ripristino V1/V2) non richiesta dal requisito (che dice solo 'reversibile')."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC04",
+        "detail": "Aggiunge una business rule non nel requisito: blocco salvataggio se target vuoto ed errore bloccante; il requisito non dice che il sistema debba impedire la creazione."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC05",
+        "detail": "Dettagli UI (riapertura campagna) e assunzioni su persistenza/visualizzazione non esplicitate dal requisito (che parla di configurabilità e applicazione)."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC01",
+        "detail": "Assume endpoint/job per invocare il Motore e reason codes/log; inoltre introduce valori temporali (1 ora/7 giorni) non nel requisito."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC02",
+        "detail": "Assume disponibilità di reason codes/log e modalità d'invocazione; non specificate dal requisito."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC03",
+        "detail": "E2E comparativo è coerente con AC-4, ma assume predisposizione 'stesso contesto di frequenza' e modalità di invio richieste non definite."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC04",
+        "detail": "Introduce comportamento di fallback 'fail-safe' in caso di indisponibilità dati targeting/campagna e logging tecnico; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC05",
+        "detail": "Introduce concetto di stato campagna 'non attiva/rimossa' e relativa logica di non applicazione override; il requisito non menziona stati di campagna."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-2: \"Per i clienti coinvolti nella campagna il Motore consente la riproposizione immediata se la campagna lo prevede\"",
+        "detail": "Non viene testata esplicitamente la configurazione della condizione 'se la campagna lo prevede' (cioè un attributo/flag che abiliti o meno la riproposizione immediata). I TC assumono che l'override implichi riproposizione immediata, ma non coprono il caso in cui la campagna NON lo preveda."
+      },
+      {
+        "source": "Descrizione: \"annullare temporaneamente la regola di intervallo\"",
+        "detail": "Come nel set direct, non c'è un test esplicito sulla temporaneità (durata/validità nel tempo dell'eccezione) oltre al semplice targeting."
+      },
+      {
+        "source": "Descrizione: \"eventi esterni\"",
+        "detail": "I TC parlano di 'tipo: evento esterno' ma non verificano alcuna differenza funzionale o configurativa tra campagna ed evento esterno; resta un'etichetta non validata."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-026.US02.TC02",
+          "REQ-F-026.US02.TC03"
+        ],
+        "detail": "Entrambi validano che un cliente non target non riceva override e resti soggetto alla regola di frequenza; TC03 replica lo scenario includendo anche i target."
+      },
+      {
+        "test_ids": [
+          "REQ-F-026.US01.TC01",
+          "REQ-F-026.US01.TC05"
+        ],
+        "detail": "Entrambi verificano persistenza/associazione campagna↔clienti target tramite riapertura/recupero configurazione."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC, ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 10) e ha meno lacune non-AC (2 missing_info vs 3). Inoltre presenta meno ridondanze (1 vs 2). Di conseguenza ottiene un punteggio di coerenza superiore (80 vs 52)."
+  }
+}

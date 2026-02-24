@@ -1,0 +1,139 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-009",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 77,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-009.TC03",
+        "detail": "Introduce l'associazione proposta->SKU specifico (SKU-ABC-001) e una verifica puntuale del carrello; il requisito cita solo 'procedere all'acquisto (es. aggiungere al carrello)' senza definire mapping a SKU o verifiche di quantità."
+      },
+      {
+        "test_id": "REQ-UI-009.TC04",
+        "detail": "Come TC03: introduce mapping proposta->SKU e verifica carrello/quantità non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.TC05",
+        "detail": "Aggiunge requisito implicito di messaggio/indicazione 'Offerta scaduta' e specifica che il carrello non viene modificato; il requisito richiede solo che l'acquisto sia possibile entro scadenza, non definisce comportamento UI oltre scadenza né feedback obbligatorio."
+      },
+      {
+        "test_id": "REQ-UI-009.TC06",
+        "detail": "Aggiunge gestione errori tecnici (HTTP 500/timeout), resilienza 'no crash', e regole su dati parziali; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.TC07",
+        "detail": "Aggiunge gestione di dati incompleti e fallback (immagine di default/occultamento controllato) non specificati dal requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-009.TC01",
+          "REQ-UI-009.TC02"
+        ],
+        "detail": "Stesso scenario (presenza proposta non accettata + campi nome/immagine/prezzo) duplicato su due canali con step/ER quasi identici."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-009.TC03",
+          "REQ-UI-009.TC04"
+        ],
+        "detail": "Stesso scenario (riapertura proposta e acquisto/aggiunta al carrello entro scadenza) duplicato su due canali con step/ER quasi identici."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 16,
+    "coherence_score": 59,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-009.US01.TC03",
+        "detail": "Richiede che nel carrello il prezzo applicato corrisponda al prezzo scontato (79,99 EUR). Il requisito richiede visualizzazione del prezzo scontato in Loyalty e possibilità di acquisto entro scadenza, ma non la regola di pricing in carrello."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC04",
+        "detail": "Come US01.TC03: verifica prezzo scontato applicato in carrello non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC06",
+        "detail": "Edge case 'scadenza durante la sessione' con time shift/controllo orologio di test: scenario non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC07",
+        "detail": "Aggiunge regola: non mostrare elenco 'vuoto' quando backend è in errore e impedire riapertura; gestione errori tecnici non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC08",
+        "detail": "Aggiunge gestione errore per dati incompleti nel dettaglio (segnalazione/impedire fruizione) non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US01.TC09",
+        "detail": "Introduce requisito di autorizzazione/autenticazione (utente non autenticato non vede offerte). Il requisito non menziona vincoli di accesso."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC03",
+        "detail": "Introduce business rule 'read-only' (aprire in Loyalty non modifica stato proposta) e verifica tramite API/DB/backoffice: non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC04",
+        "detail": "Verifica applicazione del prezzo scontato in carrello (29,90 EUR) non richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC05",
+        "detail": "Richiede comunicazione UI di non validità e carrello non aggiornato oltre scadenza: feedback/UI e comportamento carrello oltre scadenza non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC06",
+        "detail": "Test di 'incoerenza dati' prezzo pop-up vs Loyalty come caso negativo predisposto via mock/fixture: il requisito richiede che in Loyalty si mostri come nell'interazione iniziale, ma qui si aggiunge un impianto di baseline e un test negativo specifico non richiesto."
+      },
+      {
+        "test_id": "REQ-UI-009.US02.TC07",
+        "detail": "Aggiunge gestione errore recupero dettaglio (HTTP 502/timeout), stato di errore distinguibile e blocco acquisto senza dettaglio: non presente nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-009.US01.TC01",
+          "REQ-UI-009.US02.TC01"
+        ],
+        "detail": "Entrambi verificano che l'elenco Loyalty includa la proposta non accettata su App e Web."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-009.US01.TC03",
+          "REQ-UI-009.US02.TC04"
+        ],
+        "detail": "Entrambi verificano acquisto/aggiunta al carrello entro scadenza (cambia solo dataset)."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-009.US01.TC05",
+          "REQ-UI-009.US02.TC05"
+        ],
+        "detail": "Entrambi verificano blocco acquisto oltre scadenza (cambia solo dataset)."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (0 AC scoperti). Il set direct introduce meno informazioni non tracciabili (5 added_info vs 11) e ha meno ridondanze (2 vs 3), ottenendo un punteggio di coerenza superiore (77 vs 59)."
+  }
+}

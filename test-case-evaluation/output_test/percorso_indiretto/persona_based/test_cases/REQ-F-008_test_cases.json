@@ -1,0 +1,530 @@
+[
+  {
+    "story_id": "REQ-F-008.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-008.US01.TC01",
+        "title": "Visualizzazione in dashboard Marketing del log di proposta generata dal Motore di Offerte con dettagli minimi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "La dashboard Marketing e il backend di consultazione log sono raggiungibili",
+          "Il Motore di Offerte è operativo e può generare una proposta per un cliente target",
+          "È possibile generare (o predisporre) una decisione del motore che produca una proposta con motivazione"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Cliente target: CUST-100001",
+          "Touchpoint proposta: Web",
+          "Offerte proposte: OFF-001, OFF-002",
+          "Motivazioni: 'Eligible segment A', 'Promo USP X'"
+        ],
+        "steps": [
+          "Generare una proposta tramite Motore di Offerte per il cliente CUST-100001 sul touchpoint Web",
+          "Accedere alla dashboard Marketing con l'utente marketing.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo alla proposta appena generata"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo alla proposta generata",
+          "Nel record sono visibili almeno le offerte/bundle proposte e le relative motivazioni",
+          "Nel record sono visibili touchpoint, data/ora (timestamp) ed esito (anche se inizialmente pending/non disponibile)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Interpretazione: AC di story richiede campi minimi (offerte/motivazioni/touchpoint/timestamp/esito) ma l'AC originale non dettaglia i campi; il test verifica comunque i campi minimi indicati dalla user story per garantire valore Marketing."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC02",
+        "title": "Visualizzazione in dashboard Marketing del log di esclusione generata dal Motore di Offerte con motivazioni",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "Il Motore di Offerte è operativo e può generare un'esclusione (offerta/bundle non proposta) per un cliente target",
+          "La dashboard Marketing è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Cliente target: CUST-100002",
+          "Touchpoint proposta: App",
+          "Offerte escluse: OFF-010",
+          "Motivazione esclusione: 'Non compatibile con prodotto attivo'"
+        ],
+        "steps": [
+          "Generare una decisione del Motore di Offerte che produca l'esclusione dell'offerta OFF-010 per il cliente CUST-100002 sul touchpoint App",
+          "Accedere alla dashboard Marketing con l'utente marketing.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo all'esclusione appena generata"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo all'esclusione generata",
+          "Nel record sono visibili almeno le offerte/bundle escluse e le relative motivazioni",
+          "Nel record sono visibili touchpoint e timestamp"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story US01 cita anche ordinamento; l'AC originale copre proposta/esclusione. Questo test valida esclusione e consultabilità."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC03",
+        "title": "Visualizzazione in dashboard Marketing del log di ordinamento offerte/bundle con motivazioni (se previsto dal sistema)",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "Il Motore di Offerte è operativo e supporta la generazione di un ordinamento (ranking) di offerte/bundle",
+          "La dashboard Marketing è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Cliente target: CUST-100003",
+          "Touchpoint proposta: UP",
+          "Ordinamento atteso: OFF-020 (pos.1), OFF-021 (pos.2), OFF-022 (pos.3)",
+          "Motivazioni ranking: 'Propensione alta', 'Margine', 'Vincoli di compatibilità'"
+        ],
+        "steps": [
+          "Generare una decisione del Motore di Offerte che produca un ordinamento di offerte/bundle per il cliente CUST-100003 sul touchpoint UP",
+          "Accedere alla dashboard Marketing con l'utente marketing.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo all'ordinamento appena generato"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo alla decisione di ordinamento",
+          "Nel record sono visibili le offerte/bundle ordinate (con ordine/ranking osservabile) e le relative motivazioni"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'AC originale menziona proposta/esclusione; l'ordinamento è richiesto dalla user story ma non esplicitato negli AC originali. Il test è mantenuto per coprire l'AC della user story senza introdurre funzionalità oltre quanto dichiarato in US01."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC04",
+        "title": "Creazione e consultazione in dashboard Marketing del log di operazione di configurazione (creazione bundle)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato a eseguire operazioni di configurazione e a consultare la dashboard Marketing",
+          "Il sistema di configurazione (bundle/pricing/campagne/parametri) è operativo",
+          "La dashboard Marketing è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user2",
+          "Operazione: Creazione bundle",
+          "Bundle: BND-300 (nome: 'Bundle Fibra+Mobile Promo Q1')"
+        ],
+        "steps": [
+          "Accedere al modulo di configurazione con l'utente marketing.user2",
+          "Eseguire la creazione del bundle BND-300",
+          "Verificare che l'operazione di creazione risulti completata con successo",
+          "Accedere alla dashboard Marketing",
+          "Aprire la sezione di consultazione dei log delle operazioni di configurazione",
+          "Individuare il record di log relativo alla creazione del bundle BND-300"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo all'operazione di creazione bundle",
+          "Nel record sono presenti almeno tipo operazione (creazione) e oggetto (bundle BND-300)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione applicata: campi minimi del log di configurazione non specificati; si verifica almeno tipo operazione e oggetto come indicato nelle assumptions della user story."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC05",
+        "title": "Accesso non autorizzato: utente senza ruolo Marketing non può consultare i log in dashboard Marketing",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile senza ruolo/permesso 'Marketing' per la consultazione log (es. ruolo 'Operatore')",
+          "La dashboard Marketing è raggiungibile",
+          "Esistono record di log già presenti (motore e/o configurazione)"
+        ],
+        "test_data": [
+          "Utente: operator.user1"
+        ],
+        "steps": [
+          "Accedere alla dashboard Marketing con l'utente operator.user1",
+          "Tentare di aprire la sezione di consultazione log (decisioni motore e/o operazioni di configurazione)"
+        ],
+        "expected_results": [
+          "L'accesso alla consultazione dei log è negato oppure la sezione non è visibile, secondo le autorizzazioni configurate",
+          "Non vengono mostrati dettagli dei record di log all'utente non autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non dettaglia i livelli di visibilità; il test verifica almeno il rispetto del controllo accessi alla consultazione."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC06",
+        "title": "Edge case: touchpoint non riconosciuto valorizzato come 'unknown' e record consultabile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "Il Motore di Offerte è operativo",
+          "È possibile generare (o predisporre) una proposta con touchpoint non valorizzabile/non riconosciuto",
+          "La dashboard Marketing è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Cliente target: CUST-100004",
+          "Touchpoint input: valore nullo o 'XYZ'",
+          "Offerta proposta: OFF-030"
+        ],
+        "steps": [
+          "Generare una proposta tramite Motore di Offerte per il cliente CUST-100004 con touchpoint nullo o non riconosciuto",
+          "Accedere alla dashboard Marketing con l'utente marketing.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo alla proposta appena generata"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo alla proposta generata",
+          "Il campo touchpoint nel record risulta valorizzato secondo standard di sistema come 'unknown'/'non disponibile' (non vuoto non gestito)",
+          "Il record rimane consultabile e non causa errori di visualizzazione in dashboard"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case esplicitato nella user story; lo 'standard di sistema' per il valore è da confermare (es. 'UNKNOWN', 'N/D')."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC07",
+        "title": "Edge case: esito proposta inizialmente 'pending' e successivamente aggiornato, mantenendo consultabilità",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "Il Motore di Offerte è operativo",
+          "Il sistema aggiorna l'esito della proposta quando l'informazione diventa disponibile (abbandono/finalizzazione operatore/finalizzazione self)",
+          "La dashboard Marketing è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Cliente target: CUST-100005",
+          "Touchpoint: Web",
+          "Offerta proposta: OFF-040",
+          "Transizione esito: pending -> finalizzazione lato cliente (self)"
+        ],
+        "steps": [
+          "Generare una proposta tramite Motore di Offerte per il cliente CUST-100005 sul touchpoint Web",
+          "Accedere alla dashboard Marketing e individuare il record di log della proposta",
+          "Verificare il valore dell'esito iniziale nel record",
+          "Eseguire l'azione che determina l'esito finale (es. finalizzazione lato cliente in modalità self) secondo i flussi di sistema disponibili",
+          "Aggiornare/ricaricare la vista log in dashboard",
+          "Re-individuare lo stesso record di log della proposta"
+        ],
+        "expected_results": [
+          "Il record di log è consultabile anche quando l'esito è inizialmente 'pending'/'non disponibile'",
+          "Dopo la determinazione dell'esito, il record mostra l'esito aggiornato (es. 'finalizzazione lato cliente - self')",
+          "L'aggiornamento dell'esito non crea duplicati non attesi del record (stesso evento/proposta consultabile in modo coerente)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La modalità di correlazione/identificativo univoco del record non è specificata; per automazione è necessario un campo chiave (es. proposalId/eventId) non presente nei requisiti."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC08",
+        "title": "Servizio log non disponibile: la dashboard gestisce l'errore senza mostrare dati parziali o incoerenti",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato alla dashboard Marketing",
+          "La dashboard Marketing è raggiungibile",
+          "Il servizio/backend di consultazione log può essere reso non disponibile (es. simulazione timeout/HTTP 5xx)"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Errore simulato: timeout 30s o HTTP 503 dal servizio log"
+        ],
+        "steps": [
+          "Configurare la simulazione di indisponibilità del servizio di consultazione log (timeout o 5xx)",
+          "Accedere alla dashboard Marketing con l'utente marketing.user1",
+          "Aprire la sezione di consultazione dei log"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore/avviso di impossibilità nel recupero dei log",
+          "Non vengono mostrati record di log incompleti o dati non aggiornati come se fossero validi",
+          "L'applicazione non va in crash e consente di riprovare/ricaricare la sezione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica messaggistica o retry; il test valida una gestione minima dell'errore lato consultazione."
+      },
+      {
+        "test_id": "REQ-F-008.US01.TC09",
+        "title": "Operazione di configurazione fallita: nessun record di log di 'operazione completata' (assunzione) e consultazione coerente",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Marketing' abilitato a eseguire operazioni di configurazione e a consultare la dashboard Marketing",
+          "Il sistema di configurazione è operativo",
+          "È possibile provocare un fallimento di validazione in configurazione (es. campo obbligatorio mancante)"
+        ],
+        "test_data": [
+          "Utente: marketing.user2",
+          "Operazione: Creazione campagna",
+          "Campagna: CMP-900 (nome mancante per provocare errore)"
+        ],
+        "steps": [
+          "Accedere al modulo di configurazione con l'utente marketing.user2",
+          "Tentare di creare la campagna CMP-900 lasciando un campo obbligatorio non valorizzato",
+          "Verificare che l'operazione venga rifiutata dal sistema (errore di validazione)",
+          "Accedere alla dashboard Marketing",
+          "Aprire la sezione di consultazione dei log delle operazioni di configurazione",
+          "Ricercare un record relativo al tentativo di creazione della campagna CMP-900"
+        ],
+        "expected_results": [
+          "L'operazione di configurazione risulta non completata (errore mostrato nel modulo di configurazione)",
+          "Non è presente un record di log che indichi una creazione completata con successo per CMP-900",
+          "La consultazione log in dashboard rimane funzionante e coerente"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione esplicita della user story: si loggano almeno le operazioni completate con successo; la tracciatura dei tentativi falliti non è specificata."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-008.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-008.US02.TC01",
+        "title": "Visualizzazione in dashboard Compliance del log di proposta generata dal Motore di Offerte",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Compliance' abilitato alla dashboard Compliance",
+          "Il Motore di Offerte è operativo e può generare una proposta per un cliente target",
+          "La dashboard Compliance e il backend di consultazione log sono raggiungibili"
+        ],
+        "test_data": [
+          "Utente: compliance.user1",
+          "Cliente target: CUST-200001",
+          "Offerta proposta: OFF-050"
+        ],
+        "steps": [
+          "Generare una proposta tramite Motore di Offerte per il cliente CUST-200001",
+          "Accedere alla dashboard Compliance con l'utente compliance.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo alla proposta appena generata"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo alla proposta generata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story Compliance non richiede campi minimi specifici; si verifica l'esistenza del record e la consultabilità."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC02",
+        "title": "Visualizzazione in dashboard Compliance del log di esclusione generata dal Motore di Offerte",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Compliance' abilitato alla dashboard Compliance",
+          "Il Motore di Offerte è operativo e può generare un'esclusione",
+          "La dashboard Compliance è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: compliance.user1",
+          "Cliente target: CUST-200002",
+          "Offerta esclusa: OFF-060"
+        ],
+        "steps": [
+          "Generare una decisione del Motore di Offerte che produca l'esclusione dell'offerta OFF-060 per il cliente CUST-200002",
+          "Accedere alla dashboard Compliance con l'utente compliance.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare il record di log relativo all'esclusione appena generata"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo all'esclusione generata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC03",
+        "title": "Visualizzazione in dashboard Compliance del log di operazione di configurazione (modifica regola pricing)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Compliance' abilitato alla dashboard Compliance",
+          "Esiste un utente abilitato a eseguire modifiche di configurazione (es. Marketing/Admin)",
+          "Il sistema di configurazione è operativo",
+          "La dashboard Compliance è raggiungibile"
+        ],
+        "test_data": [
+          "Utente consultazione: compliance.user1",
+          "Utente configurazione: marketing.user2",
+          "Operazione: Modifica regola pricing",
+          "Regola pricing: PRC-101 (es. 'Sconto retention 10%')"
+        ],
+        "steps": [
+          "Accedere al modulo di configurazione con l'utente marketing.user2",
+          "Eseguire una modifica sulla regola pricing PRC-101 e salvare",
+          "Verificare che l'operazione risulti completata con successo",
+          "Accedere alla dashboard Compliance con l'utente compliance.user1",
+          "Aprire la sezione di consultazione dei log delle operazioni di configurazione",
+          "Individuare il record di log relativo alla modifica della regola pricing PRC-101"
+        ],
+        "expected_results": [
+          "È presente un record di log consultabile relativo all'operazione di modifica configurazione"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificati campi minimi per Compliance; il test verifica la presenza del record e la consultabilità come evidenza."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC04",
+        "title": "Accesso non autorizzato: utente Compliance senza permesso di consultazione log non accede ai log",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile con profilo Compliance privo del permesso di consultazione log (o con permessi limitati)",
+          "La dashboard Compliance è raggiungibile",
+          "Esistono record di log già presenti (motore e/o configurazione)"
+        ],
+        "test_data": [
+          "Utente: compliance.user.limited"
+        ],
+        "steps": [
+          "Accedere alla dashboard Compliance con l'utente compliance.user.limited",
+          "Tentare di aprire la sezione di consultazione log"
+        ],
+        "expected_results": [
+          "L'accesso alla consultazione dei log è negato oppure limitato secondo profilo",
+          "Non vengono mostrati dettagli dei record di log oltre i permessi assegnati"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non dettaglia livelli di visibilità; il test valida almeno l'enforcement delle autorizzazioni."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC05",
+        "title": "Edge case: record con dati opzionali mancanti rimane consultabile in dashboard Compliance",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Compliance' abilitato alla dashboard Compliance",
+          "Esiste almeno un record di log del motore con un dato opzionale non disponibile (es. esito pending/non disponibile o campo non valorizzato)",
+          "La dashboard Compliance è raggiungibile"
+        ],
+        "test_data": [
+          "Utente: compliance.user1",
+          "Record log: proposta con esito 'pending' oppure dato opzionale mancante"
+        ],
+        "steps": [
+          "Accedere alla dashboard Compliance con l'utente compliance.user1",
+          "Aprire la sezione di consultazione dei log delle decisioni del motore",
+          "Individuare un record di log con dato opzionale non disponibile"
+        ],
+        "expected_results": [
+          "Il record di log è consultabile e visualizzato correttamente",
+          "Il dato mancante/non disponibile è indicato secondo standard di sistema (es. 'N/D', 'pending', 'unknown') e non causa errori di visualizzazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Lo 'standard di sistema' per la rappresentazione dei dati mancanti non è specificato nei requisiti."
+      },
+      {
+        "test_id": "REQ-F-008.US02.TC06",
+        "title": "Servizio log non disponibile: la dashboard Compliance gestisce l'errore di consultazione",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente con ruolo 'Compliance' abilitato alla dashboard Compliance",
+          "La dashboard Compliance è raggiungibile",
+          "Il servizio/backend di consultazione log può essere reso non disponibile (es. simulazione timeout/HTTP 5xx)"
+        ],
+        "test_data": [
+          "Utente: compliance.user1",
+          "Errore simulato: HTTP 500 o HTTP 503 dal servizio log"
+        ],
+        "steps": [
+          "Configurare la simulazione di indisponibilità del servizio di consultazione log (timeout o 5xx)",
+          "Accedere alla dashboard Compliance con l'utente compliance.user1",
+          "Aprire la sezione di consultazione dei log"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore/avviso di impossibilità nel recupero dei log",
+          "Non vengono mostrati dati parziali come se fossero completi",
+          "L'applicazione non va in crash e consente di riprovare/ricaricare la sezione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "story_id": "REQ-F-018.US01",
+    "title": "Visualizzare la proposta bundle tramite pop-up prima del checkout",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare una proposta di bundle prima di entrare nella schermata di checkout del primo prodotto",
+    "benefit": "valutare e aggiungere un secondo prodotto in modo semplice senza interrompere la finalizzazione dell’acquisto",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare una proposta di bundle prima di entrare nella schermata di checkout\nIn modo che possa valutare l’offerta e decidere se acquistare anche un secondo prodotto prima di finalizzare il primo acquisto",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO ho inserito il primo prodotto nel carrello (o raggiungo una pagina comunque precedente alla finalizzazione dell’acquisto) ALLORA visualizzo un pop-up con la proposta di bundle prima di entrare nella schermata di checkout.",
+      "QUANDO sto per accedere alla schermata di checkout ALLORA la proposta (pop-up) risulta già stata mostrata in un punto precedente del flusso.",
+      "QUANDO eseguo nuovamente il flusso nelle medesime condizioni previste dal test (es. inserimento del primo prodotto) ALLORA il pop-up compare in modo ripetibile."
+    ],
+    "business_rules": [
+      "La proposta deve essere mostrata esclusivamente prima dell’accesso alla schermata di checkout.",
+      "Il trigger della proposta è legato a un evento pre-checkout (es. inserimento del primo prodotto in carrello) oppure, se non possibile, al raggiungimento di una pagina precedente alla finalizzazione dell’acquisto."
+    ],
+    "edge_cases": [
+      "Il cliente accede direttamente alla schermata di checkout (es. deep link o percorso abbreviato): la proposta deve risultare non mostrata in checkout; comportamento atteso da chiarire su quale pagina/evento alternativo usarla.",
+      "Errore o indisponibilità del servizio di proposta: il cliente deve poter proseguire verso il checkout senza blocchi (modalità di fallback da confermare).",
+      "Il cliente rimuove il primo prodotto dal carrello dopo la comparsa del pop-up: gestione della proposta e dell’eventuale ripresentazione da chiarire."
+    ],
+    "assumptions": [
+      "Il requisito cita la comparsa del pop-up nei test end-to-end: si assume che la modalità di presentazione sul canale digitale sia un pop-up (come da AC) e che sia parte del flusso App/Web.",
+      "Si assume che 'prima del checkout' significhi 'prima dell’ingresso nella schermata di checkout' e non 'prima del pagamento' (terminologia da allineare)."
+    ],
+    "notes": "Il requisito non specifica in modo univoco quale evento pre-checkout sia sempre disponibile (inserimento in carrello vs altra pagina pre-finalizzazione): necessario dettagliare per ciascun funnel digitale. AC 'Test end-to-end...' e 'trigger ripetibile e documentato' sono stati resi testabili traducendoli in comparsa ripetibile del pop-up nelle stesse condizioni."
+  },
+  {
+    "story_id": "REQ-F-018.US02",
+    "title": "Generare e inviare la proposta bundle al canale digitale prima del checkout",
+    "persona": "Motore di offerte",
+    "goal": "generare e inviare la proposta di bundle al canale digitale su trigger pre-checkout",
+    "benefit": "abilitare la visualizzazione della proposta nel punto corretto del funnel digitale, massimizzando l’efficacia commerciale senza interferire con il checkout",
+    "user_story": "Come Motore di offerte\nVoglio generare e inviare la proposta di bundle al canale digitale prima che l’utente entri nella schermata di checkout\nIn modo che il canale digitale possa mostrare la proposta nel momento previsto del percorso di acquisto",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO ricevo (o rilevo) un evento pre-checkout del funnel digitale (es. inserimento del primo prodotto in carrello) ALLORA genero una proposta di bundle e la invio al canale digitale prima dell’ingresso dell’utente nella schermata di checkout.",
+      "QUANDO non è possibile usare l’evento di inserimento in carrello ALLORA supporto un trigger alternativo basato sul raggiungimento di una pagina comunque precedente alla finalizzazione dell’acquisto del primo prodotto, garantendo l’invio prima del checkout.",
+      "QUANDO viene eseguito un test end-to-end nelle condizioni previste ALLORA l’invio della proposta dal motore al canale digitale avviene correttamente e consente la comparsa del pop-up prima del checkout.",
+      "QUANDO il medesimo scenario di test viene ripetuto ALLORA il trigger e la generazione/invio della proposta risultano ripetibili e documentabili nei casi di test."
+    ],
+    "business_rules": [
+      "La generazione e l’invio della proposta devono avvenire prima dell’ingresso nella schermata di checkout del primo prodotto.",
+      "Il trigger deve essere deterministico e documentabile per consentire test end-to-end ripetibili."
+    ],
+    "edge_cases": [
+      "Evento pre-checkout non ricevuto o non tracciabile nel funnel: il motore non può garantire l’invio prima del checkout (necessario definire evento/pagina alternativa per ciascun canale/funnel).",
+      "Latenza elevata nella generazione: rischio di invio tardivo (in prossimità o dopo l’ingresso in checkout); servono soglie/timeout e comportamento atteso da definire.",
+      "Richieste duplicate dello stesso evento (retry lato canale): gestione dell’idempotenza e della ripetizione della proposta da chiarire."
+    ],
+    "assumptions": [
+      "Si assume che il canale digitale invii o renda disponibile al motore un evento pre-checkout (es. add-to-cart) o un equivalente basato su pagina, come indicato in descrizione.",
+      "Si assume che la verifica 'pop-up visibile' nei test end-to-end implichi anche la corretta integrazione di invio proposta tra motore e canale."
+    ],
+    "notes": "AC condivisi concettualmente con US01 (Cliente digitale) relativamente a: generazione/invio prima del checkout, test end-to-end e ripetibilità del trigger; qui sono riscritti dal punto di vista del Motore. Dipendenza esterna: definizione puntuale degli eventi/pagine pre-checkout disponibili nei funnel App/Web."
+  }
+]

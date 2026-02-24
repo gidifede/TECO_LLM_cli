@@ -1,0 +1,340 @@
+[
+  {
+    "story_id": "REQ-D-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-006.US01.TC01",
+        "title": "Persistenza record proposta con tutti i campi obbligatori alla generazione",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e può generare proposte",
+          "È disponibile un meccanismo di verifica della persistenza (es. query DB, API di lettura, topic eventi con payload persistito) accessibile all'ambiente di test"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0001",
+          "Id cliente: CUST-10001",
+          "Id prodotto: PROD-9001",
+          "Immagine: https://cdn.example.com/prod/PROD-9001.png",
+          "Prezzo scontato: 79,99 EUR",
+          "Valore sconto: 20,00 EUR",
+          "Stato corrente iniziale: presentata",
+          "Data/ora scadenza: 2026-03-01T10:00:00Z"
+        ],
+        "steps": [
+          "Richiedere al Motore di Offerte la generazione di una proposta per il cliente CUST-10001 con i dati di test e la scadenza 2026-03-01T10:00:00Z",
+          "Recuperare il record persistente relativo a id proposta PROP-2026-0001 tramite il meccanismo di verifica della persistenza",
+          "Verificare la presenza e valorizzazione dei campi obbligatori nel record recuperato"
+        ],
+        "expected_results": [
+          "Esiste un record persistente per id proposta PROP-2026-0001",
+          "Il record contiene almeno i campi: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato corrente, data/ora di scadenza",
+          "I valori persistiti corrispondono ai dati di input (inclusa la scadenza 2026-03-01T10:00:00Z e lo stato 'presentata')"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La modalità di recupero/verifica del record (DB/API/eventi) non è definita nel requisito; il test va implementato con il punto di integrazione disponibile nell'ambiente."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC02",
+        "title": "Registrazione storico cambi stato e riproducibilità sequenza per audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta persistita con id proposta PROP-2026-0002 per id cliente CUST-10002 in stato 'presentata' e con scadenza futura",
+          "È disponibile un meccanismo per consultare lo storico/registro delle transizioni di stato (es. tabella audit, endpoint audit, log strutturato)"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0002",
+          "Id cliente: CUST-10002",
+          "Transizione 1: presentata -> aggiunta_al_carrello",
+          "Transizione 2: aggiunta_al_carrello -> acquistata"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di aggiornamento stato della proposta PROP-2026-0002 a 'aggiunta_al_carrello' per il cliente CUST-10002",
+          "Inviare al Motore di Offerte la richiesta di aggiornamento stato della proposta PROP-2026-0002 a 'acquistata' per il cliente CUST-10002",
+          "Recuperare lo storico dei cambiamenti di stato per la proposta PROP-2026-0002 tramite il meccanismo di consultazione audit",
+          "Ordinare/visualizzare gli eventi di cambio stato in ordine temporale (o per numero di sequenza se presente)"
+        ],
+        "expected_results": [
+          "Lo storico contiene almeno due registrazioni di cambio stato relative a PROP-2026-0002",
+          "Le registrazioni permettono di ricostruire la sequenza: 'presentata' -> 'aggiunta_al_carrello' -> 'acquistata'",
+          "Ogni registrazione di cambio stato è associata alla proposta PROP-2026-0002 e risulta consultabile per finalità di audit (riproducibilità della storia degli stati)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica gli attributi minimi dell'evento audit (timestamp, utente, correlationId). Il test verifica la riproducibilità della sequenza; eventuali campi aggiuntivi vanno allineati allo standard di audit del sistema."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC03",
+        "title": "Rifiuto persistenza proposta con campo obbligatorio mancante (id cliente)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e può ricevere richieste di generazione proposta",
+          "È disponibile un meccanismo per verificare l'assenza di persistenza (es. query DB/API di lettura) e/o l'errore applicativo restituito"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0003",
+          "Id cliente: (mancante/null)",
+          "Id prodotto: PROD-9002",
+          "Immagine: https://cdn.example.com/prod/PROD-9002.png",
+          "Prezzo scontato: 49,90 EUR",
+          "Valore sconto: 10,00 EUR",
+          "Stato corrente iniziale: presentata",
+          "Data/ora scadenza: 2026-03-01T10:00:00Z"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposta con id cliente non valorizzato",
+          "Verificare l'esito della richiesta (errore/rigetto)",
+          "Tentare di recuperare un record persistente per id proposta PROP-2026-0003"
+        ],
+        "expected_results": [
+          "La richiesta di generazione proposta viene rifiutata con un errore di validazione (o esito equivalente) che indica l'assenza del campo obbligatorio id cliente",
+          "Non esiste alcun record persistente per id proposta PROP-2026-0003"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "L'AC non definisce il formato dell'errore; il test verifica almeno: operazione non completata e assenza del record persistito."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC04",
+        "title": "Rifiuto persistenza proposta con campo obbligatorio mancante (data/ora scadenza)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il Motore di Offerte è operativo e può ricevere richieste di generazione proposta",
+          "È disponibile un meccanismo per verificare l'assenza di persistenza (es. query DB/API di lettura) e/o l'errore applicativo restituito"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0004",
+          "Id cliente: CUST-10003",
+          "Id prodotto: PROD-9003",
+          "Immagine: https://cdn.example.com/prod/PROD-9003.png",
+          "Prezzo scontato: 99,00 EUR",
+          "Valore sconto: 15,00 EUR",
+          "Stato corrente iniziale: presentata",
+          "Data/ora scadenza: (mancante/null)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposta senza data/ora di scadenza",
+          "Verificare l'esito della richiesta (errore/rigetto)",
+          "Tentare di recuperare un record persistente per id proposta PROP-2026-0004"
+        ],
+        "expected_results": [
+          "La richiesta di generazione proposta viene rifiutata con un errore di validazione (o esito equivalente) che indica l'assenza del campo obbligatorio data/ora di scadenza",
+          "Non esiste alcun record persistente per id proposta PROP-2026-0004"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito richiede la presenza della scadenza nel record; il comportamento atteso è il rigetto in validazione. Se il sistema applica una scadenza di default, questo test va aggiornato in base alla regola condivisa."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC05",
+        "title": "Rifiuto aggiornamento stato per id proposta inesistente e tracciamento dell'evento",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Non esiste alcun record persistente con id proposta PROP-404-0001",
+          "È disponibile un meccanismo per consultare log/audit delle operazioni rifiutate (o un errore restituito dal servizio)"
+        ],
+        "test_data": [
+          "Id proposta inesistente: PROP-404-0001",
+          "Id cliente: CUST-10004",
+          "Nuovo stato richiesto: aggiunta_al_carrello"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di aggiornamento stato per id proposta PROP-404-0001 a 'aggiunta_al_carrello' per il cliente CUST-10004",
+          "Verificare l'esito della richiesta (errore/rigetto)",
+          "Verificare la presenza di un tracciamento dell'operazione rifiutata tramite il meccanismo di log/audit disponibile"
+        ],
+        "expected_results": [
+          "La richiesta di aggiornamento stato viene rifiutata perché l'id proposta non esiste",
+          "Non viene creato alcun record di proposta a seguito della richiesta",
+          "L'operazione rifiutata risulta tracciata (almeno con riferimento a id proposta PROP-404-0001 e motivo di rifiuto) secondo i meccanismi di audit/log disponibili"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito originale non esplicita il tracciamento dei rifiuti; questo test deriva dagli edge case della user story e verifica almeno l'esistenza di evidenza diagnostica/audit dell'operazione non andata a buon fine."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC06",
+        "title": "Rifiuto aggiornamento stato per proposta non associata al cliente richiedente e tracciamento",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta persistita con id proposta PROP-2026-0005 associata a id cliente CUST-20001 in stato 'presentata' e con scadenza futura",
+          "È disponibile un meccanismo per consultare log/audit delle operazioni rifiutate (o un errore restituito dal servizio)"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0005",
+          "Cliente associato: CUST-20001",
+          "Cliente richiedente non associato: CUST-20002",
+          "Nuovo stato richiesto: aggiunta_al_carrello"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di aggiornamento stato per id proposta PROP-2026-0005 a 'aggiunta_al_carrello' indicando come cliente CUST-20002",
+          "Verificare l'esito della richiesta (errore/rigetto)",
+          "Recuperare il record persistente della proposta PROP-2026-0005",
+          "Verificare tramite log/audit che il rifiuto sia tracciato"
+        ],
+        "expected_results": [
+          "La richiesta di aggiornamento stato viene rifiutata perché la proposta non è associata al cliente CUST-20002",
+          "Lo stato corrente della proposta PROP-2026-0005 rimane invariato (es. 'presentata')",
+          "L'operazione rifiutata risulta tracciata (almeno con riferimento a id proposta e motivo di rifiuto) secondo i meccanismi di audit/log disponibili"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "L'associazione proposta-cliente è una regola di business della user story; il requisito originale parla di audit dei cambi stato. Qui si verifica anche che un tentativo non autorizzato non alteri la storia degli stati."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC07",
+        "title": "Non disponibilità del record proposta dopo superamento della data/ora di scadenza",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta persistita con id proposta PROP-2026-EXP-01 per id cliente CUST-10005 con data/ora scadenza impostata a breve termine",
+          "È disponibile un meccanismo di lettura/consultazione usato dai consumatori (canali) per ottenere i dati proposta (API/lettura DB/evento materializzato)",
+          "L'ambiente di test consente di attendere il superamento della scadenza o di simulare l'avanzamento temporale (time travel/clock control)"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-EXP-01",
+          "Id cliente: CUST-10005",
+          "Data/ora scadenza: 2026-03-01T10:00:00Z",
+          "Istante di verifica post-scadenza: 2026-03-01T10:00:05Z"
+        ],
+        "steps": [
+          "Recuperare la proposta PROP-2026-EXP-01 tramite il meccanismo di lettura prima della scadenza",
+          "Attendere o simulare il tempo fino a un istante successivo alla scadenza (>= 2026-03-01T10:00:05Z)",
+          "Richiedere nuovamente la proposta PROP-2026-EXP-01 tramite lo stesso meccanismo di lettura",
+          "Verificare lo stato di disponibilità del record per i consumatori"
+        ],
+        "expected_results": [
+          "Prima della scadenza, la proposta PROP-2026-EXP-01 risulta disponibile e recuperabile",
+          "Dopo la scadenza, la proposta PROP-2026-EXP-01 risulta non disponibile ai consumatori (es. risposta 'not found', flag 'expired', record non restituito) secondo l'implementazione",
+          "Il comportamento di non disponibilità post-scadenza è verificabile e ripetibile in test"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [],
+        "notes": "Il requisito consente due implementazioni ('espirato' o 'reso non disponibile'). Il test accetta entrambe purché la lettura lato consumatore non restituisca una proposta utilizzabile post-scadenza."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC08",
+        "title": "Impedimento aggiornamento stato di una proposta dopo scadenza",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una proposta persistita con id proposta PROP-2026-EXP-02 per id cliente CUST-10006 con data/ora scadenza già superata",
+          "È disponibile un meccanismo per consultare lo storico cambi stato e verificare che non venga alterato impropriamente"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-EXP-02",
+          "Id cliente: CUST-10006",
+          "Data/ora scadenza: 2026-03-01T10:00:00Z",
+          "Istante corrente: 2026-03-01T10:05:00Z",
+          "Nuovo stato richiesto: aggiunta_al_carrello"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di aggiornamento stato della proposta PROP-2026-EXP-02 a 'aggiunta_al_carrello' per il cliente CUST-10006",
+          "Verificare l'esito della richiesta (errore/rigetto o gestione coerente dichiarata dall'implementazione)",
+          "Recuperare il record proposta e/o lo storico cambi stato per PROP-2026-EXP-02"
+        ],
+        "expected_results": [
+          "L'aggiornamento stato non rende la proposta nuovamente disponibile post-scadenza",
+          "Se l'implementazione prevede il rigetto: la richiesta viene rifiutata e lo stato corrente non cambia",
+          "In ogni caso, lo storico/audit non contiene una transizione che violi la regola di non disponibilità post-scadenza (nessuna sequenza che consenta utilizzo della proposta dopo scadenza)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "L'edge case ammette due comportamenti ('impedire' o 'gestire coerentemente'). Questo test è scritto per verificare l'invariante: post-scadenza la proposta non deve risultare utilizzabile/riattivata."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC09",
+        "title": "Gestione transizioni duplicate dello stesso stato (idempotenza/deduplica) e coerenza storico audit",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una proposta persistita con id proposta PROP-2026-0006 per id cliente CUST-10007 in stato 'presentata' e con scadenza futura",
+          "È disponibile un meccanismo per consultare lo storico cambi stato per audit"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-0006",
+          "Id cliente: CUST-10007",
+          "Richiesta duplicata: impostare due volte lo stato 'aggiunta_al_carrello' in rapida successione"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di aggiornamento stato della proposta PROP-2026-0006 a 'aggiunta_al_carrello' per il cliente CUST-10007",
+          "Inviare nuovamente la stessa richiesta di aggiornamento stato a 'aggiunta_al_carrello' per la stessa proposta e cliente",
+          "Recuperare lo storico dei cambiamenti di stato per PROP-2026-0006",
+          "Verificare la coerenza della sequenza stati risultante"
+        ],
+        "expected_results": [
+          "Lo stato corrente della proposta PROP-2026-0006 risulta 'aggiunta_al_carrello' al termine delle richieste",
+          "Lo storico audit rimane coerente e riproducibile nonostante la duplicazione (es. una sola transizione effettiva registrata oppure due eventi marcati come duplicati/idempotenti secondo implementazione)",
+          "Non risultano sequenze impossibili o ambigue nella ricostruzione degli stati (audit riproducibile)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica se deduplicare o registrare duplicati; il test valida l'esito di coerenza e riproducibilità della storia degli stati."
+      },
+      {
+        "test_id": "REQ-D-006.US01.TC10",
+        "title": "Integrazione: indisponibilità del meccanismo di persistenza durante generazione proposta",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È possibile simulare un guasto del datastore/servizio di persistenza (es. DB down, timeout, credenziali revocate) in ambiente di test",
+          "È disponibile un meccanismo per verificare che non venga creato un record parziale e per osservare l'errore restituito/loggato"
+        ],
+        "test_data": [
+          "Id proposta: PROP-2026-DBERR-01",
+          "Id cliente: CUST-10008",
+          "Id prodotto: PROD-9004",
+          "Immagine: https://cdn.example.com/prod/PROD-9004.png",
+          "Prezzo scontato: 29,99 EUR",
+          "Valore sconto: 5,00 EUR",
+          "Stato corrente iniziale: presentata",
+          "Data/ora scadenza: 2026-03-10T12:00:00Z",
+          "Condizione guasto: timeout del datastore > 5s (o errore connessione)"
+        ],
+        "steps": [
+          "Indurre la condizione di guasto del datastore/servizio di persistenza",
+          "Inviare al Motore di Offerte la richiesta di generazione proposta con i dati di test",
+          "Verificare l'esito della richiesta (errore/rigetto)",
+          "Ripristinare la disponibilità del datastore/servizio di persistenza",
+          "Verificare che non esista un record persistente per id proposta PROP-2026-DBERR-01"
+        ],
+        "expected_results": [
+          "La generazione proposta fallisce con errore tecnico (o esito equivalente) quando la persistenza non è disponibile",
+          "Non viene creato alcun record persistente (nessuna persistenza parziale) per PROP-2026-DBERR-01",
+          "L'errore risulta osservabile (risposta del servizio e/o log applicativo) in modo da supportare diagnosi"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La user story non definisce retry/circuit breaker; il test verifica la proprietà minima: nessuna persistenza incompleta e fallimento osservabile in caso di datastore non disponibile."
+      }
+    ]
+  }
+]

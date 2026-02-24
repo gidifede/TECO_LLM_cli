@@ -1,0 +1,246 @@
+[
+  {
+    "test_id": "REQ-F-004.TC01",
+    "title": "Configurazione del tempo minimo di ri-esposizione tramite dashboard da team autorizzato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una dashboard/interfaccia dedicata alla configurazione delle regole del Motore",
+      "Utente autenticato con ruolo/team autorizzato alla modifica delle regole (es. Marketing Ops/Admin Regole)",
+      "La regola 'tempo minimo di ri-esposizione per prodotto e cliente' è disponibile e visibile in configurazione"
+    ],
+    "test_data": [
+      "Prodotto: P-1001",
+      "Valore intervallo minimo ri-esposizione: 7 giorni",
+      "Unità di misura: giorni"
+    ],
+    "steps": [
+      "Accedere alla dashboard/interfaccia dedicata con un utente autorizzato",
+      "Navigare alla sezione di configurazione delle regole di presentazione",
+      "Selezionare la regola di 'frequenza di presentazione/tempo minimo di ri-esposizione per prodotto e cliente'",
+      "Impostare l'intervallo minimo a 7 e l'unità a 'giorni'",
+      "Salvare la configurazione",
+      "Ricaricare la pagina o riaprire la sezione di configurazione della stessa regola"
+    ],
+    "expected_results": [
+      "Il sistema consente l'impostazione dell'intervallo minimo e dell'unità di misura tramite interfaccia",
+      "Il salvataggio va a buon fine senza errori",
+      "Alla riapertura, il valore configurato risulta persistito (7 giorni)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori/ruoli autorizzati non specificati nel requisito: sono stati inferiti (team autorizzati). Il requisito non specifica validazioni di formato/range né audit/versioning della configurazione."
+  },
+  {
+    "test_id": "REQ-F-004.TC02",
+    "title": "Modifica del tempo minimo di ri-esposizione tramite dashboard da team autorizzato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una dashboard/interfaccia dedicata alla configurazione delle regole del Motore",
+      "Utente autenticato con ruolo/team autorizzato alla modifica delle regole",
+      "La regola 'tempo minimo di ri-esposizione per prodotto e cliente' è già configurata a 7 giorni"
+    ],
+    "test_data": [
+      "Nuovo valore intervallo minimo ri-esposizione: 14 giorni",
+      "Unità di misura: giorni"
+    ],
+    "steps": [
+      "Accedere alla dashboard/interfaccia dedicata con un utente autorizzato",
+      "Aprire la configurazione della regola di 'tempo minimo di ri-esposizione per prodotto e cliente'",
+      "Modificare l'intervallo minimo da 7 a 14 giorni",
+      "Salvare la configurazione",
+      "Riaprire la configurazione della regola"
+    ],
+    "expected_results": [
+      "Il sistema consente la modifica del valore configurato",
+      "Il salvataggio va a buon fine senza errori",
+      "Alla riapertura, il valore risulta aggiornato e persistito (14 giorni)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica se la modifica sia immediatamente effettiva su richieste in corso o solo su nuove richieste; il test verifica solo persistenza della configurazione."
+  },
+  {
+    "test_id": "REQ-F-004.TC03",
+    "title": "Blocco ri-esposizione: il motore non propone lo stesso prodotto prima della scadenza dell'intervallo configurato",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "La regola di tempo minimo di ri-esposizione è configurata a 7 giorni",
+      "Esiste un cliente C-9001 identificabile univocamente dal Motore",
+      "Esiste un prodotto P-1001 proponibile dal Motore",
+      "Il sistema registra gli eventi di presentazione/proposta (log o storico esposizioni) con timestamp per cliente e prodotto"
+    ],
+    "test_data": [
+      "Cliente: C-9001",
+      "Prodotto: P-1001",
+      "Timestamp proposta iniziale: T0 (es. 2026-02-01 10:00:00)",
+      "Timestamp richiesta successiva: T0 + 3 giorni (es. 2026-02-04 10:00:00)"
+    ],
+    "steps": [
+      "Innescare una richiesta offerta per il cliente C-9001 a T0 in modo che il Motore proponga P-1001",
+      "Verificare che l'evento di proposta di P-1001 a C-9001 sia registrato con timestamp T0",
+      "Innescare una nuova richiesta offerta per il cliente C-9001 a T0 + 3 giorni",
+      "Raccogliere l'elenco dei prodotti/offerte restituiti dal Motore nella seconda richiesta"
+    ],
+    "expected_results": [
+      "Alla prima richiesta, P-1001 è presente tra i prodotti/offerte proposti al cliente C-9001",
+      "Alla seconda richiesta (entro 7 giorni), P-1001 NON è presente tra i prodotti/offerte proposti al cliente C-9001",
+      "Il Motore applica il vincolo per coppia (cliente, prodotto), basandosi sul timestamp dell'ultima proposta registrata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il canale è inferito come API/evento di richiesta offerta (non esplicitato). Il requisito non chiarisce cosa accada se non esistono alternative da proporre; il test verifica solo l'esclusione di P-1001."
+  },
+  {
+    "test_id": "REQ-F-004.TC04",
+    "title": "Ri-esposizione consentita: il motore può riproporre lo stesso prodotto dopo la scadenza dell'intervallo configurato",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "La regola di tempo minimo di ri-esposizione è configurata a 7 giorni",
+      "Esiste un cliente C-9002 identificabile univocamente dal Motore",
+      "Esiste un prodotto P-1002 proponibile dal Motore",
+      "Il sistema registra gli eventi di presentazione/proposta (log o storico esposizioni) con timestamp per cliente e prodotto"
+    ],
+    "test_data": [
+      "Cliente: C-9002",
+      "Prodotto: P-1002",
+      "Timestamp proposta iniziale: T0 (es. 2026-02-01 10:00:00)",
+      "Timestamp richiesta successiva: T0 + 7 giorni e 1 minuto (es. 2026-02-08 10:01:00)"
+    ],
+    "steps": [
+      "Innescare una richiesta offerta per il cliente C-9002 a T0 in modo che il Motore proponga P-1002",
+      "Innescare una nuova richiesta offerta per il cliente C-9002 a T0 + 7 giorni e 1 minuto",
+      "Raccogliere l'elenco dei prodotti/offerte restituiti dal Motore nella seconda richiesta"
+    ],
+    "expected_results": [
+      "Alla seconda richiesta (oltre l'intervallo minimo), P-1002 può essere presente tra i prodotti/offerte proposti al cliente C-9002",
+      "Non viene applicato alcun blocco di ri-esposizione per P-1002 oltre la soglia temporale configurata"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica se la soglia sia inclusiva (>=) o esclusiva (>). Il test usa un margine (7 giorni + 1 minuto) per evitare ambiguità."
+  },
+  {
+    "test_id": "REQ-F-004.TC05",
+    "title": "Integrazione: su evento di richiesta offerta, il prodotto non viene ri-esposto prima del periodo configurato",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "La regola di tempo minimo di ri-esposizione è configurata a 7 giorni",
+      "Sono disponibili: (1) endpoint/consumer del Motore per 'richiesta offerta', (2) storage/servizio storico esposizioni, (3) meccanismo di correlazione richiesta-risposta (correlationId)",
+      "Esiste un cliente C-9010 e un prodotto P-1010 proponibile",
+      "È possibile forzare o verificare che alla prima richiesta P-1010 sia eleggibile (nessun altro vincolo lo esclude)"
+    ],
+    "test_data": [
+      "Cliente: C-9010",
+      "Prodotto: P-1010",
+      "Intervallo minimo: 7 giorni",
+      "Prima richiesta offerta: correlationId=REQ1, timestamp T0",
+      "Seconda richiesta offerta: correlationId=REQ2, timestamp T0 + 1 giorno"
+    ],
+    "steps": [
+      "Inviare al Motore una prima richiesta offerta (REQ1) per il cliente C-9010 a T0",
+      "Verificare nella risposta di REQ1 che P-1010 sia presente tra le proposte",
+      "Verificare che lo storico esposizioni registri l'evento (cliente C-9010, prodotto P-1010, timestamp T0) correlato a REQ1",
+      "Inviare al Motore una seconda richiesta offerta (REQ2) per il cliente C-9010 a T0 + 1 giorno",
+      "Verificare nella risposta di REQ2 l'assenza di P-1010 tra le proposte",
+      "Verificare che non venga creato un nuovo evento di esposizione per P-1010 relativo a REQ2 (oppure che sia marcato come 'scartato per frequenza', se previsto dai log)"
+    ],
+    "expected_results": [
+      "Il Motore integra correttamente la consultazione dello storico esposizioni per applicare la regola di frequenza",
+      "La risposta a REQ2 non contiene P-1010 perché l'intervallo minimo non è trascorso",
+      "Lo storico esposizioni mantiene coerenza: non registra una nuova esposizione valida di P-1010 prima della scadenza dell'intervallo"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Dettagli tecnici (nomi endpoint, schema evento, semantica log) non presenti nel requisito: il test assume l'esistenza di meccanismi di tracciamento/correlazione tipici per test di integrazione."
+  },
+  {
+    "test_id": "REQ-F-004.TC06",
+    "title": "Autorizzazione: un utente non autorizzato non può configurare/modificare il tempo minimo di ri-esposizione",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste una dashboard/interfaccia dedicata alla configurazione delle regole del Motore",
+      "Utente autenticato con ruolo/team NON autorizzato alla modifica delle regole (es. Viewer/Operatore senza permessi)"
+    ],
+    "test_data": [
+      "Tentativo di impostazione intervallo minimo: 7 giorni"
+    ],
+    "steps": [
+      "Accedere alla dashboard/interfaccia dedicata con un utente non autorizzato",
+      "Navigare alla sezione di configurazione delle regole di presentazione",
+      "Tentare di modificare il valore della regola di 'tempo minimo di ri-esposizione per prodotto e cliente'",
+      "Tentare di salvare la modifica"
+    ],
+    "expected_results": [
+      "Il sistema impedisce la modifica e/o il salvataggio della configurazione da parte dell'utente non autorizzato",
+      "Viene mostrato un messaggio di errore/permessi insufficienti oppure i controlli di modifica risultano disabilitati",
+      "La configurazione rimane invariata rispetto al valore precedente"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito menziona 'team autorizzati' ma non definisce ruoli/permessi specifici: il test verifica il principio di controllo accessi senza vincolare l'implementazione (UI disabilitata o blocco server-side)."
+  },
+  {
+    "test_id": "REQ-F-004.TC07",
+    "title": "Negativo: storico esposizioni non disponibile (timeout/errore) durante richiesta offerta",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "La regola di tempo minimo di ri-esposizione è attiva e configurata (es. 7 giorni)",
+      "Il Motore dipende da uno storage/servizio per leggere lo storico esposizioni per cliente e prodotto",
+      "È possibile simulare indisponibilità dello storico esposizioni (timeout/HTTP 5xx/connessione rifiutata) in ambiente di test"
+    ],
+    "test_data": [
+      "Cliente: C-9020",
+      "Richiesta offerta: correlationId=REQ-ERR-1",
+      "Simulazione errore: timeout 10s sul servizio storico esposizioni"
+    ],
+    "steps": [
+      "Configurare il mock/proxy per rendere indisponibile lo storico esposizioni (timeout) per la durata del test",
+      "Inviare una richiesta offerta al Motore per il cliente C-9020",
+      "Osservare la risposta del Motore e i log applicativi correlati a correlationId=REQ-ERR-1"
+    ],
+    "expected_results": [
+      "Il Motore gestisce l'errore del servizio esterno senza crash",
+      "La risposta della richiesta offerta è coerente con la strategia di gestione errori implementata (es. errore esplicito con codice e messaggio, oppure fallback controllato), ed è tracciabile nei log",
+      "Nei log è presente evidenza dell'indisponibilità dello storico esposizioni e della decisione applicata (errore o fallback)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "api"
+    ],
+    "notes": "Il requisito non specifica la strategia attesa in caso di indisponibilità dello storico esposizioni (fail-open vs fail-closed). Il test valida robustezza e tracciabilità, ma l'esito funzionale (errore vs fallback) va allineato con decisione di prodotto/architettura."
+  }
+]

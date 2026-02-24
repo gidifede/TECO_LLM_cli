@@ -1,0 +1,120 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-012",
+  "direct": {
+    "tc_count": 7,
+    "coherence_score": 65,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-012.TC01",
+        "detail": "Assunzione di canale 'web/backoffice' e disponibilità feature attiva; il requisito parla solo di 'interfaccia' senza canale."
+      },
+      {
+        "test_id": "REQ-F-012.TC01",
+        "detail": "Introduzione di un ruolo/permessi (utente Marketing autenticato e abilitato) non esplicitati dal requisito (che cita solo 'Il marketing deve poter...')."
+      },
+      {
+        "test_id": "REQ-F-012.TC04",
+        "detail": "Assume che i metadati di validità siano obbligatori e che il salvataggio sia bloccato se mancanti; il requisito richiede l'interfaccia per impostarli ma non la regola di obbligatorietà."
+      },
+      {
+        "test_id": "REQ-F-012.TC05",
+        "detail": "Assume una validazione specifica 'data fine > data inizio' e blocco salvataggio; non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-012.TC06",
+        "detail": "Introduce RBAC/ruolo alternativo 'CustomerCare' e comportamento accesso negato/sola lettura; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-012.TC07",
+        "detail": "Introduce architettura/integrazione con 'audit/log service' (HTTP 500/timeout) e policy di comportamento in failure (hard/soft fail) non definite dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: \"regole di pricing, sconti e/o cashback\"",
+        "detail": "Copertura esplicita di 'sconti e/o cashback' è parziale: alcuni TC usano sconto, altri cashback, ma non esiste un caso che verifichi chiaramente l'alternativa 'solo sconto' vs 'solo cashback' vs 'entrambi' come opzioni supportate dall'interfaccia (il requisito usa 'e/o')."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-012.TC05",
+          "REQ-F-012.TC04"
+        ],
+        "detail": "Entrambi sono negativi sulla validità e sul blocco salvataggio; scenari diversi (mancanza vs incoerenza date) ma molto sovrapposti come flusso e oracolo (blocco + messaggio + niente log)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 8,
+    "coherence_score": 56,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-012.US01.TC01",
+        "detail": "Asserzione che i punti Connect siano associati 'non ai singoli prodotti' e che non esistano campi/associazioni per-prodotto in UI; il requisito dice solo che i punti si applicano all'intera offerta bundle, senza vincoli UI/assenza campi."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC01",
+        "detail": "Introduce 'dashboard Marketing', 'servizio di persistenza' e 'servizio logging/audit' come componenti espliciti; il requisito non descrive architettura né canale."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC03",
+        "detail": "Assume che il log mostri solo i campi modificati e che i non modificati siano assenti o before=after; il requisito richiede before/after ma non specifica granularità/filtraggio."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC04",
+        "detail": "Introduce un profilo specifico 'viewer_marketing' in sola lettura e comportamenti di autorizzazione; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC05",
+        "detail": "Assume validazione cronologica (fine < inizio) con blocco salvataggio; non esplicitata dal requisito."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC06",
+        "detail": "Assume comportamento 'fail-closed' (nessuna persistenza senza audit/log) quando il logging è non disponibile; il requisito non definisce la policy di failure."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC07",
+        "detail": "Introduce una business rule di conflitto/sovrapposizione tra regole temporali possessori e blocco salvataggio; il requisito richiede supporto a regole temporali ma non vincoli di non-sovrapposizione."
+      },
+      {
+        "test_id": "REQ-F-012.US01.TC08",
+        "detail": "Introduce considerazioni su audit asincrono e tempo massimo di attesa; non presenti nel requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: \"Esistere un'interfaccia per impostare pricing, punti, cashback e metadati di validità per ogni bundle.\"",
+        "detail": "Nessun TC verifica esplicitamente la configurazione di 'sconto' (si testa cashback e pricing, ma lo 'sconto' non viene mai impostato/validato in modo diretto)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-012.US01.TC03",
+          "REQ-F-012.US01.TC08"
+        ],
+        "detail": "Entrambi testano audit log before/after su modifica di configurazione; differiscono per numero campi ma scenario e oracolo sono sostanzialmente duplicati."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3). Tuttavia, il set direct introduce meno informazioni non tracciabili (6 added_info vs 8) e non presenta una lacuna esplicita su 'sconto' (nel direct lo sconto è almeno esercitato in TC01/TC02). Il set indirect_persona aggiunge inoltre una business rule non richiesta (non sovrapposizione regole temporali in US01.TC07) e duplicazioni più marcate sull'audit log (US01.TC03 vs US01.TC08). Per questo il punteggio e la coerenza complessiva risultano migliori per 'direct'."
+  }
+}

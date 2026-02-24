@@ -1,0 +1,267 @@
+[
+  {
+    "test_id": "REQ-F-024.TC01",
+    "title": "Conflitto manuale vs esterna: nessuna offerta proposta (canale cliente web)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo e logging interno abilitato",
+      "Esistono regole manuali configurate dal marketing che abilitano un'offerta per un'entità target (es. cliente)",
+      "È disponibile una sorgente di raccomandazioni automatizzate/esterne (o stub) configurata per generare raccomandazione in conflitto con la regola manuale",
+      "Utente cliente autenticato sul canale web",
+      "L'entità target (Cliente) esiste ed è eleggibile per valutazione offerte"
+    ],
+    "test_data": [
+      "ClienteId: CUST-100045",
+      "SessionId/RequestId: REQ-024-CLIENTE-001",
+      "Regola manuale (Regola A) ID: MKT-RULE-001, azione: 'Mostra Offerta OFF-123'",
+      "Raccomandazione esterna (Regola B) ID: EXT-REC-778, azione: 'Escludi Offerta OFF-123' (conflitto con Regola A)",
+      "OffertaId: OFF-123"
+    ],
+    "steps": [
+      "Configurare in ambiente di test la Regola A (MKT-RULE-001) per il ClienteId CUST-100045",
+      "Configurare la sorgente esterna/stub per restituire la Raccomandazione B (EXT-REC-778) in conflitto per il ClienteId CUST-100045",
+      "Accedere al canale web come cliente associato a CUST-100045",
+      "Navigare alla pagina/sezione che richiede la generazione delle offerte (trigger del Motore) e avviare la richiesta",
+      "Osservare la lista offerte/proposte presentate al cliente"
+    ],
+    "expected_results": [
+      "Il Motore non propone alcuna offerta al cliente: la lista offerte risulta vuota oppure non viene mostrata alcuna proposta",
+      "Non viene mostrato alcun messaggio di errore/alert/avviso relativo al conflitto nella UI cliente"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (cliente/operatore) e i canali (web) sono stati inferiti dal requisito, che menziona cliente e operatore ma non specifica i canali. Il test valida il comportamento silente lato UI e l'assenza di offerte in presenza di conflitto."
+  },
+  {
+    "test_id": "REQ-F-024.TC02",
+    "title": "Conflitto manuale vs esterna: nessuna offerta proposta (canale operatore)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo e logging interno abilitato",
+      "Esistono regole manuali configurate dal marketing che abilitano un'offerta per un'entità target (es. cliente)",
+      "È disponibile una sorgente di raccomandazioni automatizzate/esterne (o stub) configurata per generare raccomandazione in conflitto con la regola manuale",
+      "Utente operatore autenticato con accesso alla schermata che invoca il Motore per il cliente target",
+      "L'entità target (Cliente) esiste ed è eleggibile per valutazione offerte"
+    ],
+    "test_data": [
+      "OperatoreId: OPR-90012",
+      "ClienteId: CUST-100045",
+      "RequestId: REQ-024-OP-001",
+      "Regola manuale (Regola A) ID: MKT-RULE-001, azione: 'Mostra Offerta OFF-123'",
+      "Raccomandazione esterna (Regola B) ID: EXT-REC-778, azione: 'Escludi Offerta OFF-123'",
+      "OffertaId: OFF-123"
+    ],
+    "steps": [
+      "Configurare in ambiente di test la Regola A (MKT-RULE-001) per il ClienteId CUST-100045",
+      "Configurare la sorgente esterna/stub per restituire la Raccomandazione B (EXT-REC-778) in conflitto per il ClienteId CUST-100045",
+      "Accedere al canale operatore con l'utente OPR-90012",
+      "Aprire la scheda del cliente CUST-100045",
+      "Avviare il calcolo/recupero delle offerte (trigger del Motore) dalla schermata operatore",
+      "Osservare la sezione proposte/offerte suggerite all'operatore"
+    ],
+    "expected_results": [
+      "Il Motore non propone alcuna offerta all'operatore per il cliente CUST-100045: nessuna proposta viene visualizzata",
+      "Non viene mostrato alcun messaggio di errore/alert/avviso relativo al conflitto nella UI operatore"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "operatore"
+    ],
+    "notes": "Il canale 'operatore' è stato modellato come canale distinto (console/CRM) perché il requisito cita esplicitamente l'operatore ma non specifica la piattaforma."
+  },
+  {
+    "test_id": "REQ-F-024.TC03",
+    "title": "Registrazione log del conflitto con dettaglio (regola A vs regola B, timestamp, id entità)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo e logging interno abilitato",
+      "Sistema di log centralizzato o storage log interno disponibile e interrogabile (es. file, SIEM, DB log)",
+      "Disponibile un meccanismo per correlare la richiesta (RequestId/CorrelationId) tra Motore e log",
+      "Configurazione conflitto tra regola manuale e raccomandazione esterna disponibile (come nei TC01/TC02)"
+    ],
+    "test_data": [
+      "ClienteId: CUST-100045",
+      "RequestId/CorrelationId: REQ-024-LOG-001",
+      "Regola manuale ID: MKT-RULE-001",
+      "Raccomandazione esterna ID: EXT-REC-778",
+      "OffertaId: OFF-123",
+      "Finestra temporale ricerca log: +/- 5 minuti rispetto all'esecuzione test"
+    ],
+    "steps": [
+      "Configurare la Regola A (MKT-RULE-001) e la Raccomandazione B (EXT-REC-778) in conflitto per il ClienteId CUST-100045",
+      "Invocare il Motore per il ClienteId CUST-100045 includendo il RequestId/CorrelationId REQ-024-LOG-001",
+      "Accedere al sistema di log interno",
+      "Cercare gli eventi/log associati al RequestId/CorrelationId REQ-024-LOG-001 nella finestra temporale definita",
+      "Aprire il record di log relativo al conflitto"
+    ],
+    "expected_results": [
+      "È presente almeno un record di log che indica l'avvenuto conflitto tra regole manuali e raccomandazioni esterne",
+      "Il record di log contiene un timestamp valorizzato e coerente con l'ora di esecuzione",
+      "Il record di log contiene gli identificativi delle due regole in conflitto (es. MKT-RULE-001 e EXT-REC-778) in modo da ricostruire 'regola A vs regola B'",
+      "Il record di log contiene gli ID delle entità coinvolte (almeno ClienteId CUST-100045; e, se applicabile, OffertaId OFF-123)",
+      "Il record di log consente la correlazione con la richiesta (RequestId/CorrelationId REQ-024-LOG-001)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "La modalità di accesso ai log (SIEM/DB/file) non è specificata nel requisito: il test assume che i log siano interrogabili tramite uno strumento interno e che sia disponibile un CorrelationId/RequestId per la tracciatura."
+  },
+  {
+    "test_id": "REQ-F-024.TC04",
+    "title": "Comportamento silente: nessun errore/alert anche in presenza di conflitto (verifica UI cliente e operatore)",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo",
+      "Configurazione conflitto tra regola manuale e raccomandazione esterna disponibile (come nei TC01/TC02)",
+      "Disponibilità di un utente cliente e di un utente operatore per eseguire lo stesso scenario",
+      "Le UI dispongono di aree standard per messaggi (toast, modali, banner, error panel) verificabili"
+    ],
+    "test_data": [
+      "ClienteId: CUST-100045",
+      "Utente cliente: client.user024 / password valida",
+      "Utente operatore: opr.user024 / password valida",
+      "Regola manuale ID: MKT-RULE-001",
+      "Raccomandazione esterna ID: EXT-REC-778"
+    ],
+    "steps": [
+      "Eseguire il trigger del Motore dal canale cliente per il ClienteId CUST-100045 in presenza di conflitto",
+      "Verificare l'assenza di banner/toast/modali/alert/errori nella UI cliente durante e dopo la richiesta",
+      "Eseguire il trigger del Motore dal canale operatore per il ClienteId CUST-100045 in presenza di conflitto",
+      "Verificare l'assenza di banner/toast/modali/alert/errori nella UI operatore durante e dopo la richiesta"
+    ],
+    "expected_results": [
+      "Nella UI cliente non compaiono messaggi di errore, alert o notifiche riconducibili al conflitto",
+      "Nella UI operatore non compaiono messaggi di errore, alert o notifiche riconducibili al conflitto",
+      "L'esperienza utente resta coerente (nessuna interruzione del flusso) e l'assenza di offerte è l'unico effetto osservabile"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web",
+      "operatore"
+    ],
+    "notes": "Il requisito richiede comportamento silente; questo test si focalizza esclusivamente su elementi visibili in UI, senza inferire ulteriori messaggistiche (es. email/SMS) non menzionate."
+  },
+  {
+    "test_id": "REQ-F-024.TC05",
+    "title": "Accesso ai log di conflitto consentito a ruoli autorizzati (audit/verifica)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo e logging interno abilitato",
+      "Esiste almeno un evento di conflitto già registrato nei log (generabile eseguendo TC03)",
+      "Esiste un ruolo autorizzato alla verifica/audit dei log (es. 'Audit' o 'AdminLog') con credenziali valide",
+      "È disponibile uno strumento/endpoint/console interna per consultare i log"
+    ],
+    "test_data": [
+      "Utente autorizzato: audit.user01 / password valida",
+      "Filtro ricerca: ClienteId = CUST-100045",
+      "Finestra temporale ricerca: ultime 24 ore",
+      "Eventuale CorrelationId: REQ-024-LOG-001"
+    ],
+    "steps": [
+      "Accedere allo strumento/console di consultazione log con l'utente audit.user01",
+      "Impostare un filtro di ricerca per ClienteId CUST-100045 e finestra temporale ultime 24 ore",
+      "Eseguire la ricerca",
+      "Aprire un record di log relativo al conflitto"
+    ],
+    "expected_results": [
+      "L'utente autorizzato può accedere alla funzionalità di consultazione dei log senza errori di autorizzazione",
+      "La ricerca restituisce almeno un record relativo al conflitto per ClienteId CUST-100045",
+      "Il record è consultabile e contiene le informazioni necessarie alla verifica/audit (almeno quelle validate in AC-2)"
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non specifica quali ruoli siano 'autorizzati' né lo strumento di consultazione: il test assume l'esistenza di un ruolo audit/admin e di un'interfaccia di consultazione log interna."
+  },
+  {
+    "test_id": "REQ-F-024.TC06",
+    "title": "Accesso ai log di conflitto negato a ruoli non autorizzati",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo e logging interno abilitato",
+      "Esiste almeno un evento di conflitto già registrato nei log (generabile eseguendo TC03)",
+      "Esiste un utente non autorizzato alla consultazione dei log (es. ruolo 'OperatoreStandard' o 'Cliente') con credenziali valide",
+      "È disponibile uno strumento/endpoint/console interna per consultare i log"
+    ],
+    "test_data": [
+      "Utente non autorizzato: opr.standard01 / password valida",
+      "Filtro ricerca: ClienteId = CUST-100045",
+      "Finestra temporale ricerca: ultime 24 ore"
+    ],
+    "steps": [
+      "Accedere allo strumento/console di consultazione log con l'utente opr.standard01",
+      "Tentare di eseguire una ricerca log per ClienteId CUST-100045 nelle ultime 24 ore",
+      "Tentare di aprire un record di log (se visibile in elenco)"
+    ],
+    "expected_results": [
+      "L'accesso alla consultazione dei log è negato oppure le funzionalità di ricerca/visualizzazione risultano non disponibili per l'utente non autorizzato",
+      "Il sistema restituisce un esito di autorizzazione non valida (es. HTTP 403 o messaggio 'Accesso non consentito' nella console interna), senza esporre contenuti dei log",
+      "Nessun dettaglio del conflitto viene mostrato all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-4"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito non definisce i ruoli non autorizzati; è stata assunta l'esistenza di ruoli con privilegi differenti per garantire la verificabilità di AC-4."
+  },
+  {
+    "test_id": "REQ-F-024.TC07",
+    "title": "Conflitto riproducibile in test: il Motore restituisce risposta senza offerte e senza errori tecnici",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile con Motore attivo",
+      "Disponibile una modalità di invocazione del Motore via API/servizio applicativo (diretta o tramite applicazione) che restituisca un payload con le offerte proposte",
+      "Configurazione conflitto tra regola manuale e raccomandazione esterna disponibile"
+    ],
+    "test_data": [
+      "ClienteId: CUST-100045",
+      "CorrelationId: REQ-024-API-001",
+      "Regola manuale ID: MKT-RULE-001",
+      "Raccomandazione esterna ID: EXT-REC-778"
+    ],
+    "steps": [
+      "Configurare la Regola A e la Raccomandazione B in conflitto per il ClienteId CUST-100045",
+      "Invocare l'endpoint/servizio del Motore per generare le offerte per CUST-100045 includendo CorrelationId REQ-024-API-001",
+      "Acquisire la risposta del servizio (status e payload)"
+    ],
+    "expected_results": [
+      "Il servizio risponde con esito tecnico di successo (nessun errore applicativo/tecnico dovuto al conflitto)",
+      "Il payload non contiene offerte proposte (lista vuota o campo equivalente che indica assenza di proposte)",
+      "Non sono presenti nel payload messaggi di errore/alert destinati alla UI relativi al conflitto"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "backend"
+    ],
+    "notes": "Il requisito specifica che il comportamento deve essere silente lato UI; questo test verifica che anche a livello servizio non vengano propagati errori/alert legati al conflitto e che l'esito sia 'no offer'."
+  }
+]

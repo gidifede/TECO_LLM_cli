@@ -1,0 +1,62 @@
+[
+  {
+    "story_id": "REQ-UI-010.US01",
+    "title": "Accesso del Team Marketing alla dashboard integrata nel Motore per configurare le offerte",
+    "persona": "Team Marketing",
+    "goal": "autenticarmi e utilizzare la dashboard di configurazione offerte integrata nel Motore per creare/modificare/configurare combinazioni",
+    "benefit": "gestire in autonomia le configurazioni senza dipendere da sistemi esterni e con pieno controllo delle funzionalità previste",
+    "user_story": "Come Team Marketing\nVoglio autenticarmi e accedere alla dashboard di configurazione offerte integrata nel Motore per creare/modificare/configurare le combinazioni\nIn modo che possa gestire in autonomia le configurazioni senza usare sistemi esterni",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un membro del Team Marketing accede alla dashboard del Motore ALLORA può autenticarsi ed entrare nell’area di gestione/configurazione offerte.",
+      "QUANDO un membro del Team Marketing è autenticato ALLORA può accedere alle funzionalità di creazione/modifica/configurazione delle combinazioni disponibili nella dashboard integrata.",
+      "QUANDO il Team Marketing deve effettuare operazioni di configurazione richieste ALLORA non è necessario utilizzare un sistema esterno alla dashboard integrata nel Motore."
+    ],
+    "business_rules": [
+      "L’accesso alla dashboard è consentito solo a utenti con ruolo/permessi associati al Team Marketing.",
+      "Le funzionalità di gestione/configurazione devono essere fruibili dalla dashboard integrata nel Motore (non demandate a strumenti esterni)."
+    ],
+    "edge_cases": [
+      "QUANDO un utente senza permessi Marketing tenta di accedere alla dashboard ALLORA l’accesso è negato e viene mostrato un messaggio di autorizzazione insufficiente.",
+      "QUANDO l’autenticazione fallisce (credenziali non valide o sessione scaduta) ALLORA l’utente non accede alle funzionalità di configurazione e viene richiesto di autenticarsi nuovamente.",
+      "QUANDO la dashboard integrata non è raggiungibile (servizio non disponibile) ALLORA il Team Marketing non può effettuare operazioni di configurazione e viene mostrato un messaggio di indisponibilità."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il meccanismo di autenticazione (SSO, credenziali locali, MFA): si assume che esista un sistema di autenticazione già disponibile per il Motore e utilizzabile dalla dashboard.",
+      "Il requisito non dettaglia l’elenco puntuale delle funzionalità di configurazione: si assume che corrispondano alle operazioni indicate (creare/modificare/configurare combinazioni)."
+    ],
+    "notes": "Requisito focalizzato su vincolo di collocazione/deployment (dashboard distribuita insieme al Motore) e accesso del Team Marketing. AC interpretati in forma testabile senza introdurre funzioni ulteriori. Non emergono altre personas coinvolte oltre al Team Marketing."
+  },
+  {
+    "story_id": "REQ-UI-010.US02",
+    "title": "Dashboard distribuita insieme al Motore senza dipendenze da sistemi esterni",
+    "persona": "Motore di Offerte",
+    "goal": "ospitare e distribuire la dashboard di configurazione come parte dell’applicazione Motore",
+    "benefit": "garantire il vincolo di deployment richiesto e ridurre dipendenze operative da componenti esterni per la configurazione",
+    "user_story": "Come Motore di Offerte\nVoglio includere e distribuire la dashboard di configurazione delle offerte come parte dell’applicazione Motore\nIn modo che la configurazione avvenga nel Motore senza dipendere da sistemi esterni",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore viene distribuito/deployato ALLORA la dashboard di configurazione è parte della stessa applicazione (integrata e deployata insieme al Motore).",
+      "QUANDO un utente autorizzato accede alla dashboard ALLORA le funzionalità di gestione/configurazione sono erogate dall’applicazione Motore senza richiedere l’uso di un sistema esterno.",
+      "QUANDO si esegue l’operatività di configurazione prevista ALLORA non è necessario appoggiarsi a un’interfaccia di configurazione esterna al Motore."
+    ],
+    "business_rules": [
+      "Vincolo di deployment funzionale: la dashboard deve risiedere nel Motore (non esternamente) ed essere distribuita con esso.",
+      "Le operazioni di configurazione richieste devono essere eseguibili tramite la dashboard integrata (assenza di dipendenze da tool esterni per tali operazioni)."
+    ],
+    "edge_cases": [
+      "QUANDO viene effettuato un deploy del Motore senza il componente dashboard ALLORA la build/deploy deve fallire o deve essere rilevata una non conformità rispetto al requisito (dashboard assente).",
+      "QUANDO la dashboard tenta di reindirizzare verso un sistema esterno per operazioni di configurazione ALLORA tale flusso è considerato non conforme al requisito.",
+      "QUANDO il Motore è in manutenzione o non disponibile ALLORA anche la dashboard risulta non disponibile (essendo parte della stessa applicazione)."
+    ],
+    "assumptions": [
+      "Il requisito non definisce criteri tecnici di verifica del 'deploy insieme' (es. stesso artifact, stesso namespace, stesso release train): si assume che la verifica avvenga a livello di packaging/distribuzione e assenza di applicativo separato per la dashboard.",
+      "Non sono specificati requisiti non funzionali (SLA, performance, audit): non vengono introdotti in questa story."
+    ],
+    "notes": "Story di natura architetturale/di vincolo di collocazione. AC condivisi concettualmente con US01 (assenza di sistemi esterni e dashboard integrata), ma riscritti dal punto di vista del sistema 'Motore di Offerte'."
+  }
+]

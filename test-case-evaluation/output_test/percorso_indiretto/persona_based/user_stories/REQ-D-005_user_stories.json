@@ -1,0 +1,129 @@
+[
+  {
+    "story_id": "REQ-D-005.US01",
+    "title": "Visualizzare in Loyalty le offerte non accettate entro la validità",
+    "persona": "Cliente digitale",
+    "goal": "vedere nella sezione Loyalty di Gruppo (APP e sito) le offerte non accettate dal pop-up, finché sono valide",
+    "benefit": "poter recuperare e valutare l’offerta in un secondo momento senza perderne le condizioni",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare nella sezione Loyalty di Gruppo su APP e sito le offerte non accettate dal pop-up, finché sono in corso di validità\nIn modo che possa recuperarle successivamente mantenendo gli stessi dettagli mostrati originariamente",
+    "channels": [
+      "app",
+      "web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO non accetto un’offerta proposta tramite pop-up ALLORA l’offerta appare nella sezione Loyalty di Gruppo su APP.",
+      "QUANDO non accetto un’offerta proposta tramite pop-up ALLORA l’offerta appare nella sezione Loyalty di Gruppo su sito web.",
+      "QUANDO visualizzo un’offerta in Loyalty di Gruppo ALLORA i dettagli (nome, immagine, prezzo scontato) risultano coerenti con quelli mostrati originariamente nel pop-up.",
+      "QUANDO la data/ora di scadenza dell’offerta è superata ALLORA l’offerta non è più disponibile/visibile nella sezione Loyalty di Gruppo."
+    ],
+    "business_rules": [
+      "Sono visibili in Loyalty di Gruppo solo le offerte non accettate e ancora in corso di validità.",
+      "Alla scadenza l’offerta deve risultare non disponibile al cliente (non mostrata o non accessibile).",
+      "I dettagli dell’offerta in Loyalty (nome, immagine, prezzo scontato) devono corrispondere a quelli originariamente presentati al cliente."
+    ],
+    "edge_cases": [
+      "Offerta scaduta mentre il cliente sta visualizzando la lista o il dettaglio: al refresh/nuovo accesso l’offerta non deve risultare disponibile.",
+      "Offerta presente ma con dettagli non coerenti rispetto all’originale: l’offerta non deve essere mostrata oppure deve essere gestita come errore di coerenza (comportamento da definire).",
+      "Cliente accede da APP e da sito in momenti diversi: l’offerta deve risultare coerente e con stessa scadenza su entrambi i canali."
+    ],
+    "assumptions": [
+      "Si assume che l’evento 'non accettata' corrisponda al caso in cui il cliente non aggiunge il prodotto dal pop-up (nessuna azione di accettazione).",
+      "Si assume che la sezione 'Loyalty di Gruppo' consumi i dati esposti dal Motore di Offerte e che la visibilità sia determinata dal Motore."
+    ],
+    "notes": "Gli AC del requisito sono stati riscritti dal punto di vista del Cliente digitale. Il requisito non specifica il comportamento UI in caso di incoerenza dei dettagli tra pop-up e Loyalty: riportato come edge case da definire."
+  },
+  {
+    "story_id": "REQ-D-005.US02",
+    "title": "Persistire offerte non accettate con scadenza e renderle disponibili a Loyalty",
+    "persona": "Motore di Offerte",
+    "goal": "persistire le offerte non accettate con un campo di scadenza e governarne la disponibilità verso la sezione Loyalty di Gruppo",
+    "benefit": "garantire coerenza, tracciabilità e rispetto della validità temporale delle offerte mostrate al cliente",
+    "user_story": "Come Motore di Offerte\nVoglio persistere le offerte non accettate con un campo di scadenza e gestirne la disponibilità verso la sezione Loyalty di Gruppo\nIn modo che il cliente veda solo offerte valide e con dettagli coerenti rispetto a quelli originariamente proposti",
+    "channels": [
+      "app",
+      "web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un’offerta viene generata e non viene accettata dal cliente ALLORA il Motore la persiste rendendola recuperabile per la sezione Loyalty di Gruppo su APP e sito.",
+      "QUANDO il Motore persiste un’offerta ALLORA salva un campo di scadenza che definisce la validità dell’offerta (es. 10 giorni dalla vendita del primo prodotto).",
+      "QUANDO la data/ora corrente supera la scadenza salvata ALLORA il Motore non rende più l’offerta disponibile per la visualizzazione in Loyalty di Gruppo.",
+      "QUANDO il Motore rende disponibile un’offerta a Loyalty di Gruppo ALLORA i dettagli restituiti (nome, immagine, prezzo scontato) sono coerenti con quelli originariamente mostrati al cliente."
+    ],
+    "business_rules": [
+      "La validità temporale dell’offerta è determinata dal Motore in base alle configurazioni definite dall’utente marketing nel Motore.",
+      "Ogni offerta persistita deve includere un campo di scadenza e tale scadenza deve essere applicata per la disponibilità dell’offerta.",
+      "Il Motore è responsabile della persistenza e dell’aggiornamento dello stato di disponibilità delle offerte in base alla scadenza."
+    ],
+    "edge_cases": [
+      "Configurazione marketing mancante/errata per il calcolo della scadenza: l’offerta non deve essere resa disponibile oppure deve essere gestita con fallback (comportamento da definire).",
+      "Richiesta di offerte da Loyalty quando il Motore non è disponibile: le offerte non possono essere recuperate (gestione errore/ritentativo lato canale da definire).",
+      "Offerta con scadenza nel passato (dati inconsistenti): l’offerta non deve essere resa disponibile."
+    ],
+    "assumptions": [
+      "Si assume che esista un meccanismo/evento che identifichi la 'vendita del primo prodotto' per calcolare la scadenza (esempio citato nel requisito), ma il dettaglio della sorgente evento non è specificato nel requisito.",
+      "Si assume che la sezione Loyalty di Gruppo sia consumer read-only e non invii eventi di accettazione/ignore al Motore (coerente con le personas di contesto)."
+    ],
+    "notes": "AC condivisi concettualmente con REQ-D-005.US01 (visibilità in Loyalty e rispetto scadenza), riscritti qui dal punto di vista del Motore. Il requisito non specifica il comportamento in caso di configurazioni marketing non disponibili o incoerenti: riportato come edge case/assunzione."
+  },
+  {
+    "story_id": "REQ-D-005.US03",
+    "title": "Configurare la validità temporale delle offerte nel Motore",
+    "persona": "Team Marketing",
+    "goal": "definire nel Motore la configurazione che determina il periodo di validità delle offerte e le condizioni di persistenza/visibilità",
+    "benefit": "governare la durata commerciale delle proposte e la loro disponibilità per il cliente nei canali digitali",
+    "user_story": "Come Team Marketing\nVoglio configurare nel Motore di Offerte la durata di validità delle offerte e le condizioni che ne determinano la persistenza e visibilità\nIn modo che le proposte siano disponibili al cliente in Loyalty di Gruppo solo per il periodo previsto dalla campagna",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO configuro nel Motore la durata/validità di un’offerta (es. 10 giorni dalla vendita del primo prodotto) ALLORA il Motore applica tale configurazione nel calcolo del campo di scadenza delle offerte salvate.",
+      "QUANDO una configurazione di validità è attiva ALLORA le offerte non accettate risultano visibili in Loyalty di Gruppo su APP e sito solo entro la scadenza calcolata dal Motore.",
+      "QUANDO la scadenza è superata ALLORA l’offerta non risulta più disponibile in Loyalty di Gruppo."
+    ],
+    "business_rules": [
+      "La persistenza e la validità temporale delle offerte sono stabilite dal Motore secondo le configurazioni definite dall’utente marketing nel Motore stesso.",
+      "Le configurazioni marketing determinano il periodo di validità (esempio: giorni dalla vendita del primo prodotto)."
+    ],
+    "edge_cases": [
+      "Configurazione di validità inserita con valori non ammessi (es. durata negativa o nulla): la configurazione deve essere rifiutata (regole di validazione da definire).",
+      "Modifica della configurazione mentre esistono già offerte persistite: impatto su offerte già salvate non specificato (da chiarire)."
+    ],
+    "assumptions": [
+      "Si assume che il Team Marketing disponga di una dashboard di configurazione nel Motore dove impostare la validità temporale delle offerte (il requisito cita 'configurazioni definite dall’utente marketing' ma non dettaglia la UI)."
+    ],
+    "notes": "Gli AC del requisito sono stati interpretati per rendere testabile il legame tra configurazione marketing e campo di scadenza applicato dal Motore. Il requisito non specifica validazioni dei parametri né l’effetto retroattivo delle modifiche: evidenziato come edge case/assunzione."
+  },
+  {
+    "story_id": "REQ-D-005.US04",
+    "title": "Recuperare e mostrare in sola lettura le offerte valide in Loyalty di Gruppo",
+    "persona": "Sezione Loyalty di Gruppo (APP e sito)",
+    "goal": "recuperare dal Motore (o dal sistema che le espone) le offerte non accettate e valide e mostrarle al cliente su APP e sito",
+    "benefit": "offrire al cliente una vista aggiornata e coerente delle offerte disponibili senza alterarne lo stato",
+    "user_story": "Come Sezione Loyalty di Gruppo (APP e sito)\nVoglio recuperare e mostrare in sola lettura le offerte non accettate e ancora valide\nIn modo che il cliente possa consultarle su APP e sito senza che la Loyalty modifichi lo stato delle offerte nel Motore",
+    "channels": [
+      "app",
+      "web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO la sezione Loyalty di Gruppo richiede le offerte disponibili ALLORA visualizza le offerte non accettate su APP e su sito.",
+      "QUANDO la sezione Loyalty di Gruppo visualizza un’offerta ALLORA mostra dettagli (nome, immagine, prezzo scontato) coerenti con quelli ricevuti e con quanto originariamente mostrato.",
+      "QUANDO un’offerta risulta scaduta (non restituita come disponibile) ALLORA la sezione Loyalty di Gruppo non la mostra al cliente."
+    ],
+    "business_rules": [
+      "La sezione Loyalty di Gruppo è read-only rispetto allo stato delle proposte: non deve modificare lo stato dell’offerta lato Motore.",
+      "La sezione Loyalty di Gruppo deve mostrare solo offerte disponibili secondo la validità determinata dal Motore."
+    ],
+    "edge_cases": [
+      "Lista offerte vuota: la sezione Loyalty di Gruppo non mostra offerte (comportamento UI di empty state non specificato).",
+      "Dati incompleti per un’offerta (es. immagine mancante): comportamento di rendering non specificato (da definire)."
+    ],
+    "assumptions": [
+      "Si assume che la Loyalty consumi un endpoint/feed che filtra già le offerte scadute, poiché il requisito indica che la validità è 'rispettata dal sistema' (Motore)."
+    ],
+    "notes": "AC condivisi con REQ-D-005.US01 (visibilità e coerenza dettagli) e REQ-D-005.US02 (scadenza), replicati qui dal punto di vista del componente di presentazione. Il requisito non dettaglia la gestione UI di empty state o campi mancanti: riportato come edge case."
+  }
+]

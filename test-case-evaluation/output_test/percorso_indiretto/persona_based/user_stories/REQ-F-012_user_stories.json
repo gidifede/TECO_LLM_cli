@@ -1,0 +1,35 @@
+[
+  {
+    "story_id": "REQ-F-012.US01",
+    "title": "Configurare pricing, incentivi e punti Connect per un bundle",
+    "persona": "Team Marketing",
+    "goal": "configurare per ogni offerta bundle regole di pricing, sconti/cashback, punti Connect e metadati di validità, incluse regole temporali per clienti già possessori di prodotti",
+    "benefit": "gestire in autonomia le leve commerciali del bundle e governarne la validità nel tempo e per specifici segmenti di clientela",
+    "user_story": "Come Team Marketing\nVoglio configurare per ogni offerta bundle pricing, sconti/cashback, punti Connect e metadati di validità, includendo regole temporali per clienti già possessori di prodotti\nIn modo che possa pubblicare e mantenere offerte bundle coerenti con gli obiettivi commerciali e con finestre temporali/target definiti",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard di configurazione e seleziono un bundle ALLORA posso impostare pricing, punti Connect applicati all'intera offerta, cashback/sconti e metadati di validità per quel bundle",
+      "QUANDO configuro una regola temporale dedicata ai clienti già possessori di prodotti ALLORA posso definire una finestra temporale/periodo di validità specifico per tale regola sul bundle",
+      "QUANDO salvo una modifica alla configurazione del bundle ALLORA il sistema registra un log di configurazione contenente i valori precedenti (before) e i nuovi valori (after) per i campi modificati"
+    ],
+    "business_rules": [
+      "La configurazione di pricing/sconti/cashback/punti Connect e metadati di validità è per-bundle (ogni bundle ha la propria configurazione).",
+      "I punti Connect configurati si applicano all'intera offerta bundle (non al singolo prodotto del bundle).",
+      "Ogni modifica di configurazione deve generare un audit log con before/after."
+    ],
+    "edge_cases": [
+      "Tentativo di salvataggio con metadati di validità incompleti o incoerenti (es. data fine precedente alla data inizio): il salvataggio viene bloccato e viene mostrato un errore.",
+      "Mancata disponibilità del servizio di logging/audit al salvataggio: la modifica non viene confermata e viene mostrato un errore (o viene richiesta una ripetizione dell'operazione) per evitare configurazioni non auditabili.",
+      "Regola temporale per clienti già possessori configurata con periodo sovrapposto ad altre regole dello stesso bundle: il sistema segnala il conflitto e impedisce (o richiede correzione) prima del salvataggio."
+    ],
+    "assumptions": [
+      "I dettagli puntuali dei 'metadati di validità' (campi esatti, formato, vincoli) non sono specificati nel requisito e saranno definiti in analisi di dettaglio/UI.",
+      "La definizione operativa di 'clienti già possessori di prodotti' (quali prodotti, fonte dati, modalità di selezione) è demandata ai requisiti collegati o a regole di segmentazione esistenti.",
+      "L'elenco dei campi che devono comparire nel log before/after non è specificato: si assume includa almeno pricing, sconti/cashback, punti Connect e metadati di validità modificati."
+    ],
+    "notes": "Dipendenze esterne: il requisito rimanda ad altri parametri del bundle (REQ-F-002/3/4/5/6/7/10/13) non inclusi qui; questa US copre esclusivamente pricing/sconti-cashback/punti Connect/metadati di validità e logging. Gli AC sono stati resi testabili interpretando 'interfaccia' come dashboard Marketing e 'regole temporali' come configurazione di finestre di validità; eventuali vincoli UI/UX e validazioni di dettaglio vanno confermati."
+  }
+]

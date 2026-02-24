@@ -1,0 +1,442 @@
+[
+  {
+    "story_id": "REQ-F-027.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-027.US01.TC01",
+        "title": "Generazione proposte su canale operatore: consultazione matrice e filtro prodotti per ruolo OSP",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile",
+          "Canale di richiesta configurato come 'canale operatore'",
+          "Matrice prodotti-vs-ruoli disponibile e raggiungibile dal Motore",
+          "Matrice valorizzata con almeno un prodotto abilitato e uno non abilitato per ruolo OSP"
+        ],
+        "test_data": [
+          "Ruolo operatore: OSP",
+          "Catalogo prodotti contiene: PRODOTTO_A (abilitato per OSP), PRODOTTO_B (non abilitato per OSP)",
+          "Richiesta generazione proposte: canale=operatore, ruolo=OSP"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per canale operatore includendo il ruolo OSP",
+          "Attendere la risposta del Motore con l'elenco dei prodotti proposti"
+        ],
+        "expected_results": [
+          "Il Motore genera proposte includendo PRODOTTO_A",
+          "Il Motore esclude PRODOTTO_B dall'elenco proposte",
+          "L'elenco proposte restituito contiene solo prodotti abilitati per il ruolo OSP secondo la matrice"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il meccanismo tecnico di consultazione matrice (DB/API/config) non è specificato: il test valida l'effetto funzionale (filtro coerente con matrice) su canale operatore."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC02",
+        "title": "Ruolo operatore mancante/non riconosciuto: comportamento fail-safe senza proposte non autorizzate",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile",
+          "Canale di richiesta configurato come 'canale operatore'",
+          "Matrice prodotti-vs-ruoli disponibile e raggiungibile dal Motore"
+        ],
+        "test_data": [
+          "Ruolo operatore: (assente) oppure valore non riconosciuto 'XYZ'",
+          "Catalogo prodotti contiene almeno 1 prodotto vendibile in condizioni normali",
+          "Richiesta generazione proposte: canale=operatore, ruolo assente/XYZ"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di generazione proposte per canale operatore senza ruolo operatore oppure con ruolo='XYZ'",
+          "Attendere la risposta del Motore"
+        ],
+        "expected_results": [
+          "Il Motore non restituisce alcun prodotto proposto (lista vuota) oppure restituisce una risposta di errore gestita",
+          "In nessun caso il Motore restituisce prodotti senza aver potuto verificare l'abilitazione del ruolo"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non definisce il contratto d'errore (codice/struttura): il test accetta come esito valido 'errore gestito' o 'lista vuota', purché non vengano proposti prodotti."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC03",
+        "title": "Matrice non disponibile/non raggiungibile: nessuna proposta generata (fail-safe)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile",
+          "Canale di richiesta configurato come 'canale operatore'",
+          "Simulare indisponibilità della matrice (timeout/5xx/connessione rifiutata) sul canale di consultazione usato dal Motore"
+        ],
+        "test_data": [
+          "Ruolo operatore: OFE",
+          "Richiesta generazione proposte: canale=operatore, ruolo=OFE"
+        ],
+        "steps": [
+          "Configurare la dipendenza della matrice per rispondere con timeout o errore",
+          "Inviare al Motore la richiesta di generazione proposte per canale operatore con ruolo OFE",
+          "Attendere la risposta del Motore"
+        ],
+        "expected_results": [
+          "Il Motore non restituisce alcun prodotto proposto (lista vuota) oppure restituisce una risposta di errore gestita",
+          "Il Motore non restituisce prodotti che non siano stati verificati rispetto alla matrice (comportamento fail-safe)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Assunzione esplicita: in caso di indisponibilità matrice il comportamento è conservativo (non proporre prodotti)."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC04",
+        "title": "Prodotto in catalogo ma assente dalla matrice: considerato non abilitato e quindi escluso",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile",
+          "Canale di richiesta configurato come 'canale operatore'",
+          "Matrice prodotti-vs-ruoli disponibile e raggiungibile dal Motore",
+          "Catalogo prodotti contiene un prodotto non presente in matrice"
+        ],
+        "test_data": [
+          "Ruolo operatore: consulente sala",
+          "Catalogo prodotti contiene: PRODOTTO_C (presente in catalogo, assente in matrice)",
+          "Richiesta generazione proposte: canale=operatore, ruolo=consulente sala"
+        ],
+        "steps": [
+          "Verificare che PRODOTTO_C sia presente nel catalogo prodotti ma non esista alcuna riga/associazione in matrice per PRODOTTO_C",
+          "Inviare al Motore la richiesta di generazione proposte per canale operatore con ruolo consulente sala",
+          "Attendere la risposta del Motore"
+        ],
+        "expected_results": [
+          "PRODOTTO_C non è presente nell'elenco dei prodotti proposti",
+          "L'elenco proposte contiene solo prodotti esplicitamente abilitati in matrice per il ruolo consulente sala"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Assunzione esplicita: prodotto assente dalla matrice è trattato come 'non abilitato' per default."
+      },
+      {
+        "test_id": "REQ-F-027.US01.TC05",
+        "title": "E2E: profili OSP/OFE/consulente sala non ricevono prodotti non abilitati dal Motore su canale operatore",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente E2E disponibile con integrazioni attive tra canale operatore e Motore di Offerte",
+          "Matrice prodotti-vs-ruoli disponibile e valorizzata per OSP, OFE, consulente sala",
+          "Disponibili tre profili operatore distinti: OSP, OFE, consulente sala"
+        ],
+        "test_data": [
+          "Matrice esempio: PRODOTTO_A abilitato solo per OSP; PRODOTTO_D abilitato solo per OFE; PRODOTTO_E abilitato solo per consulente sala",
+          "Tre richieste E2E di generazione proposte: (canale=operatore, ruolo=OSP), (canale=operatore, ruolo=OFE), (canale=operatore, ruolo=consulente sala)"
+        ],
+        "steps": [
+          "Eseguire il flusso E2E per il profilo OSP fino alla generazione proposte",
+          "Acquisire l'elenco prodotti proposti per OSP",
+          "Eseguire il flusso E2E per il profilo OFE fino alla generazione proposte",
+          "Acquisire l'elenco prodotti proposti per OFE",
+          "Eseguire il flusso E2E per il profilo consulente sala fino alla generazione proposte",
+          "Acquisire l'elenco prodotti proposti per consulente sala"
+        ],
+        "expected_results": [
+          "Nel set proposte per OSP non compaiono prodotti non abilitati a OSP (es. PRODOTTO_D, PRODOTTO_E)",
+          "Nel set proposte per OFE non compaiono prodotti non abilitati a OFE (es. PRODOTTO_A, PRODOTTO_E)",
+          "Nel set proposte per consulente sala non compaiono prodotti non abilitati a consulente sala (es. PRODOTTO_A, PRODOTTO_D)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica i 'canali operatore' nel campo channels della story: il test E2E assume un canale operatore integrato col Motore (es. front-end commerciale o altro canale fisico)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-027.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-027.US02.TC01",
+        "title": "Front-end commerciale: visualizzazione proposte con soli prodotti abilitati al ruolo (OSP)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale disponibile e raggiungibile",
+          "Integrazione attiva tra front-end commerciale e Motore di Offerte",
+          "Esiste un utente operatore con ruolo OSP valido",
+          "Matrice prodotti-vs-ruoli disponibile e valorizzata con almeno un prodotto abilitato e uno non abilitato per OSP"
+        ],
+        "test_data": [
+          "Credenziali operatore OSP: op_osp01 / Password valida",
+          "Matrice esempio: PRODOTTO_A abilitato per OSP; PRODOTTO_B non abilitato per OSP"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con l'utenza operatore OSP",
+          "Aprire il flusso di proposta offerte",
+          "Richiedere la generazione/visualizzazione delle proposte",
+          "Osservare l'elenco prodotti proposti mostrato a video"
+        ],
+        "expected_results": [
+          "Le proposte mostrate includono PRODOTTO_A",
+          "Le proposte mostrate non includono PRODOTTO_B",
+          "Non sono visualizzati prodotti non abilitati al ruolo OSP"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La story richiede che l'operatore visualizzi solo prodotti abilitati; la validazione si basa sull'elenco mostrato dal front-end e presuppone che il ruolo sia correttamente associato al profilo."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC02",
+        "title": "E2E multi-profilo: front-end commerciale non visualizza prodotti non abilitati per OSP/OFE/consulente sala",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale disponibile e raggiungibile",
+          "Integrazione attiva tra front-end commerciale e Motore di Offerte",
+          "Disponibili tre utenti operatore distinti: OSP, OFE, consulente sala",
+          "Matrice prodotti-vs-ruoli valorizzata con prodotti distinti per ciascun ruolo"
+        ],
+        "test_data": [
+          "Credenziali operatore OSP: op_osp01 / Password valida",
+          "Credenziali operatore OFE: op_ofe01 / Password valida",
+          "Credenziali operatore consulente sala: op_cs01 / Password valida",
+          "Matrice esempio: PRODOTTO_A solo OSP; PRODOTTO_D solo OFE; PRODOTTO_E solo consulente sala"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con l'utenza OSP",
+          "Aprire il flusso di proposta offerte e visualizzare le proposte",
+          "Registrare l'elenco prodotti mostrato per OSP",
+          "Effettuare logout",
+          "Accedere al front-end commerciale con l'utenza OFE",
+          "Aprire il flusso di proposta offerte e visualizzare le proposte",
+          "Registrare l'elenco prodotti mostrato per OFE",
+          "Effettuare logout",
+          "Accedere al front-end commerciale con l'utenza consulente sala",
+          "Aprire il flusso di proposta offerte e visualizzare le proposte",
+          "Registrare l'elenco prodotti mostrato per consulente sala"
+        ],
+        "expected_results": [
+          "Per OSP non sono visualizzati prodotti non abilitati a OSP (es. PRODOTTO_D, PRODOTTO_E)",
+          "Per OFE non sono visualizzati prodotti non abilitati a OFE (es. PRODOTTO_A, PRODOTTO_E)",
+          "Per consulente sala non sono visualizzati prodotti non abilitati a consulente sala (es. PRODOTTO_A, PRODOTTO_D)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Test E2E lato canale: valida l'assenza di prodotti non abilitati in visualizzazione per profili differenti."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC03",
+        "title": "Profilo operatore senza ruolo o con ruolo non valido: il front-end non mostra proposte non autorizzate e segnala errore",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale disponibile e raggiungibile",
+          "Integrazione attiva tra front-end commerciale e Motore di Offerte",
+          "Esiste un utente operatore con ruolo mancante oppure con ruolo non valido (es. 'XYZ')"
+        ],
+        "test_data": [
+          "Credenziali operatore senza ruolo: op_norole01 / Password valida (oppure ruolo=XYZ)",
+          "Messaggi/gestione errori front-end configurati secondo standard di progetto"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con l'utenza operatore senza ruolo (o con ruolo non valido)",
+          "Aprire il flusso di proposta offerte",
+          "Richiedere la generazione/visualizzazione delle proposte"
+        ],
+        "expected_results": [
+          "Il front-end non visualizza alcun prodotto proposto (lista vuota) oppure blocca la visualizzazione delle proposte",
+          "Il front-end mostra un messaggio di errore o avviso coerente con le regole del canale (es. 'Ruolo operatore non valido' o equivalente)",
+          "In nessun caso vengono visualizzati prodotti non autorizzati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il testo del messaggio non è specificato: si valida la presenza di una segnalazione d'errore e l'assenza di proposte non autorizzate."
+      },
+      {
+        "test_id": "REQ-F-027.US02.TC04",
+        "title": "Cambio utenza/ruolo durante la sessione: ricalcolo proposte in base al ruolo corrente",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Front-end commerciale disponibile e raggiungibile",
+          "Integrazione attiva tra front-end commerciale e Motore di Offerte",
+          "Disponibili due utenti operatore con ruoli diversi (es. OSP e OFE)",
+          "Matrice valorizzata con almeno un prodotto abilitato solo per OSP e uno abilitato solo per OFE"
+        ],
+        "test_data": [
+          "Credenziali OSP: op_osp01 / Password valida",
+          "Credenziali OFE: op_ofe01 / Password valida",
+          "Matrice esempio: PRODOTTO_A solo OSP; PRODOTTO_D solo OFE"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale con l'utenza OSP",
+          "Aprire il flusso di proposta offerte e visualizzare le proposte",
+          "Verificare che PRODOTTO_A sia presente e PRODOTTO_D assente",
+          "Effettuare logout",
+          "Accedere al front-end commerciale con l'utenza OFE",
+          "Aprire il flusso di proposta offerte e visualizzare le proposte"
+        ],
+        "expected_results": [
+          "Dopo l'accesso come OFE, le proposte sono ricalcolate e non contengono prodotti non abilitati a OFE",
+          "Nel profilo OFE, PRODOTTO_D è presente e PRODOTTO_A è assente"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La story cita 'cambio ruolo/utenza durante la sessione' senza dettagliare meccanismo (switch ruolo vs logout/login): il test usa logout/login come scenario minimo ripetibile."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-027.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-027.US03.TC01",
+        "title": "Dashboard: utente Compliance autorizzato può accedere e generare report verificabile della matrice",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e raggiungibile",
+          "Esiste un utente con ruolo/permessi Compliance autorizzato alla consultazione audit",
+          "Matrice prodotti-vs-ruoli presente e popolata per OSP, OFE, consulente sala"
+        ],
+        "test_data": [
+          "Credenziali Compliance: comp01 / Password valida",
+          "Matrice contiene almeno 2 prodotti con abilitazioni differenziate tra ruoli"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utenza Compliance autorizzata",
+          "Navigare alla sezione di consultazione matrice prodotti-vs-ruoli",
+          "Richiedere la generazione/visualizzazione del report della matrice"
+        ],
+        "expected_results": [
+          "La dashboard consente l'accesso alla funzionalità di report matrice per l'utente Compliance",
+          "Il report mostrato è consultabile e contiene l'elenco prodotti",
+          "Per ciascun prodotto il report riporta lo stato di abilitazione per i ruoli OSP, OFE e consulente sala (abilitato/non abilitato o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione minima resa testabile: il report include elenco prodotti e indicazione abilitato/non abilitato per ciascun ruolo."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC02",
+        "title": "Export report matrice: file esportato contiene associazione prodotti-vs-ruoli completa per audit",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e raggiungibile",
+          "Esiste un utente con ruolo/permessi Compliance autorizzato all'export",
+          "Matrice prodotti-vs-ruoli presente e popolata"
+        ],
+        "test_data": [
+          "Credenziali Compliance: comp01 / Password valida",
+          "Matrice esempio contiene: PRODOTTO_A (OSP=SI, OFE=NO, CS=NO), PRODOTTO_D (OSP=NO, OFE=SI, CS=NO)"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utenza Compliance autorizzata",
+          "Navigare alla sezione report matrice",
+          "Eseguire l'azione di export del report",
+          "Scaricare il file esportato",
+          "Aprire il file esportato"
+        ],
+        "expected_results": [
+          "Il download del file esportato viene completato con successo",
+          "Il file contiene l'associazione prodotti-vs-ruoli (almeno: identificativo/nome prodotto e indicatori per OSP, OFE, consulente sala)",
+          "I valori nel file sono coerenti con la matrice presente a sistema (es. PRODOTTO_A: OSP=SI, OFE=NO, CS=NO)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Formato file non specificato (CSV/XLSX/PDF): il test valida contenuto e coerenza, non il formato."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC03",
+        "title": "Utente non autorizzato: accesso/visibilità funzionalità audit matrice negati",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e raggiungibile",
+          "Esiste un utente privo di permessi Compliance (es. ruolo Operatore o altro ruolo non audit)"
+        ],
+        "test_data": [
+          "Credenziali utente non Compliance: user_std01 / Password valida"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utenza non Compliance",
+          "Tentare di accedere alla sezione di consultazione/esportazione matrice (da menu o via URL diretto)",
+          "Se la sezione è accessibile, tentare l'azione di export"
+        ],
+        "expected_results": [
+          "La sezione audit matrice non è visibile oppure l'accesso è negato con errore di autorizzazione",
+          "L'azione di export non è eseguibile (pulsante disabilitato o risposta di autorizzazione negata)",
+          "Non viene generato né scaricato alcun file di report"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il modello autorizzativo di dettaglio non è fornito: il test verifica l'effetto (negazione accesso/export) per un utente non Compliance."
+      },
+      {
+        "test_id": "REQ-F-027.US03.TC04",
+        "title": "Errore di generazione report: la dashboard segnala errore e non produce output parziali",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Dashboard disponibile e raggiungibile",
+          "Esiste un utente Compliance autorizzato",
+          "Simulare errore di generazione report (es. servizio report down/errore 5xx/eccezione applicativa)"
+        ],
+        "test_data": [
+          "Credenziali Compliance: comp01 / Password valida"
+        ],
+        "steps": [
+          "Accedere alla dashboard con l'utenza Compliance autorizzata",
+          "Navigare alla sezione report matrice",
+          "Richiedere la generazione del report oppure l'export del report durante l'errore simulato"
+        ],
+        "expected_results": [
+          "La dashboard mostra una segnalazione di errore (messaggio e/o codice) per report non generabile",
+          "Non viene mostrato un report parziale/non verificabile",
+          "Se è stato richiesto l'export, non viene scaricato alcun file oppure il download fallisce in modo esplicito (nessun file incompleto valido per audit)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica messaggi/codici: si valida la presenza di una segnalazione e l'assenza di output parziali."
+      }
+    ]
+  }
+]

@@ -1,0 +1,125 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-UI-010",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 78,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-010.TC01",
+        "detail": "Introduzione di dettagli non presenti nel requisito: feature flag, URL specifico e credenziali, concetto di 'campi obbligatori' e persistenza/ricerca in elenco (funzionalità di dettaglio della dashboard non specificate)."
+      },
+      {
+        "test_id": "REQ-UI-010.TC02",
+        "detail": "Assunzione di evidenze tecniche specifiche (artifact repository/manifest/endpoint /version, analisi Network) e concessione esplicita di CDN come parte del deploy: modalità di verifica e componenti non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.TC03",
+        "detail": "Introduzione di ruoli non menzionati ('Viewer/Operatore') e requisito implicito di negazione accesso per non-Marketing: l'AC parla di possibilità per Marketing, non di restrizioni per altri."
+      },
+      {
+        "test_id": "REQ-UI-010.TC05",
+        "detail": "Aggiunta di requisiti di gestione sessione (redirect a login, incognito) e 'branding/layout coerenti' non presenti nel requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-010.TC04",
+          "REQ-UI-010.TC02"
+        ],
+        "detail": "Entrambi verificano l'assenza di dipendenza/uso di sistemi esterni (redirect/chiamate verso esterni) rispetto ad AC-3, con approccio simile di osservazione del comportamento durante operazioni di configurazione."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 45,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-UI-010.US01.TC01",
+        "detail": "Dettagli non tracciabili: login con username/password e indicatore di sessione (nome utente/logout). Il requisito richiede autenticazione e accesso, ma non specifica modalità o UI di sessione."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC03",
+        "detail": "Scenario di accesso negato per non-Marketing: restrizione per altri ruoli non esplicitata dal requisito (che parla solo di abilitare Marketing)."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC04",
+        "detail": "Autenticazione fallita per credenziali errate: caso negativo non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC05",
+        "detail": "Sessione scaduta/TTL e capacità di forzare scadenza: gestione sessione non menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC06",
+        "detail": "Introduzione di 'whitelist domini consentiti' e vincoli tecnici sui domini: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US01.TC07",
+        "detail": "Indisponibilità dashboard e messaggio di errore: requisiti di availability/errore non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC01",
+        "detail": "Dettagli di pipeline/procedura di deploy, build ID specifico e concetto di 'nessun deploy separato' come criterio: il requisito dice deployata insieme, ma non definisce pipeline/build-id o criteri operativi di rilascio."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC02",
+        "detail": "Aspettativa di fallimento build/deploy o gate di qualità e 'rilascio non conforme': controlli di pipeline non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC04",
+        "detail": "Scenario costruito con URL esterno di esempio e possibilità di configurare un redirect tramite 'legacy link': non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-UI-010.US02.TC05",
+        "detail": "Correlazione di indisponibilità Motore->dashboard e maintenance mode/ingress: non presente nel requisito (che parla di collocazione/deploy, non di comportamento in fault)."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-UI-010.US01.TC02",
+          "REQ-UI-010.US02.TC03"
+        ],
+        "detail": "Entrambi coprono l'uso delle funzionalità di configurazione da parte di Marketing (AC-2) e, nel secondo, anche l'assenza di sistema esterno (AC-3) durante creazione/modifica."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-010.US01.TC06",
+          "REQ-UI-010.US02.TC03",
+          "REQ-UI-010.US02.TC04"
+        ],
+        "detail": "Tripla copertura molto simile di AC-3 (assenza di redirect/sistemi esterni) con monitoraggio rete e verifiche di redirect."
+      },
+      {
+        "test_ids": [
+          "REQ-UI-010.US01.TC07",
+          "REQ-UI-010.US02.TC05"
+        ],
+        "detail": "Entrambi testano indisponibilità/errore di accesso alla dashboard in condizioni di Motore non disponibile: tema non richiesto e duplicato."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3), ma il set direct introduce meno informazioni non tracciabili (4 elementi aggiunti) e presenta una sola ridondanza, ottenendo un punteggio superiore (78 vs 45). Il set indirect_persona aggiunge molti scenari e vincoli non richiesti dal requisito (gestione sessione/TTL, failure login, availability, pipeline gate/controlli di rilascio, whitelist domini), aumentando significativamente le 'added_info' e le ridondanze."
+  }
+}

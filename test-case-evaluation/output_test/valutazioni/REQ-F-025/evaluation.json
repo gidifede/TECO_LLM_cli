@@ -1,0 +1,140 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-025",
+  "direct": {
+    "tc_count": 8,
+    "coherence_score": 65,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-025.TC04",
+        "detail": "Assume campi minimi specifici dell'audit trail (parametro, old/new value, utente, timestamp) non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.TC05",
+        "detail": "Assume una specifica modalità/forma di errore (messaggio o HTTP 403) non definita dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.TC06",
+        "detail": "Introduce il canale 'app' come canale specifico; il requisito richiede canali differenti ma non nomina 'app' esplicitamente."
+      },
+      {
+        "test_id": "REQ-F-025.TC07",
+        "detail": "Introduce vincolo di dominio/semantica del parametro '0 giorni = nessun blocco', non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.TC08",
+        "detail": "Introduce comportamento in caso di indisponibilità del meccanismo di configurazione (fallback/errore controllato, logging, ultimo valore noto/default), non richiesto né descritto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.TC01",
+        "detail": "Assume esplicitamente l'esistenza e consultabilità di uno 'storico presentazioni/proposte' e la modalità 'forzare/registrare una presentazione' come meccanismo di test; lo storico è implicito ma non specificato come componente/feature consultabile."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione: \"Tale parametro deve essere modificabile da team autorizzati tramite i meccanismi di configurazione previsti\"",
+        "detail": "I test coprono utenti autorizzati/non autorizzati, ma non verificano esplicitamente che la modifica avvenga tramite i 'meccanismi di configurazione previsti' (non identificati nel requisito). La copertura resta parziale perché i TC assumono UI/console/API."
+      },
+      {
+        "source": "AC-4: \"Automated tests dimostrano...\"",
+        "detail": "I TC (es. TC06) dichiarano 'automatizzabile' ma non verificano esplicitamente l'esecuzione/artefatti di un test automatizzato (evidenza di pipeline/report)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-025.TC01",
+          "REQ-F-025.TC06"
+        ],
+        "detail": "Entrambi verificano il blocco prima dell'intervallo; TC06 aggiunge il cross-canale, ma la logica base è molto simile (setup storico + generazione + assert assenza prodotto)."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 15,
+    "coherence_score": 46,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-025.US01.TC02",
+        "detail": "Introduce un canale specifico 'fisico (UP)' non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC04",
+        "detail": "Introduce il concetto operativo 'considera la proposta come presentata' e la registrazione evento durante lo scenario; il requisito non dettaglia eventi/trigger di registrazione."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC06",
+        "detail": "Assume comportamento 'fail-safe' in caso di errore lettura storico (blocco riproposizione) e logging/alert, non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.US02.TC02",
+        "detail": "Introduce una regola non richiesta: 'più presentazioni nello stesso giorno: solo la prima ammessa se intervallo > 0'."
+      },
+      {
+        "test_id": "REQ-F-025.US02.TC04",
+        "detail": "Introduce dettagli di pipeline CI e richiesta di artefatti/report come expected result; il requisito chiede 'Automated tests dimostrano' ma non impone CI/artefatti specifici."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC01",
+        "detail": "Introduce un canale/strumento specifico 'dashboard' e funzionalità di ricerca/selezione prodotto, non descritte dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC04",
+        "detail": "Introduce regole di validazione input (valori negativi o non numerici) e assenza audit per salvataggi falliti, non definite dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.US03.TC06",
+        "detail": "Assume comportamento 'fail-safe' su errore scrittura audit trail (blocco salvataggio), non definito dal requisito."
+      },
+      {
+        "test_id": "REQ-F-025.US01.TC01",
+        "detail": "Expected result 'Le altre proposte non includono duplicati di P-1001' introduce un requisito di deduplica generale non presente nel requisito (che parla solo di riproposizione dello stesso prodotto nel tempo)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "AC-1: \"parametro configurabile... per prodotto\" + Descrizione: \"possibile impostare un intervallo minimo\"",
+        "detail": "Molti TC assumono che il parametro sia configurato per singolo prodotto (P-xxxx), ma non c'è un test che verifichi esplicitamente l'esistenza del parametro come entità configurabile (es. lettura/visibilità del parametro) senza passare da scenari di generazione o da una UI inventata."
+      },
+      {
+        "source": "Descrizione: \"deve essere applicato coerentemente su tutte le presentazioni generate dal Motore\"",
+        "detail": "I test enfatizzano cross-canale, ma non coprono esplicitamente la coerenza 'su tutte le presentazioni' nello stesso canale/processo (es. più run/contesti) senza introdurre regole extra (come 'stesso giorno')."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-025.US01.TC04",
+          "REQ-F-025.US02.TC03",
+          "REQ-F-025.US02.TC04"
+        ],
+        "detail": "Tutti verificano sostanzialmente la coerenza cross-canale (digitale vs UP) con blocco entro intervallo; cambiano solo livello di dettaglio/contesto."
+      },
+      {
+        "test_ids": [
+          "REQ-F-025.US03.TC01",
+          "REQ-F-025.US03.TC05"
+        ],
+        "detail": "Entrambi includono modifica parametro da utente autorizzato e verifica applicazione; TC05 estende ai canali ma ripete ampie parti dello scenario di modifica."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (4/4), ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 9) e meno ridondanze (1 vs 2). Inoltre nel set indirect_persona compaiono più regole/assunzioni non richieste (es. canale 'UP', deduplica altre proposte, regola 'stesso giorno', fail-safe su storico/audit), abbassando maggiormente la coerenza complessiva. Per questo il punteggio del direct risulta più alto (65 vs 46)."
+  }
+}

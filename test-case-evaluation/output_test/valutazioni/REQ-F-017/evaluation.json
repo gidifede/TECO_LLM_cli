@@ -1,0 +1,124 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-017",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 90,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 4,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-017.TC01",
+        "detail": "Introduce canali/strumenti specifici di repository documentale (Confluence/SharePoint/Jira) non citati nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.TC05",
+        "detail": "Introduce l'apertura di una non conformità/defect e una classificazione 'missing documentation' non prevista dal requisito."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-017.TC03",
+          "REQ-F-017.TC06"
+        ],
+        "detail": "Entrambi verificano la presenza/qualità della finestra temporale di validità nella persistenza in Loyalty (AC-3); TC06 è un approfondimento/edge del medesimo controllo documentale."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 19,
+    "coherence_score": 28,
+    "ac_coverage": {
+      "total_ac": 4,
+      "covered_ac": 3,
+      "uncovered_ac": [
+        "AC-4"
+      ]
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-017.US01.TC01",
+        "detail": "Introduce esplicitamente il canale 'Web' e condizioni di autenticazione ('utente non autenticato o autenticato') non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC02",
+        "detail": "Introduce esplicitamente il canale 'App' non citato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC01",
+        "detail": "Introduce un 'Motore di Offerte' come componente e relative marcature ('bundle valido', 'in target') non nominato nel requisito (concetti presenti, ma non l'implementazione/componente)."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC04",
+        "detail": "Assume concetti di 'carrello' e comportamento 'include il secondo prodotto B nel percorso' come implementazione; il requisito parla di interazioni possibili ma non definisce carrello/semantica operativa."
+      },
+      {
+        "test_id": "REQ-F-017.US01.TC09",
+        "detail": "Introduce dettagli tecnici (HTTP 500/timeout, endpoint pop-up) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC01",
+        "detail": "Introduce eventi e contratti di integrazione ('bundle_rifiutato', 'acquisto_A_perfezionato', event bus/API) non definiti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC02",
+        "detail": "Introduce metadati tecnici di validità (validFrom/validTo/TTL) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US03.TC03",
+        "detail": "Introduce requisiti di 'time travel' o configurazione finestra breve (es. 5 minuti) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC05",
+        "detail": "Assume comportamento di refresh/caching (refresh = nuova valutazione) non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-017.US02.TC01",
+        "detail": "Assume un backend/servizio Loyalty e marcature 'sottoscrivibile' fornite dal backend come fonte di verità; il requisito non descrive architettura o sorgente dati."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-4",
+        "detail": "AC-4 richiede che 'la sottoscrizione del secondo prodotto segue lo stesso funnel del primo prodotto'. I TC tracciano AC-4 ma verificano coerenza di macro-step tra A e B, non che B segua lo stesso funnel del primo prodotto nel senso richiesto dall'AC (funnel del primo prodotto come riferimento unico). Inoltre manca un controllo esplicito dell'accorpamento fasi (dati/questionari/prese visioni/firme) richiamato nella descrizione come conseguenza dell'accettazione bundle."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-017.US01.TC01",
+          "REQ-F-017.US01.TC02"
+        ],
+        "detail": "Stesso scenario 'pop-up pre-checkout' duplicato su canali diversi (Web vs App) senza che il requisito richieda copertura per canale."
+      },
+      {
+        "test_ids": [
+          "REQ-F-017.US01.TC05",
+          "REQ-F-017.US01.TC06"
+        ],
+        "detail": "Scenario molto simile: chiusura vs posticipo con stesso esito atteso (non bloccare acquisto A)."
+      },
+      {
+        "test_ids": [
+          "REQ-F-017.US02.TC06",
+          "REQ-F-017.US03.TC05",
+          "REQ-F-017.US01.TC10"
+        ],
+        "detail": "Tre test documentali sovrapposti che ricontrollano porzioni simili della mappatura (AC-1/AC-2/AC-3) con expected results quasi identici."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set direct copre tutti gli AC (4/4) con poche informazioni aggiunte (2) e una sola ridondanza, mantenendosi aderente alla natura documentale degli AC. Il set indirect_persona introduce molte assunzioni non tracciabili (canali App/Web, Motore di Offerte, dettagli tecnici di integrazione/HTTP/TTL) e presenta anche una lacuna sulla copertura effettiva di AC-4 secondo quanto richiesto, oltre a diverse ridondanze; per questo risulta meno coerente col requisito."
+  }
+}

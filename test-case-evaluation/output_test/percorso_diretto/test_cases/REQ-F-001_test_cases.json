@@ -1,0 +1,218 @@
+[
+  {
+    "test_id": "REQ-F-001.TC01",
+    "title": "Verifica attivazione funzionalità NBO e presenza documentazione dell'obiettivo primario",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile (QA/UAT) con build che include la logica NBO",
+      "Accesso a documentazione di rilascio/configurazione (es. manuale, runbook, pagina di configurazione, README, ticket di rilascio) relativo alla NBO",
+      "Accesso con ruolo che consenta la consultazione della configurazione NBO (se presente UI o API di configurazione)"
+    ],
+    "test_data": [
+      "Riferimento documento: 'NBO - Obiettivo e comportamento' (o equivalente) associato alla versione in test",
+      "Chiave/feature flag (se esistente): NBO_ENABLED=true"
+    ],
+    "steps": [
+      "Recuperare la documentazione di sistema relativa alla logica NBO per la versione in test",
+      "Verificare nella documentazione che l'obiettivo primario dichiarato sia 'ottimizzare cross-selling riducendo offerte irrilevanti' (o formulazione equivalente non ambigua)",
+      "Accedere al punto di configurazione (UI o API) dove è visibile lo stato di attivazione della NBO, se disponibile",
+      "Verificare che la NBO risulti attiva nell'ambiente di test (es. flag ON, configurazione abilitata, modulo attivo)",
+      "Eseguire una chiamata/operazione che utilizzi il motore NBO (endpoint o flusso applicativo previsto) per confermare che la logica sia effettivamente in esecuzione"
+    ],
+    "expected_results": [
+      "La documentazione della versione in test descrive esplicitamente la NBO e ne indica l'obiettivo primario di ottimizzazione cross-selling con riduzione di offerte irrilevanti",
+      "Lo stato di attivazione della NBO risulta 'attivo/abilitato' nell'ambiente di test (evidenza in UI/API/config)",
+      "L'operazione che utilizza il motore NBO restituisce un output (non errore) coerente con l'uso della NBO (es. presenza di metadati/identificativo motore/versione se previsto dal sistema)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-1 è parzialmente dichiarativo: per renderlo verificabile si assume l'esistenza di evidenze consultabili (documentazione di rilascio/configurazione e stato di attivazione tramite UI o API). I canali non sono specificati nel requisito: 'web' è inferito come canale di consultazione/configurazione; adattare se l'accesso avviene via console o solo API."
+  },
+  {
+    "test_id": "REQ-F-001.TC02",
+    "title": "Output NBO: filtraggio offerte rilevanti a partire da raccomandazioni esterne e regole configurate",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile tramite interfaccia prevista (API/servizio interno)",
+      "Integrazione disponibile con sorgente di raccomandazioni esterne (stub o ambiente reale) secondo i criteri di integrazione",
+      "Regole/configurazioni NBO impostabili tramite configuratore (o configurazione equivalente) e applicate dal motore",
+      "Esistono almeno 3 offerte nel catalogo/contesto NBO con identificativi noti (OFFER_A, OFFER_B, OFFER_C)"
+    ],
+    "test_data": [
+      "Cliente: customer_id=10004567",
+      "Input raccomandazioni esterne (ordinato): [OFFER_A, OFFER_B, OFFER_C]",
+      "Regola configurata R1: 'Escludi OFFER_B per customer_id=10004567' (o regola equivalente applicabile e verificabile)",
+      "Regola configurata R2: 'Consenti solo offerte del set {OFFER_A, OFFER_C}' (se supportato dal configuratore; alternativa: regola di ammissibilità equivalente)"
+    ],
+    "steps": [
+      "Configurare nel configuratore NBO la regola R1 per il cliente customer_id=10004567",
+      "Configurare nel configuratore NBO la regola R2 (o regola equivalente di ammissibilità) per il contesto di test",
+      "Inviare al motore NBO una richiesta per customer_id=10004567 includendo l'input di raccomandazioni esterne [OFFER_A, OFFER_B, OFFER_C]",
+      "Acquisire l'output del motore NBO (lista offerte proposte)",
+      "Verificare la presenza/assenza delle offerte attese rispetto alle regole configurate"
+    ],
+    "expected_results": [
+      "Il motore NBO restituisce una lista di offerte in output senza errori di integrazione",
+      "OFFER_B non è presente nell'output per customer_id=10004567 in applicazione della regola R1",
+      "L'output contiene esclusivamente offerte ammissibili secondo la regola R2 (es. solo OFFER_A e/o OFFER_C)",
+      "L'output è tracciabile rispetto all'input (le offerte proposte provengono dall'input esterno oppure risultano filtrate da esso, senza introdurre offerte non previste dall'integrazione per questo test)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenze esterne irrisolte: 'criteri di integrazione e configuratore' non sono forniti; il test assume che sia possibile (1) configurare regole applicabili e (2) inviare un input di raccomandazioni esterne al motore e leggere l'output. Se il motore può anche arricchire l'output con offerte non presenti nell'input, rimuovere/adeguare l'ultima expected result."
+  },
+  {
+    "test_id": "REQ-F-001.TC03",
+    "title": "Scenario negativo: input raccomandazioni esterne mancante o vuoto",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile tramite interfaccia prevista (API/servizio interno)",
+      "Gestione errori attiva e logging consultabile"
+    ],
+    "test_data": [
+      "Cliente: customer_id=10004567",
+      "Caso 1: payload senza campo 'raccomandazioni_esterne' (o equivalente)",
+      "Caso 2: raccomandazioni_esterne=[] (lista vuota)"
+    ],
+    "steps": [
+      "Inviare al motore NBO una richiesta per customer_id=10004567 omettendo il campo delle raccomandazioni esterne",
+      "Acquisire la risposta del motore NBO",
+      "Inviare al motore NBO una richiesta per customer_id=10004567 con raccomandazioni esterne valorizzate a lista vuota",
+      "Acquisire la risposta del motore NBO",
+      "Verificare comportamento e messaggistica di errore/risposta nei due casi"
+    ],
+    "expected_results": [
+      "Nel caso di campo mancante, il motore NBO restituisce un errore di validazione (es. HTTP 400 o codice errore equivalente) con messaggio che indica il dato obbligatorio mancante, oppure una risposta deterministica documentata (es. output vuoto) se previsto",
+      "Nel caso di lista vuota, il motore NBO restituisce una risposta deterministica: output vuoto senza offerte oppure errore di validazione, in coerenza con la specifica tecnica/contratto API",
+      "In entrambi i casi non vengono proposte offerte non giustificate dall'input (nessuna offerta 'a caso')",
+      "Gli errori (se presenti) sono tracciati nei log con correlation id o identificativo richiesta (se previsto dallo standard di logging del sistema)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il contratto di input né la gestione del caso 'input mancante/vuoto'; il test verifica che il comportamento sia deterministico e non produca proposte irrilevanti. Adeguare codici/struttura errore alla specifica API reale."
+  },
+  {
+    "test_id": "REQ-F-001.TC04",
+    "title": "Scenario negativo: servizio di raccomandazioni esterne non disponibile (timeout/errore)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile",
+      "La sorgente di raccomandazioni esterne è chiamata dal motore NBO (direttamente o tramite adapter) nel flusso in test",
+      "Possibilità di simulare indisponibilità del servizio esterno (stub che risponde 503 o induce timeout)",
+      "Logging e metriche consultabili"
+    ],
+    "test_data": [
+      "Cliente: customer_id=10007890",
+      "Simulazione errore: servizio esterno risponde HTTP 503",
+      "Simulazione timeout: nessuna risposta entro 5s (o soglia configurata in ambiente)"
+    ],
+    "steps": [
+      "Configurare lo stub/ambiente del servizio esterno per rispondere con HTTP 503",
+      "Inviare una richiesta NBO per customer_id=10007890 nel flusso che richiede le raccomandazioni esterne",
+      "Acquisire la risposta del motore NBO",
+      "Configurare lo stub/ambiente del servizio esterno per indurre timeout",
+      "Inviare una nuova richiesta NBO per customer_id=10007890",
+      "Acquisire la risposta del motore NBO",
+      "Verificare gestione errore e assenza di output non affidabile"
+    ],
+    "expected_results": [
+      "In caso di 503 dal servizio esterno, il motore NBO restituisce un errore gestito (es. 502/503 verso il chiamante o codice applicativo equivalente) oppure una risposta deterministica di fallback esplicitamente prevista (es. nessuna offerta)",
+      "In caso di timeout, il motore NBO termina la richiesta entro un tempo massimo configurato e restituisce un errore gestito o fallback deterministico",
+      "In nessuno dei due casi il motore propone offerte non derivanti da input/regole disponibili per la richiesta",
+      "I log riportano chiaramente la causa (503/timeout) e l'eventuale attivazione del fallback"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-2 rimanda a criteri di integrazione non forniti; il test assume che il motore dipenda da un servizio esterno e che siano definiti timeout e gestione errori. Se l'input esterno è sempre fornito dal chiamante e non recuperato dal motore, adattare il test per simulare errore lato chiamante/adapter."
+  },
+  {
+    "test_id": "REQ-F-001.TC05",
+    "title": "Verifica funzionale su scenario utente: assenza di offerte manifestamente non pertinenti (scenario 1)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile",
+      "Sono disponibili 'scenari di prova forniti dall'utente' con definizione di: profilo cliente, input raccomandazioni esterne attese, e lista di offerte considerate manifestamente non pertinenti per lo scenario",
+      "Regole configurate coerenti con lo scenario (come da configuratore o configurazione equivalente)"
+    ],
+    "test_data": [
+      "Scenario utente S1 (fornito dall'utente): customer_id=20000001",
+      "Input raccomandazioni esterne per S1: [OFFER_X, OFFER_Y, OFFER_Z] (come da scenario)",
+      "Lista offerte manifestamente non pertinenti per S1: [OFFER_Z] (come da scenario)",
+      "Regole/configurazioni applicabili a S1: come da scenario utente"
+    ],
+    "steps": [
+      "Caricare/configurare i dati cliente e le regole previste dallo scenario utente S1",
+      "Inviare al motore NBO la richiesta per customer_id=20000001 con l'input raccomandazioni esterne definito nello scenario S1",
+      "Acquisire la lista di offerte proposta in output",
+      "Confrontare l'output con la lista di offerte manifestamente non pertinenti definita nello scenario S1"
+    ],
+    "expected_results": [
+      "Il motore NBO restituisce un output di offerte per lo scenario S1 senza errori",
+      "Nessuna delle offerte indicate come 'manifestamente non pertinenti' nello scenario S1 (es. OFFER_Z) è presente nell'output",
+      "L'output risulta filtrato/coerente rispetto a input e regole configurate per lo scenario S1 (evidenza: assenza delle offerte non pertinenti e presenza di almeno una offerta ritenuta ammissibile se prevista dallo scenario)"
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "AC-3 dipende da 'scenari di prova forniti dall'utente' non inclusi nel requisito: il test usa segnaposti (S1, OFFER_X/Y/Z) che devono essere sostituiti con scenari reali e con una definizione oggettiva di 'manifestamente non pertinente' fornita dall'utente."
+  },
+  {
+    "test_id": "REQ-F-001.TC06",
+    "title": "Edge case: tutte le offerte in input risultano non pertinenti secondo regole/scenario (output vuoto)",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore NBO deployato e raggiungibile",
+      "Regole/configurazioni attive che rendano non ammissibili tutte le offerte dell'input per un cliente specifico (configuratore o configurazione equivalente)"
+    ],
+    "test_data": [
+      "Cliente: customer_id=20000002",
+      "Input raccomandazioni esterne: [OFFER_M, OFFER_N]",
+      "Regola: 'Escludi OFFER_M per customer_id=20000002'",
+      "Regola: 'Escludi OFFER_N per customer_id=20000002'"
+    ],
+    "steps": [
+      "Configurare le regole di esclusione per customer_id=20000002 in modo da rendere non ammissibili OFFER_M e OFFER_N",
+      "Inviare al motore NBO la richiesta per customer_id=20000002 con input [OFFER_M, OFFER_N]",
+      "Acquisire l'output del motore NBO"
+    ],
+    "expected_results": [
+      "Il motore NBO risponde senza errori tecnici",
+      "L'output non contiene OFFER_M né OFFER_N",
+      "L'output è una lista vuota (nessuna offerta proposta) oppure una risposta deterministica equivalente prevista dal contratto (es. campo 'offers' vuoto)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il comportamento quando non esistono offerte rilevanti; questo test verifica che il sistema non forzi offerte irrilevanti e produca un output vuoto/deterministico."
+  }
+]

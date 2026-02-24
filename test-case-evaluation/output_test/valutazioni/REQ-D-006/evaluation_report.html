@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-D-006</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-D-006</h1>
+  <div class="subtitle">Persistenza dati offerta e stato della proposta (presentata / aggiunta / ignorata) con scadenza</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:43</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-D-006</div>
+  <div class="req-field"><strong>Titolo:</strong> Persistenza dati offerta e stato della proposta (presentata / aggiunta / ignorata) con scadenza</div>
+  <div class="req-field"><strong>Categoria:</strong> DATI</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il sistema deve registrare e mantenere lo stato delle proposte per ciascun cliente: la registrazione deve includere l&#x27;identificativo della proposta, il prodotto suggerito, l&#x27;immagine di riferimento, il prezzo scontato, il valore dello sconto suggerito, lo stato corrente della proposta (es. presentata, aggiunta al carrello, accettata/completata, ignorata) e la data/ora di scadenza della promozione (es. 10 giorni dalla vendita del primo prodotto nel caso esposto dall&#x27;utente). Questi dati devono essere disponibili per controlli lato canale.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Per ogni proposta generata esiste un record persistente contenente: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato e data di scadenza.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>I cambiamenti di stato (es. da &#x27;presentata&#x27; a &#x27;aggiunta al carrello&#x27;) sono registrati e riproducibili per audit.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>I record vengono espirati o resi non disponibili dopo la data di scadenza e questo comportamento è verificato nei test.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">67</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">52</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3). Tuttavia, il set direct introduce meno informazioni non tracciabili (10 added_info vs 10 ma con minori deviazioni funzionali: nel persona-based compaiono regole nuove su autorizzazione, tracciamento rifiuti, idempotenza e gestione guasti DB) e ha meno lacune rispetto al requisito (1 missing_info vs 2). Pur avendo una ridondanza sui cambi stato, il direct ottiene un punteggio di coerenza superiore (67 vs 52).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">67</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-006.TC01</td><td>Introduce canali specifici &#x27;web&#x27; e &#x27;app&#x27; nei channels; il requisito parla genericamente di &#x27;controlli lato canale&#x27; senza elencare canali.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC01</td><td>Assume un meccanismo di generazione proposta &#x27;via API/servizio interno&#x27; e un canale di lettura &#x27;API/query DB/servizio interno&#x27; non specificati dal requisito (il requisito richiede persistenza e disponibilità, non il mezzo tecnico).</td></tr>
+<tr><td class='mono'>REQ-D-006.TC02</td><td>Assume l&#x27;esistenza di un &#x27;endpoint/servizio di canale&#x27; per recupero dati; il requisito non definisce un endpoint specifico.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC03</td><td>Specifica campi minimi dell&#x27;evento audit (stato precedente, stato nuovo, timestamp). Il requisito richiede riproducibilità per audit ma non definisce il contenuto minimo degli eventi.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC04</td><td>Introduce dettagli di checkout e dati di pagamento (carta, CVV) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC05</td><td>Assume un attore/azione di canale per &#x27;marcare ignorata&#x27; via UI/API; il requisito non descrive attori o azioni di UI.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC06</td><td>Introduce codici/semantiche di risposta (es. 404) o flag &#x27;scaduta&#x27; come opzioni di implementazione: non specificati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC07</td><td>Richiede capacità di &#x27;time travel/clock control&#x27; in ambiente di test: vincolo tecnico non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC08</td><td>Impone una regola di validazione/rigetto in creazione per campo mancante (id cliente) e un errore di validazione; il requisito elenca i campi del record ma non esplicita comportamento di validazione o gestione errori.</td></tr>
+<tr><td class='mono'>REQ-D-006.TC09</td><td>Introduce gestione fault del &#x27;servizio audit&#x27; (timeout/down), assenza di eventi parziali e meccanismi di compensazione: non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;Questi dati devono essere disponibili per controlli lato canale.&#x27;</td><td>Non esiste un TC che verifichi esplicitamente la disponibilità lato canale dello storico/riproduzione per audit (AC-2) attraverso i &#x27;controlli lato canale&#x27;; i TC audit verificano un meccanismo di audit generico, non la sua disponibilità ai canali.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-006.TC03, REQ-D-006.TC04, REQ-D-006.TC05</td><td>Tre TC molto simili che validano lo stesso requisito (registrazione e riproducibilità dei cambi stato per audit) variando solo la coppia di stati.</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">52</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-D-006.US01.TC01</td><td>Introduce un componente/attore &#x27;Motore di Offerte&#x27; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC01</td><td>Introduce modalità tecniche di verifica (topic eventi con payload persistito) non specificate dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC02</td><td>Introduce lo stato &#x27;acquistata&#x27; (e naming &#x27;aggiunta_al_carrello&#x27;) non presente nel requisito, che cita come esempi &#x27;aggiunta al carrello&#x27; e &#x27;accettata/completata&#x27;.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC03</td><td>Impone rigetto/errore di validazione per id cliente mancante; comportamento non esplicitato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC04</td><td>Impone rigetto per scadenza mancante e collega anche AC-3 alla validazione input; il requisito richiede scadenza nel record e l&#x27;espirazione post-scadenza, non la gestione input in creazione.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC05</td><td>Richiede tracciamento/audit delle operazioni rifiutate su proposta inesistente; il requisito parla di audit dei cambiamenti di stato, non dei tentativi falliti.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC06</td><td>Introduce regola di autorizzazione/ownership (proposta non associata al cliente richiedente) e relativo tracciamento; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC08</td><td>Assume una regola: dopo scadenza l&#x27;aggiornamento stato deve essere impedito o non deve &#x27;riattivare&#x27; la proposta; il requisito richiede solo non disponibilità dei record dopo scadenza, non vincoli sugli update.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC09</td><td>Introduce idempotenza/deduplica delle transizioni duplicate; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC10</td><td>Introduce gestione guasti del datastore (DB down/timeout), assenza persistenza parziale e osservabilità errori; non presente nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione requisito: &#x27;Questi dati devono essere disponibili per controlli lato canale.&#x27;</td><td>Nessun TC verifica esplicitamente la disponibilità dei dati per &#x27;controlli lato canale&#x27; (non vengono esercitati canali/consumatori; i test parlano genericamente di meccanismi di lettura).</td></tr>
+<tr><td class='mono'>AC-1: include &#x27;stato&#x27; tra i campi del record persistente</td><td>Il set non copre esplicitamente uno scenario in cui lo stato &#x27;ignorata&#x27; (citato nella descrizione come esempio) venga persistito come stato corrente nel record; copre solo &#x27;presentata&#x27; e transizioni verso altri stati.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      <p class='empty'>Nessuna ridondanza.</p>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-D-006&quot;,
+  &quot;title&quot;: &quot;Persistenza dati offerta e stato della proposta (presentata / aggiunta / ignorata) con scadenza&quot;,
+  &quot;description&quot;: &quot;Il sistema deve registrare e mantenere lo stato delle proposte per ciascun cliente: la registrazione deve includere l&#x27;identificativo della proposta, il prodotto suggerito, l&#x27;immagine di riferimento, il prezzo scontato, il valore dello sconto suggerito, lo stato corrente della proposta (es. presentata, aggiunta al carrello, accettata/completata, ignorata) e la data/ora di scadenza della promozione (es. 10 giorni dalla vendita del primo prodotto nel caso esposto dall&#x27;utente). Questi dati devono essere disponibili per controlli lato canale.&quot;,
+  &quot;category&quot;: &quot;DATI&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Per ogni proposta generata esiste un record persistente contenente: id proposta, id cliente, id prodotto, immagine, prezzo scontato, valore sconto, stato e data di scadenza.&quot;,
+    &quot;I cambiamenti di stato (es. da &#x27;presentata&#x27; a &#x27;aggiunta al carrello&#x27;) sono registrati e riproducibili per audit.&quot;,
+    &quot;I record vengono espirati o resi non disponibili dopo la data di scadenza e questo comportamento è verificato nei test.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 9 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-006.TC01</td><td>Creazione record persistente proposta con tutti i campi obbligatori valorizzati</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-006.TC02</td><td>Disponibilità dei dati proposta per controlli lato canale prima della scadenza</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-006.TC03</td><td>Transizione di stato proposta registrata e riproducibile per audit (presentata -&gt; aggiunta al carrello)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.TC04</td><td>Transizione di stato proposta registrata e riproducibile per audit (aggiunta al carrello -&gt; accettata/completata)</td><td>E2E</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.TC05</td><td>Transizione di stato proposta registrata e riproducibile per audit (presentata -&gt; ignorata)</td><td>Functional</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.TC06</td><td>Scadenza: record non disponibile lato canale dopo la data/ora di scadenza</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-006.TC07</td><td>Edge case scadenza: proposta disponibile fino a 1 secondo prima della scadenza e non disponibile a scadenza raggiunta</td><td>Edge Case</td><td>MEDIUM</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-006.TC08</td><td>Negativo: tentativo di persistere proposta con campo obbligatorio mancante (id cliente assente)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-006.TC09</td><td>Negativo: servizio di audit/storico non disponibile durante cambio stato (registrazione audit non riuscita)</td><td>Integration</td><td>HIGH</td><td>AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 10 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-D-006.US01.TC01</td><td>Persistenza record proposta con tutti i campi obbligatori alla generazione</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC02</td><td>Registrazione storico cambi stato e riproducibilità sequenza per audit</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC03</td><td>Rifiuto persistenza proposta con campo obbligatorio mancante (id cliente)</td><td>Negative</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC04</td><td>Rifiuto persistenza proposta con campo obbligatorio mancante (data/ora scadenza)</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC05</td><td>Rifiuto aggiornamento stato per id proposta inesistente e tracciamento dell&#x27;evento</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC06</td><td>Rifiuto aggiornamento stato per proposta non associata al cliente richiedente e tracciamento</td><td>Authorization</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC07</td><td>Non disponibilità del record proposta dopo superamento della data/ora di scadenza</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC08</td><td>Impedimento aggiornamento stato di una proposta dopo scadenza</td><td>Negative</td><td>HIGH</td><td>AC-3, AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC09</td><td>Gestione transizioni duplicate dello stesso stato (idempotenza/deduplica) e coerenza storico audit</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-D-006.US01.TC10</td><td>Integrazione: indisponibilità del meccanismo di persistenza durante generazione proposta</td><td>Integration</td><td>HIGH</td><td>AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 10, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 10, 2, 0], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

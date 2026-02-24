@@ -1,0 +1,301 @@
+[
+  {
+    "test_id": "REQ-F-018.TC01",
+    "title": "Generazione e invio proposta bundle al canale digitale al primo inserimento prodotto in carrello (prima del checkout) - Web",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile e raggiungibile via canale web",
+      "Motore di bundle attivo e configurato per generare una proposta per la categoria del prodotto selezionato (se applicabile)",
+      "Carrello vuoto",
+      "Utente non ancora nella schermata di checkout"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, nome='Cuffie Wireless X', prezzo=59,90 EUR, disponibile",
+      "URL pagina prodotto P1: /product/SKU-10001",
+      "Evento atteso di trigger: aggiunta del primo prodotto al carrello"
+    ],
+    "steps": [
+      "Aprire il sito web e navigare alla pagina prodotto di P1",
+      "Verificare che il carrello sia vuoto",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Rimanere nella pagina corrente o aprire il mini-carrello (senza entrare in checkout)",
+      "Osservare la UI per la comparsa della proposta bundle (pop-up)"
+    ],
+    "expected_results": [
+      "Il motore di bundle genera una proposta e la invia al canale digitale prima dell'ingresso in checkout",
+      "La proposta bundle viene visualizzata come pop-up dopo l'aggiunta del primo prodotto al carrello",
+      "L'utente non è ancora entrato nella schermata di checkout quando il pop-up viene mostrato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attori e canali non sono esplicitati nel requisito: si assume canale digitale = web/app. Il requisito non specifica il formato tecnico di 'invio' (API/evento/log): la verifica è effettuata tramite evidenza funzionale (comparsa pop-up) e, se disponibili, log/telemetria del motore bundle."
+  },
+  {
+    "test_id": "REQ-F-018.TC02",
+    "title": "Trigger alternativo prima del checkout quando non è possibile su 'aggiunta primo prodotto' (pagina pre-checkout) - Web",
+    "type": "Edge Case",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Motore di bundle attivo",
+      "Carrello vuoto",
+      "Configurazione/condizione per cui il trigger non può avvenire sull'evento 'aggiunta primo prodotto' (es. limitazione tecnica o feature flag che sposta il trigger)",
+      "Esiste una pagina chiaramente precedente al checkout (es. pagina carrello /cart) accessibile dopo l'aggiunta prodotto"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "URL pagina carrello: /cart",
+      "Condizione di test: trigger su pagina pre-checkout (carrello) anziché su evento add-to-cart"
+    ],
+    "steps": [
+      "Aprire il sito web e navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Navigare alla pagina carrello (/cart) senza entrare nel checkout",
+      "Osservare la UI per la comparsa della proposta bundle (pop-up) nella pagina pre-checkout"
+    ],
+    "expected_results": [
+      "La proposta bundle viene generata e inviata al canale digitale prima dell'ingresso in checkout",
+      "Il pop-up della proposta compare in una pagina precedente alla finalizzazione dell'acquisto (es. pagina carrello) come alternativa al trigger su add-to-cart",
+      "Non viene richiesto l'accesso alla schermata di checkout per attivare la proposta"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito indica un fallback ('laddove non fosse possibile'): non specifica quale pagina/evento alternativo sia adottato. Questo test richiede una configurazione o evidenza progettuale che definisca la pagina pre-checkout scelta (dipendenza esterna irrisolta)."
+  },
+  {
+    "test_id": "REQ-F-018.TC03",
+    "title": "Non mostrare la proposta bundle dopo ingresso in checkout (vincolo temporale: prima del checkout) - Web",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Motore di bundle attivo",
+      "Carrello vuoto",
+      "Utente in grado di accedere alla schermata di checkout"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "URL checkout: /checkout (o percorso equivalente)"
+    ],
+    "steps": [
+      "Aprire il sito web e navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Navigare alla pagina carrello e cliccare su 'Vai al checkout'",
+      "Una volta in checkout, osservare la UI per verificare l'assenza di comparsa della proposta bundle in quel momento"
+    ],
+    "expected_results": [
+      "L'utente entra nella schermata di checkout",
+      "Non viene attivato alcun nuovo trigger di proposta bundle in checkout (la proposta deve essere attivata prima del checkout)",
+      "Se la proposta non è stata mostrata prima del checkout, non viene mostrata per la prima volta in checkout"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito definisce il vincolo 'prima del checkout' ma non specifica il comportamento se la proposta non è stata generata in tempo. Si assume che non debba comparire per la prima volta in checkout."
+  },
+  {
+    "test_id": "REQ-F-018.TC04",
+    "title": "Ripetibilità del trigger: svuotamento carrello e nuova aggiunta primo prodotto genera nuovamente la proposta - Web",
+    "type": "Edge Case",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Motore di bundle attivo",
+      "Carrello vuoto"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "Azione di reset: svuotamento carrello tramite UI (es. 'Rimuovi' o 'Svuota carrello')"
+    ],
+    "steps": [
+      "Navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Verificare la comparsa del pop-up della proposta bundle",
+      "Chiudere il pop-up",
+      "Navigare al carrello e rimuovere P1 fino ad avere carrello vuoto",
+      "Tornare alla pagina prodotto di P1",
+      "Cliccare nuovamente su 'Aggiungi al carrello' per P1",
+      "Osservare la UI per la ricomparsa del pop-up della proposta bundle"
+    ],
+    "expected_results": [
+      "Alla prima aggiunta di P1 (carrello da vuoto a non vuoto) il pop-up della proposta bundle compare prima del checkout",
+      "Dopo lo svuotamento del carrello, una nuova aggiunta del primo prodotto riattiva il trigger e il pop-up ricompare",
+      "Il caso dimostra la ripetibilità del trigger in condizioni ripristinate (carrello vuoto)"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce regole di frequency capping (es. 'mostra una sola volta per sessione'): questo test assume che, dopo reset dello stato (carrello vuoto), il trigger sia nuovamente applicabile."
+  },
+  {
+    "test_id": "REQ-F-018.TC05",
+    "title": "Ripetibilità del trigger: ricarica pagina pre-checkout non deve generare duplicati della proposta per lo stesso evento - Web",
+    "type": "Negative",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Motore di bundle attivo",
+      "Carrello vuoto"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "Pagina pre-checkout: /cart"
+    ],
+    "steps": [
+      "Navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Navigare alla pagina carrello (/cart)",
+      "Se il pop-up compare, chiuderlo",
+      "Ricaricare la pagina /cart",
+      "Osservare se il pop-up viene mostrato nuovamente senza un nuovo evento di trigger (es. nuova aggiunta primo prodotto)"
+    ],
+    "expected_results": [
+      "Il pop-up della proposta bundle non viene riproposto come duplicato a seguito di semplice reload della pagina pre-checkout, in assenza di un nuovo evento di trigger",
+      "Il comportamento osservato è coerente con un trigger legato a un evento (es. prima aggiunta prodotto) e non a un semplice refresh"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito richiede 'trigger ripetibile e documentato' ma non chiarisce la gestione dei duplicati. Questo test interpreta che la ripetibilità debba essere deterministica e non causare ripresentazioni spurie senza un nuovo evento."
+  },
+  {
+    "test_id": "REQ-F-018.TC06",
+    "title": "Integrazione: motore bundle non disponibile/timeout al trigger prima del checkout - gestione senza bloccare il flusso - Web",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Carrello vuoto",
+      "Possibilità di simulare indisponibilità del motore bundle (es. stub che restituisce 503 o timeout) per la chiamata di generazione proposta"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "Simulazione errore motore bundle: HTTP 503 oppure timeout > 10s (valore esemplificativo)"
+    ],
+    "steps": [
+      "Abilitare la simulazione di indisponibilità/timeout del motore bundle",
+      "Navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Osservare il comportamento dell'interfaccia dopo l'evento di trigger",
+      "Procedere fino alla pagina carrello per verificare che il prodotto sia stato aggiunto correttamente"
+    ],
+    "expected_results": [
+      "Il sistema tenta di generare/inviare la proposta bundle prima del checkout (chiamata al motore bundle effettuata)",
+      "In caso di errore/timeout del motore bundle, il pop-up della proposta non viene mostrato",
+      "L'aggiunta al carrello va a buon fine e il flusso utente non viene bloccato dall'errore del motore bundle",
+      "Eventuali errori sono gestiti in modo controllato (es. messaggio non bloccante o silenzioso) senza impedire la navigazione"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la gestione errori del motore bundle; questo test valida una gestione robusta minima per evitare impatti sul checkout. Le soglie di timeout e i codici errore dipendono dall'implementazione (dipendenza esterna)."
+  },
+  {
+    "test_id": "REQ-F-018.TC07",
+    "title": "E2E: comparsa pop-up proposta bundle dopo inserimento primo prodotto e prima dell'ingresso in checkout - Web",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Ambiente di test disponibile via canale web",
+      "Motore di bundle attivo",
+      "Carrello vuoto",
+      "Prodotto P1 acquistabile e checkout disponibile"
+    ],
+    "test_data": [
+      "Canale: web",
+      "Prodotto P1: SKU=SKU-10001, disponibile",
+      "Percorso: PDP -> add-to-cart -> pop-up proposta -> carrello -> checkout"
+    ],
+    "steps": [
+      "Navigare alla pagina prodotto di P1",
+      "Cliccare su 'Aggiungi al carrello' per P1",
+      "Verificare la comparsa del pop-up della proposta bundle",
+      "Chiudere il pop-up della proposta bundle (senza entrare in checkout)",
+      "Navigare alla pagina carrello",
+      "Cliccare su 'Vai al checkout'",
+      "Verificare che l'utente sia entrato nella schermata di checkout"
+    ],
+    "expected_results": [
+      "Il pop-up della proposta bundle compare dopo l'inserimento del primo prodotto e prima dell'ingresso in checkout",
+      "Il flusso utente prosegue correttamente fino alla schermata di checkout",
+      "L'evidenza E2E dimostra la condizione temporale richiesta (comparsa prima del checkout)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Questo test è l'evidenza E2E richiesta dall'AC. Il requisito non specifica se l'utente debba accettare/rifiutare il bundle: il test verifica solo la comparsa del pop-up nel momento previsto."
+  },
+  {
+    "test_id": "REQ-F-018.TC08",
+    "title": "Generazione e invio proposta bundle al canale digitale al primo inserimento prodotto in carrello (prima del checkout) - App",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "App installata e configurata per puntare all'ambiente di test",
+      "Motore di bundle attivo",
+      "Carrello vuoto nell'app",
+      "Utente non ancora nella schermata di checkout"
+    ],
+    "test_data": [
+      "Canale: app",
+      "Prodotto P1: SKU=SKU-10001, nome='Cuffie Wireless X', disponibile",
+      "Evento atteso di trigger: aggiunta del primo prodotto al carrello dall'app"
+    ],
+    "steps": [
+      "Aprire l'app e navigare alla scheda prodotto di P1",
+      "Verificare che il carrello sia vuoto",
+      "Toccare 'Aggiungi al carrello' per P1",
+      "Rimanere nel contesto pre-checkout (es. mini-carrello o pagina carrello) senza procedere al checkout",
+      "Osservare la UI per la comparsa del pop-up/modale della proposta bundle"
+    ],
+    "expected_results": [
+      "Il motore di bundle genera una proposta e la invia al canale digitale prima dell'ingresso in checkout",
+      "La proposta bundle viene visualizzata nell'app come pop-up/modale dopo l'aggiunta del primo prodotto al carrello",
+      "L'utente non è in checkout quando la proposta viene mostrata"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Canale 'app' inferito come possibile canale digitale. Se il progetto prevede un solo canale (solo web), questo test va marcato non applicabile. Il requisito non specifica differenze UI tra web e app."
+  }
+]

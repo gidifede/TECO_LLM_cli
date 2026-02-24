@@ -1,0 +1,376 @@
+[
+  {
+    "test_id": "REQ-F-008.TC01",
+    "title": "Creazione log per proposta del Motore di Offerte con motivazione, ordinamento, touchpoint, timestamp ed esito",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore di Offerte attivo e in grado di generare proposte per un cliente",
+      "Dashboard log (Marketing/Compliance) disponibile e raggiungibile",
+      "Esiste un cliente test con identificativo univoco (es. customer_id) e con offerte eleggibili",
+      "Configurazione di base presente per consentire al motore di generare almeno 2 offerte/bundle ordinati"
+    ],
+    "test_data": [
+      "customer_id: CUST-1000001",
+      "Touchpoint: Web",
+      "Offerte attese dal motore: OFF-BASE-01, OFF-PREMIUM-02 (con ordinamento 1..n)",
+      "Esempio motivazione: \"Cliente eleggibile per bundle premium per alto utilizzo dati\"",
+      "Esito proposta: finalizzazione lato cliente (self) sul canale Web"
+    ],
+    "steps": [
+      "Avviare una sessione sul touchpoint Web per il cliente CUST-1000001",
+      "Richiedere al Motore di Offerte la generazione delle proposte per il cliente",
+      "Visualizzare le offerte/bundle proposte e il relativo ordinamento restituiti dal motore",
+      "Completare la finalizzazione di una delle offerte proposte in modalità self sul canale Web",
+      "Accedere alla dashboard log con un utente Marketing o Compliance abilitato",
+      "Filtrare i log per customer_id = CUST-1000001 e intervallo temporale che includa l'esecuzione del test",
+      "Aprire il dettaglio del record di log relativo alla proposta generata dal motore"
+    ],
+    "expected_results": [
+      "È presente almeno un record di log relativo alla proposta generata dal motore per customer_id = CUST-1000001",
+      "Il record di log contiene l'elenco delle offerte/bundle proposte e il relativo ordinamento (posizione/rank) coerente con quanto restituito dal motore",
+      "Il record di log contiene la/e motivazione/i associate alla proposta (campo valorizzato e non nullo)",
+      "Il record di log contiene il touchpoint valorizzato a \"Web\"",
+      "Il record di log contiene un timestamp (data e ora) valorizzato e coerente con l'orario di esecuzione del test",
+      "Il record di log contiene l'esito della proposta valorizzato a \"finalizzazione\" e indica che è avvenuta lato cliente in modalità self su canale digitale"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Gli attori (utente Marketing/Compliance) e la struttura dettagliata dei campi del log non sono esplicitati nel requisito; il test verifica la presenza di campi minimi dedotti dalla description (offerte proposte/ordinamento, motivazioni, touchpoint, timestamp, esito)."
+  },
+  {
+    "test_id": "REQ-F-008.TC02",
+    "title": "Creazione log per esclusione di offerta/bundle da parte del motore con motivazione",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore di Offerte attivo",
+      "Dashboard log (Marketing/Compliance) disponibile",
+      "Esiste un cliente test per cui almeno un'offerta risulti esclusa dal motore in base a regole configurate"
+    ],
+    "test_data": [
+      "customer_id: CUST-1000002",
+      "Touchpoint: UP",
+      "Offerta attesa esclusa: OFF-ROAMING-99",
+      "Esempio motivazione esclusione: \"Incompatibile con profilo cliente\""
+    ],
+    "steps": [
+      "Avviare una richiesta di proposta sul touchpoint UP per il cliente CUST-1000002",
+      "Richiedere al Motore di Offerte la generazione delle proposte per il cliente",
+      "Accedere alla dashboard log con un utente Marketing o Compliance abilitato",
+      "Filtrare i log per customer_id = CUST-1000002 e intervallo temporale che includa l'esecuzione del test",
+      "Individuare e aprire il record di log relativo all'esclusione dell'offerta OFF-ROAMING-99"
+    ],
+    "expected_results": [
+      "È presente un record di log relativo a una esclusione generata dal motore per customer_id = CUST-1000002",
+      "Il record di log identifica l'offerta/bundle escluso (OFF-ROAMING-99)",
+      "Il record di log riporta una motivazione di esclusione valorizzata e non nulla",
+      "Il record di log contiene il touchpoint valorizzato a \"UP\"",
+      "Il record di log contiene un timestamp (data e ora) valorizzato"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Il requisito non definisce tassonomie per motivazioni/esclusioni; il test valida la presenza di un campo motivazione non nullo e la tracciabilità dell'elemento escluso."
+  },
+  {
+    "test_id": "REQ-F-008.TC03",
+    "title": "Creazione log per operazione di creazione bundle da parte del Team Marketing",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente Team Marketing con permessi di configurazione disponibile",
+      "Interfaccia/servizio di configurazione bundle disponibile",
+      "Dashboard log (Marketing/Compliance) disponibile"
+    ],
+    "test_data": [
+      "Nuovo bundle: BND-MKT-2026-001",
+      "Nome bundle: \"Bundle Primavera 2026\"",
+      "Componenti bundle: \"Voce illimitata\", \"50GB dati\"",
+      "Regola pricing: \"Prezzo 9,99 EUR/mese\"",
+      "Campagna associata: \"CMP-PRIM-2026\""
+    ],
+    "steps": [
+      "Accedere al sistema di configurazione come utente Team Marketing",
+      "Navigare alla sezione di gestione bundle",
+      "Creare un nuovo bundle con ID BND-MKT-2026-001 e compilare i campi previsti",
+      "Salvare la configurazione",
+      "Accedere alla dashboard log con un utente Marketing o Compliance abilitato",
+      "Filtrare i log per intervallo temporale che includa l'operazione e per tipologia evento di configurazione (se disponibile)",
+      "Aprire il dettaglio del record di log relativo alla creazione del bundle"
+    ],
+    "expected_results": [
+      "È presente un record di log per l'operazione di configurazione di tipo \"creazione\" bundle",
+      "Il record di log consente di identificare l'oggetto modificato (bundle BND-MKT-2026-001)",
+      "Il record di log contiene un timestamp (data e ora) valorizzato e coerente con l'operazione",
+      "Il record di log è consultabile dalla dashboard log prevista per Marketing e Compliance"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il canale per le operazioni di configurazione non è specificato; si assume interfaccia web di backoffice. Il requisito non specifica se nei log debbano comparire i valori prima/dopo: il test verifica almeno tipo operazione, oggetto e timestamp."
+  },
+  {
+    "test_id": "REQ-F-008.TC04",
+    "title": "Creazione log per modifica di regola pricing da parte del Team Marketing",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente Team Marketing con permessi di configurazione disponibile",
+      "Esiste una regola pricing configurata e modificabile",
+      "Dashboard log (Marketing/Compliance) disponibile"
+    ],
+    "test_data": [
+      "Regola pricing ID: PRC-STD-001",
+      "Valore precedente: \"Prezzo 12,99 EUR/mese\"",
+      "Valore nuovo: \"Prezzo 10,99 EUR/mese\""
+    ],
+    "steps": [
+      "Accedere al sistema di configurazione come utente Team Marketing",
+      "Navigare alla sezione di gestione regole di pricing",
+      "Selezionare la regola PRC-STD-001",
+      "Modificare il prezzo da 12,99 EUR/mese a 10,99 EUR/mese",
+      "Salvare la modifica",
+      "Accedere alla dashboard log con un utente Marketing o Compliance abilitato",
+      "Filtrare i log per intervallo temporale che includa l'operazione e cercare eventi relativi a PRC-STD-001",
+      "Aprire il dettaglio del record di log relativo alla modifica"
+    ],
+    "expected_results": [
+      "È presente un record di log per l'operazione di configurazione di tipo \"modifica\" su PRC-STD-001",
+      "Il record di log identifica la regola pricing interessata (PRC-STD-001)",
+      "Il record di log contiene un timestamp (data e ora) valorizzato",
+      "Il record di log è consultabile dalla dashboard log prevista per Marketing e Compliance"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita il livello di dettaglio dei log (delta valori). Il test verifica la tracciatura minima dell'evento di modifica con identificativo oggetto e timestamp."
+  },
+  {
+    "test_id": "REQ-F-008.TC05",
+    "title": "Creazione log per cancellazione campagna da parte del Team Marketing",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Utente Team Marketing con permessi di configurazione disponibile",
+      "Esiste una campagna configurata e cancellabile",
+      "Dashboard log (Marketing/Compliance) disponibile"
+    ],
+    "test_data": [
+      "Campagna ID: CMP-LEGACY-2025-010",
+      "Motivo cancellazione (se previsto dal sistema): \"Fine periodo promozionale\""
+    ],
+    "steps": [
+      "Accedere al sistema di configurazione come utente Team Marketing",
+      "Navigare alla sezione di gestione campagne",
+      "Selezionare la campagna CMP-LEGACY-2025-010",
+      "Eseguire l'operazione di cancellazione della campagna",
+      "Confermare la cancellazione",
+      "Accedere alla dashboard log con un utente Marketing o Compliance abilitato",
+      "Filtrare i log per intervallo temporale che includa l'operazione e cercare eventi relativi a CMP-LEGACY-2025-010",
+      "Aprire il dettaglio del record di log relativo alla cancellazione"
+    ],
+    "expected_results": [
+      "È presente un record di log per l'operazione di configurazione di tipo \"cancellazione\" su CMP-LEGACY-2025-010",
+      "Il record di log identifica la campagna interessata (CMP-LEGACY-2025-010)",
+      "Il record di log contiene un timestamp (data e ora) valorizzato",
+      "Il record di log è consultabile dalla dashboard log prevista per Marketing e Compliance"
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Non è specificato se la cancellazione sia fisica o logica; il test valida unicamente la creazione del record di log e la consultabilità."
+  },
+  {
+    "test_id": "REQ-F-008.TC06",
+    "title": "Consultazione log da dashboard Marketing/Compliance con filtri per cliente e periodo",
+    "type": "UI",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard log (Marketing/Compliance) disponibile",
+      "Utente Marketing abilitato alla consultazione log",
+      "Sono presenti log generati in precedenza per un cliente test"
+    ],
+    "test_data": [
+      "Utente: mkt_analyst_01",
+      "customer_id: CUST-1000001",
+      "Intervallo date: oggi (00:00 - 23:59)"
+    ],
+    "steps": [
+      "Accedere alla dashboard log come utente mkt_analyst_01",
+      "Impostare il filtro customer_id = CUST-1000001",
+      "Impostare il filtro intervallo date = oggi (00:00 - 23:59)",
+      "Eseguire la ricerca",
+      "Aprire il dettaglio di un record restituito"
+    ],
+    "expected_results": [
+      "La dashboard mostra un elenco di record di log coerenti con i filtri impostati (customer_id e intervallo date)",
+      "Ogni record elencato mostra almeno timestamp e tipologia evento (motore/configurazione) se previsti dalla dashboard",
+      "Il dettaglio del record è visualizzabile dalla dashboard senza errori"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica i filtri disponibili nella dashboard; il test assume almeno filtri per cliente e periodo, necessari per consultazione operativa."
+  },
+  {
+    "test_id": "REQ-F-008.TC07",
+    "title": "Mancata creazione log in caso di errore/timeout del servizio di logging durante una proposta del motore (gestione errore)",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "Motore di Offerte attivo",
+      "È possibile simulare indisponibilità del componente/servizio di logging (es. stop servizio, fault injection, configurazione di test)",
+      "Dashboard log (Marketing/Compliance) disponibile"
+    ],
+    "test_data": [
+      "customer_id: CUST-1000003",
+      "Touchpoint: App",
+      "Condizione tecnica: timeout del servizio di logging (es. 30s) durante la scrittura del log"
+    ],
+    "steps": [
+      "Abilitare la condizione di test che provoca timeout/errore del servizio di logging",
+      "Avviare una sessione sul touchpoint App per il cliente CUST-1000003",
+      "Richiedere al Motore di Offerte la generazione delle proposte per il cliente",
+      "Ripristinare la disponibilità del servizio di logging",
+      "Accedere alla dashboard log e filtrare per customer_id = CUST-1000003 e intervallo temporale del test"
+    ],
+    "expected_results": [
+      "Il sistema gestisce l'errore di scrittura log senza bloccare in modo anomalo la generazione delle proposte (nessun crash/interruzione non gestita lato canale)",
+      "Non risultano record di log incompleti/corrotti consultabili in dashboard per l'evento nel periodo considerato (oppure risultano marcati chiaramente come falliti se la soluzione lo prevede)",
+      "Eventuali messaggi di errore tecnico non sono esposti all'utente finale in modo sensibile (solo messaggi generici lato canale, se presenti)"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito non definisce il comportamento atteso in caso di indisponibilità del logging; questo test interpreta una gestione resiliente (non bloccare il canale) e verifica l'assenza di log corrotti. Necessaria capacità di fault injection/controllo del servizio di logging."
+  },
+  {
+    "test_id": "REQ-F-008.TC08",
+    "title": "Creazione log per proposta su canale UP con esito abbandono",
+    "type": "E2E",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore di Offerte attivo",
+      "Dashboard log (Marketing/Compliance) disponibile",
+      "È possibile simulare un flusso UP in cui l'operatore non finalizza l'offerta (abbandono)"
+    ],
+    "test_data": [
+      "customer_id: CUST-1000004",
+      "Touchpoint: UP",
+      "Esito proposta: abbandono"
+    ],
+    "steps": [
+      "Avviare una sessione UP per il cliente CUST-1000004",
+      "Richiedere al Motore di Offerte la generazione delle proposte",
+      "Terminare la sessione senza finalizzare alcuna offerta",
+      "Accedere alla dashboard log con utente abilitato",
+      "Filtrare i log per customer_id = CUST-1000004 e intervallo temporale del test",
+      "Aprire il dettaglio del record relativo alla proposta del motore"
+    ],
+    "expected_results": [
+      "È presente un record di log relativo alla proposta del motore per customer_id = CUST-1000004",
+      "Il record di log riporta touchpoint = \"UP\"",
+      "Il record di log riporta esito = \"abbandono\""
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "UP"
+    ],
+    "notes": "Il requisito cita l'esito abbandono/finalizzazione e la distinzione operatore vs self; non definisce come venga determinato l'abbandono (timeout, chiusura sessione, ecc.). Il test assume che la chiusura della sessione senza finalizzazione generi esito 'abbandono'."
+  },
+  {
+    "test_id": "REQ-F-008.TC09",
+    "title": "Consultazione log: accesso non autorizzato alla dashboard log",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Dashboard log (Marketing/Compliance) disponibile",
+      "Esiste un utente senza ruolo Marketing/Compliance (es. ruolo 'Sales' o 'CustomerCare')"
+    ],
+    "test_data": [
+      "Utente: sales_user_01 (senza permessi di consultazione log)"
+    ],
+    "steps": [
+      "Accedere al sistema con l'utente sales_user_01",
+      "Tentare di aprire la dashboard log Marketing/Compliance tramite URL diretto o menu (se presente)"
+    ],
+    "expected_results": [
+      "L'accesso alla dashboard log è negato all'utente non autorizzato (es. 403 o pagina 'Accesso non consentito')",
+      "Non vengono mostrati dati di log all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia ruoli e permessi; il test deduce che la consultazione è riservata ad utenti Marketing e Compliance come indicato dall'AC-3."
+  },
+  {
+    "test_id": "REQ-F-008.TC10",
+    "title": "Edge case: generazione proposta con zero offerte eleggibili e creazione del log evento",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Motore di Offerte attivo",
+      "Dashboard log (Marketing/Compliance) disponibile",
+      "Esiste un cliente test per cui nessuna offerta/bundle risulti eleggibile (regole configurate)"
+    ],
+    "test_data": [
+      "customer_id: CUST-1000005",
+      "Touchpoint: Web"
+    ],
+    "steps": [
+      "Avviare una sessione sul touchpoint Web per il cliente CUST-1000005",
+      "Richiedere al Motore di Offerte la generazione delle proposte",
+      "Accedere alla dashboard log con utente abilitato",
+      "Filtrare i log per customer_id = CUST-1000005 e intervallo temporale del test",
+      "Aprire il dettaglio del record relativo all'evento del motore"
+    ],
+    "expected_results": [
+      "È presente un record di log relativo all'evento di proposta/esecuzione del motore per customer_id = CUST-1000005",
+      "Il record di log indica che non sono state proposte offerte/bundle (lista vuota o conteggio = 0) in modo esplicito e consultabile",
+      "Il record di log contiene touchpoint e timestamp valorizzati"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita il caso 'nessuna offerta proposta'; il test lo tratta come evento rilevante da tracciare per analisi di efficacia."
+  }
+]

@@ -1,0 +1,743 @@
+[
+  {
+    "story_id": "REQ-D-005.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-005.US01.TC01",
+        "title": "APP: offerta non accettata da pop-up visibile in Loyalty di Gruppo finché valida",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato su APP con profilo attivo",
+          "Esiste un’offerta O-1001 configurata come proponibile via pop-up per il cliente",
+          "L’offerta O-1001 ha data/ora di scadenza futura (es. now + 7 giorni) determinata dal Motore",
+          "La sezione Loyalty di Gruppo su APP è raggiungibile dal menu principale"
+        ],
+        "test_data": [
+          "Cliente: C-778899",
+          "Offerta: O-1001",
+          "Dettagli originari pop-up attesi: Nome='Pasta Integrale 500g', Immagine='pasta_integrale_500.png', Prezzo scontato='1,49 EUR'",
+          "Scadenza offerta: 2026-03-02 23:59 (fuso orario canale)"
+        ],
+        "steps": [
+          "Aprire l’APP ed effettuare l’accesso come cliente C-778899",
+          "Attendere la visualizzazione del pop-up dell’offerta O-1001",
+          "Chiudere il pop-up senza accettare l’offerta (nessuna azione di aggiunta/accettazione)",
+          "Navigare alla sezione 'Loyalty di Gruppo'",
+          "Aprire la lista delle offerte disponibili",
+          "Selezionare l’offerta O-1001 dalla lista",
+          "Verificare i dettagli mostrati nel dettaglio offerta"
+        ],
+        "expected_results": [
+          "L’offerta O-1001 è presente nella lista offerte della sezione Loyalty di Gruppo su APP",
+          "Nel dettaglio dell’offerta O-1001 il Nome è 'Pasta Integrale 500g'",
+          "Nel dettaglio dell’offerta O-1001 l’Immagine visualizzata corrisponde a 'pasta_integrale_500.png'",
+          "Nel dettaglio dell’offerta O-1001 il Prezzo scontato è '1,49 EUR'",
+          "L’offerta O-1001 risulta consultabile (non marcata come non disponibile) perché la scadenza non è superata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "app"
+        ],
+        "notes": "Si assume che 'non accettata' significhi chiusura del pop-up senza azione di accettazione/aggiunta."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC02",
+        "title": "WEB: offerta non accettata da pop-up visibile in Loyalty di Gruppo finché valida",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato su sito web con profilo attivo",
+          "Esiste un’offerta O-1002 configurata come proponibile via pop-up per il cliente",
+          "L’offerta O-1002 ha data/ora di scadenza futura (es. now + 3 giorni) determinata dal Motore",
+          "La sezione Loyalty di Gruppo su web è raggiungibile dal menu principale"
+        ],
+        "test_data": [
+          "Cliente: C-112233",
+          "Offerta: O-1002",
+          "Dettagli originari pop-up attesi: Nome='Caffè 250g', Immagine='caffe_250.png', Prezzo scontato='2,99 EUR'",
+          "Scadenza offerta: 2026-02-28 23:59 (fuso orario canale)"
+        ],
+        "steps": [
+          "Aprire il sito web ed effettuare l’accesso come cliente C-112233",
+          "Attendere la visualizzazione del pop-up dell’offerta O-1002",
+          "Chiudere il pop-up senza accettare l’offerta (nessuna azione di accettazione)",
+          "Navigare alla sezione 'Loyalty di Gruppo'",
+          "Aprire la lista delle offerte disponibili",
+          "Selezionare l’offerta O-1002 dalla lista",
+          "Verificare i dettagli mostrati nel dettaglio offerta"
+        ],
+        "expected_results": [
+          "L’offerta O-1002 è presente nella lista offerte della sezione Loyalty di Gruppo su sito web",
+          "Nel dettaglio dell’offerta O-1002 il Nome è 'Caffè 250g'",
+          "Nel dettaglio dell’offerta O-1002 l’Immagine visualizzata corrisponde a 'caffe_250.png'",
+          "Nel dettaglio dell’offerta O-1002 il Prezzo scontato è '2,99 EUR'",
+          "L’offerta O-1002 risulta consultabile (non marcata come non disponibile) perché la scadenza non è superata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "web"
+        ],
+        "notes": "Si assume che il comportamento di 'non accettazione' sia la chiusura del pop-up senza conferma."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC03",
+        "title": "Offerta scade durante la consultazione: al refresh non è più visibile né accessibile",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Esiste un’offerta O-1003 non accettata già presente in Loyalty di Gruppo",
+          "L’offerta O-1003 ha scadenza imminente (es. now + 2 minuti)",
+          "È possibile eseguire refresh della lista o rientrare nella sezione Loyalty"
+        ],
+        "test_data": [
+          "Cliente: C-445566",
+          "Offerta: O-1003",
+          "Scadenza offerta: now + 2 minuti"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo' e verificare che l’offerta O-1003 sia visibile in lista",
+          "Aprire il dettaglio dell’offerta O-1003",
+          "Attendere il superamento della data/ora di scadenza dell’offerta",
+          "Eseguire refresh della pagina/lista offerte oppure uscire e rientrare nella sezione Loyalty di Gruppo",
+          "Cercare nuovamente l’offerta O-1003 nella lista",
+          "Provare ad aprire il dettaglio dell’offerta O-1003 tramite eventuale link diretto/cronologia (se disponibile nel canale)"
+        ],
+        "expected_results": [
+          "Dopo il refresh/nuovo accesso, l’offerta O-1003 non è più presente nella lista offerte",
+          "Se si tenta di accedere al dettaglio dell’offerta O-1003, il sistema indica non disponibilità (es. 404/risorsa non disponibile) oppure impedisce l’accesso al contenuto dell’offerta",
+          "Non vengono mostrati dettagli o condizioni dell’offerta scaduta al cliente"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Il requisito consente 'non mostrata o non accessibile' alla scadenza; il test accetta entrambe le modalità purché l’offerta non sia fruibile."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC04",
+        "title": "Coerenza cross-canale: stessa offerta non accettata visibile e con stessi dettagli/scadenza su APP e web",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale con lo stesso account utilizzabile su APP e web",
+          "Esiste un’offerta O-1004 proposta via pop-up al cliente e non accettata",
+          "L’offerta O-1004 ha scadenza futura determinata dal Motore",
+          "APP e web consumano la stessa sorgente dati/servizio per le offerte Loyalty"
+        ],
+        "test_data": [
+          "Cliente: C-990011",
+          "Offerta: O-1004",
+          "Dettagli originari pop-up attesi: Nome='Detersivo 1L', Immagine='detersivo_1l.png', Prezzo scontato='3,49 EUR'",
+          "Scadenza offerta attesa (stessa su entrambi i canali): 2026-03-05 23:59"
+        ],
+        "steps": [
+          "Su APP, accedere come cliente C-990011 e chiudere il pop-up dell’offerta O-1004 senza accettare",
+          "Su APP, aprire 'Loyalty di Gruppo' e verificare presenza dell’offerta O-1004",
+          "Su APP, aprire il dettaglio dell’offerta O-1004 e annotare Nome/Immagine/Prezzo scontato",
+          "Su web, accedere con lo stesso cliente C-990011",
+          "Su web, aprire 'Loyalty di Gruppo' e verificare presenza dell’offerta O-1004",
+          "Su web, aprire il dettaglio dell’offerta O-1004 e confrontare Nome/Immagine/Prezzo scontato con quelli visti su APP"
+        ],
+        "expected_results": [
+          "L’offerta O-1004 è visibile in Loyalty di Gruppo sia su APP sia su web finché valida",
+          "I dettagli dell’offerta O-1004 (Nome/Immagine/Prezzo scontato) coincidono tra APP e web e sono coerenti con quelli originari del pop-up"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "La user story cita coerenza e stessa scadenza cross-canale come edge case; la visualizzazione della scadenza in UI non è specificata, quindi la verifica è sui dettagli e sulla presenza/assenza coerente."
+      },
+      {
+        "test_id": "REQ-D-005.US01.TC05",
+        "title": "Gestione incoerenza dettagli tra pop-up e Loyalty: offerta non mostrata o segnalata come errore",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Esiste un’offerta O-1005 proposta via pop-up e non accettata",
+          "Nel sistema di esposizione verso Loyalty, per O-1005 è presente almeno un dettaglio difforme rispetto a quanto mostrato nel pop-up (es. prezzo scontato diverso)",
+          "La sezione Loyalty di Gruppo recupera l’offerta O-1005 dal servizio"
+        ],
+        "test_data": [
+          "Cliente: C-223344",
+          "Offerta: O-1005",
+          "Dettagli pop-up: Nome='Yogurt 6x125g', Immagine='yogurt_6x125.png', Prezzo scontato='1,99 EUR'",
+          "Dettagli esposti a Loyalty (incoerenti): Nome='Yogurt 6x125g', Immagine='yogurt_6x125.png', Prezzo scontato='2,49 EUR'"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo'",
+          "Aprire la lista delle offerte disponibili",
+          "Verificare se l’offerta O-1005 è presente in lista",
+          "Se presente, aprire il dettaglio dell’offerta O-1005"
+        ],
+        "expected_results": [
+          "Il sistema non mostra l’offerta O-1005 in Loyalty oppure impedisce la consultazione dei dettagli e segnala un errore di coerenza/indisponibilità",
+          "In nessun caso vengono mostrati al cliente dettagli incoerenti rispetto al pop-up originario"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Comportamento 'non mostrata oppure errore di coerenza' indicato come 'da definire' nella user story; il test valida l’obiettivo minimo: evitare esposizione di dettagli incoerenti."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-005.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-005.US02.TC01",
+        "title": "Persistenza offerta non accettata con scadenza e recupero da Loyalty (API/servizio)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile in ambiente di test",
+          "Esiste una configurazione attiva per il calcolo scadenza (es. 10 giorni dalla vendita del primo prodotto)",
+          "È disponibile un meccanismo per generare l’offerta per il cliente e simulare 'non accettazione'",
+          "È disponibile un endpoint/servizio consumato da Loyalty per recuperare le offerte disponibili"
+        ],
+        "test_data": [
+          "Cliente: C-556677",
+          "Offerta generata: O-2001",
+          "Evento di riferimento per scadenza: 'vendita primo prodotto' = 2026-02-20 10:00",
+          "Validità configurata: 10 giorni",
+          "Dettagli originari: Nome='Biscotti 700g', Immagine='biscotti_700.png', Prezzo scontato='2,19 EUR'"
+        ],
+        "steps": [
+          "Generare l’offerta O-2001 per il cliente C-556677 con i dettagli originari previsti",
+          "Simulare che il cliente non accetti l’offerta (nessuna conferma di accettazione registrata)",
+          "Richiamare il servizio del Motore per recuperare le offerte disponibili per Loyalty per il cliente C-556677",
+          "Individuare l’offerta O-2001 nella risposta",
+          "Verificare la presenza del campo di scadenza per O-2001 e il suo valore",
+          "Verificare i dettagli restituiti (Nome/Immagine/Prezzo scontato) per O-2001"
+        ],
+        "expected_results": [
+          "L’offerta O-2001 risulta recuperabile dal servizio per Loyalty come offerta disponibile (non accettata e valida)",
+          "Nella risposta è presente un campo di scadenza per O-2001",
+          "La scadenza di O-2001 è pari a '2026-03-02 10:00' (10 giorni dopo l’evento 'vendita primo prodotto'), considerando le regole di calcolo definite",
+          "I dettagli restituiti per O-2001 (Nome/Immagine/Prezzo scontato) coincidono con quelli originariamente mostrati"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Dipendenza esterna: sorgente evento 'vendita del primo prodotto' non specificata; si assume disponibile in test tramite stub/simulazione."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC02",
+        "title": "Offerta oltre scadenza: il Motore non la rende disponibile al servizio consumato da Loyalty",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Motore di Offerte disponibile e raggiungibile",
+          "Esiste un’offerta O-2002 non accettata con campo scadenza valorizzato",
+          "È possibile controllare l’orologio di sistema o impostare la scadenza in modo che risulti nel passato"
+        ],
+        "test_data": [
+          "Cliente: C-101010",
+          "Offerta: O-2002",
+          "Scadenza salvata: 2026-02-01 00:00",
+          "Data/ora corrente di test: 2026-02-10 12:00"
+        ],
+        "steps": [
+          "Assicurarsi che l’offerta O-2002 sia persistita come non accettata con scadenza '2026-02-01 00:00'",
+          "Richiamare il servizio del Motore per recuperare le offerte disponibili per Loyalty per il cliente C-101010",
+          "Verificare la presenza dell’offerta O-2002 nella risposta"
+        ],
+        "expected_results": [
+          "L’offerta O-2002 non è presente tra le offerte disponibili restituite a Loyalty perché la data/ora corrente supera la scadenza"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "La modalità di esclusione (filtraggio vs flag) non è specificata; il requisito richiede che non sia disponibile alla visualizzazione in Loyalty."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC03",
+        "title": "Motore non disponibile: richiesta offerte da Loyalty fallisce con errore gestibile",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Il canale di test (client API o componente Loyalty) è configurato per chiamare il servizio del Motore",
+          "Il servizio del Motore è reso non disponibile (es. stop servizio, rete bloccata) oppure risponde con timeout"
+        ],
+        "test_data": [
+          "Cliente: C-202020",
+          "Timeout atteso chiamata: 5-30 secondi (secondo configurazione ambiente)"
+        ],
+        "steps": [
+          "Impostare il Motore di Offerte in stato non disponibile oppure simulare timeout",
+          "Eseguire una richiesta di recupero offerte disponibili per Loyalty per il cliente C-202020",
+          "Osservare l’esito della chiamata (codice errore/timeout) e l’eventuale risposta"
+        ],
+        "expected_results": [
+          "La richiesta non restituisce una lista valida di offerte disponibili",
+          "Il sistema restituisce un errore tecnico coerente con l’indisponibilità/timeout del servizio (es. HTTP 503 o timeout a livello client) senza dati parziali non coerenti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "La gestione di ritentativo/caching lato canale non è specificata; il test si limita a verificare l’errore di integrazione e l’assenza di dati non affidabili."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC04",
+        "title": "Configurazione marketing mancante/errata per calcolo scadenza: offerta non resa disponibile",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Configurazione di validità disattivata o mancante per la campagna associata all’offerta",
+          "È possibile generare un’offerta non accettata per un cliente"
+        ],
+        "test_data": [
+          "Cliente: C-303030",
+          "Offerta: O-2003",
+          "Configurazione validità: assente/errata (es. parametro giorni non valorizzato)"
+        ],
+        "steps": [
+          "Generare l’offerta O-2003 per il cliente C-303030",
+          "Simulare che il cliente non accetti l’offerta",
+          "Richiamare il servizio del Motore per recuperare le offerte disponibili per Loyalty per il cliente C-303030",
+          "Verificare se O-2003 è presente nella risposta"
+        ],
+        "expected_results": [
+          "L’offerta O-2003 non viene resa disponibile a Loyalty in assenza di una scadenza calcolabile oppure viene esclusa dalla disponibilità per evitare esposizione non conforme"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Comportamento di fallback non definito; il test assume il comportamento più sicuro coerente con il requisito: rispettare la validità temporale evitando offerte senza scadenza."
+      },
+      {
+        "test_id": "REQ-D-005.US02.TC05",
+        "title": "Offerta con scadenza nel passato (dato inconsistente): non resa disponibile",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Motore di Offerte disponibile",
+          "Esiste un’offerta O-2004 persistita come non accettata con scadenza nel passato (dato inconsistente) oppure è possibile crearla in test"
+        ],
+        "test_data": [
+          "Cliente: C-404040",
+          "Offerta: O-2004",
+          "Scadenza salvata: 2026-01-01 00:00",
+          "Data/ora corrente: 2026-02-10 12:00"
+        ],
+        "steps": [
+          "Assicurarsi che l’offerta O-2004 sia presente a sistema con scadenza nel passato",
+          "Richiamare il servizio del Motore per recuperare le offerte disponibili per Loyalty per il cliente C-404040",
+          "Verificare se O-2004 è presente nella risposta"
+        ],
+        "expected_results": [
+          "L’offerta O-2004 non viene restituita come disponibile verso Loyalty"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Edge case esplicitato: dati inconsistenti non devono portare a visibilità impropria."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-005.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-005.US03.TC01",
+        "title": "Dashboard marketing: configurazione validità (10 giorni da vendita primo prodotto) applicata al calcolo scadenza",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di configurazione nel Motore",
+          "Dashboard di configurazione disponibile",
+          "È possibile salvare una configurazione di campagna/offerta con regola di validità",
+          "È possibile generare un’offerta non accettata associata alla configurazione salvata",
+          "È possibile leggere dal Motore il campo scadenza dell’offerta persistita (via API o console)"
+        ],
+        "test_data": [
+          "Utente marketing: MKT-001",
+          "Configurazione campagna: CAMP-10D",
+          "Regola validità: '10 giorni dalla vendita del primo prodotto'",
+          "Cliente: C-606060",
+          "Evento 'vendita primo prodotto': 2026-02-20 10:00",
+          "Offerta generata: O-3001"
+        ],
+        "steps": [
+          "Accedere alla dashboard del Motore come utente MKT-001",
+          "Creare o modificare la configurazione CAMP-10D impostando la validità a '10 giorni dalla vendita del primo prodotto'",
+          "Salvare e attivare la configurazione CAMP-10D",
+          "Generare l’offerta O-3001 per il cliente C-606060 associandola a CAMP-10D",
+          "Simulare che l’offerta O-3001 non venga accettata dal cliente",
+          "Recuperare dal Motore i dati persistiti dell’offerta O-3001 includendo il campo scadenza"
+        ],
+        "expected_results": [
+          "La configurazione CAMP-10D risulta salvata e attiva nel Motore",
+          "L’offerta O-3001 persistita contiene un campo di scadenza valorizzato",
+          "La scadenza di O-3001 è calcolata applicando la regola configurata (atteso: 2026-03-02 10:00)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La UI della dashboard non è dettagliata; il test è formulato a livello funzionale/integrativo. Dipendenza: disponibilità evento 'vendita primo prodotto' in test."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC02",
+        "title": "Validità configurata: offerte non accettate visibili in Loyalty solo entro scadenza",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Configurazione marketing attiva che determina la scadenza delle offerte",
+          "Offerta O-3002 generata e non accettata per un cliente, con scadenza futura",
+          "APP e web consumano offerte disponibili dal Motore (direttamente o tramite sistema espositore)"
+        ],
+        "test_data": [
+          "Cliente: C-707070",
+          "Offerta: O-3002",
+          "Scadenza offerta: now + 1 giorno"
+        ],
+        "steps": [
+          "Su APP, accedere come cliente C-707070 e aprire 'Loyalty di Gruppo'",
+          "Verificare che l’offerta O-3002 sia presente in lista",
+          "Su web, accedere con lo stesso cliente C-707070 e aprire 'Loyalty di Gruppo'",
+          "Verificare che l’offerta O-3002 sia presente in lista",
+          "Attendere il superamento della scadenza dell’offerta O-3002",
+          "Su APP, eseguire refresh della lista offerte",
+          "Su web, eseguire refresh della lista offerte"
+        ],
+        "expected_results": [
+          "Prima della scadenza, l’offerta O-3002 è visibile in Loyalty su APP e su web",
+          "Dopo la scadenza, l’offerta O-3002 non è più visibile in Loyalty su APP e su web"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "La user story è 'dashboard' ma l’AC include la visibilità su APP/web; test E2E per verificare l’effetto della configurazione sui canali."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC03",
+        "title": "Dashboard marketing: inserimento durata non ammessa (0 o negativa) rifiutato",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing con permessi di configurazione nel Motore",
+          "Dashboard di configurazione disponibile"
+        ],
+        "test_data": [
+          "Utente marketing: MKT-001",
+          "Configurazione campagna: CAMP-INVALID",
+          "Durata validità: 0 giorni",
+          "Durata validità alternativa: -5 giorni"
+        ],
+        "steps": [
+          "Accedere alla dashboard del Motore come utente MKT-001",
+          "Creare o modificare la configurazione CAMP-INVALID impostando la durata validità a '0 giorni'",
+          "Tentare di salvare la configurazione",
+          "Impostare la durata validità a '-5 giorni'",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della configurazione con durata '0 giorni'",
+          "Il sistema impedisce il salvataggio della configurazione con durata '-5 giorni'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Le regole di validazione non sono specificate nel requisito; si applica l’edge case indicato nella user story per rendere testabile la corretta gestione di valori non ammessi."
+      },
+      {
+        "test_id": "REQ-D-005.US03.TC04",
+        "title": "Modifica configurazione con offerte già persistite: verifica comportamento non retroattivo (da chiarire)",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Utente Team Marketing con permessi di configurazione nel Motore",
+          "Esiste una configurazione attiva CAMP-BASE con validità 10 giorni",
+          "Esiste un’offerta O-3003 già persistita come non accettata con scadenza calcolata secondo CAMP-BASE",
+          "È possibile modificare la configurazione a 5 giorni"
+        ],
+        "test_data": [
+          "Offerta esistente: O-3003",
+          "Configurazione iniziale: 10 giorni",
+          "Configurazione modificata: 5 giorni"
+        ],
+        "steps": [
+          "Recuperare dal Motore i dati dell’offerta O-3003 e annotare il valore del campo scadenza",
+          "Accedere alla dashboard e modificare CAMP-BASE impostando validità a 5 giorni",
+          "Salvare e attivare la modifica",
+          "Recuperare nuovamente dal Motore i dati dell’offerta O-3003 e verificare il valore del campo scadenza"
+        ],
+        "expected_results": [
+          "Il valore del campo scadenza di O-3003 rimane invariato oppure viene ricalcolato in modo coerente con una regola esplicita di retroattività",
+          "In caso di ricalcolo, la nuova scadenza rispetta la configurazione aggiornata e non rende l’offerta disponibile oltre la scadenza applicabile"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Impatto su offerte già salvate non specificato; test utile per evidenziare la decisione di prodotto/architettura (retroattivo vs non retroattivo)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-005.US04",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-005.US04.TC01",
+        "title": "Loyalty (APP+web): mostra solo offerte non accettate e valide restituite dal Motore",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato su APP e/o web",
+          "Il servizio del Motore (o sistema espositore) restituisce per il cliente una lista contenente offerte non accettate e valide (es. O-4001, O-4002)",
+          "La sezione Loyalty di Gruppo è configurata per consumare tale servizio"
+        ],
+        "test_data": [
+          "Cliente: C-808080",
+          "Offerte disponibili restituite: O-4001, O-4002"
+        ],
+        "steps": [
+          "Su APP, accedere come cliente C-808080",
+          "Aprire la sezione 'Loyalty di Gruppo'",
+          "Visualizzare la lista offerte",
+          "Su web, accedere come cliente C-808080",
+          "Aprire la sezione 'Loyalty di Gruppo'",
+          "Visualizzare la lista offerte"
+        ],
+        "expected_results": [
+          "Su APP la lista contiene le offerte O-4001 e O-4002 restituite come disponibili",
+          "Su web la lista contiene le offerte O-4001 e O-4002 restituite come disponibili"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Comportamento uniforme tra canali; verifiche replicate su APP e web nello stesso test."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC02",
+        "title": "Loyalty: dettagli visualizzati coerenti con quelli ricevuti e con l’originale (nome, immagine, prezzo scontato)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Il servizio del Motore restituisce un’offerta disponibile O-4003 con dettagli completi",
+          "I dettagli originari del pop-up per O-4003 sono noti in test (baseline)"
+        ],
+        "test_data": [
+          "Cliente: C-909090",
+          "Offerta: O-4003",
+          "Dettagli restituiti dal servizio: Nome='Succhi 1L', Immagine='succhi_1l.png', Prezzo scontato='1,79 EUR'",
+          "Dettagli originari pop-up attesi: Nome='Succhi 1L', Immagine='succhi_1l.png', Prezzo scontato='1,79 EUR'"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo' sul canale scelto",
+          "Aprire la lista offerte e selezionare l’offerta O-4003",
+          "Verificare Nome, Immagine e Prezzo scontato mostrati nel dettaglio"
+        ],
+        "expected_results": [
+          "Il Nome mostrato per O-4003 è 'Succhi 1L'",
+          "L’Immagine mostrata per O-4003 corrisponde a 'succhi_1l.png'",
+          "Il Prezzo scontato mostrato per O-4003 è '1,79 EUR'",
+          "I dettagli mostrati coincidono con quelli ricevuti dal servizio e con la baseline del pop-up originario"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "La user story richiede coerenza con quanto originariamente mostrato; si assume disponibilità di una baseline test (log/snapshot) dei dettagli del pop-up."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC03",
+        "title": "Loyalty: offerta scaduta non restituita come disponibile non viene mostrata",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Il servizio del Motore non include l’offerta scaduta O-4004 tra le offerte disponibili per il cliente",
+          "La sezione Loyalty di Gruppo mostra esclusivamente quanto restituito dal servizio"
+        ],
+        "test_data": [
+          "Cliente: C-121212",
+          "Offerta scaduta: O-4004 (non presente nella risposta del servizio)"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo'",
+          "Visualizzare la lista offerte",
+          "Cercare l’offerta O-4004 nella lista"
+        ],
+        "expected_results": [
+          "L’offerta O-4004 non è presente nella lista offerte della sezione Loyalty di Gruppo"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Si assume che il filtraggio delle scadute avvenga lato Motore; qui si verifica che la Loyalty non mostri offerte non disponibili."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC04",
+        "title": "Loyalty è read-only: nessuna modifica di stato offerta sul Motore durante la consultazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Esiste un’offerta O-4005 non accettata e valida per il cliente",
+          "È possibile osservare lo stato dell’offerta lato Motore (es. flag 'accettata/non accettata' o audit log) prima e dopo la consultazione",
+          "La sezione Loyalty di Gruppo non prevede azioni di accettazione (sola lettura)"
+        ],
+        "test_data": [
+          "Cliente: C-131313",
+          "Offerta: O-4005",
+          "Stato iniziale atteso lato Motore: 'non accettata'"
+        ],
+        "steps": [
+          "Recuperare dal Motore lo stato corrente dell’offerta O-4005 per il cliente C-131313",
+          "Accedere alla sezione 'Loyalty di Gruppo' e aprire la lista offerte",
+          "Aprire il dettaglio dell’offerta O-4005",
+          "Ricaricare la lista offerte",
+          "Recuperare nuovamente dal Motore lo stato dell’offerta O-4005 per il cliente C-131313"
+        ],
+        "expected_results": [
+          "Lo stato dell’offerta O-4005 lato Motore rimane 'non accettata' dopo la consultazione in Loyalty",
+          "Non risultano eventi di aggiornamento stato generati dalla sezione Loyalty (assenza di chiamate di update o audit log di modifica attribuibili a Loyalty)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Il requisito originale non esplicita 'read-only', ma la user story lo richiede; la tracciatura resta su AC-1 perché riguarda la corretta esposizione in Loyalty. Verifica basata su audit/log disponibile in ambiente."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC05",
+        "title": "Lista offerte vuota: nessuna offerta mostrata",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Il servizio del Motore restituisce lista offerte disponibili vuota per il cliente"
+        ],
+        "test_data": [
+          "Cliente: C-141414",
+          "Risposta servizio: []"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo'",
+          "Visualizzare la lista offerte"
+        ],
+        "expected_results": [
+          "La sezione Loyalty di Gruppo non mostra alcuna offerta in lista"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Comportamento UI di empty state non specificato; il test verifica solo l’assenza di offerte mostrate."
+      },
+      {
+        "test_id": "REQ-D-005.US04.TC06",
+        "title": "Dati incompleti (immagine mancante): l’offerta non espone dettagli incoerenti",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Cliente digitale autenticato (APP o web)",
+          "Il servizio del Motore restituisce un’offerta O-4006 come disponibile ma con campo immagine mancante/null",
+          "La UI della Loyalty gestisce campi mancanti (comportamento non specificato)"
+        ],
+        "test_data": [
+          "Cliente: C-151515",
+          "Offerta: O-4006",
+          "Dettagli restituiti: Nome='Acqua 6x1,5L', Immagine=NULL, Prezzo scontato='1,99 EUR'"
+        ],
+        "steps": [
+          "Accedere alla sezione 'Loyalty di Gruppo'",
+          "Aprire la lista offerte e selezionare l’offerta O-4006",
+          "Osservare la resa dell’immagine nel dettaglio"
+        ],
+        "expected_results": [
+          "Il sistema non mostra un’immagine errata/non correlata per O-4006",
+          "Il sistema gestisce l’assenza dell’immagine senza corrompere Nome e Prezzo scontato mostrati"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "app",
+          "web"
+        ],
+        "notes": "Gestione di rendering non specificata; il test impone un vincolo minimo verificabile: non mostrare contenuti errati e mantenere coerenza dei dettagli disponibili."
+      }
+    ]
+  }
+]

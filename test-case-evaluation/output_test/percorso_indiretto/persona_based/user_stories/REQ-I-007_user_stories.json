@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-I-007.US01",
+    "title": "Aggiornare lo stato delle proposte in base agli eventi dei verticali di vendita",
+    "persona": "Motore di Offerte",
+    "goal": "ricevere eventi dai verticali di vendita e aggiornare in modo autonomo e riproducibile lo stato delle proposte",
+    "benefit": "mantenere lo stato delle offerte allineato alla vendita effettiva e agli altri trigger definiti dai verticali, rendendo disponibili le transizioni a chi legge le offerte dal Motore",
+    "user_story": "Come Motore di Offerte\nVoglio ricevere eventi dai verticali di vendita e aggiornare autonomamente lo stato delle proposte\nIn modo che lo stato delle offerte sia coerente con gli eventi di vendita e sia disponibile su tutte le interfacce che recuperano dal Motore l’elenco offerte per cliente",
+    "channels": [
+      "integrazione (API/endpoint)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un verticale di vendita invia un evento al canale/endpoint definito verso il Motore ALLORA il Motore riceve l’evento e aggiorna lo stato della proposta associata in modo riproducibile.",
+      "QUANDO un evento proveniente da un verticale di vendita richiede una transizione di stato ALLORA il Motore applica la transizione di stato attesa e la persiste.",
+      "QUANDO una qualsiasi interfaccia esterna recupera dal Motore l’elenco delle offerte disponibili per un dato cliente ALLORA l’elenco riflette lo stato aggiornato conseguente all’ultimo evento elaborato."
+    ],
+    "business_rules": [
+      "I verticali di vendita sono l’unica fonte che comanda le transizioni di stato delle proposte (es. vendita effettiva, altri trigger): il Motore non deve aggiornare lo stato basandosi su input provenienti da altri sistemi.",
+      "Le transizioni di stato devono essere deterministiche/riproducibili a parità di evento ricevuto."
+    ],
+    "edge_cases": [
+      "Evento ricevuto ma non associabile ad alcuna proposta (identificativo proposta mancante/non valido): il Motore non aggiorna alcuno stato e registra l’anomalia.",
+      "Evento duplicato (stesso identificativo evento o stessa combinazione chiave definita): il Motore non deve generare transizioni incoerenti (gestione idempotente o equivalente).",
+      "Evento fuori sequenza rispetto allo stato corrente (transizione non ammessa): il Motore rifiuta o gestisce l’evento senza corrompere lo stato e rende tracciabile l’esito.",
+      "Endpoint/canale non disponibile o errore di elaborazione: il Motore non deve lasciare lo stato in condizione parzialmente aggiornata."
+    ],
+    "assumptions": [
+      "Il requisito non specifica il modello di stati né la mappatura evento→transizione: si assume esista una definizione esterna condivisa tra Motore e verticali.",
+      "Il requisito non specifica il meccanismo di integrazione (push/pull, protocollo, autenticazione): si assume che i “canali/endpoint” includano quanto necessario per identificare univocamente proposta/cliente e il tipo evento."
+    ],
+    "notes": "AC condivisi con REQ-I-007.US02 (persona: Verticali di vendita): la definizione/implementazione dei canali/endpoint e la verifica end-to-end delle transizioni rese disponibili alle interfacce che leggono dal Motore."
+  },
+  {
+    "story_id": "REQ-I-007.US02",
+    "title": "Inviare eventi di vendita al Motore per comandare le transizioni di stato",
+    "persona": "Verticali di vendita",
+    "goal": "inviare eventi al Motore tramite canali/endpoint definiti per comandare le transizioni di stato delle proposte",
+    "benefit": "garantire che lo stato delle proposte nel Motore rifletta la vendita effettiva e gli altri trigger generati dai verticali, rendendo l’informazione disponibile ai consumatori delle offerte",
+    "user_story": "Come Verticali di vendita\nVoglio inviare eventi al Motore tramite canali/endpoint definiti per comandare le transizioni di stato delle proposte\nIn modo che il Motore aggiorni correttamente lo stato delle offerte e tale aggiornamento sia disponibile su tutte le interfacce che recuperano dal Motore l’elenco offerte per cliente",
+    "channels": [
+      "integrazione (API/endpoint)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO sono definiti i canali/endpoint di integrazione verso il Motore ALLORA i verticali di vendita possono inviare eventi tramite tali canali/endpoint nel formato concordato.",
+      "QUANDO un verticale di vendita invia un evento (es. vendita effettiva o altro trigger previsto) ALLORA il Motore aggiorna lo stato della proposta in modo riproducibile (verificabile via test end-to-end).",
+      "QUANDO il Motore ha applicato la transizione di stato conseguente all’evento ALLORA la transizione risulta visibile/recepibile da tutte le interfacce che acquisiscono dal Motore l’elenco delle offerte disponibili per un dato cliente."
+    ],
+    "business_rules": [
+      "I verticali di vendita sono la fonte di verità per gli eventi che determinano le transizioni di stato delle proposte: devono essere emessi dai verticali e non da altri sistemi.",
+      "Gli eventi inviati devono contenere le informazioni minime per permettere al Motore di correlare l’evento alla proposta e applicare la transizione attesa."
+    ],
+    "edge_cases": [
+      "Invio evento con dati incompleti o non validi: l’evento non deve produrre aggiornamenti di stato non intenzionali; l’esito deve essere rilevabile (es. errore/KO).",
+      "Retry su failure di invio: l’eventuale reinvio non deve causare transizioni multiple indesiderate (idempotenza o chiave di deduplica concordata).",
+      "Invio evento per proposta già in stato finale/non transizionabile: il Motore non deve corrompere lo stato; il verticale deve poter rilevare l’esito anomalo.",
+      "Interruzione di connettività verso l’endpoint del Motore: l’evento deve poter essere reinviato senza perdita di coerenza."
+    ],
+    "assumptions": [
+      "Il requisito non dettaglia payload, codifiche e identificativi evento/proposta: si assume esista una specifica tecnica/API da definire a valle.",
+      "Il requisito non specifica se l’integrazione sia sincrona o asincrona: si assume che il comportamento sia verificabile con test end-to-end indipendentemente dal pattern scelto."
+    ],
+    "notes": "AC condivisi con REQ-I-007.US01 (persona: Motore di Offerte): definizione/implementazione canali/endpoint e test end-to-end sulla transizione di stato resa disponibile ai consumatori dell’elenco offerte del Motore."
+  }
+]

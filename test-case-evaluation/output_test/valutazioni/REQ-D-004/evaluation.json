@@ -1,0 +1,218 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-D-004",
+  "direct": {
+    "tc_count": 10,
+    "coherence_score": 51,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-004.TC01",
+        "detail": "Introduzione di canale 'web', UI specifica e 'vista/endpoint' di consultazione log; il requisito non specifica canali né interfacce."
+      },
+      {
+        "test_id": "REQ-D-004.TC02",
+        "detail": "Introduzione di canale 'web' e navigazione UI specifica; il requisito non specifica canali né sezioni UI."
+      },
+      {
+        "test_id": "REQ-D-004.TC03",
+        "detail": "Introduzione di canale 'web' e flusso UI di cancellazione/conferma; il requisito non specifica UI."
+      },
+      {
+        "test_id": "REQ-D-004.TC04",
+        "detail": "Assunzione di una classificazione/flag 'regola critica' e di un campo motivazione esposto in UI/servizio; il requisito non definisce come identificare 'critico' né dove venga inserita la motivazione."
+      },
+      {
+        "test_id": "REQ-D-004.TC05",
+        "detail": "Comportamento in caso di motivazione mancante: blocco salvataggio, messaggio di validazione e assenza di nuovo record di log. Il requisito dice 'obbligatoria' ma non specifica modalità di enforcement né cosa succede al logging su tentativo fallito."
+      },
+      {
+        "test_id": "REQ-D-004.TC06",
+        "detail": "Assunzione esplicita di regole 'non critiche' e di comportamento del campo motivazione (nullo/assente) per non critiche; il requisito non definisce quando la motivazione sia prevista, solo che se prevista va salvata ed è obbligatoria per critiche."
+      },
+      {
+        "test_id": "REQ-D-004.TC07",
+        "detail": "Assunzione di filtri di consultazione (intervallo date, operation_type) e presentazione in lista/dettaglio; il requisito richiede solo disponibilità per consultazione."
+      },
+      {
+        "test_id": "REQ-D-004.TC08",
+        "detail": "Assunzione del formato di export CSV e di colonne specifiche; il requisito richiede esportazione ma non specifica formati/struttura."
+      },
+      {
+        "test_id": "REQ-D-004.TC09",
+        "detail": "Introduzione di ruoli/permessi (utente non Marketing non può modificare) e relativo comportamento di logging; il requisito cita 'modifica eseguita dal marketing' ma non definisce un modello autorizzativo né divieti per altri ruoli."
+      },
+      {
+        "test_id": "REQ-D-004.TC10",
+        "detail": "Gestione errori/policy transazionale logging vs modifica (fail-close/fail-open), alert tecnici, e simulazione 503; il requisito non tratta resilienza/atomicità né gestione errori del logging."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'dettaglio dello stato della regola/bundle/campagna prima e dopo la modifica'",
+        "detail": "I TC esercitano solo 'regole' e non coprono esplicitamente anche bundle e campagne come oggetti di configurazione."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-004.TC04",
+          "REQ-D-004.TC06"
+        ],
+        "detail": "Entrambi validano update con presenza/assenza motivazione e verifica che la motivazione sia (o non sia) richiesta/salvata; differiscono solo per 'critica' vs 'non critica' ma la distinzione non è definita nel requisito."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 24,
+    "coherence_score": 0,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-D-004.US01.TC01",
+        "detail": "Introduzione di canale 'dashboard', concetto di 'dashboard' e flusso UI; il requisito non specifica canali/interfacce."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC02",
+        "detail": "Introduzione di canale 'dashboard' e flusso UI; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC03",
+        "detail": "Introduzione di canale 'dashboard' e flusso UI; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC04",
+        "detail": "Assunzione di enforcement: blocco salvataggio e messaggio errore per motivazione mancante; il requisito non definisce il comportamento applicativo in caso di mancanza motivazione."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC05",
+        "detail": "Assunzione che la motivazione sia visibile in consultazione log via dashboard; il requisito dice che la motivazione è salvata (se prevista) ma non specifica canale/UI."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC06",
+        "detail": "Assunzione che il flusso consenta motivazione opzionale anche per non critiche; non derivabile dal requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC07",
+        "detail": "Assunzione di autorizzazioni specifiche 'Marketing' per consultazione e che i campi minimi siano visibili in lista o dettaglio; il requisito non definisce ruoli né UI."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC08",
+        "detail": "Assunzione di export via dashboard e flusso di download; il requisito non specifica modalità."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC09",
+        "detail": "Assunzione di controllo accessi per consultazione/esportazione log per utenti non Marketing; il requisito non tratta autorizzazioni."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC10",
+        "detail": "Gestione fault logging e requisito di segnalazione/rollback 'da definire'; il requisito non tratta error handling/atomicità."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC11",
+        "detail": "Scenario su stati non serializzabili o troppo grandi e policy di truncation/errore; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC12",
+        "detail": "Scenario di concorrenza e ordine temporale dei log; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC01",
+        "detail": "Introduzione di 'Motore di Offerte', canali API/evento/job e interfacce di lettura; il requisito non menziona componenti/architettura."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC02",
+        "detail": "Assunzione che il 'Motore di Offerte' rifiuti richieste critiche senza motivazione con errore 4xx; il requisito non definisce protocolli/risposte."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC03",
+        "detail": "Introduzione di flag_critico trasmesso in richiesta; non definito nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC04",
+        "detail": "Introduzione di canale/servizio di lettura log del 'Motore di Offerte' e filtri; architettura non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC05",
+        "detail": "Introduzione di canale/servizio di export del 'Motore di Offerte'; architettura non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC06",
+        "detail": "Policy per richieste senza user_id (rifiuto o valorizzazione 'system'); il requisito impone user_id nel record ma non menziona richieste senza user_id né valori sostitutivi."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC07",
+        "detail": "Policy su timestamp client mancante/non valido (server-side vs rifiuto); non definito nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC08",
+        "detail": "Gestione fault persistenza log e comportamento 'successo con segnalazione vs rollback'; non definito nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC01",
+        "detail": "Introduzione di persona/ruolo 'Compliance' e relativo accesso; il requisito non menziona attori diversi dal marketing."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC04",
+        "detail": "Export per Compliance e permessi di esportazione separati; modello autorizzativo non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC05",
+        "detail": "Caso 'Compliance senza permesso export'; modello permessi non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC06",
+        "detail": "Indisponibilità temporanea del servizio di recupero log e comportamento UI (nessun dato parziale); non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC07",
+        "detail": "Richiede 'evidenza di non conformità' per record critico senza motivazione e che tale record possa esistere; il requisito impone obbligatorietà ma non definisce gestione/visualizzazione di non conformità."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Descrizione requisito: 'dettaglio dello stato della regola/bundle/campagna prima e dopo la modifica'",
+        "detail": "I TC esercitano solo 'regole' e non coprono esplicitamente bundle e campagne come oggetti di configurazione."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-D-004.US01.TC07",
+          "REQ-D-004.US03.TC01"
+        ],
+        "detail": "Entrambi verificano consultazione log via dashboard per un utente autorizzato; differiscono solo per ruolo (Marketing vs Compliance), non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-D-004.US01.TC08",
+          "REQ-D-004.US03.TC04"
+        ],
+        "detail": "Entrambi verificano esportazione log via dashboard per utente autorizzato; differiscono solo per ruolo, non richiesto dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-D-004.US01.TC10",
+          "REQ-D-004.US02.TC08"
+        ],
+        "detail": "Entrambi testano failure di persistenza/generazione log e assenza di record incompleti con comportamento 'da definire'."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1..AC-3), ma il set direct introduce meno elementi non tracciabili al requisito (10 added_info vs 25) e meno ridondanze (1 vs 3). Inoltre il set indirect_persona aggiunge molta architettura e ruoli (dashboard, Motore di Offerte, Compliance, permessi) non menzionati nel requisito, abbassando drasticamente la coerenza. Per questo direct ottiene un punteggio superiore (51 vs 0)."
+  }
+}

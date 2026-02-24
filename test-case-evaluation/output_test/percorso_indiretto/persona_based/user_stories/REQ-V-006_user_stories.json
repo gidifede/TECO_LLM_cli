@@ -1,0 +1,93 @@
+[
+  {
+    "story_id": "REQ-V-006.US01",
+    "title": "Escludere combinazioni vietate dalle offerte mostrate al cliente",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "non ricevere proposte che includono combinazioni contrassegnate come 'vietato'",
+    "benefit": "vedere solo offerte conformi ai vincoli regolatori su qualsiasi canale",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio che le combinazioni contrassegnate come 'vietato' non mi vengano mai proposte\nIn modo che io veda solo offerte conformi ai vincoli regolatori su tutti i canali supportati",
+    "channels": [
+      "UP (fisico)",
+      "App",
+      "Web"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo o ricevo proposte di combinazioni/offerte su un canale supportato ALLORA nessuna proposta contiene combinazioni contrassegnate come 'vietato' (in ambiente di test).",
+      "QUANDO una combinazione è contrassegnata come 'vietato' ALLORA non mi viene proposta indipendentemente dal canale (fisico o digitale)."
+    ],
+    "business_rules": [
+      "Le combinazioni con flag regolatorio 'vietato' sono sempre escluse dalle proposte mostrate al cliente, salvo override esplicitamente autorizzato a livello di ruoli/permessi (non in capo al cliente)."
+    ],
+    "edge_cases": [
+      "La proposta include più combinazioni e una sola è 'vietato': la proposta non deve essere mostrata al cliente.",
+      "Il canale digitale o fisico richiede una proposta già pronta: se contiene un 'vietato', deve essere sostituita con alternativa consentita oppure non mostrata (comportamento di fallback non specificato)."
+    ],
+    "assumptions": [
+      "Il cliente non dispone di alcuna funzionalità per richiedere o applicare override manuali; eventuali override sono gestiti da ruoli interni autorizzati."
+    ],
+    "notes": "AC condivisi con REQ-V-006.US02 (Operatore in ufficio postale (sportello/sala)) e REQ-V-006.US03 (Motore di Offerte) relativamente all'esclusione delle combinazioni 'vietato' su tutti i canali."
+  },
+  {
+    "story_id": "REQ-V-006.US02",
+    "title": "Non proporre al cliente combinazioni vietate in canale fisico",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare e proporre solo combinazioni consentite, senza includere combinazioni 'vietato'",
+    "benefit": "evitare proposte non conformi e ridurre rischi regolatori in fase di vendita assistita",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio che il sistema non mi mostri combinazioni contrassegnate come 'vietato' tra le proposte\nIn modo che io possa proporre al cliente solo offerte conformi ai vincoli regolatori",
+    "channels": [
+      "front-end commerciale (sportello/sala)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO richiedo proposte per un cliente in canale fisico ALLORA nessuna proposta contiene combinazioni contrassegnate come 'vietato' (in ambiente di test).",
+      "QUANDO tento di finalizzare/avviare una proposta che contiene una combinazione 'vietato' ALLORA il sistema la rifiuta automaticamente se non è presente un override autorizzato."
+    ],
+    "business_rules": [
+      "Le combinazioni 'vietato' non devono essere proponibili in nessun caso senza un override esplicitamente autorizzato da ruoli/permessi.",
+      "In assenza di autorizzazione all'override, qualsiasi proposta contenente combinazioni 'vietato' deve essere rifiutata."
+    ],
+    "edge_cases": [
+      "L'operatore riceve una proposta da un sistema a monte già composta: se contiene 'vietato', deve essere bloccata/rifiutata.",
+      "L'operatore non ha i permessi per override ma prova a procedere comunque: il sistema deve impedire l'azione e rifiutare la proposta."
+    ],
+    "assumptions": [
+      "L'eventuale funzionalità di override (se prevista) non è necessariamente esposta all'Operatore; dipende dalla configurazione dei ruoli/permessi (dettagli non forniti)."
+    ],
+    "notes": "AC condivisi con REQ-V-006.US01 (Cliente (fisico o digitale)) e REQ-V-006.US03 (Motore di Offerte) sull'esclusione delle combinazioni 'vietato'. L'audit trail dell'override è trattato nella US del Motore."
+  },
+  {
+    "story_id": "REQ-V-006.US03",
+    "title": "Applicare vincoli 'vietato' e gestire override autorizzati con audit trail",
+    "persona": "Motore di Offerte",
+    "goal": "escludere automaticamente combinazioni 'vietato' dalle proposte e consentire eccezioni solo con override autorizzato e tracciato",
+    "benefit": "garantire conformità regolatoria e tracciabilità delle eccezioni su tutti i canali",
+    "user_story": "Come Motore di Offerte\nVoglio applicare il vincolo del flag regolatorio 'vietato' escludendo tali combinazioni dalle proposte e consentendo eccezioni solo con override autorizzato e tracciato\nIn modo che le offerte generate siano conformi e le eccezioni siano auditabili",
+    "channels": [
+      "integrazioni verso canali digitali (App/Web)",
+      "integrazioni verso canale fisico (front-end commerciale)"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO genero proposte a partire da combinazioni configurate ALLORA escludo tutte le combinazioni contrassegnate come 'vietato' e non le restituisco a nessun canale (in ambiente di test).",
+      "QUANDO viene richiesta/applicata una eccezione manuale su una combinazione 'vietato' ALLORA genero la proposta solo SE esiste esplicita autorizzazione coerente con la configurazione ruoli/permessi.",
+      "QUANDO una eccezione manuale autorizzata viene applicata ALLORA registro l'azione con audit trail.",
+      "QUANDO una proposta contiene combinazioni 'vietato' e non è presente un override autorizzato ALLORA il sistema rifiuta automaticamente la proposta."
+    ],
+    "business_rules": [
+      "Il flag regolatorio 'vietato' è un vincolo obbligatorio per la generazione delle offerte: default = proibito.",
+      "L'override è ammesso solo se esplicitamente autorizzato nella configurazione ruoli/permessi; in assenza di autorizzazione la combinazione resta proibita.",
+      "Ogni override autorizzato deve essere tracciato con audit trail."
+    ],
+    "edge_cases": [
+      "Richiesta di override con ruolo non autorizzato: l'override deve essere negato e la proposta rifiutata.",
+      "Mancata disponibilità/errore nel recupero dei permessi: per sicurezza la combinazione resta proibita e la proposta viene rifiutata (fail-safe).",
+      "Audit trail non scrivibile (errore persistenza): l'override non deve produrre proposta (comportamento non specificato; richiesto chiarimento)."
+    ],
+    "assumptions": [
+      "Esiste una sorgente/configurazione dei ruoli/permessi consultabile dal Motore per valutare l'autorizzazione all'override, ma il requisito non specifica dove risieda né il modello autorizzativo.",
+      "L'audit trail include almeno: identificativo combinazione, timestamp, utente/ruolo che ha applicato l'override e canale/contesto dell'azione (dettagli non esplicitati nel requisito)."
+    ],
+    "notes": "Il requisito non specifica chi esegua operativamente l'override (quale persona/ruolo) né il dettaglio dei campi dell'audit trail: assunti i minimi dati per renderlo verificabile. AC condivisi con REQ-V-006.US01 e REQ-V-006.US02 per l'esclusione delle combinazioni 'vietato' su tutti i canali."
+  }
+]

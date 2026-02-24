@@ -1,0 +1,170 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-006",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 56,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-006.TC01",
+        "detail": "Introduce canali specifici 'web' e 'app' (e la condizione 'se disponibili') non elencati nel requisito, che parla genericamente di 'canali supportati'."
+      },
+      {
+        "test_id": "REQ-V-006.TC01",
+        "detail": "Introduce dati di dominio specifici (Prodotto=Auto, Garanzia=Kasko, Franchigia=0/250 EUR) non tracciabili al requisito."
+      },
+      {
+        "test_id": "REQ-V-006.TC02",
+        "detail": "Introduce ruoli/utenti e permessi nominali (SalesBase, override_vietato=false) non specificati nel requisito (che parla solo di autorizzazione in ruoli/permessi in modo generico)."
+      },
+      {
+        "test_id": "REQ-V-006.TC02",
+        "detail": "Richiede un 'codice/causale' di errore verificabile; il requisito non richiede esplicitamente codici o messaggistica, solo il rifiuto automatico."
+      },
+      {
+        "test_id": "REQ-V-006.TC03",
+        "detail": "Assume campi minimi dell'audit trail (utente, azione, combinazione, timestamp) e una correlazione univoca (ID proposta/correlation-id) non specificati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-006.TC04",
+        "detail": "Introduce la distinzione 'log di tentativo fallito accettabili' e la verifica 'nessun audit di override valido' per tentativi non autorizzati: il requisito non richiede audit per tentativi falliti, solo tracciamento quando l'eccezione è autorizzata."
+      },
+      {
+        "test_id": "REQ-V-006.TC05",
+        "detail": "Aggiunge scenario di indisponibilità/timeout del servizio configuratore e una strategia 'fail-closed' (blocco generazione) non descritta nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.TC05",
+        "detail": "Introduce dettagli tecnici specifici (HTTP 503, timeout >10s, mock/fault injection) non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.TC06",
+        "detail": "Aggiunge scenario di cambio flag post-proposta e rigenerazione/riquotazione: non è richiesto dal requisito (che parla di non proporre combinazioni vietate e di override/rifiuto)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1: 'su nessun canale in ambiente di test'",
+        "detail": "La copertura è limitata a web/app e non dimostra 'nessun canale' (tutti i canali supportati) perché i canali supportati non vengono enumerati/derivati da configurazione; il test stesso ammette l'assunzione."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-006.TC02",
+          "REQ-V-006.TC04"
+        ],
+        "detail": "Entrambi verificano il rifiuto di una proposta con combinazione vietata in assenza di override autorizzato; TC04 aggiunge il tentativo di override non autorizzato ma lo scenario di base (rifiuto) è sovrapposto."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 12,
+    "coherence_score": 27,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-006.US01.TC01",
+        "detail": "Introduce entità 'Cliente' e flussi di 'visualizzazione offerte' lato cliente; il requisito parla di proposte ai clienti ma non definisce login, sezioni UI, né oggetti 'OFF-xxxxx'."
+      },
+      {
+        "test_id": "REQ-V-006.US01.TC01",
+        "detail": "Introduce canali specifici Web/App non esplicitati dal requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US01.TC02",
+        "detail": "Introduce un canale fisico 'UP' non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US02.TC01",
+        "detail": "Introduce 'front-end commerciale (sportello/sala)' come canale/artefatto non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US02.TC02",
+        "detail": "Introduce concetti di 'finalizzazione', 'pratica/ordine' e flussi di canale fisico non presenti nel requisito (che richiede solo rifiuto di proposte con combinazioni vietate senza override)."
+      },
+      {
+        "test_id": "REQ-V-006.US02.TC03",
+        "detail": "Introduce azioni 'Forza finalizzazione' o UI/API interne del canale per override: non descritte dal requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC01",
+        "detail": "Introduce un parametro/contesto canale passato al Motore (richieste con contesto 'Web/App/front-end commerciale'): il requisito non specifica un'interfaccia né che il canale sia un input del Motore."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC02",
+        "detail": "Assume modalità di richiesta override (campo, header o endpoint dedicato) e una 'sorgente permessi/ruoli consultabile dal Motore' non specificate nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC02",
+        "detail": "Assume campi minimi dell'audit trail includendo 'contesto canale' oltre a identità/ruolo/timestamp; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC03",
+        "detail": "Assume 'errore di autorizzazione' specifico come risposta; il requisito richiede rifiuto automatico, non il tipo di errore."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC04",
+        "detail": "Aggiunge scenario di indisponibilità del servizio permessi e comportamento fail-safe; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US03.TC06",
+        "detail": "Aggiunge scenario di fallimento persistenza audit trail e comportamento atteso 'da chiarire'; il requisito non definisce tale caso e l'expected result non è deterministico rispetto al requisito."
+      },
+      {
+        "test_id": "REQ-V-006.US01.TC01",
+        "detail": "Introduce regole di eleggibilità 'non oggetto di questa story' e condiziona la visibilità di offerte consentite; il requisito non parla di eleggibilità."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-1: 'su nessun canale in ambiente di test'",
+        "detail": "Pur citando più canali (Web/App/UP/front-end commerciale), non dimostra 'nessun canale' perché l'insieme dei canali supportati non è derivato dal requisito né validato come completo."
+      },
+      {
+        "source": "Acceptance Criteria AC-2: 'azione è tracciata con audit trail'",
+        "detail": "Alcuni TC (es. US03.TC06) rendono l'atteso non deterministico ('dipende dall'implementazione') e quindi non verificano in modo pienamente tracciabile il requisito (che richiede tracciamento quando l'eccezione è autorizzata)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-006.US01.TC02",
+          "REQ-V-006.US02.TC01"
+        ],
+        "detail": "Entrambi verificano che in canale fisico non vengano presentate offerte con combinazioni vietate; cambiano i dettagli del front-end ma lo scenario di esclusione è sostanzialmente lo stesso rispetto al requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-V-006.US02.TC02",
+          "REQ-V-006.US03.TC05"
+        ],
+        "detail": "Entrambi coprono il rifiuto automatico di una proposta contenente 'vietato' senza override; cambia il livello (canale vs Motore) ma lo scenario richiesto dall'AC-3 è ripetuto."
+      },
+      {
+        "test_ids": [
+          "REQ-V-006.US03.TC03",
+          "REQ-V-006.US03.TC05"
+        ],
+        "detail": "Entrambi verificano che con override non autorizzato/assente la proposta venga rifiutata e non contenga combinazioni vietate; elevata sovrapposizione sugli esiti."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1/2/3), ma il set direct introduce meno informazioni non tracciabili (9 added_info vs 13) e meno elementi mancanti/non pienamente verificati (1 missing_info vs 2). Inoltre presenta meno ridondanze (1 vs 3). Di conseguenza ottiene un punteggio di coerenza superiore (56 vs 27)."
+  }
+}

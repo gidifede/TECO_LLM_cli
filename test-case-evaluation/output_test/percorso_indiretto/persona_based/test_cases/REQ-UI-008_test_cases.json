@@ -1,0 +1,317 @@
+[
+  {
+    "story_id": "REQ-UI-008.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-008.US01.TC01",
+        "title": "Pop-up proposta: visualizzazione contenuti minimi e correttezza valori (Web)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente Web disponibile e raggiungibile",
+          "È possibile forzare/ottenere la visualizzazione del pop-up proposta con un set dati noto (es. tramite configurazione QA, deep link, flag o scenario applicativo che lo attiva)",
+          "Il sistema fornisce al canale Web i dati della proposta (nome, URL immagine, prezzo scontato, valore sconto) in modo ispezionabile (es. payload di rete/DTO/log QA)"
+        ],
+        "test_data": [
+          "Nome prodotto (atteso): \"Cuffie Bluetooth XYZ\"",
+          "Immagine prodotto (attesa): URL valido https://cdn.example.com/products/xyz.jpg",
+          "Prezzo scontato (atteso): 79,99 EUR",
+          "Valore sconto (atteso): 20% (oppure 20,00 EUR se previsto dal dato; usare il formato fornito dal payload)"
+        ],
+        "steps": [
+          "Aprire l'applicazione sul canale Web",
+          "Eseguire il percorso che attiva la visualizzazione del pop-up di proposta",
+          "Quando il pop-up è visualizzato, rilevare il testo del nome prodotto mostrato",
+          "Rilevare l'immagine mostrata nel pop-up (elemento immagine e relativo source/anteprima)",
+          "Rilevare il prezzo scontato mostrato nel pop-up",
+          "Rilevare l'indicazione del valore dello sconto mostrata nel pop-up",
+          "Recuperare i valori di input della proposta dal payload/DTO/log del canale Web relativo al pop-up",
+          "Confrontare i valori visualizzati nel pop-up con i valori forniti dal sistema"
+        ],
+        "expected_results": [
+          "Il pop-up mostra il nome del prodotto suggerito ed è valorizzato (non vuoto)",
+          "Il nome prodotto mostrato coincide con il valore nel payload/DTO/log (es. \"Cuffie Bluetooth XYZ\")",
+          "Il pop-up mostra un'immagine rappresentativa del prodotto (elemento immagine presente e renderizzato)",
+          "L'immagine mostrata corrisponde alla risorsa indicata nel payload/DTO/log (es. source/URL https://cdn.example.com/products/xyz.jpg) oppure è coerente con essa",
+          "Il pop-up mostra il prezzo scontato ed è valorizzato (non vuoto)",
+          "Il prezzo scontato mostrato coincide con il valore nel payload/DTO/log (es. 79,99 EUR) includendo formattazione valuta/decimali prevista",
+          "Il pop-up mostra l'indicazione del valore dello sconto ed è valorizzata (non vuota)",
+          "Il valore dello sconto mostrato coincide con il valore nel payload/DTO/log (es. 20%) includendo formato previsto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "La verifica di correttezza valori dipende dalla disponibilità di un payload/DTO/log ispezionabile per il pop-up. Se il formato dello sconto può essere percentuale o importo, usare esattamente il formato fornito dal dato di input."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC02",
+        "title": "Pop-up proposta: visualizzazione contenuti minimi e correttezza valori (App)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "App installata e avviabile su un dispositivo supportato",
+          "È possibile forzare/ottenere la visualizzazione del pop-up proposta con un set dati noto (es. feature flag QA, deep link, scenario applicativo che lo attiva)",
+          "Il sistema fornisce al canale App i dati della proposta (nome, riferimento immagine, prezzo scontato, valore sconto) in modo ispezionabile (es. proxy di rete, log QA, strumenti di debug)"
+        ],
+        "test_data": [
+          "Nome prodotto (atteso): \"Cuffie Bluetooth XYZ\"",
+          "Immagine prodotto (attesa): asset/URL valido https://cdn.example.com/products/xyz.jpg",
+          "Prezzo scontato (atteso): 79,99 EUR",
+          "Valore sconto (atteso): 20% (oppure 20,00 EUR se previsto dal dato; usare il formato fornito dal payload)"
+        ],
+        "steps": [
+          "Aprire l'app sul dispositivo",
+          "Eseguire il percorso che attiva la visualizzazione del pop-up di proposta",
+          "Quando il pop-up è visualizzato, rilevare il testo del nome prodotto mostrato",
+          "Rilevare l'immagine mostrata nel pop-up (presenza e rendering)",
+          "Rilevare il prezzo scontato mostrato nel pop-up",
+          "Rilevare l'indicazione del valore dello sconto mostrata nel pop-up",
+          "Recuperare i valori di input della proposta dal payload/log del canale App relativo al pop-up",
+          "Confrontare i valori visualizzati nel pop-up con i valori forniti dal sistema"
+        ],
+        "expected_results": [
+          "Il pop-up mostra il nome del prodotto suggerito ed è valorizzato (non vuoto)",
+          "Il nome prodotto mostrato coincide con il valore nel payload/log (es. \"Cuffie Bluetooth XYZ\")",
+          "Il pop-up mostra un'immagine rappresentativa del prodotto (elemento immagine presente e renderizzato)",
+          "L'immagine mostrata corrisponde alla risorsa indicata nel payload/log (es. asset/URL https://cdn.example.com/products/xyz.jpg) oppure è coerente con essa",
+          "Il pop-up mostra il prezzo scontato ed è valorizzato (non vuoto)",
+          "Il prezzo scontato mostrato coincide con il valore nel payload/log (es. 79,99 EUR) includendo formattazione valuta/decimali prevista",
+          "Il pop-up mostra l'indicazione del valore dello sconto ed è valorizzata (non vuota)",
+          "Il valore dello sconto mostrato coincide con il valore nel payload/log (es. 20%) includendo formato previsto"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "La verifica di correttezza valori dipende dalla disponibilità di log/proxy di rete o strumenti di debug. Se il formato dello sconto può essere percentuale o importo, usare esattamente il formato fornito dal dato di input."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC03",
+        "title": "Pop-up proposta: conformità leggibilità e linee guida grafiche (Web)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente Web disponibile e raggiungibile",
+          "Pop-up di proposta visualizzabile",
+          "Documento/UI kit delle linee guida grafiche disponibile (dimensioni minime font, contrasti minimi, regole di formattazione prezzi)"
+        ],
+        "test_data": [
+          "Proposta con nome, prezzo scontato e sconto valorizzati (qualsiasi valore reale)",
+          "Riferimento alle soglie del UI kit: dimensione minima font per testi e prezzi; rapporto di contrasto minimo; eventuali regole di evidenziazione del prezzo"
+        ],
+        "steps": [
+          "Aprire l'applicazione sul canale Web",
+          "Eseguire il percorso che attiva la visualizzazione del pop-up di proposta",
+          "Verificare la dimensione del font del nome prodotto rispetto alle linee guida",
+          "Verificare la dimensione del font del prezzo scontato rispetto alle linee guida",
+          "Verificare la dimensione del font dell'indicazione di sconto rispetto alle linee guida",
+          "Verificare il contrasto testo/sfondo per nome prodotto, prezzo scontato e sconto rispetto alle linee guida (es. tramite strumenti di ispezione CSS e calcolo contrasto)",
+          "Verificare che i valori (testi e prezzi) siano leggibili senza sovrapposizioni o tagli che impediscano la lettura"
+        ],
+        "expected_results": [
+          "Le dimensioni dei font per nome prodotto, prezzo scontato e sconto rispettano le soglie minime definite dal UI kit",
+          "Il contrasto tra testi (nome, prezzo, sconto) e sfondo rispetta il rapporto minimo definito dal UI kit",
+          "Nome prodotto, prezzo scontato e valore sconto risultano leggibili (nessuna sovrapposizione, nessun taglio che impedisca la lettura)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "Web"
+        ],
+        "notes": "Dipendenza esterna: UI kit/linee guida grafiche. Le soglie (font/contrasto) devono essere rese disponibili per rendere il test oggettivo e automatizzabile."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC04",
+        "title": "Pop-up proposta: conformità leggibilità e linee guida grafiche (App)",
+        "type": "UI",
+        "priority": "HIGH",
+        "preconditions": [
+          "App installata e avviabile su un dispositivo supportato",
+          "Pop-up di proposta visualizzabile",
+          "Documento/UI kit delle linee guida grafiche disponibile (dimensioni minime font, contrasti minimi, regole di formattazione prezzi)"
+        ],
+        "test_data": [
+          "Proposta con nome, prezzo scontato e sconto valorizzati (qualsiasi valore reale)",
+          "Riferimento alle soglie del UI kit: dimensione minima font per testi e prezzi; rapporto di contrasto minimo"
+        ],
+        "steps": [
+          "Aprire l'app sul dispositivo",
+          "Eseguire il percorso che attiva la visualizzazione del pop-up di proposta",
+          "Verificare la dimensione del font del nome prodotto rispetto alle linee guida",
+          "Verificare la dimensione del font del prezzo scontato rispetto alle linee guida",
+          "Verificare la dimensione del font dell'indicazione di sconto rispetto alle linee guida",
+          "Verificare il contrasto testo/sfondo per nome prodotto, prezzo scontato e sconto rispetto alle linee guida (es. tramite strumenti di ispezione/accessibilità disponibili)",
+          "Verificare che i valori (testi e prezzi) siano leggibili senza sovrapposizioni o tagli che impediscano la lettura"
+        ],
+        "expected_results": [
+          "Le dimensioni dei font per nome prodotto, prezzo scontato e sconto rispettano le soglie minime definite dal UI kit",
+          "Il contrasto tra testi (nome, prezzo, sconto) e sfondo rispetta il rapporto minimo definito dal UI kit",
+          "Nome prodotto, prezzo scontato e valore sconto risultano leggibili (nessuna sovrapposizione, nessun taglio che impedisca la lettura)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "App"
+        ],
+        "notes": "Dipendenza esterna: UI kit/linee guida grafiche. Specificare device/OS supportati per rendere ripetibile la verifica su un set minimo di dispositivi."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC05",
+        "title": "Pop-up proposta: immagine prodotto non disponibile (gestione placeholder o blocco visualizzazione)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Canali App e Web disponibili",
+          "È possibile fornire al pop-up una proposta con riferimento immagine mancante o non raggiungibile (URL 404/timeout) tramite configurazione QA o mock",
+          "Linee guida grafiche/UX per gestione immagine mancante disponibili oppure decisione di prodotto documentata"
+        ],
+        "test_data": [
+          "Nome prodotto: \"Cuffie Bluetooth XYZ\"",
+          "Immagine prodotto: URL non raggiungibile https://cdn.example.com/products/missing.jpg (404)",
+          "Prezzo scontato: 79,99 EUR",
+          "Valore sconto: 20%"
+        ],
+        "steps": [
+          "Sul canale Web, attivare il pop-up con immagine non disponibile",
+          "Osservare il comportamento del pop-up relativamente alla sezione immagine",
+          "Sul canale App, attivare il pop-up con immagine non disponibile",
+          "Osservare il comportamento del pop-up relativamente alla sezione immagine"
+        ],
+        "expected_results": [
+          "Il comportamento in caso di immagine non disponibile è coerente con quanto definito dalle linee guida/UX: oppure il pop-up non viene mostrato, oppure viene mostrato un placeholder conforme",
+          "In caso di placeholder: il pop-up continua a mostrare nome prodotto, prezzo scontato e valore sconto senza risultare visivamente rotto",
+          "Non si verificano errori bloccanti dell'interfaccia (crash App, pagina Web in errore) durante il rendering del pop-up"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Edge case indicato come 'da chiarire'. Il test verifica il comportamento atteso una volta definita la regola (placeholder vs blocco pop-up)."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC06",
+        "title": "Pop-up proposta: prezzo scontato o valore sconto non valorizzati (gestione dati incompleti)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali App e Web disponibili",
+          "È possibile fornire al pop-up una proposta con prezzo scontato nullo/vuoto e/o valore sconto nullo/vuoto tramite configurazione QA o mock",
+          "Decisione di prodotto/UX per gestione campi mancanti disponibile (es. non mostrare pop-up, mostrare fallback, mostrare 0,00, ecc.)"
+        ],
+        "test_data": [
+          "Scenario A: Prezzo scontato = null; Valore sconto = 20%",
+          "Scenario B: Prezzo scontato = 79,99 EUR; Valore sconto = null",
+          "Scenario C: Prezzo scontato = null; Valore sconto = null",
+          "Nome prodotto: \"Cuffie Bluetooth XYZ\"",
+          "Immagine prodotto: https://cdn.example.com/products/xyz.jpg"
+        ],
+        "steps": [
+          "Sul canale Web, attivare il pop-up con i dati dello Scenario A",
+          "Osservare i campi prezzo scontato e valore sconto nel pop-up",
+          "Sul canale Web, attivare il pop-up con i dati dello Scenario B",
+          "Osservare i campi prezzo scontato e valore sconto nel pop-up",
+          "Sul canale App, attivare il pop-up con i dati dello Scenario C",
+          "Osservare i campi prezzo scontato e valore sconto nel pop-up"
+        ],
+        "expected_results": [
+          "Il pop-up non risulta incompleto in modo non conforme alle regole definite: il comportamento (blocco pop-up, fallback, placeholder testuale) è coerente con la decisione di prodotto/UX",
+          "Non vengono mostrati valori tecnici o placeholder non ammessi (es. \"null\", \"NaN\", stringhe vuote che lasciano buchi non gestiti)",
+          "Non si verificano errori bloccanti dell'interfaccia (crash App, errori JS) durante il rendering"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Edge case indicato come 'da chiarire'. Il requisito non specifica la regola in caso di prezzo/sconto mancanti; il test va allineato alla decisione UX per rendere verificabile l'expected result."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC07",
+        "title": "Pop-up proposta: nome prodotto molto lungo (wrapping/troncamento e leggibilità)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Canali App e Web disponibili",
+          "È possibile fornire al pop-up un nome prodotto molto lungo tramite configurazione QA o mock",
+          "Linee guida grafiche/UX per gestione testi lunghi disponibili (wrapping, ellissi, numero massimo righe)"
+        ],
+        "test_data": [
+          "Nome prodotto lungo: \"Cuffie Bluetooth XYZ con Cancellazione Attiva del Rumore, Custodia di Ricarica, Autonomia 40 Ore, Compatibilità Multi-Device\" (>= 120 caratteri)",
+          "Immagine prodotto: https://cdn.example.com/products/xyz.jpg",
+          "Prezzo scontato: 79,99 EUR",
+          "Valore sconto: 20%"
+        ],
+        "steps": [
+          "Sul canale Web, attivare il pop-up con nome prodotto lungo",
+          "Osservare come viene visualizzato il nome prodotto (wrapping/ellissi) e l'impatto su prezzo e sconto",
+          "Sul canale App, attivare il pop-up con nome prodotto lungo",
+          "Osservare come viene visualizzato il nome prodotto (wrapping/ellissi) e l'impatto su prezzo e sconto"
+        ],
+        "expected_results": [
+          "Il nome prodotto è gestito secondo le linee guida (wrapping o troncamento con ellissi) senza rendere il pop-up illeggibile",
+          "Prezzo scontato e valore sconto restano visibili e leggibili e non vengono sovrapposti dal nome prodotto",
+          "Non si verificano tagli che impediscano la lettura di prezzo scontato e valore sconto"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "La regola di gestione testi lunghi è indicata come 'da chiarire' rispetto alle linee guida; il test va parametrizzato sulle regole effettive (max righe/ellissi)."
+      },
+      {
+        "test_id": "REQ-UI-008.US01.TC08",
+        "title": "Pop-up proposta: rendering e leggibilità su risoluzioni/browser/device supportati (smoke multi-ambiente)",
+        "type": "E2E",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Elenco minimo di dispositivi/OS/browser supportati disponibile (matrice di compatibilità)",
+          "Pop-up di proposta visualizzabile su App e Web",
+          "Dati proposta completi (nome, immagine, prezzo scontato, valore sconto)"
+        ],
+        "test_data": [
+          "Set minimo di esecuzione (da matrice supportata): 1 dispositivo iOS, 1 dispositivo Android, 1 browser desktop (es. Chrome), 1 browser mobile (es. Safari iOS o Chrome Android)",
+          "Proposta: \"Cuffie Bluetooth XYZ\", immagine valida, prezzo 79,99 EUR, sconto 20%"
+        ],
+        "steps": [
+          "Su ciascun device/browser del set minimo, aprire il canale corrispondente (App o Web)",
+          "Attivare la visualizzazione del pop-up di proposta",
+          "Verificare la presenza di nome prodotto, immagine, prezzo scontato e valore sconto",
+          "Verificare che testi e prezzi risultino leggibili (assenza di sovrapposizioni, tagli critici, contrasto percepibile) sul device/browser corrente"
+        ],
+        "expected_results": [
+          "Su ogni device/browser testato il pop-up mostra nome prodotto, immagine, prezzo scontato e valore sconto",
+          "Su ogni device/browser testato il contenuto risulta leggibile e non presenta difetti di rendering bloccanti (sovrapposizioni, elementi fuori schermo, testi illeggibili)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Edge case 'differenze di rendering' con dipendenza dall'elenco di device/browser supportati, non fornito. Questo test è uno smoke E2E; eventuali misure oggettive di contrasto/font richiedono strumenti e soglie dal UI kit."
+      }
+    ]
+  }
+]

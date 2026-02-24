@@ -1,0 +1,668 @@
+[
+  {
+    "story_id": "REQ-NF-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-006.US01.TC01",
+        "title": "Dashboard Marketing: visibilità limitata ai soli dataset/sezioni autorizzati dal ruolo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' sono configurati permessi di visualizzazione: Dataset/Sezione A = CONSENTITO, Dataset/Sezione B = NEGATO",
+          "La dashboard contiene dati per Dataset/Sezione A e B"
+        ],
+        "test_data": [
+          "Utente: U_MKT",
+          "Ruolo: Team Marketing",
+          "Permessi: Visualizza A=ON, Visualizza B=OFF"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT",
+          "Aprire la pagina/sezione della dashboard che presenta Dataset/Sezione A",
+          "Verificare la presenza dei dati di Dataset/Sezione A",
+          "Aprire la pagina/sezione della dashboard che presenta Dataset/Sezione B",
+          "Verificare l'assenza dei dati di Dataset/Sezione B"
+        ],
+        "expected_results": [
+          "I dati relativi a Dataset/Sezione A sono visibili e consultabili",
+          "I dati relativi a Dataset/Sezione B non sono visibili e non sono consultabili",
+          "Non sono mostrati contenuti riconducibili a Dataset/Sezione B (es. tabelle, grafici, dettagli) nella UI"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story non specifica quali dataset/sezioni esistano: il test assume almeno due sezioni (A consentita, B negata) per verificare RBAC."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC02",
+        "title": "Dashboard Marketing: utente senza permessi di visualizzazione vede empty state coerente",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT_NOPERM con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' sono configurati permessi di visualizzazione: nessun dataset/sezione consentito",
+          "La dashboard contiene dati (almeno un dataset/sezione disponibile per altri ruoli)"
+        ],
+        "test_data": [
+          "Utente: U_MKT_NOPERM",
+          "Ruolo: Team Marketing",
+          "Permessi: Visualizza (tutti)=OFF"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT_NOPERM",
+          "Navigare nelle principali sezioni della dashboard (home e/o sezioni dati disponibili)"
+        ],
+        "expected_results": [
+          "La dashboard non mostra alcun dato (nessun grafico/tabella con valori)",
+          "È mostrato un messaggio/empty state che indica assenza di contenuti disponibili per l'utente (o equivalente comportamento di empty state previsto)",
+          "Non sono esposti dettagli dei dataset non autorizzati (es. intestazioni con nomi sensibili o anteprime dati)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il testo richiede un empty state 'coerente' ma non ne definisce contenuto: si verifica l'assenza di dati e la presenza di un'indicazione di mancanza contenuti."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC03",
+        "title": "Dashboard Marketing: permessi parziali oscurano sezioni non autorizzate senza leak di metadati",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT_PARTIAL con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' sono configurati permessi: Sezione KPI=CONSENTITA, Sezione Dettaglio Clienti=NEGATA",
+          "La dashboard contiene sia KPI sia Dettaglio Clienti"
+        ],
+        "test_data": [
+          "Utente: U_MKT_PARTIAL",
+          "Permessi: KPI=ON, Dettaglio Clienti=OFF"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT_PARTIAL",
+          "Aprire la sezione KPI",
+          "Verificare la visualizzazione dei KPI",
+          "Tentare di aprire la sezione Dettaglio Clienti dalla navigazione della dashboard"
+        ],
+        "expected_results": [
+          "La sezione KPI è visibile e mostra i dati",
+          "La sezione Dettaglio Clienti non è accessibile (non visibile in menu) oppure risulta non utilizzabile",
+          "Non vengono mostrati metadati sensibili della sezione Dettaglio Clienti (es. nomi colonne, conteggi record, preview)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story cita 'senza esporre metadati sensibili': il test verifica l'assenza di elementi UI che rivelino struttura/quantità dei dati non autorizzati."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC04",
+        "title": "Dashboard Marketing: accesso diretto a vista/dettaglio non autorizzato viene negato (URL/API)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' la risorsa 'Dettaglio Dataset B' è NEGATA",
+          "È noto un endpoint o URL interno della dashboard che apre 'Dettaglio Dataset B'"
+        ],
+        "test_data": [
+          "Utente: U_MKT",
+          "Risorsa non autorizzata: Dettaglio Dataset B",
+          "URL/Endpoint: /dashboard/datasetB/dettaglio (esempio)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT",
+          "Inserire direttamente nella barra indirizzi l'URL della risorsa non autorizzata oppure invocare la chiamata applicativa corrispondente",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "L'accesso alla risorsa non autorizzata è negato (es. pagina di 'Accesso negato' o equivalente)",
+          "Non vengono restituiti dati della risorsa non autorizzata nella UI",
+          "Se è presente una chiamata di rete, la risposta non contiene il payload dati della risorsa non autorizzata (es. errore autorizzativo o risposta vuota conforme alle policy)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non specifica se esistano API o URL deep-link: il test è applicabile come verifica di accesso diretto a risorsa protetta (UI routing o backend)."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC05",
+        "title": "Admin ruoli: modifica permessi di visualizzazione per Marketing e applicazione alle sessioni successive",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente amministratore U_ADMIN con accesso all'interfaccia di amministrazione ruoli",
+          "Esiste il ruolo 'Team Marketing' con permessi iniziali: Sezione A=CONSENTITA, Sezione B=NEGATA",
+          "Esiste un utente U_MKT con ruolo 'Team Marketing'",
+          "U_MKT non è attualmente autenticato (nessuna sessione attiva)"
+        ],
+        "test_data": [
+          "Utente admin: U_ADMIN",
+          "Utente marketing: U_MKT",
+          "Cambio permessi: Sezione B da OFF a ON"
+        ],
+        "steps": [
+          "Accedere all'interfaccia di amministrazione dei ruoli come U_ADMIN",
+          "Aprire la configurazione del ruolo 'Team Marketing'",
+          "Abilitare il permesso di visualizzazione per Sezione/Dataset B",
+          "Salvare la configurazione del ruolo",
+          "Accedere alla dashboard come utente U_MKT",
+          "Navigare alla Sezione/Dataset B"
+        ],
+        "expected_results": [
+          "Il salvataggio dei permessi del ruolo va a buon fine",
+          "Nella dashboard, U_MKT visualizza la Sezione/Dataset B e i relativi dati dopo il nuovo accesso",
+          "La visibilità dei dati rispecchia la nuova configurazione del ruolo"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story richiede che le modifiche siano applicate alle 'successive sessioni/azioni': questo test valida l'applicazione a una nuova sessione."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC06",
+        "title": "Admin ruoli: verifica oggettiva dei permessi abilitati/negati per Marketing",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente amministratore U_ADMIN con accesso all'interfaccia di amministrazione ruoli",
+          "Esiste il ruolo 'Team Marketing' con una matrice permessi configurata (almeno un consentito e un negato)"
+        ],
+        "test_data": [
+          "Utente admin: U_ADMIN",
+          "Ruolo: Team Marketing",
+          "Esempio permessi: Sezione A=ON, Sezione B=OFF"
+        ],
+        "steps": [
+          "Accedere all'interfaccia di amministrazione dei ruoli come U_ADMIN",
+          "Aprire la schermata di dettaglio del ruolo 'Team Marketing'",
+          "Individuare l'elenco dei dataset/sezioni e lo stato dei permessi associati"
+        ],
+        "expected_results": [
+          "Per ciascun dataset/sezione configurabile è mostrato uno stato univoco e comprensibile (abilitato/negato o equivalente)",
+          "È possibile determinare senza ambiguità quali dataset/sezioni sono consentiti e quali negati per il ruolo 'Team Marketing'"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non definisce il layout dell'interfaccia: il test verifica la possibilità di determinare oggettivamente lo stato dei permessi."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC07",
+        "title": "Admin ruoli: utente non autorizzato non può configurare/verificare permessi (accesso negato)",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT con ruolo 'Team Marketing'",
+          "L'accesso all'interfaccia di amministrazione ruoli è consentito solo a ruoli amministrativi (non specificati nella story)"
+        ],
+        "test_data": [
+          "Utente: U_MKT",
+          "URL/Voce menu: Interfaccia di amministrazione ruoli"
+        ],
+        "steps": [
+          "Accedere come utente U_MKT",
+          "Tentare di aprire l'interfaccia di amministrazione dei ruoli dalla navigazione oppure tramite URL diretto"
+        ],
+        "expected_results": [
+          "L'utente U_MKT non può accedere alle funzionalità di amministrazione ruoli (es. accesso negato o schermata non disponibile)",
+          "Non è possibile visualizzare o modificare la configurazione dei permessi dei ruoli"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non specifica quali ruoli possano amministrare: si assume che un utente Marketing standard non abbia privilegi di amministrazione."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC08",
+        "title": "Dashboard Marketing: export non disponibile quando il ruolo non ha permesso di esportazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT_NOEXP con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' il permesso di esportazione è DISABILITATO",
+          "Per il ruolo 'Team Marketing' almeno un dataset/sezione è visibile"
+        ],
+        "test_data": [
+          "Utente: U_MKT_NOEXP",
+          "Permessi: Export=OFF"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT_NOEXP",
+          "Aprire una sezione con dati visibili",
+          "Cercare i comandi di esportazione (es. pulsante 'Esporta', menu azioni, download)"
+        ],
+        "expected_results": [
+          "Le funzionalità di esportazione non sono visibili oppure risultano disabilitate/non utilizzabili per l'utente",
+          "Non è possibile avviare un export dei dati dalla dashboard"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'export non è citato negli AC del requisito originale: viene trattato come parte dell'applicazione del controllo accessi (AC-1) al perimetro 'esportazione'."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC09",
+        "title": "Dashboard Marketing: export consentito esporta solo dati visibili al ruolo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT_EXP con ruolo 'Team Marketing'",
+          "Per il ruolo 'Team Marketing' il permesso di esportazione è ABILITATO",
+          "Per il ruolo 'Team Marketing' sono configurati permessi di visualizzazione: Dataset A=CONSENTITO, Dataset B=NEGATO",
+          "Dataset A e Dataset B contengono dati"
+        ],
+        "test_data": [
+          "Utente: U_MKT_EXP",
+          "Permessi: Export=ON, Visualizza A=ON, Visualizza B=OFF",
+          "Formato export: CSV (esempio)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT_EXP",
+          "Aprire la sezione relativa a Dataset A",
+          "Avviare l'esportazione dei dati",
+          "Scaricare/aprire il file esportato"
+        ],
+        "expected_results": [
+          "L'export viene generato e reso disponibile al download",
+          "Il file esportato contiene esclusivamente dati relativi a Dataset A (visibile/consentito)",
+          "Il file esportato non contiene dati relativi a Dataset B (non autorizzato)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La limitazione dell'export al perimetro visibile è interpretata come estensione del controllo accessi (AC-1)."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC10",
+        "title": "Dashboard Marketing: tentativo di esportare dati non visibili viene bloccato o limitato ai soli visibili",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_MKT_EXP con ruolo 'Team Marketing'",
+          "Permessi: Export=ON, Visualizza Dataset A=ON, Visualizza Dataset B=OFF",
+          "Esiste un meccanismo per selezionare cosa esportare (es. selezione dataset, filtri, endpoint export)"
+        ],
+        "test_data": [
+          "Utente: U_MKT_EXP",
+          "Richiesta export: includere Dataset B (non autorizzato) oltre a Dataset A"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_MKT_EXP",
+          "Tentare di avviare un export includendo Dataset B (non visibile) tramite UI o richiesta diretta",
+          "Osservare l'esito dell'operazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'export dei dati non autorizzati oppure genera un export che include solo i dati autorizzati",
+          "In nessun caso vengono esportati dati relativi a Dataset B"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il comportamento 'bloccato o limita' è esplicitato come edge case nella story; il test accetta una delle due implementazioni purché non ci sia data leakage."
+      },
+      {
+        "test_id": "REQ-NF-006.US01.TC11",
+        "title": "Cambio permessi durante sessione attiva: applicazione dopo logout/login (comportamento minimo garantito)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente U_ADMIN con accesso all'interfaccia di amministrazione ruoli",
+          "Esiste un utente U_MKT con ruolo 'Team Marketing'",
+          "U_MKT ha una sessione attiva in dashboard",
+          "Permessi iniziali: Sezione B=NEGATA"
+        ],
+        "test_data": [
+          "Cambio permessi: Sezione B da OFF a ON"
+        ],
+        "steps": [
+          "Accedere alla dashboard come U_MKT e mantenere la sessione attiva",
+          "In una seconda sessione/browser, accedere all'interfaccia di amministrazione ruoli come U_ADMIN",
+          "Abilitare Sezione B per il ruolo 'Team Marketing' e salvare",
+          "Eseguire logout da dashboard come U_MKT",
+          "Eseguire login nuovamente come U_MKT",
+          "Navigare alla Sezione B"
+        ],
+        "expected_results": [
+          "Dopo il nuovo login, la Sezione B risulta visibile e consultabile per U_MKT",
+          "Non si verificano errori di autorizzazione incoerenti dopo l'aggiornamento permessi e nuova sessione"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story indica che il comportamento durante sessione attiva è 'da chiarire': questo test valida almeno l'applicazione alle sessioni successive (logout/login)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-NF-006.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-NF-006.US02.TC01",
+        "title": "Dashboard Compliance: visibilità limitata a dati/log/report autorizzati dal ruolo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP con ruolo 'Team Compliance'",
+          "Per il ruolo 'Team Compliance' sono configurati permessi: Sezione Dati=CONSENTITA, Sezione Log=NEGATA, Sezione Report=CONSENTITA",
+          "La dashboard contiene contenuti in tutte le sezioni (Dati, Log, Report)"
+        ],
+        "test_data": [
+          "Utente: U_COMP",
+          "Permessi: Dati=ON, Log=OFF, Report=ON"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP",
+          "Aprire la sezione Dati",
+          "Aprire la sezione Report",
+          "Tentare di aprire la sezione Log dalla navigazione della dashboard"
+        ],
+        "expected_results": [
+          "La sezione Dati è visibile e consultabile",
+          "La sezione Report è visibile e consultabile",
+          "La sezione Log non è accessibile (non visibile in menu) oppure risulta non utilizzabile",
+          "Non vengono mostrati dettagli relativi ai log non autorizzati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non definisce granularità oltre alle macro-sezioni: il test assume permessi a livello di sezione (Dati/Log/Report)."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC02",
+        "title": "Dashboard Compliance: filtri/ricerche su log non autorizzati non producono leak informativi",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_NOLOG con ruolo 'Team Compliance'",
+          "Per il ruolo 'Team Compliance' la sezione Log è NEGATA",
+          "La UI espone un campo ricerca globale o filtri che possono includere log (se presenti)"
+        ],
+        "test_data": [
+          "Utente: U_COMP_NOLOG",
+          "Query ricerca: \"ERROR\" (esempio)",
+          "Filtro: Tipo=Log (se presente)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_NOLOG",
+          "Inserire una ricerca o applicare un filtro che tenti di recuperare risultati dai log",
+          "Eseguire la ricerca/applicazione filtro",
+          "Osservare risultati e/o messaggi"
+        ],
+        "expected_results": [
+          "Il sistema non restituisce risultati di log non autorizzati (nessun record, nessun dettaglio)",
+          "Se viene mostrato un messaggio, non rivela informazioni sui log (es. conteggi, nomi sorgenti, timestamp di eventi specifici) oltre a quanto necessario",
+          "Non è possibile aprire un dettaglio log dai risultati"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se la dashboard non prevede ricerca/filtri sui log, questo test va adattato alla funzionalità equivalente (es. endpoint di ricerca)."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC03",
+        "title": "Dashboard Compliance: accesso a report storici non autorizzati viene negato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_NOREP_HIST con ruolo 'Team Compliance'",
+          "Per il ruolo 'Team Compliance' l'accesso ai report storici è NEGATO (permesso o sotto-sezione)",
+          "È noto un URL/voce di navigazione per un report storico (o un identificativo report)"
+        ],
+        "test_data": [
+          "Utente: U_COMP_NOREP_HIST",
+          "Risorsa: Report storico ID=REP-2024-12 (esempio)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_NOREP_HIST",
+          "Tentare di aprire il report storico REP-2024-12 tramite navigazione o URL diretto",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "L'accesso al report storico non autorizzato è negato (es. 'Accesso negato' o risorsa non disponibile)",
+          "Non vengono mostrati contenuti del report storico non autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non dettaglia come si distinguano report 'storici': il test assume esistenza di una categoria/sotto-sezione o risorsa identificabile."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC04",
+        "title": "Admin ruoli: configurazione permessi Compliance e applicazione alle consultazioni successive",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente amministratore U_ADMIN con accesso all'interfaccia di amministrazione ruoli",
+          "Esiste il ruolo 'Team Compliance' con permessi iniziali: Log=NEGATO",
+          "Esiste un utente U_COMP con ruolo 'Team Compliance'",
+          "U_COMP non è autenticato (nessuna sessione attiva)"
+        ],
+        "test_data": [
+          "Cambio permessi: Log da OFF a ON"
+        ],
+        "steps": [
+          "Accedere all'interfaccia di amministrazione dei ruoli come U_ADMIN",
+          "Aprire la configurazione del ruolo 'Team Compliance'",
+          "Abilitare il permesso di visualizzazione per la sezione Log",
+          "Salvare la configurazione del ruolo",
+          "Accedere alla dashboard come utente U_COMP",
+          "Aprire la sezione Log"
+        ],
+        "expected_results": [
+          "Il salvataggio dei permessi del ruolo va a buon fine",
+          "Dopo l'accesso, U_COMP può visualizzare e consultare la sezione Log in base ai nuovi permessi"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Valida configurabilità/verificabilità (AC-2) e l'effetto sul controllo accessi (AC-1)."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC05",
+        "title": "Admin ruoli: verifica permessi per ambiti informativi (dati/log/report) del ruolo Compliance",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un utente con accesso all'interfaccia di amministrazione ruoli (es. U_ADMIN o ruolo autorizzato alla sola verifica)",
+          "Esiste il ruolo 'Team Compliance' con permessi configurati su almeno due ambiti (es. Dati=ON, Log=OFF, Report=ON)"
+        ],
+        "test_data": [
+          "Ruolo: Team Compliance",
+          "Esempio permessi: Dati=ON, Log=OFF, Report=ON"
+        ],
+        "steps": [
+          "Accedere all'interfaccia di amministrazione dei ruoli con un utente autorizzato",
+          "Aprire il dettaglio del ruolo 'Team Compliance'",
+          "Consultare la schermata di riepilogo permessi per gli ambiti Dati/Log/Report"
+        ],
+        "expected_results": [
+          "È possibile determinare in modo oggettivo quali ambiti (dati/log/report) risultano consentiti e quali negati per il ruolo",
+          "Le informazioni mostrate sono coerenti con la configurazione salvata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non specifica se il Team Compliance possa configurare o solo verificare: il test copre la verifica con un utente autorizzato."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC06",
+        "title": "Dashboard Compliance: export non consentito quando il ruolo non ha permesso di esportazione",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_NOEXP con ruolo 'Team Compliance'",
+          "Per il ruolo 'Team Compliance' il permesso di esportazione è DISABILITATO",
+          "Almeno una sezione tra Dati/Report è visibile"
+        ],
+        "test_data": [
+          "Utente: U_COMP_NOEXP",
+          "Permessi: Export=OFF"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_NOEXP",
+          "Aprire una sezione visibile (es. Report)",
+          "Cercare i comandi di esportazione",
+          "Tentare di avviare un export se il comando è presente"
+        ],
+        "expected_results": [
+          "Le funzionalità di esportazione non sono disponibili (non visibili o non utilizzabili)",
+          "Non viene generato alcun file/export"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'export non è esplicitato negli AC originali: viene verificato come parte del controllo accessi (AC-1) alle funzionalità di consultazione/estrazione."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC07",
+        "title": "Dashboard Compliance: export consentito limita il contenuto ai soli dati/log/report visibili al ruolo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_EXP con ruolo 'Team Compliance'",
+          "Permessi: Export=ABILITATO",
+          "Permessi di visualizzazione: Dati=ON, Log=OFF, Report=ON",
+          "Sono presenti dati in Dati, Log e Report"
+        ],
+        "test_data": [
+          "Utente: U_COMP_EXP",
+          "Formato export: CSV (esempio)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_EXP",
+          "Avviare l'export dalla sezione Report (o funzione export globale se presente)",
+          "Scaricare/aprire il file esportato"
+        ],
+        "expected_results": [
+          "L'export viene generato correttamente",
+          "Il contenuto esportato include solo ambiti autorizzati (Dati e/o Report) in base al perimetro dell'export",
+          "Il contenuto esportato non include log (ambito non autorizzato)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se l'export è per-sezione, verificare l'assenza di log nel file; se è globale, verificare che l'output escluda completamente l'ambito Log."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC08",
+        "title": "Dashboard Compliance: tentativo di export massivo senza autorizzazione viene bloccato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_NO_BULK con ruolo 'Team Compliance'",
+          "L'applicazione prevede una funzionalità di export massivo (es. 'Esporta tutto', export multi-report, export intervallo esteso)",
+          "Per U_COMP_NO_BULK: Export standard=ON, Export massivo=OFF (o equivalente controllo)",
+          "Sono presenti dati sufficienti per un export massivo"
+        ],
+        "test_data": [
+          "Utente: U_COMP_NO_BULK",
+          "Azione: export massivo (es. intervallo 01/01/2024-31/12/2024)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_NO_BULK",
+          "Selezionare la funzionalità di export massivo (se presente)",
+          "Impostare i parametri richiesti per l'export massivo",
+          "Avviare l'export"
+        ],
+        "expected_results": [
+          "Il sistema blocca l'operazione di export massivo per mancanza di autorizzazione (es. messaggio di permessi insufficienti o funzionalità disabilitata)",
+          "Non viene generato alcun export massivo"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story cita 'export massivo' come edge case ma non definisce il permesso: si assume un controllo RBAC specifico o un blocco coerente con AC-1."
+      },
+      {
+        "test_id": "REQ-NF-006.US02.TC09",
+        "title": "Accesso diretto a risorsa Log non autorizzata (deep link) viene negato per Compliance",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente U_COMP_NOLOG con ruolo 'Team Compliance'",
+          "Per U_COMP_NOLOG: Log=OFF",
+          "È noto un URL/route che apre la sezione Log o un dettaglio log"
+        ],
+        "test_data": [
+          "Utente: U_COMP_NOLOG",
+          "URL/Route: /dashboard/log (esempio)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente U_COMP_NOLOG",
+          "Aprire direttamente l'URL/route della sezione Log",
+          "Osservare la risposta del sistema"
+        ],
+        "expected_results": [
+          "L'accesso alla sezione Log è negato",
+          "Non vengono mostrati né restituiti dettagli dei log"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Complementare al test su filtri/ricerca: qui si valida il blocco su deep-link/route protetta."
+      }
+    ]
+  }
+]

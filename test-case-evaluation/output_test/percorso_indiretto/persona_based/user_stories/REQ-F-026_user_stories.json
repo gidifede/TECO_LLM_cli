@@ -1,0 +1,63 @@
+[
+  {
+    "story_id": "REQ-F-026.US01",
+    "title": "Configurare campagne speciali che abilitano l’override temporaneo della regola di frequenza",
+    "persona": "Team Marketing",
+    "goal": "configurare campagne/eventi esterni che abilitano l’override temporaneo della regola di frequenza e definire i clienti target a cui applicarlo, con tracciabilità e possibilità di rollback",
+    "benefit": "abilitare iniziative commerciali speciali senza impattare la regola di frequenza per tutti i clienti e mantenere controllo/audit sulle modifiche",
+    "user_story": "Come Team Marketing\nVoglio configurare campagne/eventi esterni che abilitano temporaneamente l’override della regola di frequenza per clienti selezionati\nIn modo che possa gestire campagne speciali consentendo riproposizioni immediate solo ai target, con configurazioni tracciate e reversibili",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing configura una campagna/evento esterno con override della regola di frequenza ALLORA il sistema consente di associare ai clienti target un flag/campagna che abilita l’override.",
+      "QUANDO un utente del Team Marketing salva una configurazione di campagna/override ALLORA la configurazione è tracciata (almeno: chi, quando, cosa è stato modificato) ed è possibile ripristinare una versione precedente (reversibile).",
+      "QUANDO una campagna/override è configurata con una lista/segmento di clienti target ALLORA il sistema persiste l’associazione campagna↔clienti in modo che l’override sia applicabile solo a quei clienti."
+    ],
+    "business_rules": [
+      "L’override della regola di frequenza è attivabile solo per campagne/eventi esterni esplicitamente configurati.",
+      "L’override deve essere limitato ai soli clienti selezionati dalla campagna (target).",
+      "Ogni modifica di configurazione campagna/override deve essere tracciata e deve supportare rollback."
+    ],
+    "edge_cases": [
+      "Tentativo di configurare una campagna/override senza definire i clienti target: il sistema deve impedire il salvataggio o segnalare errore bloccante (da definire).",
+      "Rollback eseguito mentre una campagna risulta attiva: verificare che l’effetto dell’override venga rimosso coerentemente per i clienti target.",
+      "Configurazioni in conflitto (es. due campagne con override per lo stesso cliente): comportamento atteso non specificato (priorità tra campagne da definire)."
+    ],
+    "assumptions": [
+      "La configurazione e la tracciabilità/reversibilità avvengono tramite la dashboard in uso al Team Marketing.",
+      "Il requisito non specifica durata/finestre temporali dell’override: si assume che la ‘temporaneità’ sia gestita dalla configurazione di campagna (es. campagna attiva/non attiva), ma i dettagli sono da definire."
+    ],
+    "notes": "AC condivisi con REQ-F-026.US02: applicazione dell’override solo ai clienti target. Dipendenze: definire il modello di targeting clienti (lista, segmento, import) e la regola di risoluzione conflitti tra campagne."
+  },
+  {
+    "story_id": "REQ-F-026.US02",
+    "title": "Applicare l’override della regola di frequenza solo ai clienti target di campagne speciali",
+    "persona": "Motore di Offerte",
+    "goal": "applicare l’override della regola di frequenza per consentire riproposizioni immediate quando il cliente è target di una campagna che lo prevede, mantenendo la regola standard per gli altri",
+    "benefit": "garantire coerenza delle proposte e rispetto delle regole, abilitando eccezioni controllate per campagne speciali",
+    "user_story": "Come Motore di Offerte\nVoglio applicare un override temporaneo della regola di frequenza solo ai clienti target di campagne speciali che lo prevedono\nIn modo che i clienti coinvolti possano ricevere riproposizioni immediate mentre per tutti gli altri la regola di frequenza rimane valida",
+    "channels": [],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO per un cliente è presente un flag/campagna che abilita l’override della regola di frequenza ALLORA il Motore considera l’eccezione e consente la riproposizione immediata se la campagna lo prevede.",
+      "QUANDO un cliente NON è incluso tra i target della campagna/override ALLORA il Motore applica la regola di frequenza standard senza eccezioni.",
+      "QUANDO è configurata una campagna/override ALLORA i test dimostrano che l’override si applica esclusivamente ai clienti target della campagna e non ad altri clienti."
+    ],
+    "business_rules": [
+      "La sorgente dell’abilitazione override è l’associazione cliente↔campagna/flag definita dalla campagna.",
+      "L’override non deve estendersi a clienti non target, anche se la campagna esiste o è attiva."
+    ],
+    "edge_cases": [
+      "Cliente con flag/campagna presente ma campagna non più attiva o rimossa: comportamento atteso non specificato (da definire se ignorare il flag o considerarlo non valido).",
+      "Mancata disponibilità dei dati di campagna/targeting al momento della valutazione: fallback atteso non specificato (si suggerisce applicare regola standard, da confermare).",
+      "Cliente appartenente a più campagne con override: regola di precedenza non specificata (da definire)."
+    ],
+    "assumptions": [
+      "Il Motore riceve o può leggere in modo affidabile l’informazione ‘cliente target della campagna’ (flag/campagna) al momento della valutazione della frequenza.",
+      "‘Riproposizione immediata’ è interpretata come bypass dell’intervallo minimo previsto dalla regola di frequenza; non sono forniti dettagli su eventuali altri vincoli."
+    ],
+    "notes": "AC condivisi con REQ-F-026.US01: applicazione dell’override solo ai clienti target. Il requisito non dettaglia come viene determinato/propagato il flag al Motore né la gestione della temporaneità (inizio/fine campagna): aspetti da chiarire in refinement."
+  }
+]

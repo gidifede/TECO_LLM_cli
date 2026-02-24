@@ -1,0 +1,99 @@
+[
+  {
+    "story_id": "REQ-I-004.US01",
+    "title": "Consultare la matrice centralizzata per applicare regole coerenti su canali digitali e fisici",
+    "persona": "Motore di Offerte",
+    "goal": "utilizzare una matrice di configurazione unica e centralizzata come fonte di verità per regole operative, frequenza di presentazione ed eccezioni, esponendo tali regole in modo coerente a tutti i canali",
+    "benefit": "garantire applicazione uniforme delle regole su tutti i canali e poter ricostruire lo stato storico delle configurazioni",
+    "user_story": "Come Motore di Offerte\nVoglio utilizzare una matrice di configurazione unica e centralizzata come fonte di verità per regole operative, frequenza di presentazione ed eccezioni\nIn modo che tutti i canali applichino le stesse regole senza inconsistenze e sia possibile ricostruire lo stato storico delle configurazioni",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore di Offerte deve valutare regole operative (incluse frequenza di presentazione ed eccezioni) in ambiente di integrazione test ALLORA recupera tali regole dalla medesima matrice centralizzata utilizzata da tutti i canali.",
+      "QUANDO la matrice centralizzata contiene una specifica configurazione ALLORA il Motore di Offerte restituisce/esegue decisioni che risultano coerenti tra almeno due canali distinti in test end-to-end (es. App e sportello), a parità di input rilevanti.",
+      "QUANDO viene modificata la matrice centralizzata ALLORA il Motore di Offerte rende disponibile ai canali la nuova configurazione in modo immediato oppure entro la finestra definita dalla politica di propagazione.",
+      "QUANDO il Motore di Offerte applica una regola ALLORA è in grado di riferirsi a una versione o a un timestamp della matrice per ricostruire lo stato storico della configurazione applicata."
+    ],
+    "business_rules": [
+      "La matrice centralizzata è la fonte di verità per regole di business e relative eccezioni; non sono ammesse deviazioni per-canale.",
+      "Deve esistere una politica di propagazione delle modifiche (immediata o con ritardo definito) applicata in modo consistente.",
+      "La matrice deve supportare versioning e/o timestamp per consentire audit e ricostruzione storica."
+    ],
+    "edge_cases": [
+      "Matrice centralizzata non raggiungibile in ambiente di integrazione test: il Motore di Offerte non può valutare le regole e deve gestire l’errore senza introdurre regole divergenti per canale.",
+      "Configurazione presente in matrice ma priva di versione/timestamp: impossibilità di ricostruzione storica per quella decisione.",
+      "Aggiornamento della matrice durante una valutazione: il Motore di Offerte potrebbe leggere una versione incoerente se non è garantita atomicità/consistenza di lettura."
+    ],
+    "assumptions": [
+      "I canali consultano la matrice centralizzata tramite il Motore di Offerte o tramite un accesso diretto; il requisito non specifica l’architettura di consultazione.",
+      "La 'politica di propagazione' (immediata vs differita, tempi massimi, caching) esiste ma non è dettagliata nel requisito e deve essere definita."
+    ],
+    "notes": "I criteri di accettazione del requisito sono trasversali ai canali; questa US li copre dal punto di vista del Motore come fonte/mediatore delle regole. Non sono state create US per singoli canali (App/Web/operatore) perché non sono presenti come personas distinte nel contesto; gli aspetti canale-specifici ricadono sulla persona Cliente (fisico o digitale) e Operatore in ufficio postale (sportello/sala) in termini di comportamento osservabile."
+  },
+  {
+    "story_id": "REQ-I-004.US02",
+    "title": "Esperienza coerente delle regole tra canali digitali e fisici per il cliente",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "ricevere proposte e applicazione delle regole (incluse frequenza di presentazione ed eccezioni) in modo coerente indipendentemente dal canale utilizzato",
+    "benefit": "evitare incongruenze tra App/Web e canale fisico e avere un’esperienza prevedibile",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio che le regole di proposizione (incluse frequenza di presentazione ed eccezioni) siano applicate in modo coerente su tutti i canali\nIn modo che non ci siano differenze ingiustificate tra App/Web e ufficio postale e l’esperienza sia prevedibile",
+    "channels": [
+      "digital",
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO utilizzo un canale digitale (App/Web) e un canale fisico assistito (tramite operatore) in ambiente di integrazione test ALLORA le regole applicate alle proposte derivano dalla medesima matrice centralizzata.",
+      "QUANDO la stessa configurazione è attiva in matrice ALLORA, a parità di condizioni rilevanti, osservo un comportamento coerente su almeno due canali distinti (es. App e sportello) in test end-to-end.",
+      "QUANDO viene modificata la matrice centralizzata ALLORA la variazione del comportamento sui canali è riproducibile immediatamente oppure entro la finestra definita dalla politica di propagazione.",
+      "QUANDO viene richiesta una verifica/audit del comportamento osservato ALLORA è possibile riferire il comportamento a una versione o timestamp della matrice (anche se l’informazione può essere visibile solo internamente)."
+    ],
+    "business_rules": [
+      "Le regole e le eccezioni devono essere uniformi tra canali; eventuali differenze sono ammesse solo se previste dalla matrice centralizzata.",
+      "Le modifiche di configurazione devono propagarsi secondo una politica definita e comunicabile (almeno internamente) per garantire riproducibilità."
+    ],
+    "edge_cases": [
+      "Cambio canale in prossimità di un aggiornamento della matrice: il cliente può osservare comportamenti diversi se i canali sono su versioni differenti durante la finestra di propagazione.",
+      "Canale non aggiornato secondo la politica di propagazione: rischio di inconsistenza percepita dal cliente.",
+      "Cliente che utilizza App e Web: incoerenza tra i due touchpoint digitali se non consultano la stessa matrice."
+    ],
+    "assumptions": [
+      "Il concetto di 'stesse condizioni' per confrontare la coerenza tra canali (input rilevanti) deve essere definito nei test end-to-end.",
+      "La versione/timestamp è principalmente per ricostruzione storica interna; non è richiesto che sia mostrato al cliente."
+    ],
+    "notes": "AC condivisi con REQ-I-004.US01 (Motore di Offerte) e REQ-I-004.US03 (Operatore in ufficio postale) in quanto trasversali ai canali; sono stati riscritti in termini di comportamento osservabile dal cliente."
+  },
+  {
+    "story_id": "REQ-I-004.US03",
+    "title": "Applicare in sportello le stesse regole della matrice centralizzata usate dai canali digitali",
+    "persona": "Operatore in ufficio postale (sportello/sala)",
+    "goal": "visualizzare e proporre offerte applicando regole operative, frequenza di presentazione ed eccezioni basate sulla matrice centralizzata condivisa con gli altri canali",
+    "benefit": "evitare discrepanze con App/Web e garantire coerenza commerciale e operativa verso il cliente",
+    "user_story": "Come Operatore in ufficio postale (sportello/sala)\nVoglio che le regole di proposizione (incluse frequenza di presentazione ed eccezioni) siano applicate in sportello usando la stessa matrice centralizzata dei canali digitali\nIn modo che le proposte risultino coerenti con App/Web e non si creino inconsistenze verso il cliente",
+    "channels": [
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO opero in ambiente di integrazione test ALLORA le regole applicate alle proposte che visualizzo/propongo derivano dalla medesima matrice centralizzata utilizzata dagli altri canali.",
+      "QUANDO la stessa configurazione è attiva in matrice ALLORA il comportamento risulta coerente tra sportello e almeno un canale digitale (es. App) in test end-to-end, a parità di input rilevanti.",
+      "QUANDO viene modificata la matrice centralizzata ALLORA l’effetto sul comportamento in sportello è riproducibile immediatamente oppure entro la finestra definita dalla politica di propagazione.",
+      "QUANDO è necessario ricostruire a posteriori perché una regola è stata applicata ALLORA esiste un riferimento a versione o timestamp della matrice (anche se consultabile solo da sistemi/ruoli interni)."
+    ],
+    "business_rules": [
+      "Lo sportello non deve applicare logiche locali divergenti: regole ed eccezioni devono provenire dalla matrice centralizzata.",
+      "La riproducibilità delle modifiche dipende dalla politica di propagazione definita e deve essere rispettata anche sul canale fisico.",
+      "La matrice deve supportare versioning/timestamp per audit e ricostruzione storica."
+    ],
+    "edge_cases": [
+      "Sportello in condizioni di connettività degradata verso la fonte centralizzata: rischio di indisponibilità o incoerenza; deve essere gestito come errore senza introdurre regole alternative locali.",
+      "Durante la finestra di propagazione, lo sportello potrebbe risultare allineato a una versione diversa rispetto all’App: potenziale incoerenza temporanea.",
+      "Configurazione aggiornata ma non applicata in sportello entro i tempi previsti dalla politica: incoerenza rilevabile nei test end-to-end."
+    ],
+    "assumptions": [
+      "Non è specificato se l’operatore debba vedere esplicitamente la versione/timestamp; si assume sia sufficiente la tracciabilità tecnica per ricostruzione storica.",
+      "La definizione della politica di propagazione (tempi, caching, refresh) è esterna al requisito e va chiarita."
+    ],
+    "notes": "AC condivisi con REQ-I-004.US01 (Motore di Offerte) e REQ-I-004.US02 (Cliente) perché il requisito impone coerenza cross-canale; qui sono riscritti dal punto di vista del canale fisico/operatore."
+  }
+]

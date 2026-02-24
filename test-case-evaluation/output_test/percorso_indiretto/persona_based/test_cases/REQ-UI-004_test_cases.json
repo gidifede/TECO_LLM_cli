@@ -1,0 +1,296 @@
+[
+  {
+    "story_id": "REQ-UI-004.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-UI-004.US01.TC01",
+        "title": "Visualizzazione marcatura grafica per offerta con sconto significativo",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta che soddisfa la condizione di 'sconto significativo' secondo configurazione/regole concordate",
+          "La lista offerte/caricamento card è disponibile e raggiungibile dall'operatore"
+        ],
+        "test_data": [
+          "Offerta A: id=OFF-SCONTO-001, sconto=25% (configurato come 'significativo'), scadenza=+30 giorni (non imminente), flag offerta top=false"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta A"
+        ],
+        "expected_results": [
+          "La card dell'Offerta A mostra una marcatura grafica evidente (tramite colore e/o icona) che segnala lo sconto significativo",
+          "Non è mostrata l'icona specifica di 'scadenza imminente' sulla card dell'Offerta A"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La soglia di 'sconto significativo' deve essere definita/configurata; il test verifica la presenza della marcatura senza imporre una palette specifica."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC02",
+        "title": "Visualizzazione marcatura grafica per offerta con scadenza imminente",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta che soddisfa la condizione di 'scadenza imminente' secondo configurazione/regole concordate",
+          "La lista offerte/caricamento card è disponibile e raggiungibile dall'operatore"
+        ],
+        "test_data": [
+          "Offerta B: id=OFF-SCAD-001, sconto=5% (non significativo), scadenza=+2 giorni (configurato come 'imminente'), flag offerta top=false"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta B"
+        ],
+        "expected_results": [
+          "La card dell'Offerta B mostra una marcatura grafica evidente (tramite colore e/o icona) che segnala la scadenza imminente",
+          "Non è mostrata una marcatura/indicazione di sconto significativo sulla card dell'Offerta B"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La soglia temporale di 'scadenza imminente' deve essere definita/configurata (es. N giorni alla scadenza)."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC03",
+        "title": "Icona specifica per stato 'offerta top' mostrata sulla card",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta con stato/flag 'offerta top' attivo",
+          "Le risorse UI (set icone) sono distribuite e disponibili nell'ambiente di test"
+        ],
+        "test_data": [
+          "Offerta C: id=OFF-TOP-001, flag offerta top=true, sconto=10% (irrilevante per il test), scadenza=+20 giorni (non imminente)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta C"
+        ],
+        "expected_results": [
+          "Sulla card dell'Offerta C è visualizzata l'icona specifica definita per il segnale 'offerta top'",
+          "L'icona 'offerta top' è visualizzata in modo univocamente riconoscibile e non ambigua rispetto ad altre icone presenti"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La specifica dell'icona (asset/nome/identificativo) deve essere disponibile nel design system o documentazione UI per consentire un assert puntuale in automazione."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC04",
+        "title": "Icona specifica per stato 'scadenza imminente' mostrata sulla card",
+        "type": "UI",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta in stato 'scadenza imminente' secondo configurazione/regole concordate",
+          "Le risorse UI (set icone) sono distribuite e disponibili nell'ambiente di test"
+        ],
+        "test_data": [
+          "Offerta D: id=OFF-ICONA-SCAD-001, scadenza=+1 giorno (imminente), sconto=0% (non significativo), flag offerta top=false"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta D"
+        ],
+        "expected_results": [
+          "Sulla card dell'Offerta D è visualizzata l'icona specifica definita per il segnale 'scadenza imminente'",
+          "L'icona 'scadenza imminente' è visualizzata in modo univocamente riconoscibile e coerente rispetto ad altre card con lo stesso stato"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La soglia di scadenza imminente e l'identificativo dell'icona devono essere noti per verifiche automatizzate (es. selettore UI o attributo accessibile)."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC05",
+        "title": "Compresenza segnali: offerta con sconto significativo e scadenza imminente senza ambiguità",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta che soddisfa contemporaneamente 'sconto significativo' e 'scadenza imminente' secondo configurazione/regole concordate",
+          "Le risorse UI (set icone) sono disponibili"
+        ],
+        "test_data": [
+          "Offerta E: id=OFF-DOPPIO-001, sconto=30% (significativo), scadenza=+2 giorni (imminente), flag offerta top=false"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta E"
+        ],
+        "expected_results": [
+          "La card dell'Offerta E mostra evidenze grafiche per entrambe le condizioni (sconto significativo e scadenza imminente) oppure una rappresentazione combinata prevista, senza perdita di informazione",
+          "Se sono previste icone distinte, l'icona di 'scadenza imminente' è presente e distinguibile; l'indicazione di sconto significativo è comunque percepibile (colore e/o icona)",
+          "La card non presenta sovrapposizioni/artefatti grafici tali da rendere non leggibili i contenuti principali (titolo offerta, dati essenziali)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "La regola di priorità/coesistenza (es. doppia icona, icona + colore) non è specificata: il test valida l'assenza di ambiguità e la preservazione dell'informazione."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC06",
+        "title": "Nessuna marcatura per offerta senza sconto significativo e senza scadenza imminente",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale con profilo abilitato alla visualizzazione delle offerte",
+          "Nel sistema esiste almeno un'offerta che NON soddisfa né 'sconto significativo' né 'scadenza imminente'",
+          "La lista offerte/caricamento card è disponibile"
+        ],
+        "test_data": [
+          "Offerta F: id=OFF-NEUTRA-001, sconto=3% (non significativo), scadenza=+60 giorni (non imminente), flag offerta top=false"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta F"
+        ],
+        "expected_results": [
+          "La card dell'Offerta F non mostra marcature grafiche (colori/icone) riconducibili a 'sconto significativo' o 'scadenza imminente'",
+          "Sulla card dell'Offerta F non sono presenti le icone specifiche 'offerta top' e 'scadenza imminente'"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Verifica l'applicazione delle marcature solo quando le condizioni sono soddisfatte (business rule)."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC07",
+        "title": "Fallback UI quando le risorse icone non sono disponibili",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale",
+          "Esiste almeno un'offerta che richiede la visualizzazione di un'icona (es. 'offerta top' o 'scadenza imminente')",
+          "L'ambiente di test consente di simulare risorse icone mancanti (es. CDN non raggiungibile, bundle icone non caricato, risposta 404 per asset)"
+        ],
+        "test_data": [
+          "Offerta G: id=OFF-FALLBACK-001, flag offerta top=true",
+          "Simulazione: richiesta asset icona 'offerta top' restituisce HTTP 404 (o timeout)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Abilitare la condizione di test per risorse icone mancanti (es. blocco dominio asset o mock 404)",
+          "Navigare alla sezione in cui sono visualizzate le card delle offerte",
+          "Individuare la card relativa all'Offerta G"
+        ],
+        "expected_results": [
+          "La pagina delle offerte e le card risultano comunque utilizzabili (nessun blocco del rendering della lista card)",
+          "In assenza dell'icona, la UI mostra una resa comprensibile alternativa (es. testo/placeholder/stile alternativo) che consente di capire che l'offerta è 'offerta top' oppure mantiene almeno la marcatura colore prevista",
+          "Non vengono mostrati errori bloccanti a schermo che impediscano l'operatività dell'operatore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il tipo di fallback (testo, placeholder, stile) non è specificato; il test valida la continuità operativa e la comprensibilità minima come da edge case."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC08",
+        "title": "Distinguibilità delle marcature grafiche su diverse rese cromatiche (leggibilità minima)",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Operatore autenticato sul front-end commerciale",
+          "Esiste almeno un'offerta con marcatura grafica per 'sconto significativo' o 'scadenza imminente'",
+          "Disponibilità di almeno due configurazioni di visualizzazione (es. monitor diverso o profilo colore/contrasto simulato via strumenti browser/OS)"
+        ],
+        "test_data": [
+          "Offerta H: id=OFF-LEG-001, sconto=25% (significativo), scadenza=+2 giorni (imminente)"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come Operatore",
+          "Visualizzare la card dell'Offerta H su Configurazione Display 1",
+          "Annotare la percepibilità delle marcature (colore/icone) sulla card",
+          "Visualizzare la stessa card su Configurazione Display 2 (o con profilo colore/contrasto differente)",
+          "Confrontare la percepibilità delle marcature tra le due configurazioni"
+        ],
+        "expected_results": [
+          "In entrambe le configurazioni, le marcature (icone e/o colori) risultano distinguibili rispetto allo stato neutro della card",
+          "Le icone (se presenti) restano riconoscibili indipendentemente dalla resa cromatica"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Non sono forniti requisiti di accessibilità/contrasto; il test verifica una distinguibilità minima come da edge case, senza imporre soglie WCAG."
+      },
+      {
+        "test_id": "REQ-UI-004.US01.TC09",
+        "title": "Conferma tramite test di usabilità: riconoscimento segnali e azione conseguente",
+        "type": "E2E",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un protocollo di test di usabilità approvato (scenari, compiti, azioni attese, criteri di successo, campione operatori)",
+          "Ambiente di test accessibile a operatori reali o rappresentativi",
+          "Set di offerte predisposto: almeno una con sconto significativo, una con scadenza imminente, una 'offerta top', una neutra"
+        ],
+        "test_data": [
+          "Partecipanti: almeno 5 operatori sportello/sala",
+          "Scenario S1: Offerta con sconto significativo (es. OFF-SCONTO-001)",
+          "Scenario S2: Offerta con scadenza imminente (es. OFF-SCAD-001)",
+          "Scenario S3: Offerta top (es. OFF-TOP-001)",
+          "Scenario S4: Offerta neutra (es. OFF-NEUTRA-001)",
+          "Azioni attese (da protocollo): identificare l'offerta evidenziata e dichiarare la motivazione (sconto/scadenza/top) e l'azione operativa prevista"
+        ],
+        "steps": [
+          "Avviare una sessione di test di usabilità secondo protocollo",
+          "Mostrare al partecipante la schermata con le card offerte contenente gli scenari S1-S4",
+          "Chiedere al partecipante di identificare le offerte che richiedono attenzione speciale",
+          "Chiedere al partecipante di indicare per ciascuna offerta identificata il motivo (sconto significativo, scadenza imminente, offerta top)",
+          "Chiedere al partecipante di eseguire o descrivere l'azione prevista dallo scenario (secondo protocollo)",
+          "Registrare esiti e tempi secondo protocollo"
+        ],
+        "expected_results": [
+          "Per ciascuno scenario con evidenza grafica (S1, S2, S3), il partecipante identifica correttamente l'offerta come 'da attenzionare'",
+          "Per ciascuno scenario con evidenza grafica (S1, S2, S3), il partecipante attribuisce correttamente il significato del segnale visivo (sconto/scadenza/top) secondo protocollo",
+          "Il partecipante intraprende (o descrive) l'azione attesa definita dal protocollo per ciascuno scenario, senza ambiguità dovute ai segnali visivi",
+          "Per lo scenario neutro (S4), il partecipante non segnala falsi positivi dovuti a marcature/icone"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "L'AC di usabilità è dichiarativo: per renderlo verificabile si assume l'esistenza di un protocollo con metriche (accuratezza/tempi) e azioni attese per scenario."
+      }
+    ]
+  }
+]

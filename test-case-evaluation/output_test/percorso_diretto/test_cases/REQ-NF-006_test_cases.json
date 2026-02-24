@@ -1,0 +1,293 @@
+[
+  {
+    "test_id": "REQ-NF-006.TC01",
+    "title": "Visualizzazione dati consentita per ruolo autorizzato in dashboard",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un ruolo 'ANALYST' configurato come autorizzato alla visualizzazione dei dati in dashboard",
+      "Esiste un utente 'analyst1' assegnato al ruolo 'ANALYST'",
+      "L'utente 'analyst1' è attivo e può autenticarsi",
+      "La dashboard è disponibile e raggiungibile"
+    ],
+    "test_data": [
+      "Utente: analyst1",
+      "Ruolo: ANALYST (autorizzato alla visualizzazione dati)",
+      "Sezione dashboard: 'KPI vendite' (o altra sezione che mostri dati)"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'analyst1'",
+      "Navigare alla dashboard",
+      "Aprire la sezione dati 'KPI vendite'"
+    ],
+    "expected_results": [
+      "La dashboard viene caricata senza errori",
+      "La sezione 'KPI vendite' mostra i dati previsti (valori e/o tabelle/grafici non oscurati)",
+      "Non viene mostrato alcun messaggio di accesso negato per la sezione 'KPI vendite'"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Canale inferito dalla descrizione (dashboard/interfacce applicative). I nomi di ruolo/utente/sezione sono esempi e vanno allineati alla configurazione reale."
+  },
+  {
+    "test_id": "REQ-NF-006.TC02",
+    "title": "Blocco visualizzazione dati per ruolo non autorizzato in dashboard",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un ruolo 'VIEWER_LIMITED' configurato come NON autorizzato alla visualizzazione dei dati in dashboard",
+      "Esiste un utente 'viewer1' assegnato al ruolo 'VIEWER_LIMITED'",
+      "L'utente 'viewer1' è attivo e può autenticarsi",
+      "La dashboard è disponibile e raggiungibile"
+    ],
+    "test_data": [
+      "Utente: viewer1",
+      "Ruolo: VIEWER_LIMITED (non autorizzato alla visualizzazione dati)",
+      "Sezione dashboard: 'KPI vendite' (o altra sezione che mostri dati)"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'viewer1'",
+      "Navigare alla dashboard",
+      "Tentare di aprire la sezione dati 'KPI vendite'"
+    ],
+    "expected_results": [
+      "La sezione 'KPI vendite' non mostra i dati riservati (nessun valore/tabella/grafico visibile)",
+      "Il sistema mostra un messaggio/indicazione di accesso negato oppure nasconde completamente la sezione non autorizzata",
+      "Non vengono esposti dati tramite elementi UI (es. tooltip, dettagli espandibili) nella sezione non autorizzata"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica la modalità UI (sezione nascosta vs messaggio di divieto). Il test è considerato PASS se i dati non sono visibili e l'utente non può accedervi."
+  },
+  {
+    "test_id": "REQ-NF-006.TC03",
+    "title": "Esportazione dati consentita solo a ruolo autorizzato",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un ruolo 'DATA_EXPORTER' autorizzato all'esportazione dati",
+      "Esiste un utente 'exporter1' assegnato al ruolo 'DATA_EXPORTER'",
+      "La funzionalità di esportazione è disponibile in dashboard (es. pulsante 'Esporta' o menu azioni)",
+      "Sono presenti dati esportabili nella sezione selezionata"
+    ],
+    "test_data": [
+      "Utente: exporter1",
+      "Ruolo: DATA_EXPORTER (autorizzato export)",
+      "Formato export: CSV",
+      "Sezione dashboard: 'KPI vendite'"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'exporter1'",
+      "Navigare alla dashboard",
+      "Aprire la sezione 'KPI vendite'",
+      "Selezionare l'azione 'Esporta'",
+      "Scegliere il formato 'CSV'",
+      "Confermare l'esportazione"
+    ],
+    "expected_results": [
+      "L'azione 'Esporta' è disponibile/abilitata per l'utente",
+      "Il sistema genera il file di esportazione in formato CSV",
+      "Il file viene scaricato o reso disponibile secondo il comportamento previsto dall'applicazione",
+      "Il contenuto esportato corrisponde ai dati visibili all'utente nella sezione selezionata"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito cita l'esportazione ma non definisce formati/posizione UI: adattare i passi al punto di accesso reale (pulsante/menu/API)."
+  },
+  {
+    "test_id": "REQ-NF-006.TC04",
+    "title": "Esportazione dati negata a ruolo non autorizzato (UI e chiamata diretta)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un ruolo 'VIEWER_LIMITED' NON autorizzato all'esportazione dati",
+      "Esiste un utente 'viewer1' assegnato al ruolo 'VIEWER_LIMITED'",
+      "La funzionalità di esportazione è esposta dall'applicazione (UI e/o endpoint backend)",
+      "Sono presenti dati esportabili nella sezione selezionata"
+    ],
+    "test_data": [
+      "Utente: viewer1",
+      "Ruolo: VIEWER_LIMITED (non autorizzato export)",
+      "Tentativo export: CSV",
+      "Endpoint export (se applicabile): /api/export (valore di esempio da sostituire con quello reale)"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'viewer1'",
+      "Navigare alla dashboard",
+      "Aprire la sezione 'KPI vendite'",
+      "Verificare la presenza dell'azione 'Esporta' nella UI",
+      "Se l'azione è presente, tentare di eseguire 'Esporta' in formato CSV",
+      "Eseguire un tentativo di esportazione tramite chiamata diretta all'endpoint di export con la sessione/token dell'utente (se disponibile in architettura)"
+    ],
+    "expected_results": [
+      "L'azione 'Esporta' non è visibile oppure risulta disabilitata per l'utente non autorizzato",
+      "Se l'utente tenta comunque l'export via UI, il sistema blocca l'operazione e mostra un errore di autorizzazione",
+      "Il tentativo di esportazione via endpoint restituisce un errore di autorizzazione (es. HTTP 403) e non produce alcun file",
+      "Nessun dato viene scaricato o reso disponibile all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "L'endpoint indicato è un esempio: sostituire con l'API reale. Il requisito non specifica codici errore: usare quelli previsti dallo standard applicativo (403 consigliato)."
+  },
+  {
+    "test_id": "REQ-NF-006.TC05",
+    "title": "Configurazione permessi di visualizzazione tramite interfaccia di amministrazione ruoli",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente amministratore 'admin1' con accesso all'interfaccia di amministrazione dei ruoli",
+      "Esiste un ruolo 'VIEWER_LIMITED' modificabile",
+      "La dashboard contiene almeno una sezione dati con permesso configurabile (es. 'KPI vendite')"
+    ],
+    "test_data": [
+      "Utente admin: admin1",
+      "Ruolo target: VIEWER_LIMITED",
+      "Permesso: 'Visualizza KPI vendite' (nome esemplificativo)",
+      "Nuovo valore permesso: ABILITATO"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'admin1'",
+      "Aprire l'interfaccia di amministrazione dei ruoli",
+      "Selezionare il ruolo 'VIEWER_LIMITED'",
+      "Individuare il permesso di visualizzazione relativo alla sezione 'KPI vendite'",
+      "Impostare il permesso su 'ABILITATO'",
+      "Salvare le modifiche al ruolo",
+      "Riaprire la scheda del ruolo 'VIEWER_LIMITED'"
+    ],
+    "expected_results": [
+      "L'interfaccia consente di visualizzare l'elenco dei permessi del ruolo selezionato",
+      "La modifica del permesso viene salvata con conferma (messaggio di successo o stato persistito)",
+      "Alla riapertura del ruolo, il permesso risulta ancora impostato su 'ABILITATO'"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non dettaglia la tassonomia dei permessi: i nomi dei permessi sono esemplificativi e vanno mappati a quelli effettivi presenti nell'interfaccia."
+  },
+  {
+    "test_id": "REQ-NF-006.TC06",
+    "title": "Verifica effetto dei permessi configurati: abilitazione visualizzazione dopo modifica ruolo",
+    "type": "E2E",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente amministratore 'admin1' con accesso all'interfaccia di amministrazione dei ruoli",
+      "Esiste un ruolo 'VIEWER_LIMITED' associato all'utente 'viewer1'",
+      "In stato iniziale, 'viewer1' non può visualizzare la sezione 'KPI vendite'",
+      "La dashboard è disponibile e raggiungibile"
+    ],
+    "test_data": [
+      "Utente admin: admin1",
+      "Utente finale: viewer1",
+      "Ruolo target: VIEWER_LIMITED",
+      "Permesso: 'Visualizza KPI vendite' (nome esemplificativo)",
+      "Nuovo valore permesso: ABILITATO"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'admin1'",
+      "Aprire l'interfaccia di amministrazione dei ruoli",
+      "Selezionare il ruolo 'VIEWER_LIMITED'",
+      "Abilitare il permesso di visualizzazione per la sezione 'KPI vendite'",
+      "Salvare le modifiche",
+      "Disconnettersi",
+      "Autenticarsi come utente 'viewer1'",
+      "Navigare alla dashboard",
+      "Aprire la sezione 'KPI vendite'"
+    ],
+    "expected_results": [
+      "Dopo la modifica, l'utente 'viewer1' riesce a visualizzare i dati della sezione 'KPI vendite'",
+      "Non vengono mostrati messaggi di accesso negato per la sezione appena autorizzata",
+      "I dati visualizzati risultano coerenti con quelli disponibili per la sezione"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica tempi di propagazione dei permessi (immediati vs dopo logout/login). Il test include logout/login per evitare cache di sessione; se la propagazione è immediata, adeguare i passi."
+  },
+  {
+    "test_id": "REQ-NF-006.TC07",
+    "title": "Accesso negato all'interfaccia di amministrazione ruoli per utente non amministratore",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente 'analyst1' senza privilegi di amministrazione ruoli",
+      "L'interfaccia di amministrazione dei ruoli è disponibile e raggiungibile (URL o voce menu)"
+    ],
+    "test_data": [
+      "Utente: analyst1",
+      "URL amministrazione ruoli (se applicabile): /admin/roles (valore di esempio da sostituire con quello reale)"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'analyst1'",
+      "Tentare di accedere all'interfaccia di amministrazione dei ruoli tramite menu",
+      "Tentare di accedere direttamente all'URL dell'amministrazione ruoli (se applicabile)"
+    ],
+    "expected_results": [
+      "L'utente non amministratore non può accedere alla pagina di amministrazione ruoli",
+      "Il sistema mostra un errore di autorizzazione o reindirizza a una pagina consentita senza esporre funzionalità di amministrazione",
+      "Nessuna informazione di configurazione ruoli/permessi è visibile all'utente non autorizzato"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non esplicita i ruoli amministrativi: l'attore 'admin' è inferito dall'AC-2 (interfaccia di amministrazione dei ruoli)."
+  },
+  {
+    "test_id": "REQ-NF-006.TC08",
+    "title": "Edge case: utente senza ruolo assegnato non visualizza dati e non può esportare",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esiste un utente 'norole1' attivo e autenticabile senza alcun ruolo assegnato (o con ruolo vuoto/default privo di permessi)",
+      "La dashboard è disponibile e raggiungibile"
+    ],
+    "test_data": [
+      "Utente: norole1",
+      "Sezione dashboard: 'KPI vendite'",
+      "Tentativo export: CSV"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'norole1'",
+      "Navigare alla dashboard",
+      "Tentare di aprire la sezione 'KPI vendite'",
+      "Tentare di individuare ed eseguire l'azione 'Esporta' (se presente)"
+    ],
+    "expected_results": [
+      "La sezione dati non autorizzata non espone alcun dato all'utente senza ruolo",
+      "L'azione di esportazione non è disponibile oppure l'operazione viene bloccata per mancanza autorizzazioni",
+      "Il sistema gestisce il caso senza errori applicativi (nessun crash/500 lato UI)"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il comportamento per utenti senza ruolo non è esplicitato: assunzione di default-deny coerente con RBAC e sicurezza/privacy."
+  }
+]

@@ -1,0 +1,407 @@
+[
+  {
+    "story_id": "REQ-F-010.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-010.US01.TC01",
+        "title": "Creazione nuovo bundle (A,B) con metadati completi e salvataggio con log before/after",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esistono a catalogo i prodotti 'PROD-A-001' e 'PROD-B-001' selezionabili dal configuratore",
+          "Il servizio/elenco cluster target predefiniti è disponibile e restituisce almeno i cluster 'CL-RETAIL' e 'CL-PREMIUM'",
+          "Il sistema di logging configurazione è attivo e raggiungibile"
+        ],
+        "test_data": [
+          "Prodotto A: PROD-A-001",
+          "Prodotto B: PROD-B-001",
+          "Nome commerciale: \"Bundle Fibra+Mobile Febbraio\"",
+          "Durata: \"12 mesi\"",
+          "Target: [\"CL-RETAIL\", \"CL-PREMIUM\"]",
+          "Periodo acquistabilità: data inizio 2026-03-01; data fine 2026-03-31",
+          "Stato di attivazione: \"Attivo\"",
+          "Testo promo/USP: \"Sconto 20% per 12 mesi\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare l'azione \"Crea nuovo bundle\"",
+          "Selezionare il prodotto A \"PROD-A-001\"",
+          "Selezionare il prodotto B \"PROD-B-001\"",
+          "Inserire il nome commerciale \"Bundle Fibra+Mobile Febbraio\"",
+          "Impostare la durata a \"12 mesi\"",
+          "Aprire la selezione target",
+          "Selezionare i cluster \"CL-RETAIL\" e \"CL-PREMIUM\"",
+          "Impostare la data inizio promozione a \"2026-03-01\"",
+          "Impostare la data fine promozione a \"2026-03-31\"",
+          "Impostare lo stato di attivazione a \"Attivo\"",
+          "Inserire il testo promo/USP \"Sconto 20% per 12 mesi\"",
+          "Cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema crea un nuovo bundle associato alla coppia prodotti (PROD-A-001, PROD-B-001)",
+          "Il bundle salvato espone i metadati inseriti: nome commerciale, durata, target selezionati, date inizio/fine, stato di attivazione, testo promo/USP",
+          "Il sistema mostra conferma di salvataggio riuscito",
+          "È generato un log di configurazione obbligatorio per l'operazione di creazione contenente almeno: identificativo bundle, utente, timestamp e rappresentazione before/after (before vuoto/assenza; after con i valori salvati)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità elenco cluster predefiniti da tool esterno. La forma esatta del log (schema/campi) non è specificata: la verifica si concentra sulla presenza di una rappresentazione before/after e metadati minimi (utente/timestamp/id bundle)."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC02",
+        "title": "Modifica bundle esistente: aggiornamento metadati e verifica log before/after",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esiste un bundle già creato per la coppia (PROD-A-001, PROD-B-001) con metadati iniziali valorizzati",
+          "Il servizio/elenco cluster target predefiniti è disponibile",
+          "Il sistema di logging configurazione è attivo e raggiungibile"
+        ],
+        "test_data": [
+          "Bundle esistente: (PROD-A-001, PROD-B-001)",
+          "Nuovo nome commerciale: \"Bundle Fibra+Mobile Marzo\"",
+          "Nuova durata: \"24 mesi\"",
+          "Nuovo target: [\"CL-RETAIL\"]",
+          "Nuovo periodo acquistabilità: data inizio 2026-03-05; data fine 2026-04-05",
+          "Nuovo stato di attivazione: \"Disattivo\"",
+          "Nuovo testo promo/USP: \"Attivazione gratuita\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Cercare e selezionare il bundle esistente per la coppia (PROD-A-001, PROD-B-001)",
+          "Entrare in modalità modifica",
+          "Aggiornare il nome commerciale a \"Bundle Fibra+Mobile Marzo\"",
+          "Aggiornare la durata a \"24 mesi\"",
+          "Aggiornare il target selezionando solo \"CL-RETAIL\"",
+          "Aggiornare la data inizio promozione a \"2026-03-05\"",
+          "Aggiornare la data fine promozione a \"2026-04-05\"",
+          "Impostare lo stato di attivazione a \"Disattivo\"",
+          "Aggiornare il testo promo/USP a \"Attivazione gratuita\"",
+          "Cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema salva le modifiche al bundle selezionato",
+          "Il bundle mostra i nuovi valori per tutti i metadati modificati (nome, durata, target, date, stato, testo promo/USP)",
+          "Il sistema mostra conferma di salvataggio riuscito",
+          "È generato un log di configurazione obbligatorio per l'operazione di modifica contenente almeno: identificativo bundle, utente, timestamp e rappresentazione before/after (before con i valori precedenti; after con i valori aggiornati)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story non specifica se la coppia (A,B) sia modificabile: il test modifica solo i metadati esplicitati negli AC."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC03",
+        "title": "Cancellazione bundle esistente con generazione log before/after",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esiste un bundle già creato per la coppia (PROD-A-002, PROD-B-002)",
+          "Il sistema di logging configurazione è attivo e raggiungibile"
+        ],
+        "test_data": [
+          "Bundle esistente: (PROD-A-002, PROD-B-002)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare il bundle esistente per la coppia (PROD-A-002, PROD-B-002)",
+          "Selezionare l'azione \"Cancella\"",
+          "Confermare la cancellazione"
+        ],
+        "expected_results": [
+          "Il sistema elimina il bundle selezionato",
+          "Il bundle eliminato non è più presente nella lista/ricerca del configuratore",
+          "Il sistema mostra conferma di cancellazione riuscita",
+          "È generato un log di configurazione obbligatorio per l'operazione di cancellazione contenente almeno: identificativo bundle, utente, timestamp e rappresentazione before/after (before con i valori del bundle eliminato; after vuoto/assenza)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non è specificato se la cancellazione sia logica o fisica: la verifica controlla l'assenza del bundle dal configuratore e la presenza del log before/after."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC04",
+        "title": "Validazione date: blocco salvataggio se data fine promozione antecedente alla data inizio",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esistono a catalogo i prodotti 'PROD-A-003' e 'PROD-B-003' selezionabili dal configuratore"
+        ],
+        "test_data": [
+          "Prodotto A: PROD-A-003",
+          "Prodotto B: PROD-B-003",
+          "Nome commerciale: \"Bundle Test Date\"",
+          "Durata: \"6 mesi\"",
+          "Target: [\"CL-RETAIL\"]",
+          "Periodo acquistabilità non valido: data inizio 2026-05-10; data fine 2026-05-01",
+          "Stato di attivazione: \"Attivo\"",
+          "Testo promo/USP: \"Promo test\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare l'azione \"Crea nuovo bundle\"",
+          "Selezionare il prodotto A \"PROD-A-003\"",
+          "Selezionare il prodotto B \"PROD-B-003\"",
+          "Inserire il nome commerciale \"Bundle Test Date\"",
+          "Impostare la durata a \"6 mesi\"",
+          "Selezionare il target \"CL-RETAIL\"",
+          "Impostare la data inizio promozione a \"2026-05-10\"",
+          "Impostare la data fine promozione a \"2026-05-01\"",
+          "Impostare lo stato di attivazione a \"Attivo\"",
+          "Inserire il testo promo/USP \"Promo test\"",
+          "Cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio del bundle",
+          "Il sistema mostra un messaggio di errore che indica che la data fine promozione non può essere antecedente alla data inizio",
+          "Il bundle non viene creato (non compare in lista/ricerca)",
+          "Non viene generato alcun log di creazione per l'operazione non completata"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'edge case specifica il blocco salvataggio; la gestione del logging in caso di validazione fallita non è esplicitata, qui si assume che non venga generato log di modifica dati persistiti."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC05",
+        "title": "Target non selezionato: gestione esplicita secondo regola da definire (blocco o default 'tutti')",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esistono a catalogo i prodotti 'PROD-A-004' e 'PROD-B-004' selezionabili dal configuratore"
+        ],
+        "test_data": [
+          "Prodotto A: PROD-A-004",
+          "Prodotto B: PROD-B-004",
+          "Nome commerciale: \"Bundle Senza Target\"",
+          "Durata: \"12 mesi\"",
+          "Target: (nessuna selezione)",
+          "Periodo acquistabilità: data inizio 2026-06-01; data fine 2026-06-30",
+          "Stato di attivazione: \"Attivo\"",
+          "Testo promo/USP: \"Promo senza target\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare l'azione \"Crea nuovo bundle\"",
+          "Selezionare il prodotto A \"PROD-A-004\"",
+          "Selezionare il prodotto B \"PROD-B-004\"",
+          "Inserire il nome commerciale \"Bundle Senza Target\"",
+          "Impostare la durata a \"12 mesi\"",
+          "Lasciare il campo target senza selezionare cluster",
+          "Impostare la data inizio promozione a \"2026-06-01\"",
+          "Impostare la data fine promozione a \"2026-06-30\"",
+          "Impostare lo stato di attivazione a \"Attivo\"",
+          "Inserire il testo promo/USP \"Promo senza target\"",
+          "Cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema gestisce il caso in modo esplicito con una delle seguenti modalità (da regola di prodotto): (A) blocca il salvataggio indicando che il target è obbligatorio, oppure (B) consente il salvataggio impostando il target a \"tutti\" e lo comunica chiaramente in UI (es. etichetta/valore mostrato)",
+          "Se il salvataggio avviene, il bundle creato mostra il target effettivo applicato (cluster selezionati oppure \"tutti\")",
+          "Se il salvataggio avviene, è generato un log obbligatorio di creazione con before/after"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case con regola non definita nella story (blocco vs default 'tutti'). Il test è scritto per validare che il comportamento sia deterministico e comunicato esplicitamente."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC06",
+        "title": "Indisponibilità integrazione cluster target: segnalazione e limitazione/blocco salvataggio target secondo regola da definire",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esistono a catalogo i prodotti 'PROD-A-005' e 'PROD-B-005' selezionabili dal configuratore",
+          "Il servizio/elenco cluster target predefiniti è indisponibile (timeout/errore 5xx) o non restituisce dati",
+          "Il sistema di logging configurazione è attivo e raggiungibile"
+        ],
+        "test_data": [
+          "Prodotto A: PROD-A-005",
+          "Prodotto B: PROD-B-005",
+          "Nome commerciale: \"Bundle Cluster Down\"",
+          "Durata: \"12 mesi\"",
+          "Periodo acquistabilità: data inizio 2026-07-01; data fine 2026-07-31",
+          "Stato di attivazione: \"Attivo\"",
+          "Testo promo/USP: \"Promo\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare l'azione \"Crea nuovo bundle\"",
+          "Selezionare il prodotto A \"PROD-A-005\"",
+          "Selezionare il prodotto B \"PROD-B-005\"",
+          "Aprire la sezione di selezione target",
+          "Osservare il comportamento del configuratore in assenza dell'elenco cluster",
+          "Compilare gli altri metadati (nome, durata, date, stato, testo promo/USP)",
+          "Cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema segnala esplicitamente l'indisponibilità dell'elenco cluster (messaggio in UI) quando si tenta di selezionare il target o al caricamento della sezione",
+          "Il sistema impedisce o limita il salvataggio relativamente al target secondo regola da definire (es. blocco salvataggio oppure salvataggio consentito con target non impostabile/di default), in modo coerente e comunicato all'utente",
+          "Se il salvataggio viene bloccato, il bundle non viene creato e non viene generato log di creazione",
+          "Se il salvataggio viene consentito, il bundle creato mostra chiaramente il target effettivo applicato e viene generato log obbligatorio di creazione con before/after"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna non definita: tool/servizio cluster e regola di fallback in caso di indisponibilità. Il test verifica segnalazione e comportamento deterministico (blocco/limitazione) senza imporre una scelta di prodotto."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC07",
+        "title": "Fallimento generazione log: gestione operazione per garantire obbligatorietà log (rollback o errore) secondo regola da definire",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Team Marketing autenticato e autorizzato ad accedere alla dashboard/configuratore bundle",
+          "Esistono a catalogo i prodotti 'PROD-A-006' e 'PROD-B-006' selezionabili dal configuratore",
+          "Il sistema è configurato per simulare un fallimento della generazione log (es. servizio logging non raggiungibile o errore controllato)"
+        ],
+        "test_data": [
+          "Prodotto A: PROD-A-006",
+          "Prodotto B: PROD-B-006",
+          "Nome commerciale: \"Bundle Log Fail\"",
+          "Durata: \"12 mesi\"",
+          "Target: [\"CL-RETAIL\"]",
+          "Periodo acquistabilità: data inizio 2026-08-01; data fine 2026-08-31",
+          "Stato di attivazione: \"Attivo\"",
+          "Testo promo/USP: \"Promo\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire l'interfaccia di configurazione dei bundle",
+          "Selezionare l'azione \"Crea nuovo bundle\"",
+          "Compilare la coppia prodotti (PROD-A-006, PROD-B-006) e tutti i metadati richiesti",
+          "Cliccare su \"Salva\"",
+          "Verificare l'esito dell'operazione e lo stato del bundle nella lista/ricerca"
+        ],
+        "expected_results": [
+          "Il sistema gestisce il fallimento del log in modo da garantire l'obbligatorietà del logging secondo regola da definire (es. rollback della creazione e messaggio di errore, oppure altra gestione equivalente che impedisca una modifica senza log)",
+          "Se viene applicato rollback/blocco, il bundle non risulta creato/persistito (non compare in lista/ricerca)",
+          "Il sistema mostra un messaggio di errore che indica l'impossibilità di completare l'operazione per problemi di logging (o messaggio equivalente non ambiguo)",
+          "Non esiste uno stato in cui il bundle risulti creato/modificato senza un log before/after associato"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Regola non definita: comportamento esatto in caso di fallimento log (rollback vs altre strategie). Il test impone il vincolo di business: nessuna operazione deve risultare completata senza log."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC08",
+        "title": "Conflitto di modifica concorrente sullo stesso bundle (gestione lock/concurrency secondo regola da definire)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste un bundle già creato per la coppia (PROD-A-007, PROD-B-007)",
+          "Sono disponibili due utenti distinti con ruolo Team Marketing (Utente1 e Utente2) autenticabili in due sessioni separate",
+          "Il sistema di logging configurazione è attivo e raggiungibile"
+        ],
+        "test_data": [
+          "Bundle esistente: (PROD-A-007, PROD-B-007)",
+          "Modifica Utente1: Nome commerciale -> \"Bundle Concorrenza U1\"",
+          "Modifica Utente2: Nome commerciale -> \"Bundle Concorrenza U2\""
+        ],
+        "steps": [
+          "Avviare una sessione dashboard come Utente1 (Team Marketing)",
+          "Avviare una seconda sessione dashboard come Utente2 (Team Marketing)",
+          "In sessione Utente1, aprire il bundle (PROD-A-007, PROD-B-007) in modifica",
+          "In sessione Utente2, aprire lo stesso bundle (PROD-A-007, PROD-B-007) in modifica",
+          "In sessione Utente1, modificare il nome commerciale in \"Bundle Concorrenza U1\"",
+          "In sessione Utente1, cliccare su \"Salva\"",
+          "In sessione Utente2, modificare il nome commerciale in \"Bundle Concorrenza U2\"",
+          "In sessione Utente2, cliccare su \"Salva\""
+        ],
+        "expected_results": [
+          "Il sistema gestisce il conflitto in modo deterministico secondo modalità da definire (lock pessimista con blocco della seconda modifica, oppure lock ottimista con errore di versione e richiesta di ricaricare, o equivalente)",
+          "Non si verifica perdita silenziosa di aggiornamenti: la seconda sessione riceve un messaggio esplicito di conflitto/blocco oppure viene impedito l'editing",
+          "Lo stato finale del bundle è coerente con la regola di concorrenza adottata (es. solo una delle due modifiche viene applicata)",
+          "Sono generati log before/after per le sole operazioni effettivamente completate con successo"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story indica gestione conflitto ma non specifica la strategia (ottimista/pessimista). Il test valida l'assenza di overwrite silenziosi e la coerenza dei log."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC09",
+        "title": "Autorizzazione: utente non Team Marketing non può creare/modificare/cancellare bundle nel configuratore",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile con ruolo diverso da Team Marketing (es. \"Viewer\" o \"Customer Care\")",
+          "Esiste un bundle già creato per la coppia (PROD-A-008, PROD-B-008)"
+        ],
+        "test_data": [
+          "Utente non autorizzato: ruolo \"Viewer\"",
+          "Bundle esistente: (PROD-A-008, PROD-B-008)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente con ruolo \"Viewer\"",
+          "Tentare di aprire l'interfaccia di configurazione dei bundle",
+          "Se l'interfaccia è accessibile, tentare di avviare la creazione di un nuovo bundle",
+          "Selezionare un bundle esistente (PROD-A-008, PROD-B-008)",
+          "Tentare di modificare un metadato e salvare",
+          "Tentare di cancellare il bundle"
+        ],
+        "expected_results": [
+          "Il sistema impedisce l'accesso al configuratore oppure rende non disponibili le azioni di creazione/modifica/cancellazione per l'utente non Team Marketing",
+          "Ogni tentativo di operazione non autorizzata fallisce con messaggio/errore di autorizzazione non ambiguo (es. \"Permessi insufficienti\")",
+          "Nessun bundle viene creato/modificato/cancellato a seguito dei tentativi non autorizzati",
+          "Non vengono generati log di configurazione per operazioni non autorizzate non eseguite"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esiste un modello ruoli/permessi; la story non lo specifica ma richiede implicitamente controllo accessi. Se il prodotto non prevede ruoli distinti, questo test va riallineato in refinement."
+      }
+    ]
+  }
+]

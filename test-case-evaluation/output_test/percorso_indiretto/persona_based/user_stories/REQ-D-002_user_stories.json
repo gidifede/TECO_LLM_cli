@@ -1,0 +1,66 @@
+[
+  {
+    "story_id": "REQ-D-002.US01",
+    "title": "Creazione e assegnazione varianti descrizione offerta per cluster",
+    "persona": "Team Marketing",
+    "goal": "creare, salvare e associare varianti testuali della descrizione di una stessa offerta a uno o più cluster/segmenti",
+    "benefit": "personalizzare il messaggio dell’offerta in base al segmento di clientela e aumentare l’efficacia commerciale",
+    "user_story": "Come Team Marketing\nVoglio creare, salvare e associare varianti testuali della descrizione di una stessa offerta a uno o più cluster/segmenti\nIn modo che i clienti vedano una descrizione coerente con il loro cluster e la comunicazione sia più efficace",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO accedo alla dashboard marketing e seleziono una specifica offerta ALLORA posso creare una nuova variante testuale della descrizione per quella offerta.",
+      "QUANDO inserisco il testo della variante e salvo ALLORA la variante viene persistita ed è disponibile tra le varianti della stessa offerta.",
+      "QUANDO visualizzo le varianti di una stessa offerta ALLORA posso vedere più varianti salvate per quella offerta.",
+      "QUANDO configuro una variante ALLORA posso associarla a uno o più identificatori di cluster/segmento.",
+      "QUANDO salvo l’associazione tra variante e cluster/segmenti ALLORA l’associazione viene memorizzata ed è riutilizzabile per la selezione della descrizione mostrata al cliente."
+    ],
+    "business_rules": [
+      "Una variante testuale è sempre riferita a una specifica offerta.",
+      "Una variante può essere associata a uno o più identificatori di cluster/segmento."
+    ],
+    "edge_cases": [
+      "QUANDO provo a salvare una variante senza testo ALLORA il sistema impedisce il salvataggio e segnala l’errore.",
+      "QUANDO provo ad associare una variante a un identificatore di cluster/segmento non valido o non riconosciuto ALLORA il sistema impedisce il salvataggio dell’associazione e segnala l’errore.",
+      "QUANDO provo a rimuovere/modificare un’associazione già salvata ALLORA il sistema gestisce l’operazione senza perdere le altre associazioni della variante (se presenti)."
+    ],
+    "assumptions": [
+      "Si assume che la dashboard marketing disponga di una sezione/pagina per la gestione delle offerte con funzionalità di creazione e salvataggio varianti testuali.",
+      "Si assume che gli identificatori di cluster/segmento siano disponibili al Team Marketing tramite elenco selezionabile o inserimento controllato (validato dal sistema).",
+      "Si assume che le regole di priorità in caso di più varianti applicabili allo stesso cliente (es. cluster multipli) non siano definite in questo requisito e vadano chiarite."
+    ],
+    "notes": "Il requisito non specifica cosa accade se un cliente appartiene a più cluster o se non esiste una variante associata al cluster del cliente: serve definire regole di precedenza/fallback. L’AC relativo alla visualizzazione della variante sul canale cliente è condiviso con la US del Cliente digitale (REQ-D-002.US02)."
+  },
+  {
+    "story_id": "REQ-D-002.US02",
+    "title": "Visualizzazione descrizione offerta in variante coerente con il cluster del cliente",
+    "persona": "Cliente digitale",
+    "goal": "visualizzare la descrizione dell’offerta nella variante associata al mio cluster/segmento",
+    "benefit": "ricevere una comunicazione più pertinente e comprensibile rispetto al mio profilo",
+    "user_story": "Come Cliente digitale\nVoglio visualizzare la descrizione dell’offerta nella variante associata al mio cluster/segmento\nIn modo che la comunicazione dell’offerta sia più pertinente al mio profilo",
+    "channels": [
+      "App",
+      "Web"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO visualizzo un’offerta e il mio profilo è contrassegnato con un determinato cluster/segmento ALLORA l’interfaccia mostra la variante di descrizione associata a quel cluster/segmento.",
+      "QUANDO visualizzo un’offerta e per il mio cluster/segmento esiste una variante associata ALLORA l’interfaccia non mostra una variante diversa da quella associata al mio cluster/segmento."
+    ],
+    "business_rules": [
+      "La variante della descrizione mostrata al cliente è determinata in funzione dell’appartenenza del cliente a un cluster/segmento e dell’associazione variante↔cluster configurata dal Team Marketing."
+    ],
+    "edge_cases": [
+      "QUANDO il mio profilo non ha alcun cluster/segmento ALLORA il comportamento di visualizzazione (es. descrizione standard) deve essere gestito secondo una regola di fallback da definire.",
+      "QUANDO il mio profilo appartiene a più cluster/segmenti e più varianti risultano applicabili ALLORA il sistema deve applicare una regola di precedenza da definire.",
+      "QUANDO il servizio che determina il cluster/segmento non è disponibile ALLORA l’interfaccia deve gestire l’errore e applicare un comportamento di fallback da definire."
+    ],
+    "assumptions": [
+      "Si assume che il sistema sia in grado di determinare (direttamente o tramite integrazione) il cluster/segmento associato al cliente in fase di visualizzazione dell’offerta.",
+      "Si assume l’esistenza di una descrizione ‘base’ dell’offerta da usare come fallback qualora non sia disponibile una variante applicabile, ma la regola non è definita nel requisito."
+    ],
+    "notes": "L’AC sulla visualizzazione della variante in base al cluster è condiviso con la US del Team Marketing (REQ-D-002.US01) perché dipende dalla configurazione delle associazioni variante↔cluster. Il requisito non definisce esplicitamente regole di fallback e precedenza: necessario chiarimento in refinement."
+  }
+]

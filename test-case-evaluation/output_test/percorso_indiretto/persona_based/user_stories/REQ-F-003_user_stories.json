@@ -1,0 +1,35 @@
+[
+  {
+    "story_id": "REQ-F-003.US01",
+    "title": "Configurare eccezioni manuali a regole/bundle per casi specifici",
+    "persona": "Team Marketing",
+    "goal": "creare e configurare eccezioni manuali tramite dashboard per deviare il comportamento standard delle regole in casi limitati e specifici, definendone ambito e durata",
+    "benefit": "gestire rapidamente situazioni commerciali particolari senza modificare la configurazione ordinaria basata su regole",
+    "user_story": "Come Team Marketing\nVoglio creare e configurare eccezioni manuali tramite dashboard per casi specifici\nIn modo che io possa deviare il comportamento standard delle regole solo quando necessario e per un periodo/ambito limitato",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "medium",
+    "acceptance_criteria": [
+      "QUANDO un utente Team Marketing accede alla dashboard con un ruolo autorizzato ALLORA può creare una nuova eccezione manuale associandola ad uno o più casi specifici.",
+      "QUANDO l’utente definisce l’eccezione ALLORA può configurarne l’ambito di applicazione (es. combinazione specifica o cliente/signature temporale) secondo le opzioni rese disponibili dalla dashboard.",
+      "QUANDO l’utente definisce l’eccezione ALLORA può configurarne la durata (inizio/fine o equivalente) tramite la dashboard.",
+      "QUANDO un utente Team Marketing non dispone di un ruolo autorizzato (RBAC) ALLORA la dashboard non consente la creazione di eccezioni manuali."
+    ],
+    "business_rules": [
+      "Le eccezioni manuali sono consentite solo per casi limitati e specifici (non per ambiti generici).",
+      "La creazione di eccezioni manuali è permessa esclusivamente a ruoli autorizzati secondo il requisito RBAC."
+    ],
+    "edge_cases": [
+      "Tentativo di creare un’eccezione senza impostare una durata: il sistema deve impedire il salvataggio o richiedere esplicitamente una durata.",
+      "Tentativo di creare un’eccezione senza definire un ambito/caso specifico: il sistema deve impedire il salvataggio.",
+      "Utente con permessi insufficienti che prova ad accedere direttamente alla funzione (es. via URL): accesso negato e nessuna eccezione creata.",
+      "Creazione di un’eccezione con durata già scaduta: il sistema deve segnalare l’errore e impedire il salvataggio (o richiedere correzione)."
+    ],
+    "assumptions": [
+      "Il requisito RBAC citato definisce in modo verificabile quali ruoli sono autorizzati a creare eccezioni manuali, ma qui non sono specificati.",
+      "Le tipologie di ambito configurabile (es. combinazione, cliente, signature temporale) sono limitate alle opzioni previste dalla dashboard e non implicano ulteriori casi d’uso non descritti."
+    ],
+    "notes": "Requisito con AC parzialmente dichiarativi: è stato reso testabile assumendo che la dashboard esponga campi/controlli per selezionare casi specifici e per impostare una durata (inizio/fine o equivalente). Dipendenza esterna: definizione dettagliata dei ruoli autorizzati nel requisito RBAC. Il requisito indica che la funzionalità è “marginale”: non introduce priorità diversa ma suggerisce possibile limitazione di visibilità/uso rispetto alle funzioni standard."
+  }
+]

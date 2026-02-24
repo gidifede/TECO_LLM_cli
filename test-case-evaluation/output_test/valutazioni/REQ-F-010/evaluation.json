@@ -1,0 +1,169 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-F-010",
+  "direct": {
+    "tc_count": 10,
+    "coherence_score": 64,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-010.TC01",
+        "detail": "Assume esistenza di un ruolo/permesso specifico 'Marketing' e di un 'catalogo prodotti' con codici prodotto; il requisito cita 'Marketing' come attore ma non definisce RBAC né codifiche/catalogo."
+      },
+      {
+        "test_id": "REQ-F-010.TC01",
+        "detail": "Introduce un 'identificativo univoco del bundle (ID bundle)' come requisito verificabile; non è menzionato negli AC/descrizione."
+      },
+      {
+        "test_id": "REQ-F-010.TC03",
+        "detail": "Assume presenza di una 'finestra di conferma' e comportamento 'non trovato' aprendo il dettaglio dopo cancellazione; non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-010.TC04",
+        "detail": "Assume un meccanismo consultabile di log (UI/endpoint/DB) e modalità di filtro per entità/coppia/ID; il requisito richiede log before/after ma non specifica accesso/consultazione."
+      },
+      {
+        "test_id": "REQ-F-010.TC05",
+        "detail": "Assume campi minimi e struttura del log (sezioni before/after per singoli campi, distinguibilità); non definito nel requisito oltre al concetto before/after."
+      },
+      {
+        "test_id": "REQ-F-010.TC06",
+        "detail": "Accetta due standard di audit per cancellazione (after null vs flag eliminazione); il requisito non definisce standard, quindi è un'ipotesi implementativa aggiunta."
+      },
+      {
+        "test_id": "REQ-F-010.TC07",
+        "detail": "Introduce ruoli alternativi ('Sales', 'Viewer') e verifica HTTP 403; il requisito non menziona ruoli diversi né codici HTTP."
+      },
+      {
+        "test_id": "REQ-F-010.TC07",
+        "detail": "Afferma che non debbano essere creati log per operazioni non autorizzate; il requisito non tratta il caso di tentativi falliti/non autorizzati."
+      },
+      {
+        "test_id": "REQ-F-010.TC08",
+        "detail": "Assume obbligatorietà di specifici metadati e che in caso di validazione fallita non venga generato alcun log; obbligatorietà e comportamento logging su fallimento non sono nel requisito."
+      },
+      {
+        "test_id": "REQ-F-010.TC09",
+        "detail": "Introduce regola di validazione 'data fine >= data inizio' e assenza log su salvataggio fallito; non esplicitata negli AC."
+      },
+      {
+        "test_id": "REQ-F-010.TC10",
+        "detail": "Introduce comportamento di resilienza/errore quando il servizio cluster è indisponibile (messaggi, blocco/consenso salvataggio) e assenza log su operazione non completata; il requisito cita un tool esterno 'da discutere' ma non definisce questi comportamenti."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description: \"pricing, validità (intervallo temporale) e target\"",
+        "detail": "Nessun TC valida esplicitamente la configurazione/gestione delle condizioni di pricing (anche solo come campo configurabile). Gli AC non lo citano, ma la description lo include come parte della gestione bundle in questo requisito (pur rimandando a REQ-F-002)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-010.TC04",
+          "REQ-F-010.TC05",
+          "REQ-F-010.TC06"
+        ],
+        "detail": "Tre TC molto simili che verificano la stessa regola (log before/after) su tre operazioni diverse; la ridondanza è parziale perché cambia l'evento (create/update/delete), ma struttura/step di verifica log sono quasi identici."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 9,
+    "coherence_score": 43,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-F-010.US01.TC01",
+        "detail": "Introduce canale/artefatto 'dashboard' e 'Team Marketing' (naming diverso) e presuppone una dashboard distinta dall'interfaccia del configuratore; il requisito parla genericamente di interfaccia del configuratore."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC01",
+        "detail": "Assume target multi-selezione (lista di cluster) mentre il requisito dice 'cluster predefiniti selezionabili' senza specificare se singolo o multiplo."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC01",
+        "detail": "Aggiunge requisiti minimi del log (identificativo bundle, utente, timestamp) oltre al before/after; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC02",
+        "detail": "Aggiunge conferma UI di salvataggio riuscito; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC03",
+        "detail": "Aggiunge conferma UI di cancellazione riuscita; non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC04",
+        "detail": "Introduce regola di validazione date (fine antecedente a inizio) e assenza log su fallimento; non esplicitato dal requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC05",
+        "detail": "Introduce comportamento alternativo 'default tutti' in assenza target; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC06",
+        "detail": "Introduce regole di fallback in caso cluster down (blocco/limitazione/default) 'da definire'; il requisito non definisce comportamenti."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC07",
+        "detail": "Introduce vincolo/strategia transazionale in caso di fallimento log (rollback o errore) e principio 'nessuna modifica senza log'; il requisito richiede log obbligatori ma non specifica comportamento in caso di failure tecnica."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC08",
+        "detail": "Introduce gestione della concorrenza (lock/versioning) e relativo comportamento; non menzionato nel requisito."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC09",
+        "detail": "Introduce ruoli non menzionati (Viewer/Customer Care) e controllo accesso al configuratore; il requisito indica che 'Marketing può' ma non definisce RBAC né altri ruoli."
+      },
+      {
+        "test_id": "REQ-F-010.US01.TC09",
+        "detail": "Afferma assenza log per operazioni non autorizzate; non specificato dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Acceptance Criteria AC-2: \"testo promo/USP\"",
+        "detail": "Non c'è un TC dedicato a verificare specificamente la configurabilità del testo promo/USP in modifica/ciclo vita senza accoppiarlo ad altri metadati; è comunque coperto in TC01/TC02, quindi non è una mancanza di copertura ma manca uno scenario mirato (non-AC) su sola gestione USP."
+      },
+      {
+        "source": "Description: \"pricing, validità (intervallo temporale) e target\"",
+        "detail": "Come per il set direct, nessun TC valida esplicitamente la configurazione/gestione delle condizioni di pricing (anche solo come campo configurabile), citate nella description (rimando a REQ-F-002)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-F-010.US01.TC01",
+          "REQ-F-010.US01.TC02",
+          "REQ-F-010.US01.TC03"
+        ],
+        "detail": "Tre TC con struttura molto simile (CRUD + verifica log before/after) con differenze limitate all'operazione; ridondanza parziale."
+      },
+      {
+        "test_ids": [
+          "REQ-F-010.US01.TC05",
+          "REQ-F-010.US01.TC06"
+        ],
+        "detail": "Entrambi testano assenza/indisponibilità target (non selezionato vs cluster down) introducendo comportamenti 'da definire' molto simili."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli AC (AC-1..AC-3). Tuttavia il set direct introduce meno informazioni non tracciabili (added_info inferiore) e meno ridondanze rispetto all'indirect_persona, che aggiunge numerosi comportamenti 'da definire' (fallback target, failure logging, concorrenza) e dettagli non richiesti (dashboard, campi minimi log, multi-target). Di conseguenza il punteggio di coerenza del direct risulta più alto (64 vs 43)."
+  }
+}

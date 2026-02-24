@@ -1,0 +1,349 @@
+[
+  {
+    "story_id": "REQ-F-026.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-026.US01.TC01",
+        "title": "Creazione campagna esterna con override e associazione a lista clienti target",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di creazione/modifica campagne autenticato in dashboard",
+          "Esistono in anagrafica i clienti: C-10001, C-10002, C-20001",
+          "Funzionalità 'campagne/eventi esterni' disponibile in dashboard"
+        ],
+        "test_data": [
+          "Campagna: EXT-OVR-001 (tipo: evento esterno)",
+          "Override frequenza: abilitato",
+          "Target clienti (lista): C-10001, C-10002",
+          "Cliente non target di controllo: C-20001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Navigare alla sezione di configurazione campagne/eventi esterni",
+          "Creare una nuova campagna con identificativo 'EXT-OVR-001'",
+          "Impostare l'opzione di override della regola di frequenza su 'abilitato'",
+          "Selezionare come target la lista clienti 'C-10001, C-10002'",
+          "Salvare la configurazione della campagna"
+        ],
+        "expected_results": [
+          "Il salvataggio della campagna va a buon fine",
+          "Per i clienti C-10001 e C-10002 risulta associato un flag/campagna che abilita l'override della regola di frequenza",
+          "Il cliente C-20001 non risulta associato alla campagna/flag di override",
+          "L'associazione campagna↔clienti target risulta persistita e recuperabile riaprendo la configurazione della campagna"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non specifica il modello di targeting (lista/segmento/import): il test usa una lista esplicita di clienti. La verifica dell'associazione può avvenire via UI o API/DB se disponibili."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC02",
+        "title": "Audit trail: tracciamento di creazione e modifica configurazione campagna/override",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di creazione/modifica campagne autenticato in dashboard",
+          "Esiste la campagna 'EXT-OVR-001' configurata con override abilitato e target C-10001, C-10002",
+          "La dashboard espone una vista di storico/versioni o audit della configurazione (chi/quando/cosa)"
+        ],
+        "test_data": [
+          "Modifica target: aggiunta cliente C-10003",
+          "Motivo modifica (se previsto): 'Estensione target campagna'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la campagna 'EXT-OVR-001'",
+          "Aggiungere il cliente 'C-10003' alla lista target",
+          "Salvare la configurazione",
+          "Aprire la sezione 'storico/versioni' o 'audit' della campagna"
+        ],
+        "expected_results": [
+          "Il salvataggio della modifica va a buon fine",
+          "Nello storico/audit è presente una nuova voce di modifica che include almeno: utente (chi), timestamp (quando), dettagli modifica (cosa: aggiunta C-10003 ai target)",
+          "La versione precedente della configurazione risulta consultabile (es. come snapshot/versione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se la UI non espone esplicitamente le 'versioni', la tracciabilità può essere verificata tramite log/audit backend purché accessibili in ambiente di test."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC03",
+        "title": "Rollback: ripristino versione precedente della campagna/override e rimozione associazione cliente aggiunto",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di rollback/versioning autenticato in dashboard",
+          "Esiste la campagna 'EXT-OVR-001' con almeno due versioni: V1 (target C-10001,C-10002) e V2 (target C-10001,C-10002,C-10003)",
+          "La dashboard consente il ripristino di una versione precedente"
+        ],
+        "test_data": [
+          "Versione da ripristinare: V1"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la campagna 'EXT-OVR-001'",
+          "Aprire la sezione 'storico/versioni'",
+          "Selezionare la versione V1",
+          "Eseguire l'azione di 'ripristino' della versione selezionata",
+          "Riaprire la configurazione corrente della campagna"
+        ],
+        "expected_results": [
+          "Il sistema conferma l'avvenuto ripristino della versione V1",
+          "La configurazione corrente mostra i target C-10001 e C-10002 e non include C-10003",
+          "Per il cliente C-10003 non risulta più associato il flag/campagna di override",
+          "Nel tracciamento/audit è registrato l'evento di rollback (chi/quando/cosa: ripristino V1)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Edge case collegato: rollback mentre campagna attiva. Il requisito non definisce lo stato 'attiva/non attiva' né la propagazione al Motore; qui si verifica almeno la coerenza dell'associazione campagna↔clienti dopo rollback."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC04",
+        "title": "Blocco salvataggio campagna override senza definizione clienti target",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di creazione campagne autenticato in dashboard",
+          "Funzionalità 'campagne/eventi esterni' disponibile in dashboard"
+        ],
+        "test_data": [
+          "Campagna: EXT-OVR-002 (tipo: evento esterno)",
+          "Override frequenza: abilitato",
+          "Target clienti: non impostato (vuoto)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Navigare alla sezione di configurazione campagne/eventi esterni",
+          "Creare una nuova campagna con identificativo 'EXT-OVR-002'",
+          "Impostare l'opzione di override della regola di frequenza su 'abilitato'",
+          "Lasciare vuota la selezione dei clienti target",
+          "Tentare di salvare la configurazione"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della configurazione",
+          "Il sistema mostra un errore bloccante che indica che i clienti target sono obbligatori per abilitare l'override",
+          "La campagna 'EXT-OVR-002' non risulta creata/attiva con override abilitato"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La user story indica che il comportamento (impedire salvataggio o segnalare errore bloccante) è 'da definire'; questo test assume errore bloccante e nessun salvataggio."
+      },
+      {
+        "test_id": "REQ-F-026.US01.TC05",
+        "title": "Persistenza associazione campagna↔clienti: riapertura campagna e verifica target invariati",
+        "type": "Integration",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente Team Marketing autenticato in dashboard",
+          "Esiste la campagna 'EXT-OVR-001' salvata con target C-10001, C-10002"
+        ],
+        "test_data": [
+          "Campagna: EXT-OVR-001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Team Marketing",
+          "Aprire la campagna 'EXT-OVR-001'",
+          "Annotare i target visualizzati",
+          "Uscire dalla schermata di dettaglio campagna",
+          "Rientrare nel dettaglio della campagna 'EXT-OVR-001'"
+        ],
+        "expected_results": [
+          "I target visualizzati alla riapertura coincidono con quelli salvati (C-10001, C-10002)",
+          "Non risultano target aggiuntivi non selezionati (es. C-20001)",
+          "Il flag/campagna di override risulta associato esclusivamente ai clienti target"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-4"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Test di integrazione inteso come verifica della persistenza tra UI e storage (API/DB)."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-F-026.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-026.US02.TC01",
+        "title": "Cliente target con campagna override: il Motore consente riproposizione immediata bypassando la frequenza standard",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una campagna configurata con override abilitato e target che include il cliente C-10001 (es. 'EXT-OVR-001')",
+          "Il cliente C-10001 ha ricevuto l'offerta OFF-777 recentemente e ricadrebbe nel periodo di blocco della regola di frequenza standard",
+          "Il Motore di Offerte è in esecuzione e può leggere l'associazione cliente↔campagna/flag",
+          "È disponibile un endpoint/job per richiedere valutazione offerta per un cliente in ambiente di test"
+        ],
+        "test_data": [
+          "Cliente: C-10001 (target)",
+          "Offerta: OFF-777",
+          "Evento di riproposizione: richiesta entro l'intervallo minimo della regola standard (es. dopo 1 ora invece di 7 giorni)"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-10001 e l'offerta OFF-777",
+          "Acquisire l'esito della valutazione (decisione e motivazione/regola applicata, se disponibile)"
+        ],
+        "expected_results": [
+          "Il Motore consente la riproposizione immediata per C-10001 nonostante la regola di frequenza standard sarebbe bloccante",
+          "L'esito indica che è stata applicata un'eccezione/override legata alla campagna/flag (se il Motore espone reason codes/log)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica come il Motore esponga la motivazione; se non disponibile, verificare almeno l'esito 'consentito' e l'assenza di blocco per frequenza."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC02",
+        "title": "Cliente non target: il Motore applica la regola di frequenza standard senza eccezioni",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una campagna configurata con override abilitato e target che NON include il cliente C-20001 (es. 'EXT-OVR-001')",
+          "Il cliente C-20001 ha ricevuto l'offerta OFF-777 recentemente e ricadrebbe nel periodo di blocco della regola di frequenza standard",
+          "Il Motore di Offerte è in esecuzione e può leggere l'associazione cliente↔campagna/flag"
+        ],
+        "test_data": [
+          "Cliente: C-20001 (non target)",
+          "Offerta: OFF-777",
+          "Evento di riproposizione: richiesta entro l'intervallo minimo della regola standard"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-20001 e l'offerta OFF-777",
+          "Acquisire l'esito della valutazione (decisione e motivazione/regola applicata, se disponibile)"
+        ],
+        "expected_results": [
+          "Il Motore nega la riproposizione immediata per C-20001 applicando la regola di frequenza standard",
+          "L'esito non indica applicazione di override/campagna (se disponibili reason codes/log)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Questo test contribuisce a dimostrare che l'override non si estende a clienti non target."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC03",
+        "title": "Evidenza che l'override si applica esclusivamente ai clienti target (confronto target vs non target)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste una campagna configurata con override abilitato e target che include C-10001 e C-10002 e non include C-20001",
+          "Per C-10001, C-10002 e C-20001 esiste lo stesso contesto di frequenza (tutti ricadono nel blocco standard per OFF-777)",
+          "Motore di Offerte operativo e con accesso ai dati di targeting"
+        ],
+        "test_data": [
+          "Clienti: C-10001 (target), C-10002 (target), C-20001 (non target)",
+          "Offerta: OFF-777"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-10001 e l'offerta OFF-777",
+          "Registrare l'esito per C-10001",
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-10002 e l'offerta OFF-777",
+          "Registrare l'esito per C-10002",
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-20001 e l'offerta OFF-777",
+          "Registrare l'esito per C-20001"
+        ],
+        "expected_results": [
+          "Per C-10001 l'esito è 'consentito' (override applicato)",
+          "Per C-10002 l'esito è 'consentito' (override applicato)",
+          "Per C-20001 l'esito è 'negato' per regola di frequenza standard",
+          "Non risultano clienti non target per cui l'override venga applicato"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Test end-to-end logico sul Motore: richiede dati di frequenza predisposti in modo identico per i tre clienti."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC04",
+        "title": "Dati targeting/campagna non disponibili al Motore: fallback su regola di frequenza standard",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Il Motore di Offerte è in esecuzione",
+          "È possibile simulare indisponibilità/timeout del servizio o datasource che fornisce l'associazione cliente↔campagna/flag (es. spegnimento mock, regola firewall, fault injection)",
+          "Il cliente C-10001 ricade nel blocco della regola di frequenza standard per OFF-777"
+        ],
+        "test_data": [
+          "Cliente: C-10001",
+          "Offerta: OFF-777",
+          "Fault: timeout lettura targeting/campagna (es. > 3s) o errore 5xx dal servizio dati"
+        ],
+        "steps": [
+          "Abilitare la condizione di errore/timeout sul componente che fornisce i dati campagna/targeting al Motore",
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-10001 e l'offerta OFF-777",
+          "Acquisire l'esito della valutazione e gli eventuali log/metriche di errore"
+        ],
+        "expected_results": [
+          "Il Motore non applica l'override in assenza dei dati di targeting/campagna",
+          "Il Motore applica la regola di frequenza standard (esito 'negato' in questo contesto di blocco)",
+          "È registrato un errore tecnico coerente (log/metriche) relativo alla mancata disponibilità dei dati, senza compromettere la risposta del Motore"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Il fallback non è specificato nella user story; questo test assume comportamento 'fail-safe' applicando la regola standard. Da confermare in refinement."
+      },
+      {
+        "test_id": "REQ-F-026.US02.TC05",
+        "title": "Campagna/flag presente ma campagna non attiva o rimossa: l'override non viene applicato",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Esiste una campagna con override precedentemente configurata per includere C-10001",
+          "La campagna risulta ora non attiva o rimossa secondo lo stato disponibile nel sistema (se previsto)",
+          "Il Motore di Offerte può accedere allo stato campagna oppure riceve un'informazione coerente di non validità",
+          "Il cliente C-10001 ricade nel blocco della regola di frequenza standard per OFF-777"
+        ],
+        "test_data": [
+          "Cliente: C-10001",
+          "Offerta: OFF-777",
+          "Stato campagna: non attiva/rimossa"
+        ],
+        "steps": [
+          "Portare la campagna in stato 'non attiva' o rimuoverla (secondo le funzioni disponibili in ambiente di test)",
+          "Inviare al Motore una richiesta di valutazione/riproposizione per il cliente C-10001 e l'offerta OFF-777",
+          "Acquisire l'esito della valutazione"
+        ],
+        "expected_results": [
+          "Il Motore non applica l'override legato alla campagna non attiva/rimossa",
+          "Il Motore applica la regola di frequenza standard (esito 'negato' in questo contesto di blocco)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-4"
+        ],
+        "channels": [],
+        "notes": "Comportamento non specificato: questo test assume che una campagna non attiva/rimossa renda non valido l'override anche se un flag residuo fosse presente."
+      }
+    ]
+  }
+]

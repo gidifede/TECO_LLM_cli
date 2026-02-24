@@ -1,0 +1,165 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-V-007",
+  "direct": {
+    "tc_count": 6,
+    "coherence_score": 70,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-007.TC01",
+        "detail": "Introduce canali/applicazioni specifici ('portale web', 'console operatore') e utenti identificati (CL-10001, OP-20001) non presenti nel requisito; il requisito parla solo di 'clienti' e 'operatori'."
+      },
+      {
+        "test_id": "REQ-V-007.TC01",
+        "detail": "Assume un meccanismo tecnico di simulazione/forzatura dell'incertezza (feature flag/evento di errore controllato) non specificato dal requisito."
+      },
+      {
+        "test_id": "REQ-V-007.TC02",
+        "detail": "Assume l'esistenza di una UI backoffice o API per consultare lo stato della combinazione; il requisito non specifica dove/come lo stato sia consultabile."
+      },
+      {
+        "test_id": "REQ-V-007.TC03",
+        "detail": "Assume che l'azione di approvazione sia 'registrata' con esito positivo (audit/log) come expected result; il requisito richiede solo che dopo azione esplicita la combinazione possa essere riabilitata, non che l'azione sia registrata."
+      },
+      {
+        "test_id": "REQ-V-007.TC04",
+        "detail": "Introduce uno scenario di 'accesso diretto' via API/deep link e la presenza di messaggio/causale di errore; non è esplicitato nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.TC05",
+        "detail": "Introduce una regola di autorizzazione negativa (utente non autorizzato non può approvare) e gestione permessi; il requisito dice solo 'ruoli autorizzati' come condizione, ma non specifica la gestione/errore per non autorizzati."
+      },
+      {
+        "test_id": "REQ-V-007.TC06",
+        "detail": "Assume che un errore/timeout di propagazione venga sempre trattato come condizione di incertezza e che imposti/perpetui lo stato 'in attesa di revisione manuale'; il requisito cita 'errori di propagazione' come esempio di incertezza, ma non definisce il comportamento tecnico dettagliato (timeout/500, componente dedicato)."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description (esempi di incertezza: 'vietato' rimosso accidentalmente, conflitto override vs standard, errori di propagazione)",
+        "detail": "Non esiste una copertura esplicita e completa di tutti gli esempi citati: il set copre 'conflitto override vs standard' (TC01), 'flag vietato rimosso' (TC02) ed 'errore di propagazione' (TC06), ma non verifica che in generale 'qualsiasi situazione di incertezza' (come classe) attivi il blocco indipendentemente dalla causa (test parametrico/astratto)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-007.TC01",
+          "REQ-V-007.TC04"
+        ],
+        "detail": "Entrambi validano la non-proponibilità in stato di incertezza/blocco; TC04 aggiunge il vettore 'accesso diretto', ma l'obiettivo principale (nessuna proposta creata) è molto sovrapposto."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 26,
+    "coherence_score": 0,
+    "ac_coverage": {
+      "total_ac": 3,
+      "covered_ac": 3,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-V-007.US01.TC01",
+        "detail": "Introduce un componente specifico 'Motore di Offerte' e un meccanismo di 'detection' con output booleano 'incertezza regolatoria = true'; il requisito non descrive architettura, motori, né un servizio di detection."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC01",
+        "detail": "Introduce canali 'digitale' e 'fisico' come categorie operative; il requisito parla solo di 'clienti' e 'operatori' senza distinguere digitale/fisico."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC02",
+        "detail": "Assume accesso a datastore/API di stato e persistenza specifica; il requisito richiede marcatura di stato ma non datastore/endpoint."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC03",
+        "detail": "Assume un endpoint per inviare esito di revisione 'APPROVA' e la firma/attribuzione dell'esito; il requisito non definisce interfacce, formati o 'APPROVA'."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC04",
+        "detail": "Introduce una regola temporale ('2 richieste a distanza di 5 minuti') e l'idea di 'nessuna riabilitazione implicita nel tempo'; il requisito non parla di tempo o comportamenti temporali."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC07",
+        "detail": "Introduce requisito di idempotenza su approvazioni duplicate; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US01.TC08",
+        "detail": "Introduce fault injection su persistenza e comportamento fail-safe in caso di errore di salvataggio; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC01",
+        "detail": "Introduce esplicitamente canali 'App' e 'Web'; non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC03",
+        "detail": "Introduce ipotesi di asincronia/propagazione e polling; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US02.TC05",
+        "detail": "Introduce errore nel recupero stato (timeout/500) e conseguenze su selezione/acquisto; il requisito non parla di acquisto né di error handling."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC01",
+        "detail": "Introduce un 'front-end commerciale operatore' e figure/ruoli specifici ('OSP/OFE/figure di sala'); non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US03.TC05",
+        "detail": "Introduce caching/repliche obsolete e sincronizzazione front-end/motore; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC01",
+        "detail": "Introduce una 'dashboard Compliance' con sezioni UI ('Combinazioni in revisione'); il requisito non richiede una dashboard o UI specifica."
+      },
+      {
+        "test_id": "REQ-V-007.US04.TC05",
+        "detail": "Introduce gestione concorrenza e regola 'determinato dall'ultima azione valida'; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC05",
+        "detail": "Introduce versionamento/istanze (versionId v1/v2) e regole di applicazione approvazione alla versione corretta; non presente nel requisito."
+      },
+      {
+        "test_id": "REQ-V-007.US05.TC06",
+        "detail": "Introduce architettura di propagazione dell'esito (evento non consegnato/timeout) e condizione 'fino a conferma'; il requisito cita 'errori di propagazione' come esempio di incertezza, ma qui viene modellato come flusso tecnico di approvazione/eventing non specificato."
+      }
+    ],
+    "missing_info": [],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-V-007.US02.TC01",
+          "REQ-V-007.US02.TC02"
+        ],
+        "detail": "Entrambi verificano non visibilità su App/Web; TC02 aggiunge lo stato 'in attesa di revisione manuale' ma lo scenario di non-proposizione è molto simile."
+      },
+      {
+        "test_ids": [
+          "REQ-V-007.US04.TC01",
+          "REQ-V-007.US05.TC01"
+        ],
+        "detail": "Entrambi verificano la visibilità dello stato 'in attesa di revisione manuale' su dashboard, duplicato per Compliance e Marketing (ruoli citati solo come esempi nel requisito)."
+      },
+      {
+        "test_ids": [
+          "REQ-V-007.US04.TC02",
+          "REQ-V-007.US05.TC02"
+        ],
+        "detail": "Entrambi verificano approvazione esplicita e ritorno alla proponibilità via dashboard; duplicazione per Compliance e Marketing."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Il set 'direct' mantiene copertura completa degli AC con un numero contenuto di assunzioni aggiuntive (7 added_info) e ridondanza limitata (1). Il set 'indirect_persona' pur coprendo gli AC introduce molte informazioni non tracciabili al requisito (architettura 'Motore di Offerte', detection booleana, canali App/Web, dashboard, caching, concorrenza, versionamento, idempotenza, fault injection), totalizzando numerose added_info e varie ridondanze, riducendo drasticamente la coerenza complessiva."
+  }
+}

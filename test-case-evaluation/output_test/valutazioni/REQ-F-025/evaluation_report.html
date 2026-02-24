@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-025</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-025</h1>
+  <div class="subtitle">Regola configurabile di frequenza di presentazione per lo stesso prodotto</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:44</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-025</div>
+  <div class="req-field"><strong>Titolo:</strong> Regola configurabile di frequenza di presentazione per lo stesso prodotto</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. Deve essere possibile impostare un intervallo minimo (ad esempio in giorni) che determina il tempo minimo tra una presentazione e la successiva dello stesso prodotto per lo stesso cliente. Tale parametro deve essere modificabile da team autorizzati tramite i meccanismi di configurazione previsti e deve essere applicato coerentemente su tutte le presentazioni generate dal Motore.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Esiste un parametro configurabile che definisce l&#x27;intervallo minimo di riproposizione per prodotto (es. X giorni).</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Per un cliente che ha ricevuto una proposta di prodotto, il sistema non ripropone lo stesso prodotto prima del termine dell&#x27;intervallo configurato, salvo eccezioni configurate.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>L&#x27;intervallo è modificabile tramite l&#x27;interfaccia/configurazione da utenti autorizzati e la modifica è tracciata con audit trail.</td></tr>
+<tr><td class='ac-num'>AC-4</td><td>Automated tests dimostrano che la regola è rispettata per presentazioni generate su canali differenti.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">65</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">46</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (4/4), ma il set direct introduce meno informazioni non tracciabili (6 added_info vs 9) e meno ridondanze (1 vs 2). Inoltre nel set indirect_persona compaiono più regole/assunzioni non richieste (es. canale &#x27;UP&#x27;, deduplica altre proposte, regola &#x27;stesso giorno&#x27;, fail-safe su storico/audit), abbassando maggiormente la coerenza complessiva. Per questo il punteggio del direct risulta più alto (65 vs 46).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">65</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-025.TC04</td><td>Assume campi minimi specifici dell&#x27;audit trail (parametro, old/new value, utente, timestamp) non esplicitati dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.TC05</td><td>Assume una specifica modalità/forma di errore (messaggio o HTTP 403) non definita dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.TC06</td><td>Introduce il canale &#x27;app&#x27; come canale specifico; il requisito richiede canali differenti ma non nomina &#x27;app&#x27; esplicitamente.</td></tr>
+<tr><td class='mono'>REQ-F-025.TC07</td><td>Introduce vincolo di dominio/semantica del parametro &#x27;0 giorni = nessun blocco&#x27;, non definito dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.TC08</td><td>Introduce comportamento in caso di indisponibilità del meccanismo di configurazione (fallback/errore controllato, logging, ultimo valore noto/default), non richiesto né descritto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.TC01</td><td>Assume esplicitamente l&#x27;esistenza e consultabilità di uno &#x27;storico presentazioni/proposte&#x27; e la modalità &#x27;forzare/registrare una presentazione&#x27; come meccanismo di test; lo storico è implicito ma non specificato come componente/feature consultabile.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &quot;Tale parametro deve essere modificabile da team autorizzati tramite i meccanismi di configurazione previsti&quot;</td><td>I test coprono utenti autorizzati/non autorizzati, ma non verificano esplicitamente che la modifica avvenga tramite i &#x27;meccanismi di configurazione previsti&#x27; (non identificati nel requisito). La copertura resta parziale perché i TC assumono UI/console/API.</td></tr>
+<tr><td class='mono'>AC-4: &quot;Automated tests dimostrano...&quot;</td><td>I TC (es. TC06) dichiarano &#x27;automatizzabile&#x27; ma non verificano esplicitamente l&#x27;esecuzione/artefatti di un test automatizzato (evidenza di pipeline/report).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-025.TC01, REQ-F-025.TC06</td><td>Entrambi verificano il blocco prima dell&#x27;intervallo; TC06 aggiunge il cross-canale, ma la logica base è molto simile (setup storico + generazione + assert assenza prodotto).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">46</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">15</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-025.US01.TC02</td><td>Introduce un canale specifico &#x27;fisico (UP)&#x27; non menzionato nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC04</td><td>Introduce il concetto operativo &#x27;considera la proposta come presentata&#x27; e la registrazione evento durante lo scenario; il requisito non dettaglia eventi/trigger di registrazione.</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC06</td><td>Assume comportamento &#x27;fail-safe&#x27; in caso di errore lettura storico (blocco riproposizione) e logging/alert, non definito dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC02</td><td>Introduce una regola non richiesta: &#x27;più presentazioni nello stesso giorno: solo la prima ammessa se intervallo &gt; 0&#x27;.</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC04</td><td>Introduce dettagli di pipeline CI e richiesta di artefatti/report come expected result; il requisito chiede &#x27;Automated tests dimostrano&#x27; ma non impone CI/artefatti specifici.</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC01</td><td>Introduce un canale/strumento specifico &#x27;dashboard&#x27; e funzionalità di ricerca/selezione prodotto, non descritte dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC04</td><td>Introduce regole di validazione input (valori negativi o non numerici) e assenza audit per salvataggi falliti, non definite dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC06</td><td>Assume comportamento &#x27;fail-safe&#x27; su errore scrittura audit trail (blocco salvataggio), non definito dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC01</td><td>Expected result &#x27;Le altre proposte non includono duplicati di P-1001&#x27; introduce un requisito di deduplica generale non presente nel requisito (che parla solo di riproposizione dello stesso prodotto nel tempo).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-1: &quot;parametro configurabile... per prodotto&quot; + Descrizione: &quot;possibile impostare un intervallo minimo&quot;</td><td>Molti TC assumono che il parametro sia configurato per singolo prodotto (P-xxxx), ma non c&#x27;è un test che verifichi esplicitamente l&#x27;esistenza del parametro come entità configurabile (es. lettura/visibilità del parametro) senza passare da scenari di generazione o da una UI inventata.</td></tr>
+<tr><td class='mono'>Descrizione: &quot;deve essere applicato coerentemente su tutte le presentazioni generate dal Motore&quot;</td><td>I test enfatizzano cross-canale, ma non coprono esplicitamente la coerenza &#x27;su tutte le presentazioni&#x27; nello stesso canale/processo (es. più run/contesti) senza introdurre regole extra (come &#x27;stesso giorno&#x27;).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-025.US01.TC04, REQ-F-025.US02.TC03, REQ-F-025.US02.TC04</td><td>Tutti verificano sostanzialmente la coerenza cross-canale (digitale vs UP) con blocco entro intervallo; cambiano solo livello di dettaglio/contesto.</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC01, REQ-F-025.US03.TC05</td><td>Entrambi includono modifica parametro da utente autorizzato e verifica applicazione; TC05 estende ai canali ma ripete ampie parti dello scenario di modifica.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-025&quot;,
+  &quot;title&quot;: &quot;Regola configurabile di frequenza di presentazione per lo stesso prodotto&quot;,
+  &quot;description&quot;: &quot;Il Motore deve includere una regola configurabile che impedisca la riproposizione ravvicinata dello stesso prodotto allo stesso cliente. Deve essere possibile impostare un intervallo minimo (ad esempio in giorni) che determina il tempo minimo tra una presentazione e la successiva dello stesso prodotto per lo stesso cliente. Tale parametro deve essere modificabile da team autorizzati tramite i meccanismi di configurazione previsti e deve essere applicato coerentemente su tutte le presentazioni generate dal Motore.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Esiste un parametro configurabile che definisce l&#x27;intervallo minimo di riproposizione per prodotto (es. X giorni).&quot;,
+    &quot;Per un cliente che ha ricevuto una proposta di prodotto, il sistema non ripropone lo stesso prodotto prima del termine dell&#x27;intervallo configurato, salvo eccezioni configurate.&quot;,
+    &quot;L&#x27;intervallo è modificabile tramite l&#x27;interfaccia/configurazione da utenti autorizzati e la modifica è tracciata con audit trail.&quot;,
+    &quot;Automated tests dimostrano che la regola è rispettata per presentazioni generate su canali differenti.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-025.TC01</td><td>Applicazione della regola: blocco riproposizione dello stesso prodotto entro l&#x27;intervallo minimo (canale web)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.TC02</td><td>Applicazione della regola: riproposizione consentita allo scadere dell&#x27;intervallo minimo (canale web)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.TC03</td><td>Eccezione configurata: riproposizione consentita prima dell&#x27;intervallo minimo</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.TC04</td><td>Modifica del parametro di intervallo da utente autorizzato con audit trail</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.TC05</td><td>Tentativo di modifica del parametro da utente non autorizzato (accesso negato)</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.TC06</td><td>Coerenza multi-canale: la regola blocca la riproposizione su canale diverso (web -&gt; app)</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-025.TC07</td><td>Edge case: intervallo minimo impostato a 0 giorni (nessun blocco riproposizione)</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.TC08</td><td>Negativo: servizio di configurazione non disponibile durante la lettura del parametro (fallback/errore controllato)</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 16 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-025.US01.TC01</td><td>Blocco riproposizione dello stesso prodotto prima dell&#x27;intervallo minimo (canale digitale)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC02</td><td>Riproposizione consentita dopo il decorso dell&#x27;intervallo minimo (canale fisico UP)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC03</td><td>Deroga tramite eccezione configurata: riproposizione prima dell&#x27;intervallo minimo</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC04</td><td>Coerenza multi-canale: proposta vista in digitale e subito dopo in UP viene bloccata</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC05</td><td>Cliente senza storico presentazioni: il prodotto può essere proposto</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US01.TC06</td><td>Errore lettura storico presentazioni: comportamento fail-safe (blocco riproposizione)</td><td>Negative</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC01</td><td>Il Motore usa il parametro configurabile di intervallo minimo per prodotto nella valutazione di eleggibilità</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC02</td><td>Più presentazioni dello stesso prodotto nello stesso giorno: solo la prima ammessa se intervallo &gt; 0</td><td>Edge Case</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC03</td><td>Coerenza di applicazione della regola e dei parametri su presentazioni generate per canali differenti</td><td>E2E</td><td>HIGH</td><td>AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-025.US02.TC04</td><td>Test automatico multi-canale: nessuna riproposizione prima dell&#x27;intervallo minimo (evidenza E2E)</td><td>E2E</td><td>HIGH</td><td>AC-4, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC01</td><td>Utente autorizzato visualizza e modifica l&#x27;intervallo minimo per prodotto da dashboard</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC02</td><td>Audit trail: salvataggio modifica intervallo/eccezioni genera traccia con chi/cosa/quando</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC03</td><td>Utente non autorizzato tenta la modifica: accesso negato e nessuna variazione applicata</td><td>Authorization</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC04</td><td>Validazione input: valore intervallo non valido (negativo o non numerico) non viene salvato</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC05</td><td>Dopo modifica parametro, il Motore applica il nuovo valore in modo coerente su tutti i canali</td><td>E2E</td><td>HIGH</td><td>AC-3, AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-025.US03.TC06</td><td>Errore scrittura audit trail: salvataggio configurazione viene bloccato (comportamento fail-safe)</td><td>Negative</td><td>MEDIUM</td><td>AC-3</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [4, 6, 2, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [4, 9, 2, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

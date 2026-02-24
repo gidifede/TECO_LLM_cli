@@ -1,0 +1,297 @@
+[
+  {
+    "story_id": "REQ-F-028.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-F-028.US01.TC01",
+        "title": "Avvio modifica matrice tramite workflow (nessun editing diretto disponibile)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente appartenente al Team Marketing con permessi di avvio modifica matrice",
+          "Dashboard disponibile e raggiungibile",
+          "Esiste una matrice abilitazioni con almeno una coppia Prodotto/Figura già presente"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Nuovo valore abilitazione: da 'Non abilitato' a 'Abilitato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user1",
+          "Navigare alla sezione 'Matrice abilitazioni prodotti vs figure'",
+          "Selezionare la coppia Prodotto='Prestito Personale' e Figura='Consulente Retail'",
+          "Selezionare l'azione 'Modifica' (o equivalente) sulla coppia selezionata",
+          "Verificare che l'azione avvii un workflow integrato (es. apertura schermata/maschera di richiesta con identificativo workflow)",
+          "Inserire il nuovo valore abilitazione 'Abilitato' e inviare la richiesta nel workflow"
+        ],
+        "expected_results": [
+          "Non è disponibile alcuna modalità di editing diretto/ad-hoc della matrice (es. campi editabili inline o salvataggio immediato) al di fuori del workflow",
+          "L'azione 'Modifica' avvia un workflow integrato (la richiesta risulta creata con un identificativo/istanza workflow visibile o consultabile)",
+          "La richiesta di modifica viene accettata dal sistema come elemento del workflow (stato iniziale visibile, es. 'In revisione' o equivalente)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: l'integrazione con il Motore di Offerte è verificabile tramite evidenza di avvio/creazione istanza workflow e non necessariamente tramite dettaglio tecnico. Gli stati del workflow non sono definiti: si verifica la presenza di almeno uno stato consultabile."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC02",
+        "title": "Registrazione audit della modifica inserita nel workflow (autore, timestamp, stato)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente appartenente al Team Marketing con permessi di avvio modifica matrice",
+          "Dashboard disponibile e raggiungibile",
+          "Esiste una matrice abilitazioni con almeno una coppia Prodotto/Figura già presente",
+          "È possibile consultare i dettagli della richiesta/workflow e/o l'audit trail dalla dashboard"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Nuovo valore abilitazione: 'Abilitato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user1",
+          "Avviare una modifica tramite workflow per la coppia Prodotto='Prestito Personale' e Figura='Consulente Retail' impostando il valore 'Abilitato'",
+          "Aprire il dettaglio della richiesta/workflow appena creata (o la sezione audit collegata)",
+          "Consultare i metadati registrati per la modifica"
+        ],
+        "expected_results": [
+          "Per la modifica inserita nel workflow risultano registrati e visualizzabili almeno: autore='marketing.user1', timestamp di creazione (data/ora) e stato di approvazione corrente",
+          "Il timestamp è valorizzato e coerente con l'orario di esecuzione del test (entro una tolleranza definita dal sistema, es. pochi minuti)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: autore, timestamp e stato sono consultabili via dashboard (come indicato nelle assumptions della story)."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC03",
+        "title": "Consultazione audit trail: ricostruzione storia modifiche per coppia Prodotto/Figura",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente appartenente al Team Marketing con permessi di consultazione matrice e audit trail",
+          "Dashboard disponibile e raggiungibile",
+          "Esistono almeno 2 modifiche storiche (workflow) sulla stessa coppia Prodotto/Figura con stati diversi o timestamp diversi"
+        ],
+        "test_data": [
+          "Utente: marketing.user2",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user2",
+          "Navigare alla sezione 'Matrice abilitazioni prodotti vs figure'",
+          "Selezionare la coppia Prodotto='Prestito Personale' e Figura='Consulente Retail'",
+          "Aprire la vista 'Storico modifiche' / 'Audit trail' associata alla coppia"
+        ],
+        "expected_results": [
+          "Il sistema mostra l'elenco delle variazioni storiche relative alla coppia selezionata",
+          "Per ciascuna variazione sono presenti e consultabili: autore, timestamp e stato di approvazione",
+          "Le variazioni sono ordinabili o presentate in ordine temporale (crescente o decrescente) in modo da consentire la ricostruzione della storia"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esiste una vista dedicata o un dettaglio che espone l'audit trail; il requisito non specifica ordinamento, ma la ricostruzione della storia richiede almeno una presentazione temporalmente interpretabile."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC04",
+        "title": "Tentativo di modifica fuori workflow respinto e tracciato a log come non autorizzato",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente appartenente al Team Marketing autenticato in dashboard",
+          "Esiste una matrice abilitazioni con almeno una coppia Prodotto/Figura già presente",
+          "Sono disponibili meccanismi di controllo per verificare l'esistenza di un log evento (es. console audit/amministrazione o accesso ai log applicativi in ambiente di test)"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Tentativo di modifica fuori workflow: chiamata API/endpoint di salvataggio diretto o azione UI non-workflow (se disponibile in test) con valore 'Abilitato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user1",
+          "Eseguire un tentativo di modifica della matrice al di fuori del workflow (es. invocare un endpoint di salvataggio diretto o forzare una richiesta di update non associata a istanza workflow)",
+          "Verificare l'esito della richiesta/operazione",
+          "Consultare i log di sicurezza/audit per l'evento generato dal tentativo"
+        ],
+        "expected_results": [
+          "L'operazione di modifica fuori workflow viene respinta (es. errore di autorizzazione/validazione con messaggio che indica che la modifica è consentita solo via workflow)",
+          "La matrice effettiva non risulta modificata dopo il tentativo",
+          "È generato un log di tentativo non autorizzato che include almeno: identificativo utente (marketing.user1), timestamp e riferimento all'operazione di modifica matrice"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità di un punto di osservabilità dei log in ambiente QA (SIEM, audit console o accesso ai log applicativi)."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC05",
+        "title": "Utente senza permessi non può avviare/completare modifica via workflow e il tentativo è loggato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticabile in dashboard NON autorizzato a modificare la matrice (es. ruolo 'Marketing-Viewer' o utente non appartenente al Team Marketing)",
+          "Dashboard disponibile e raggiungibile",
+          "Sono disponibili meccanismi di controllo per verificare l'esistenza di un log evento"
+        ],
+        "test_data": [
+          "Utente: viewer.user1 (senza permessi modifica matrice)",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Nuovo valore abilitazione: 'Abilitato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come viewer.user1",
+          "Navigare alla sezione 'Matrice abilitazioni prodotti vs figure'",
+          "Tentare di avviare una modifica (azione 'Modifica' o equivalente) sulla coppia selezionata",
+          "Se l'avvio è consentito a livello UI, tentare di inviare la richiesta di modifica nel workflow",
+          "Consultare i log di sicurezza/audit relativi al tentativo"
+        ],
+        "expected_results": [
+          "L'utente senza permessi non può avviare e/o non può inviare una richiesta di modifica della matrice (azione non disponibile o operazione respinta)",
+          "La matrice effettiva non risulta modificata",
+          "È generato un log di tentativo non autorizzato che include almeno: identificativo utente (viewer.user1), timestamp e riferimento all'operazione tentata"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione: esistono ruoli/permessi differenziati per modifica vs sola consultazione; il requisito non li dettaglia. Il logging del tentativo è richiesto dagli edge case."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC06",
+        "title": "Workflow non completato: la matrice effettiva non riflette la modifica finché non approvata",
+        "type": "Edge Case",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di avvio modifica matrice",
+          "Dashboard disponibile e raggiungibile",
+          "Il workflow prevede uno stato non finale (es. 'In revisione') prima dell'approvazione",
+          "È possibile visualizzare sia la matrice effettiva sia lo stato della richiesta nel workflow"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Valore iniziale abilitazione: 'Non abilitato'",
+          "Nuovo valore richiesto: 'Abilitato'"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user1",
+          "Verificare il valore corrente della matrice per la coppia target (atteso: 'Non abilitato')",
+          "Avviare una richiesta di modifica via workflow impostando il valore a 'Abilitato'",
+          "Verificare che la richiesta sia in uno stato non finale (es. 'In revisione')",
+          "Ricaricare/consultare nuovamente la matrice effettiva per la stessa coppia"
+        ],
+        "expected_results": [
+          "La richiesta di modifica risulta presente nel workflow con stato non finale",
+          "La matrice effettiva continua a mostrare il valore iniziale ('Non abilitato') finché la richiesta non è approvata",
+          "L'audit trail mostra la richiesta con autore, timestamp e stato corrente (non approvato)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Assunzione esplicita della story: la matrice effettiva non applica la modifica finché non approvata (se previsto dal workflow). Se il sistema applica in anticipo con flag 'pending', adeguare la verifica alla rappresentazione prevista."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC07",
+        "title": "Conflitto modifiche concorrenti sulla stessa coppia: nessun bypass e gestione collisione via workflow",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Due utenti Team Marketing con permessi di avvio modifica matrice: marketing.user1 e marketing.user2",
+          "Dashboard disponibile e raggiungibile",
+          "La stessa coppia Prodotto/Figura è modificabile tramite workflow"
+        ],
+        "test_data": [
+          "Utente A: marketing.user1",
+          "Utente B: marketing.user2",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Modifica A: impostare 'Abilitato'",
+          "Modifica B: impostare 'Non abilitato' (o valore diverso da A)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come marketing.user1",
+          "Avviare una richiesta di modifica via workflow per la coppia target (Modifica A) senza completarne l'approvazione",
+          "Accedere alla dashboard come marketing.user2 (in sessione separata)",
+          "Tentare di avviare una seconda richiesta di modifica via workflow sulla stessa coppia target (Modifica B)",
+          "Osservare il comportamento del sistema rispetto al conflitto",
+          "Verificare che non esista alcuna possibilità di applicare direttamente una modifica bypassando il workflow durante il conflitto"
+        ],
+        "expected_results": [
+          "Il sistema gestisce la collisione senza consentire bypass (es. blocca l'avvio della seconda richiesta, mette in coda, o richiede riconciliazione/merge secondo regole di workflow)",
+          "In nessun caso è possibile applicare una modifica diretta/ad-hoc alla matrice per risolvere il conflitto",
+          "L'esito del tentativo concorrente è tracciabile (almeno come stato/errore della richiesta o evento consultabile)"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce la strategia di gestione collisioni; il test valida l'assenza di bypass e la gestione coerente via workflow, indipendentemente dalla specifica modalità (blocco/coda/riconciliazione)."
+      },
+      {
+        "test_id": "REQ-F-028.US01.TC08",
+        "title": "Errore integrazione con Motore di Offerte durante applicazione: nessuna applicazione parziale e tracciamento esito",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente Team Marketing con permessi di avvio modifica matrice",
+          "Dashboard disponibile e raggiungibile",
+          "Ambiente QA con possibilità di simulare errore del Motore di Offerte (timeout/500) durante l'applicazione della modifica",
+          "È possibile verificare stato della matrice effettiva e audit/log esito"
+        ],
+        "test_data": [
+          "Utente: marketing.user1",
+          "Coppia target: Prodotto='Prestito Personale', Figura='Consulente Retail'",
+          "Nuovo valore richiesto: 'Abilitato'",
+          "Simulazione errore integrazione: Motore di Offerte risponde HTTP 500 o timeout > 30s (secondo configurazione)"
+        ],
+        "steps": [
+          "Configurare la simulazione di errore del Motore di Offerte per l'operazione di applicazione modifica matrice",
+          "Accedere alla dashboard come marketing.user1",
+          "Avviare e portare la richiesta di modifica nel workflow fino al punto in cui il sistema tenta di applicare la modifica (es. step di 'Approvazione' o 'Esecuzione')",
+          "Osservare l'esito restituito dal sistema a fronte dell'errore di integrazione",
+          "Consultare la matrice effettiva per la coppia target",
+          "Consultare audit trail e/o log tecnici relativi alla richiesta"
+        ],
+        "expected_results": [
+          "Il sistema segnala il fallimento dell'applicazione della modifica per errore di integrazione (messaggio/errore e stato richiesta coerente, es. 'Errore' o equivalente)",
+          "La matrice effettiva non risulta aggiornata (nessuna applicazione parziale: il valore rimane quello precedente alla richiesta)",
+          "L'esito dell'operazione è tracciato (audit trail e/o log) con riferimento alla richiesta, timestamp e indicazione di errore di integrazione"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza esterna: disponibilità di un meccanismo di fault injection/mock del Motore di Offerte in QA. Il requisito non specifica la semantica transazionale; il test verifica l'assenza di aggiornamenti parziali osservabili sulla matrice."
+      }
+    ]
+  }
+]

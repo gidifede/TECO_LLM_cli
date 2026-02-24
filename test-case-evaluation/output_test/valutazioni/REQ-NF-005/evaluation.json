@@ -1,0 +1,160 @@
+{
+  "status": "ok",
+  "requirement_id": "REQ-NF-005",
+  "direct": {
+    "tc_count": 5,
+    "coherence_score": 71,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-005.TC01",
+        "detail": "Assunzione di canale specifico 'web' e di una 'sezione di consultazione log' UI: il requisito non specifica canali/interfacce."
+      },
+      {
+        "test_id": "REQ-NF-005.TC01",
+        "detail": "Dettagli non richiesti su formato export (CSV) e intervallo 'ultime 24 ore': il requisito non menziona filtri/formati."
+      },
+      {
+        "test_id": "REQ-NF-005.TC02",
+        "detail": "Verifica di comportamento UI (pulsante visibile/disabilitato) e accesso diretto a URL/azione export con esempio '403': il requisito richiede solo controllo accessi, non modalità UI/HTTP."
+      },
+      {
+        "test_id": "REQ-NF-005.TC03",
+        "detail": "Scenario 'senza autenticazione' (redirect a login): il requisito parla di autorizzazione ma non esplicita autenticazione né comportamento di redirect."
+      },
+      {
+        "test_id": "REQ-NF-005.TC04",
+        "detail": "Assunzione di correlazione tramite requestId/correlationId e considerazioni su timezone: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.TC05",
+        "detail": "Fault injection su componenti (storage/bucket/job runner), timeout 30s, e regole su tracciamento di fallimenti/tentativi: il requisito non menziona componenti, timeout o gestione errori; richiede solo tracciamento delle operazioni di export."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description + AC-2",
+        "detail": "Il requisito impone che le funzionalità di export lascino traccia dell'operazione e dell'utente che l'ha effettuata (tutte le operazioni). I TC verificano operatore e timestamp, ma non verificano esplicitamente anche il 'dettaglio dell'operazione' (es. che l'evento log identifichi chiaramente l'operazione di export come tale)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-005.TC01",
+          "REQ-NF-005.TC04"
+        ],
+        "detail": "Entrambi coprono export riuscito con verifica log (operatore + timestamp); TC04 è in gran parte un sottoinsieme/specializzazione di TC01 lato auditing."
+      }
+    ]
+  },
+  "indirect_persona": {
+    "tc_count": 10,
+    "coherence_score": 32,
+    "ac_coverage": {
+      "total_ac": 2,
+      "covered_ac": 2,
+      "uncovered_ac": []
+    },
+    "added_info": [
+      {
+        "test_id": "REQ-NF-005.US01.TC01",
+        "detail": "Introduzione di persona/ruolo 'Team Marketing' e canale 'dashboard': non menzionati nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC01",
+        "detail": "Permesso specifico 'LOG_EXPORT' e dettagli UX (conferma avvio export): non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC02",
+        "detail": "Assunzione di messaggistica UI e di assenza di 'job/export creato': il requisito non definisce UI né job."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC03",
+        "detail": "Meccanismo di consultazione log (SIEM/tabella audit/endpoint admin) e finestra temporale T0..T0+5 minuti: non specificati nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC04",
+        "detail": "Scenario di revoca permesso durante sessione e requisito implicito di rivalutazione permessi in sessione: non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US01.TC05",
+        "detail": "Regola aggiuntiva: 'l'export non deve risultare non tracciato' imponendo che, se audit write fallisce, l'export fallisca o venga bloccato. Il requisito richiede tracciamento, ma non specifica il comportamento in fault dell'audit né che l'export debba essere impedito."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC01",
+        "detail": "Introduzione di persona/ruolo 'Team Compliance' (oltre a Marketing) non menzionata nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC02",
+        "detail": "Dettagli UI e assenza di job/export creato: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC03",
+        "detail": "Assunzioni su SIEM/endpoint admin e finestra temporale: non presenti nel requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC04",
+        "detail": "Revoca permesso durante sessione (come US01.TC04): non richiesto dal requisito."
+      },
+      {
+        "test_id": "REQ-NF-005.US02.TC05",
+        "detail": "Gestione fault audit con vincolo di blocco export (come US01.TC05): comportamento non definito dal requisito."
+      }
+    ],
+    "missing_info": [
+      {
+        "source": "Description + AC-2",
+        "detail": "Come nel set direct, non viene verificato esplicitamente il 'dettaglio dell'operazione' oltre a utente e momento (es. che l'evento log qualifichi inequivocabilmente l'azione come export log)."
+      }
+    ],
+    "redundancies": [
+      {
+        "test_ids": [
+          "REQ-NF-005.US01.TC01",
+          "REQ-NF-005.US02.TC01"
+        ],
+        "detail": "Stesso scenario (export consentito a utente autorizzato) replicato per due 'team' non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-005.US01.TC02",
+          "REQ-NF-005.US02.TC02"
+        ],
+        "detail": "Stesso scenario (export negato a utente non autorizzato) replicato per due 'team' non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-005.US01.TC03",
+          "REQ-NF-005.US02.TC03"
+        ],
+        "detail": "Stesso scenario (audit log per export riuscito) replicato per due 'team' non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-005.US01.TC04",
+          "REQ-NF-005.US02.TC04"
+        ],
+        "detail": "Stesso edge case (revoca permesso in sessione) replicato per due 'team' non richiesti dal requisito."
+      },
+      {
+        "test_ids": [
+          "REQ-NF-005.US01.TC05",
+          "REQ-NF-005.US02.TC05"
+        ],
+        "detail": "Stesso edge case (fault scrittura audit) replicato per due 'team' non richiesti dal requisito."
+      }
+    ]
+  },
+  "comparison": {
+    "winner": "direct",
+    "ranking": [
+      "direct",
+      "indirect_persona"
+    ],
+    "reasoning": "Entrambi i set coprono tutti gli acceptance criteria (AC-1 e AC-2). Tuttavia, il set direct introduce meno assunzioni non tracciabili (6 elementi di added_info vs 11) e presenta meno ridondanze (1 vs 5). Entrambi hanno una lacuna simile sul 'dettaglio dell'operazione' richiesto dalla description/AC-2. Per questo il set direct ottiene un punteggio di coerenza superiore (71 vs 32) ed è il vincitore."
+  }
+}

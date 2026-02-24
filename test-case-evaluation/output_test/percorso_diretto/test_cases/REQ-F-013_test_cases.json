@@ -1,0 +1,215 @@
+[
+  {
+    "test_id": "REQ-F-013.TC01",
+    "title": "Configurazione priorità per offerta singola su touchpoint specifico (salvataggio e persistenza)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' abilitato alla configurazione delle priorità offerte.",
+      "Esistono nel catalogo almeno 2 offerte singole attive: OFFERTA_A e OFFERTA_B.",
+      "Esiste almeno 1 touchpoint configurato: 'WEB_PORTALE'."
+    ],
+    "test_data": [
+      "Touchpoint: WEB_PORTALE",
+      "OFFERTA_A priorità: 10",
+      "OFFERTA_B priorità: 20"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione marketing per le priorità offerte.",
+      "Selezionare il touchpoint 'WEB_PORTALE'.",
+      "Impostare per OFFERTA_A la priorità a 10.",
+      "Impostare per OFFERTA_B la priorità a 20.",
+      "Salvare la configurazione.",
+      "Ricaricare la pagina o riaprire la sezione di configurazione per 'WEB_PORTALE'."
+    ],
+    "expected_results": [
+      "Il sistema conferma il salvataggio della configurazione senza errori.",
+      "Per il touchpoint 'WEB_PORTALE' risultano salvate le priorità: OFFERTA_A=10 e OFFERTA_B=20.",
+      "Le priorità configurate risultano persistenti dopo il reload/riaccesso."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Attore 'Marketing' inferito dalla description ('utente marketing'). Il requisito non specifica UI/endpoint: i passi assumono l'esistenza di una funzionalità di configurazione accessibile via canale web/backoffice."
+  },
+  {
+    "test_id": "REQ-F-013.TC02",
+    "title": "Configurazione priorità per bundle su touchpoint specifico (distinzione offerta singola vs bundle)",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esiste un utente con ruolo 'Marketing' abilitato alla configurazione delle priorità offerte.",
+      "Esiste nel catalogo almeno 1 bundle attivo: BUNDLE_X.",
+      "Esiste nel catalogo almeno 1 offerta singola attiva: OFFERTA_C.",
+      "Esiste almeno 1 touchpoint configurato: 'APP_MOBILE'."
+    ],
+    "test_data": [
+      "Touchpoint: APP_MOBILE",
+      "BUNDLE_X priorità: 5",
+      "OFFERTA_C priorità: 15"
+    ],
+    "steps": [
+      "Accedere all'interfaccia di configurazione marketing per le priorità offerte.",
+      "Selezionare il touchpoint 'APP_MOBILE'.",
+      "Impostare per BUNDLE_X la priorità a 5.",
+      "Impostare per OFFERTA_C la priorità a 15.",
+      "Salvare la configurazione.",
+      "Riaprire la configurazione del touchpoint 'APP_MOBILE'."
+    ],
+    "expected_results": [
+      "Il sistema consente di configurare priorità sia per bundle sia per offerte singole sul medesimo touchpoint.",
+      "Le priorità risultano salvate per 'APP_MOBILE': BUNDLE_X=5 e OFFERTA_C=15."
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito cita l'associazione a touchpoint (REQ-F-005) ma non dettaglia la lista touchpoint né la UI: qui si assume che 'APP_MOBILE' sia un touchpoint valido."
+  },
+  {
+    "test_id": "REQ-F-013.TC03",
+    "title": "Ordinamento automatico con propensity: ranking coerente con score restituiti dal modello",
+    "type": "Integration",
+    "priority": "HIGH",
+    "preconditions": [
+      "È disponibile un servizio/modulo di propensity integrato e raggiungibile dall'applicazione.",
+      "Il servizio di propensity può essere stub-bato/mokkato per restituire score deterministici.",
+      "Esistono 3 offerte candidate attive per il touchpoint 'WEB_PORTALE': OFFERTA_A, OFFERTA_B, OFFERTA_C.",
+      "Per il touchpoint 'WEB_PORTALE' esiste una configurazione priorità valida (anche uguale per tutte) per non interferire con il confronto basato su propensity."
+    ],
+    "test_data": [
+      "Cliente: ID=CL_10001",
+      "Touchpoint: WEB_PORTALE",
+      "Risposta mock propensity: OFFERTA_A score=0.20, OFFERTA_B score=0.85, OFFERTA_C score=0.50"
+    ],
+    "steps": [
+      "Configurare il mock del servizio di propensity per il cliente CL_10001 e le offerte candidate con gli score indicati.",
+      "Richiedere la lista offerte proposte per CL_10001 sul touchpoint 'WEB_PORTALE' tramite il canale applicativo previsto (UI o API di proposta).",
+      "Acquisire l'ordine delle offerte restituito dal sistema."
+    ],
+    "expected_results": [
+      "Il sistema invoca il servizio/modulo di propensity per ottenere gli score delle offerte candidate.",
+      "L'ordine delle offerte è coerente con gli score di propensity in ordine decrescente: OFFERTA_B, OFFERTA_C, OFFERTA_A."
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica l'interfaccia tecnica del modello (API, libreria, batch): il test assume un'integrazione sincrona interrogabile durante la generazione proposta e la possibilità di mocking per QA."
+  },
+  {
+    "test_id": "REQ-F-013.TC04",
+    "title": "Fallback in caso di servizio propensity non disponibile (timeout/errore)",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Esistono almeno 2 offerte candidate attive per il touchpoint 'WEB_PORTALE': OFFERTA_A, OFFERTA_B.",
+      "Per il touchpoint 'WEB_PORTALE' sono configurate priorità: OFFERTA_A=10, OFFERTA_B=20.",
+      "Il servizio/modulo di propensity è configurabile per simulare indisponibilità (timeout o HTTP 5xx)."
+    ],
+    "test_data": [
+      "Cliente: ID=CL_10002",
+      "Touchpoint: WEB_PORTALE",
+      "Simulazione errore propensity: timeout 10s oppure HTTP 503"
+    ],
+    "steps": [
+      "Configurare il servizio/modulo di propensity per restituire un errore (timeout o 503) per il cliente CL_10002.",
+      "Richiedere la lista offerte proposte per CL_10002 sul touchpoint 'WEB_PORTALE'.",
+      "Rilevare l'ordine delle offerte restituito e l'esito della richiesta."
+    ],
+    "expected_results": [
+      "La richiesta di proposta offerte termina con esito applicativo positivo (nessun blocco del flusso di proposta) oppure con un errore gestito secondo standard di piattaforma (senza crash).",
+      "In assenza di score di propensity disponibili, l'ordinamento applicato segue la priorità configurata per touchpoint: OFFERTA_A prima di OFFERTA_B (priorità 10 prima di 20).",
+      "L'evento di indisponibilità/errore del propensity risulta tracciato nei log tecnici o di proposta secondo le policy di logging della piattaforma."
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2",
+      "AC-3"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce esplicitamente la strategia di fallback né i tempi di timeout: il test assume fallback su priorità configurata e richiede almeno tracciamento dell'evento per audit/diagnostica."
+  },
+  {
+    "test_id": "REQ-F-013.TC05",
+    "title": "Tracciamento nei log di proposta dell'ordine risultante e dei driver (priorità/propensity) per audit",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "È attivo il logging di proposta con correlazione per richiesta (es. proposal_id o correlation_id).",
+      "Esistono 3 offerte candidate attive per touchpoint 'APP_MOBILE': OFFERTA_D, OFFERTA_E, BUNDLE_Y.",
+      "Il servizio/modulo di propensity è disponibile e restituirà score deterministici (mock)."
+    ],
+    "test_data": [
+      "Cliente: ID=CL_10003",
+      "Touchpoint: APP_MOBILE",
+      "Priorità configurate: OFFERTA_D=30, OFFERTA_E=10, BUNDLE_Y=20",
+      "Risposta mock propensity: OFFERTA_D score=0.40, OFFERTA_E score=0.60, BUNDLE_Y score=0.50"
+    ],
+    "steps": [
+      "Configurare le priorità per il touchpoint 'APP_MOBILE' come da test data.",
+      "Configurare il mock del servizio di propensity con gli score indicati per CL_10003.",
+      "Richiedere la proposta offerte per CL_10003 sul touchpoint 'APP_MOBILE' e acquisire l'identificativo di proposta/correlation id generato.",
+      "Recuperare i log di proposta associati all'identificativo della richiesta.",
+      "Verificare nei log il dettaglio dell'ordinamento risultante e la lista ordinata delle offerte."
+    ],
+    "expected_results": [
+      "I log di proposta contengono un riferimento univoco alla richiesta (proposal_id/correlation_id) e al touchpoint.",
+      "I log di proposta riportano l'elenco delle offerte candidate e l'ordine finale presentato (lista ordinata).",
+      "I log di proposta consentono di ricostruire il motivo dell'ordine (almeno indicazione che l'ordering è stato effettuato con propensity e/o priorità configurata)."
+    ],
+    "traced_criteria": [
+      "AC-3",
+      "AC-2",
+      "AC-1"
+    ],
+    "channels": [
+      "app"
+    ],
+    "notes": "Il requisito non specifica il formato dei log né i campi obbligatori: il test verifica la tracciabilità minima per audit (ID richiesta, touchpoint, lista ordinata, indicazione driver ordering)."
+  },
+  {
+    "test_id": "REQ-F-013.TC06",
+    "title": "Edge case: score di propensity assenti/parziali per alcune offerte candidate",
+    "type": "Edge Case",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Esistono 3 offerte candidate attive per touchpoint 'WEB_PORTALE': OFFERTA_F, OFFERTA_G, OFFERTA_H.",
+      "Per il touchpoint 'WEB_PORTALE' sono configurate priorità: OFFERTA_F=10, OFFERTA_G=20, OFFERTA_H=30.",
+      "Il servizio/modulo di propensity è disponibile e può restituire score null/mancanti per specifiche offerte."
+    ],
+    "test_data": [
+      "Cliente: ID=CL_10004",
+      "Touchpoint: WEB_PORTALE",
+      "Risposta propensity: OFFERTA_F score=0.70, OFFERTA_G score=MANCANTE, OFFERTA_H score=0.10"
+    ],
+    "steps": [
+      "Configurare il mock del servizio di propensity per CL_10004 con score mancanti per OFFERTA_G.",
+      "Richiedere la proposta offerte per CL_10004 su 'WEB_PORTALE'.",
+      "Osservare l'ordine restituito e recuperare i log di proposta della richiesta."
+    ],
+    "expected_results": [
+      "Il sistema gestisce la risposta di propensity con score mancanti senza errori applicativi.",
+      "Le offerte con score disponibili sono ordinate coerentemente tra loro (OFFERTA_F prima di OFFERTA_H).",
+      "Per l'offerta con score mancante (OFFERTA_G) il sistema applica una regola deterministica di posizionamento (ad es. dopo quelle con score) e tale scelta è tracciata nei log di proposta."
+    ],
+    "traced_criteria": [
+      "AC-2",
+      "AC-3",
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non definisce la regola in caso di score mancanti: il test richiede comportamento deterministico e tracciato, lasciando aperta l'implementazione (es. fallback a priorità o posizionamento in coda)."
+  }
+]

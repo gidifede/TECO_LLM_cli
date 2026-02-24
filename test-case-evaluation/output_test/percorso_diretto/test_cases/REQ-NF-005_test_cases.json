@@ -1,0 +1,188 @@
+[
+  {
+    "test_id": "REQ-NF-005.TC01",
+    "title": "Export log consentito a utente autorizzato e tracciamento completo dell'operazione",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile",
+      "Esiste un utente 'auditor1' con ruolo/profilo autorizzato all'export dei log",
+      "Sono presenti log esportabili nel sistema",
+      "Accesso ai log di sistema/di audit abilitato per verifica QA (in lettura)"
+    ],
+    "test_data": [
+      "Utente: auditor1",
+      "Ruolo/permesso: EXPORT_LOGS=abilitato",
+      "Intervallo log da esportare: ultime 24 ore",
+      "Formato export (se previsto): CSV"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'auditor1'",
+      "Navigare alla sezione di consultazione log (o area dove è disponibile l'export)",
+      "Impostare l'intervallo 'ultime 24 ore'",
+      "Avviare l'operazione di export dei log",
+      "Attendere il completamento dell'export",
+      "Recuperare l'ultimo evento relativo all'export nei log di sistema/di audit"
+    ],
+    "expected_results": [
+      "Il sistema consente l'avvio dell'operazione di export per l'utente 'auditor1'",
+      "L'export viene completato con successo e viene reso disponibile il file esportato (download o generazione file secondo comportamento previsto dal sistema)",
+      "Nei log di sistema/di audit è presente una registrazione dell'operazione di export",
+      "La registrazione contiene l'identificativo univoco dell'operatore (es. username o userId) corrispondente a 'auditor1'",
+      "La registrazione contiene data e ora dell'operazione (timestamp) valorizzate e coerenti con l'esecuzione del test"
+    ],
+    "traced_criteria": [
+      "AC-1",
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica canali; si assume interfaccia web/amministrativa. Se l'applicazione espone anche API o app, replicare il test sul canale aggiuntivo."
+  },
+  {
+    "test_id": "REQ-NF-005.TC02",
+    "title": "Export log negato a utente non autorizzato (controllo accessi)",
+    "type": "Authorization",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile",
+      "Esiste un utente 'user1' autenticabile senza permesso di export log",
+      "Sono presenti log esportabili nel sistema",
+      "Accesso ai log di sistema/di audit abilitato per verifica QA (in lettura)"
+    ],
+    "test_data": [
+      "Utente: user1",
+      "Ruolo/permesso: EXPORT_LOGS=disabilitato",
+      "Intervallo log: ultime 24 ore"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'user1'",
+      "Navigare alla sezione di consultazione log (o area dove è disponibile l'export)",
+      "Verificare la presenza del comando/pulsante di export",
+      "Tentare di avviare l'export (se il comando è visibile) oppure accedere direttamente all'URL/azione di export (se noto e applicabile)",
+      "Recuperare eventuali eventi relativi a tentativi di export nei log di sistema/di audit"
+    ],
+    "expected_results": [
+      "Il sistema non consente l'avvio dell'export per l'utente 'user1'",
+      "Se il comando di export è mostrato in UI, l'azione viene bloccata con messaggio di autorizzazione insufficiente; in alternativa il comando non è visibile/è disabilitato",
+      "Se si tenta l'accesso diretto all'azione di export, il sistema risponde con errore di autorizzazione (es. 403 o equivalente) e non genera alcun file esportato",
+      "Non risulta alcuna operazione di export completata attribuita a 'user1' nei log di sistema/di audit"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica se i tentativi falliti debbano essere tracciati; il test verifica almeno che non esista un export completato."
+  },
+  {
+    "test_id": "REQ-NF-005.TC03",
+    "title": "Export log senza autenticazione: accesso negato",
+    "type": "Negative",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile",
+      "È possibile accedere alla pagina/endpoint di export tramite URL o navigazione",
+      "Sessione utente non autenticata (logout eseguito o sessione assente)"
+    ],
+    "test_data": [
+      "Stato sessione: non autenticato",
+      "Azione: avvio export log (pagina/endpoint di export)"
+    ],
+    "steps": [
+      "Assicurarsi di non essere autenticati (logout o nuova sessione anonima)",
+      "Tentare di accedere alla funzionalità di export dei log",
+      "Tentare di avviare l'export dei log"
+    ],
+    "expected_results": [
+      "Il sistema impedisce l'accesso alla funzionalità di export ai soggetti non autenticati",
+      "Il sistema richiede autenticazione (redirect a login o risposta equivalente) e non avvia l'export",
+      "Non viene generato alcun file di export"
+    ],
+    "traced_criteria": [
+      "AC-1"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito parla di 'utenti/soggetti autorizzati'; si interpreta che l'autenticazione sia prerequisito minimo per l'autorizzazione."
+  },
+  {
+    "test_id": "REQ-NF-005.TC04",
+    "title": "Tracciamento nei log: verifica presenza operatore e timestamp per export riuscito",
+    "type": "Functional",
+    "priority": "HIGH",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile",
+      "Esiste un utente 'auditor2' con permesso di export log",
+      "Accesso ai log di sistema/di audit abilitato per verifica QA (in lettura)",
+      "È possibile correlare l'operazione (es. tramite requestId/correlationId o intervallo temporale)"
+    ],
+    "test_data": [
+      "Utente: auditor2",
+      "Ruolo/permesso: EXPORT_LOGS=abilitato",
+      "Intervallo log: 2026-02-01 00:00:00 - 2026-02-01 23:59:59 (esempio)",
+      "Formato export (se previsto): JSON"
+    ],
+    "steps": [
+      "Autenticarsi come utente 'auditor2'",
+      "Avviare un export dei log per l'intervallo indicato",
+      "Annotare l'orario di avvio dell'export (ora client) e l'orario di completamento",
+      "Consultare i log di sistema/di audit filtrando per finestra temporale dell'operazione",
+      "Identificare la voce di log relativa all'export appena eseguito"
+    ],
+    "expected_results": [
+      "È presente almeno una voce di log relativa all'operazione di export eseguita",
+      "La voce di log riporta l'operatore 'auditor2' (o identificativo equivalente) in modo univoco",
+      "La voce di log riporta il momento dell'operazione (timestamp) valorizzato",
+      "Il timestamp nei log è coerente con la finestra temporale in cui l'export è stato eseguito (tenendo conto di eventuale timezone configurata)"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Il requisito non specifica il formato/struttura dei log di audit; la verifica si basa sulla presenza di campi equivalenti (operatore e timestamp) e sulla correlazione temporale."
+  },
+  {
+    "test_id": "REQ-NF-005.TC05",
+    "title": "Gestione errore/timeout durante export: nessun file generato e tracciamento coerente nei log",
+    "type": "Integration",
+    "priority": "MEDIUM",
+    "preconditions": [
+      "Applicazione disponibile e raggiungibile",
+      "Esiste un utente 'auditor1' con permesso di export log",
+      "È possibile simulare indisponibilità/errore del componente di export o dello storage destinazione (es. servizio file, bucket, job runner) tramite configurazione di test o fault injection",
+      "Accesso ai log di sistema/di audit abilitato per verifica QA (in lettura)"
+    ],
+    "test_data": [
+      "Utente: auditor1",
+      "Permesso: EXPORT_LOGS=abilitato",
+      "Simulazione: storage export non disponibile (es. risposta 503 o timeout > 30s)",
+      "Intervallo log: ultime 24 ore"
+    ],
+    "steps": [
+      "Abilitare la simulazione di errore/timeout del componente dipendente usato dall'export",
+      "Autenticarsi come utente 'auditor1'",
+      "Avviare l'export dei log",
+      "Attendere l'esito dell'operazione fino a timeout/configurazione prevista",
+      "Verificare che non sia disponibile alcun file esportato",
+      "Consultare i log di sistema/di audit per la finestra temporale del tentativo"
+    ],
+    "expected_results": [
+      "Il sistema segnala il fallimento dell'export con un errore esplicito (messaggio UI o risposta API equivalente)",
+      "Non viene generato alcun file di export utilizzabile (nessun download riuscito e nessun file presente nella destinazione prevista)",
+      "Nei log di sistema/di audit è presente una registrazione del tentativo/fallimento dell'operazione associata all'operatore 'auditor1' e con timestamp valorizzato, oppure (se il sistema registra solo export completati) non è presente alcuna voce di 'export completato' per quell'intervallo"
+    ],
+    "traced_criteria": [
+      "AC-2"
+    ],
+    "channels": [
+      "web"
+    ],
+    "notes": "Dipendenza esterna: componente di generazione/salvataggio export non specificato nel requisito. Il requisito non chiarisce se vadano tracciati anche i fallimenti; il test accetta come minimo l'assenza di un record di export completato e/o la presenza di un record di errore con operatore e timestamp."
+  }
+]

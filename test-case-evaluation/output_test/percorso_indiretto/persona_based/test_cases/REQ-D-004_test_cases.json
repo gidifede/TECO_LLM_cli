@@ -1,0 +1,906 @@
+[
+  {
+    "story_id": "REQ-D-004.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-004.US01.TC01",
+        "title": "Generazione log per creazione configurazione con campi minimi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una funzionalità di creazione di un oggetto di configurazione (es. regola) accessibile dal Marketing",
+          "La creazione non è classificata come modifica di regola critica"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Oggetto configurazione: Regola 'Sconto10' con parametri {\"discount\":10,\"scope\":\"cart\"}",
+          "operation_type atteso: \"creazione\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Navigare alla sezione di configurazione (es. Regole)",
+          "Creare una nuova regola con nome 'Sconto10' e parametri indicati",
+          "Salvare la configurazione",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo all'operazione appena eseguita tramite timestamp e/o nome regola"
+        ],
+        "expected_results": [
+          "È presente un nuovo record di log associato all'operazione di creazione appena effettuata",
+          "Il record contiene user_id valorizzato a MKT_1001",
+          "Il record contiene operation_type valorizzato a \"creazione\"",
+          "Il record contiene timestamp valorizzato e coerente con l'orario dell'operazione",
+          "Il record contiene before_state valorizzato (es. nullo/vuoto o stato precedente coerente con creazione)",
+          "Il record contiene after_state valorizzato e rappresenta lo stato della regola appena salvata"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non è specificato il formato di before_state/after_state; la verifica si basa sulla presenza e coerenza semantica (creazione: before_state nullo/vuoto ammesso)."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC02",
+        "title": "Generazione log per aggiornamento configurazione con campi minimi e stati prima/dopo",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una regola già creata e modificabile dal Marketing",
+          "La regola selezionata non è classificata come critica"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Regola esistente: 'Sconto10' con stato iniziale {\"discount\":10,\"scope\":\"cart\"}",
+          "Modifica: discount da 10 a 15",
+          "operation_type atteso: \"update\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Navigare alla sezione di configurazione (es. Regole)",
+          "Aprire la regola 'Sconto10' in modifica",
+          "Modificare il parametro discount da 10 a 15",
+          "Salvare la modifica",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo all'aggiornamento appena eseguito"
+        ],
+        "expected_results": [
+          "È presente un nuovo record di log associato all'operazione di aggiornamento appena effettuata",
+          "Il record contiene user_id valorizzato a MKT_1001",
+          "Il record contiene operation_type valorizzato a \"update\"",
+          "Il record contiene timestamp valorizzato e coerente con l'orario dell'operazione",
+          "Il record contiene before_state che rappresenta lo stato precedente con discount=10",
+          "Il record contiene after_state che rappresenta lo stato successivo con discount=15"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story richiede operation_type tra creazione/update/cancellazione; la validazione è effettuata osservando il valore nel record di log."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC03",
+        "title": "Generazione log per cancellazione configurazione con campi minimi",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una regola già creata e cancellabile dal Marketing",
+          "La cancellazione è consentita dal flusso applicativo"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Regola esistente: 'RegolaDaCancellare' con stato {\"discount\":5,\"scope\":\"product\"}",
+          "operation_type atteso: \"cancellazione\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Navigare alla sezione di configurazione (es. Regole)",
+          "Selezionare la regola 'RegolaDaCancellare'",
+          "Eseguire l'azione di cancellazione e confermare",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo alla cancellazione appena eseguita"
+        ],
+        "expected_results": [
+          "È presente un nuovo record di log associato all'operazione di cancellazione appena effettuata",
+          "Il record contiene user_id valorizzato a MKT_1001",
+          "Il record contiene operation_type valorizzato a \"cancellazione\"",
+          "Il record contiene timestamp valorizzato e coerente con l'orario dell'operazione",
+          "Il record contiene before_state valorizzato e rappresenta lo stato della regola prima della cancellazione",
+          "Il record contiene after_state valorizzato (es. nullo/vuoto o stato che indica la rimozione), coerente con una cancellazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non è definito se after_state debba essere nullo o uno stato 'deleted'; si verifica coerenza con l'operazione di cancellazione."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC04",
+        "title": "Blocco salvataggio modifica critica senza motivazione (Marketing)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una regola classificata come critica e modificabile",
+          "Il flusso di aggiornamento per regole critiche prevede il campo 'Motivazione'"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Regola critica: 'SogliaFrode' con stato iniziale {\"threshold\":1000}",
+          "Modifica: threshold da 1000 a 900",
+          "Motivazione: (vuota)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Navigare alla sezione di configurazione (es. Regole)",
+          "Aprire la regola critica 'SogliaFrode' in modifica",
+          "Modificare il valore threshold da 1000 a 900",
+          "Lasciare vuoto il campo 'Motivazione'",
+          "Tentare di salvare la modifica"
+        ],
+        "expected_results": [
+          "Il sistema impedisce il salvataggio della modifica",
+          "Il sistema mostra un messaggio di errore che indica che la motivazione è obbligatoria per modifiche critiche",
+          "Non viene creata una nuova versione/stato applicato della regola (la modifica non risulta completata)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La classificazione di 'regola critica' è una dipendenza esterna (metadato/configurazione) non definita nel requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC05",
+        "title": "Salvataggio modifica critica con motivazione e persistenza motivazione nel log (Marketing)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una regola classificata come critica e modificabile",
+          "Il flusso di aggiornamento per regole critiche prevede il campo 'Motivazione'",
+          "La sezione di consultazione log è accessibile al Marketing"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Regola critica: 'SogliaFrode' con stato iniziale {\"threshold\":1000}",
+          "Modifica: threshold da 1000 a 900",
+          "Motivazione: \"Adeguamento soglia per campagna Q1\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Aprire la regola critica 'SogliaFrode' in modifica",
+          "Modificare il valore threshold da 1000 a 900",
+          "Inserire la motivazione \"Adeguamento soglia per campagna Q1\"",
+          "Salvare la modifica",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo all'aggiornamento appena eseguito"
+        ],
+        "expected_results": [
+          "La modifica viene salvata con successo",
+          "È presente un record di log per l'operazione di aggiornamento",
+          "Nel record di log la motivazione è presente e valorizzata a \"Adeguamento soglia per campagna Q1\""
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non specifica dove sia memorizzata la motivazione nel record; si verifica la sua disponibilità in consultazione log."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC06",
+        "title": "Salvataggio motivazione (se inserita) per modifica non critica nel record di log (Marketing)",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esiste una regola non critica e modificabile",
+          "Il flusso consente (opzionalmente) l'inserimento della motivazione anche per regole non critiche"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Regola non critica: 'Sconto10' con stato iniziale {\"discount\":10}",
+          "Modifica: discount da 10 a 12",
+          "Motivazione: \"Allineamento promo weekend\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Aprire la regola non critica 'Sconto10' in modifica",
+          "Modificare discount da 10 a 12",
+          "Inserire la motivazione \"Allineamento promo weekend\" (se il campo è presente nel flusso)",
+          "Salvare la modifica",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo all'aggiornamento appena eseguito"
+        ],
+        "expected_results": [
+          "La modifica viene salvata con successo",
+          "È presente un record di log per l'operazione di aggiornamento",
+          "Se la motivazione è stata inserita nel flusso, essa risulta salvata e visibile nel record di log"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "L'AC della story indica 'se prevista dal flusso'; la presenza del campo motivazione per non critiche è una dipendenza di UX/processo non specificata."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC07",
+        "title": "Consultazione log da dashboard per utente Marketing autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esistono record di log di configurazione nel sistema"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1002"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1002",
+          "Navigare alla sezione di consultazione dei log",
+          "Visualizzare la lista dei record disponibili"
+        ],
+        "expected_results": [
+          "La sezione di consultazione log è accessibile all'utente Marketing",
+          "La lista mostra record di configurazione registrati",
+          "Ogni record visualizzato presenta i campi minimi (user_id, operation_type, timestamp, before_state, after_state) o un accesso ai dettagli che li contiene"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificati filtri/paginazione/ordinamento; la verifica si limita alla disponibilità e visualizzazione dei record."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC08",
+        "title": "Esportazione log da dashboard per utente Marketing autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "Esistono record di log di configurazione nel sistema",
+          "La funzionalità di esportazione è abilitata in dashboard"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1002"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Marketing MKT_1002",
+          "Navigare alla sezione di consultazione dei log",
+          "Richiedere l'esportazione dei log tramite l'azione prevista (es. pulsante 'Esporta')",
+          "Scaricare o recuperare il file/risorsa esportata secondo il flusso previsto"
+        ],
+        "expected_results": [
+          "Il sistema rende disponibili i record di configurazione per l'esportazione (es. avvio download o generazione risorsa scaricabile)",
+          "L'esportazione contiene record coerenti con quelli consultabili",
+          "I record esportati includono i campi minimi (user_id, operation_type, timestamp, before_state, after_state)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Formato export (CSV/JSON), filtri e limiti non sono specificati; verificare almeno che l'export sia disponibile e includa i campi minimi."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC09",
+        "title": "Accesso negato a consultazione/esportazione log per utente non autorizzato",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esiste un utente autenticato senza ruolo/permessi Marketing (es. ruolo Viewer o altro)",
+          "La dashboard è accessibile all'utente non Marketing (almeno per altre sezioni)"
+        ],
+        "test_data": [
+          "user_id Non autorizzato: USR_2001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente USR_2001",
+          "Tentare di navigare alla sezione di consultazione dei log",
+          "Tentare di avviare l'esportazione dei log (se l'UI mostra l'azione o tramite URL diretto)"
+        ],
+        "expected_results": [
+          "L'accesso alla sezione log è negato (es. 403/redirect a pagina errore/assenza voce di menu)",
+          "L'azione di esportazione è negata (es. pulsante non visibile o errore di autorizzazione)",
+          "Nessun dato di log viene mostrato o esportato all'utente non autorizzato"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "La story indica 'se applicabile ai ruoli'; si assume esistano ruoli diversi da Marketing con accesso limitato."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC10",
+        "title": "Gestione errore di generazione log: nessun record incompleto in consultazione",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "È disponibile un modo per simulare un fallimento nella generazione/persistenza del log (es. fault injection, DB down per tabella log, mock del servizio di logging)"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Operazione: aggiornamento di una regola non critica",
+          "Fault: errore/timeout durante la scrittura del record di log"
+        ],
+        "steps": [
+          "Abilitare la condizione di fault che provoca il fallimento della scrittura del log",
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Eseguire un aggiornamento di configurazione (es. modificare un parametro e salvare)",
+          "Aprire la sezione di consultazione log",
+          "Ricercare eventuali record relativi all'operazione appena tentata"
+        ],
+        "expected_results": [
+          "Non è presente alcun record di log parziale o con campi minimi mancanti relativo all'operazione",
+          "Se l'operazione di configurazione risulta completata, il sistema segnala comunque il fallimento del logging (es. messaggio/alert) oppure rende l'operazione non completata (comportamento da definire)",
+          "In consultazione log non compaiono record corrotti/incompleti (es. before_state o after_state nulli in modo incoerente rispetto a update)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Comportamento in caso di failure del logging (rollback vs operazione completata con segnalazione) non definito dal requisito; il test verifica almeno l'assenza di record incompleti e richiede decisione di prodotto per l'esito atteso sull'operazione."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC11",
+        "title": "Gestione before_state/after_state non serializzabili o troppo grandi: record coerente o errore controllato",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Utente con ruolo Marketing autenticato in dashboard",
+          "È possibile configurare o simulare uno stato che generi un payload di before_state/after_state molto grande o non serializzabile"
+        ],
+        "test_data": [
+          "user_id Marketing: MKT_1001",
+          "Operazione: update su configurazione con stato molto grande (es. lista di 50.000 elementi) oppure contenente campo non serializzabile",
+          "Soglia dimensione: non definita (dipendenza)"
+        ],
+        "steps": [
+          "Preparare una configurazione il cui stato produca before_state/after_state di grandi dimensioni o non serializzabili",
+          "Accedere alla dashboard come utente Marketing MKT_1001",
+          "Eseguire un aggiornamento su tale configurazione",
+          "Aprire la sezione di consultazione log",
+          "Individuare il record di log relativo all'operazione"
+        ],
+        "expected_results": [
+          "Il sistema gestisce l'errore in modo controllato (es. blocca l'operazione con messaggio) oppure registra un record coerente senza corruzione dei dati",
+          "Se il record viene creato, contiene comunque user_id, operation_type e timestamp valorizzati",
+          "Non sono presenti record di log con struttura incoerente o campi minimi mancanti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito non definisce policy di truncation/mascheramento/errore per stati grandi o non serializzabili; necessario chiarimento tecnico per expected result definitivo."
+      },
+      {
+        "test_id": "REQ-D-004.US01.TC12",
+        "title": "Operazioni concorrenti: corretta associazione user/operazione e timestamp nei log",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Esistono almeno due utenti Marketing autenticabili",
+          "Esiste una stessa regola/bundle/campagna modificabile in parallelo",
+          "È possibile eseguire due aggiornamenti in rapida successione (concorrenza)"
+        ],
+        "test_data": [
+          "Utente A: MKT_1001",
+          "Utente B: MKT_1002",
+          "Oggetto: Regola 'Sconto10'",
+          "Modifica A: discount 10->11",
+          "Modifica B: discount 11->12 (o modifica alternativa concorrente)"
+        ],
+        "steps": [
+          "Accedere alla dashboard come MKT_1001 in una sessione",
+          "Accedere alla dashboard come MKT_1002 in una seconda sessione",
+          "Eseguire quasi contemporaneamente le due modifiche previste sulla stessa regola e salvare in entrambe le sessioni",
+          "Aprire la sezione di consultazione log",
+          "Individuare i due record di log relativi alle due operazioni"
+        ],
+        "expected_results": [
+          "Sono presenti due record di log distinti, uno per ciascuna operazione",
+          "Ogni record riporta il corretto user_id associato alla sessione che ha effettuato l'operazione",
+          "Ogni record riporta un timestamp valorizzato e coerente con l'ordine temporale di esecuzione osservabile"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dettagli di ordinamento (risoluzione timestamp, ordering stabile) non definiti; il test verifica almeno associazione corretta e coerenza temporale."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-004.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-004.US02.TC01",
+        "title": "Persistenza log nel Motore di Offerte per operazione di configurazione con campi minimi",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un'interfaccia per inviare al Motore di Offerte un'operazione di configurazione (API/evento/job) con user_id tracciabile",
+          "È disponibile un'interfaccia o meccanismo per leggere i record di log persistiti (API di lettura o accesso controllato a storage)",
+          "La classificazione 'critica' non è attiva per l'operazione di test"
+        ],
+        "test_data": [
+          "Richiesta configurazione: operation_type=\"update\" su entità \"regola\" id=R-123",
+          "user_id: MKT_1001",
+          "before_state: {\"discount\":10}",
+          "after_state: {\"discount\":15}"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di configurazione di tipo update per la regola R-123 con user_id MKT_1001 e stati before/after coerenti",
+          "Verificare esito della richiesta di configurazione (successo)",
+          "Recuperare dal Motore (tramite canale di consultazione autorizzato) il record di log relativo alla richiesta appena eseguita"
+        ],
+        "expected_results": [
+          "È presente un record di log persistito per l'operazione effettuata",
+          "Il record contiene user_id valorizzato a MKT_1001",
+          "Il record contiene operation_type valorizzato a \"update\"",
+          "Il record contiene timestamp valorizzato",
+          "Il record contiene before_state e after_state valorizzati e coerenti con i dati inviati o con lo stato effettivamente applicato"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Endpoint/meccanismo di persistenza e lettura non specificati; il test è definito a livello di integrazione e richiede definizione delle interfacce."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC02",
+        "title": "Rifiuto richiesta di modifica critica senza motivazione (Motore di Offerte)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un'interfaccia per inviare al Motore di Offerte un'operazione di configurazione marcata come critica",
+          "Il Motore applica la regola: motivazione obbligatoria per modifiche critiche"
+        ],
+        "test_data": [
+          "Richiesta configurazione critica: operation_type=\"update\" su regola id=R-CRIT-001, flag_critico=true",
+          "user_id: MKT_1001",
+          "Motivazione: (assente)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di update su regola critica R-CRIT-001 senza campo motivazione",
+          "Acquisire la risposta del Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte rifiuta la richiesta (es. errore 4xx o esito negativo equivalente)",
+          "La risposta indica che la motivazione è obbligatoria per modifiche critiche",
+          "Non risulta applicata alcuna modifica di configurazione per la richiesta rifiutata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [],
+        "notes": "Non è definito come il flag 'critico' venga trasmesso; si assume un metadato/flag nella richiesta o determinazione server-side."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC03",
+        "title": "Persistenza motivazione nel log per modifica critica con motivazione presente (Motore di Offerte)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "È disponibile un'interfaccia per inviare al Motore di Offerte un'operazione di configurazione marcata come critica",
+          "È disponibile un'interfaccia per leggere il record di log persistito"
+        ],
+        "test_data": [
+          "Richiesta configurazione critica: operation_type=\"update\" su regola id=R-CRIT-001, flag_critico=true",
+          "user_id: MKT_1001",
+          "Motivazione: \"Mitigazione rischio frodi\"",
+          "before_state: {\"threshold\":1000}",
+          "after_state: {\"threshold\":900}"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte la richiesta di update critica con motivazione \"Mitigazione rischio frodi\"",
+          "Verificare esito della richiesta di configurazione (successo)",
+          "Recuperare il record di log relativo all'operazione appena eseguita"
+        ],
+        "expected_results": [
+          "È presente un record di log persistito per l'operazione critica",
+          "Nel record di log la motivazione è presente e valorizzata a \"Mitigazione rischio frodi\"",
+          "Il record include anche i campi minimi (user_id, operation_type, timestamp, before_state, after_state)"
+        ],
+        "traced_criteria": [
+          "AC-2",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito originale non specifica struttura/chiave del campo motivazione; la verifica è basata sulla sua disponibilità nel record restituito dalla lettura."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC04",
+        "title": "Disponibilità dei record per consultazione tramite canale autorizzato (Motore di Offerte)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esistono record di log persistiti nel Motore di Offerte",
+          "È disponibile un canale/servizio di lettura log per consultazione con autorizzazione valida"
+        ],
+        "test_data": [
+          "Credenziali/contesto autorizzato: ruolo Marketing o Compliance (lettura)",
+          "Filtro di esempio (se disponibile): intervallo timestamp ultime 24h"
+        ],
+        "steps": [
+          "Invocare il canale di consultazione log del Motore di Offerte con contesto autorizzato",
+          "Richiedere l'elenco dei record di log disponibili (eventualmente con filtro temporale)"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte restituisce record di log per la consultazione",
+          "I record restituiti includono i campi minimi (user_id, operation_type, timestamp, before_state, after_state)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Meccanismo/endpoint non specificati; la presenza di filtri/paginazione non è richiesta dal requisito."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC05",
+        "title": "Disponibilità dei record per esportazione tramite canale autorizzato (Motore di Offerte)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Esistono record di log persistiti nel Motore di Offerte",
+          "È disponibile un canale/servizio per esportazione log con autorizzazione valida"
+        ],
+        "test_data": [
+          "Credenziali/contesto autorizzato: ruolo Marketing o Compliance (export)",
+          "Richiesta export: 'tutti i record' o intervallo timestamp (se disponibile)"
+        ],
+        "steps": [
+          "Invocare il canale di esportazione log del Motore di Offerte con contesto autorizzato",
+          "Richiedere la generazione/ottenimento dell'export",
+          "Recuperare il contenuto esportato secondo il flusso previsto"
+        ],
+        "expected_results": [
+          "Il Motore di Offerte rende disponibili i record di configurazione per l'esportazione (es. payload o risorsa scaricabile)",
+          "L'export include i campi minimi per ciascun record (user_id, operation_type, timestamp, before_state, after_state)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Formato e modalità export non definiti; il test verifica disponibilità e contenuto minimo."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC06",
+        "title": "Richiesta di configurazione senza user_id tracciabile: gestione secondo policy (rifiuto o valorizzazione server-side)",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un'interfaccia per inviare al Motore di Offerte un'operazione di configurazione",
+          "È definita o concordata una policy di sistema per richieste senza user_id (non presente nel requisito)"
+        ],
+        "test_data": [
+          "Richiesta configurazione: operation_type=\"update\" su regola id=R-123",
+          "user_id: (assente o nullo)"
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di configurazione senza user_id",
+          "Acquisire la risposta del Motore di Offerte"
+        ],
+        "expected_results": [
+          "Il sistema applica la policy definita: rifiuta la richiesta con errore esplicito oppure valorizza user_id in modo tracciabile (es. 'system' o contesto tecnico) e procede",
+          "In nessun caso viene creato un record di log privo del campo user_id valorizzato (campo minimo richiesto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Edge case indicato come 'da definire'; il test richiede decisione di policy. La seconda asserzione deriva dal vincolo AC-1 (user_id sempre presente nel record)."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC07",
+        "title": "Timestamp affidabile nel record di log: valorizzazione server-side se mancante/non valido",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "È disponibile un'interfaccia per inviare al Motore di Offerte un'operazione di configurazione",
+          "È possibile inviare una richiesta senza timestamp o con timestamp non valido (se previsto dal contratto)"
+        ],
+        "test_data": [
+          "Richiesta configurazione: operation_type=\"update\" su regola id=R-123",
+          "user_id: MKT_1001",
+          "timestamp: (assente) oppure \"not-a-date\""
+        ],
+        "steps": [
+          "Inviare al Motore di Offerte una richiesta di configurazione con timestamp mancante o non valido",
+          "Recuperare il record di log generato (se l'operazione è accettata) oppure acquisire l'errore (se rifiutata)"
+        ],
+        "expected_results": [
+          "Il record di log risultante contiene un timestamp valorizzato e valido, oppure la richiesta viene rifiutata con errore controllato",
+          "In nessun caso viene reso disponibile un record di log con timestamp mancante (campo minimo richiesto)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "La story indica che la gestione del timestamp è 'da definire'; il test è parametrico rispetto alla decisione (server-side vs rifiuto)."
+      },
+      {
+        "test_id": "REQ-D-004.US02.TC08",
+        "title": "Persistenza log fallita: nessun record incompleto disponibile e gestione errore controllata",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "È disponibile un modo per simulare fallimento di persistenza (es. DB down, errore transazionale) limitato allo storage dei log",
+          "È disponibile un canale di lettura log per verificare l'assenza/presenza del record"
+        ],
+        "test_data": [
+          "Richiesta configurazione: operation_type=\"update\" su regola id=R-123",
+          "user_id: MKT_1001",
+          "Fault: fallimento persistenza log"
+        ],
+        "steps": [
+          "Abilitare il fault che provoca il fallimento della persistenza del log",
+          "Inviare al Motore di Offerte la richiesta di configurazione",
+          "Acquisire l'esito della richiesta",
+          "Interrogare il canale di consultazione log per verificare eventuali record relativi alla richiesta"
+        ],
+        "expected_results": [
+          "Non è disponibile alcun record di log incompleto o corrotto relativo alla richiesta",
+          "L'esito della richiesta è gestito in modo controllato (successo con segnalazione oppure fallimento/rollback), secondo decisione di atomicità non definita",
+          "Se viene restituito un record, esso contiene sempre tutti i campi minimi richiesti"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Atomicità tra modifica e logging non definita nel requisito; necessario chiarimento per determinare se l'operazione debba fallire o proseguire con alert."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-D-004.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-D-004.US03.TC01",
+        "title": "Consultazione log da dashboard per Team Compliance con autorizzazioni valide",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "L'utente Compliance ha permessi di lettura log",
+          "Esistono record di log di configurazione nel sistema"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3001",
+          "Navigare alla sezione di consultazione dei log",
+          "Visualizzare la lista dei record disponibili"
+        ],
+        "expected_results": [
+          "La sezione di consultazione log è accessibile all'utente Compliance autorizzato",
+          "La lista mostra record di configurazione registrati"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Non sono specificati filtri/ordinamento; la verifica è focalizzata su disponibilità e accesso autorizzato."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC02",
+        "title": "Dettaglio record log consultato contiene i campi minimi richiesti",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "L'utente Compliance ha permessi di lettura log",
+          "Esiste almeno un record di log disponibile"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3001"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3001",
+          "Aprire la sezione di consultazione dei log",
+          "Selezionare un record di log e aprire il dettaglio (o espandere la riga se previsto)"
+        ],
+        "expected_results": [
+          "Nel record consultato sono presenti user_id, operation_type, timestamp, before_state, after_state"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Se l'UI mostra i campi minimi in lista o in dettaglio non è specificato; il test accetta entrambe le modalità purché i campi siano accessibili."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC03",
+        "title": "Record relativo a modifica critica mostra la motivazione in consultazione (Compliance)",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "L'utente Compliance ha permessi di lettura log",
+          "Esiste almeno un record di log relativo a modifica critica con motivazione valorizzata"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3001",
+          "Record critico atteso con motivazione: \"Mitigazione rischio frodi\""
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3001",
+          "Aprire la sezione di consultazione dei log",
+          "Individuare un record relativo a una modifica critica",
+          "Aprire il dettaglio del record"
+        ],
+        "expected_results": [
+          "Nel record relativo a modifica critica la motivazione è disponibile e valorizzata"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dipendenza: disponibilità di un record critico nel dataset di test. Il requisito non specifica come identificare 'critico' in UI; può essere tramite filtro/etichetta o conoscenza del record."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC04",
+        "title": "Esportazione log da dashboard per Team Compliance autorizzato",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "L'utente Compliance ha permessi di esportazione log",
+          "Esistono record di log di configurazione nel sistema",
+          "La funzionalità di esportazione è abilitata in dashboard"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3002"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3002",
+          "Navigare alla sezione di consultazione dei log",
+          "Richiedere l'esportazione dei log tramite l'azione prevista",
+          "Scaricare o recuperare il file/risorsa esportata secondo il flusso previsto"
+        ],
+        "expected_results": [
+          "Il sistema rende disponibili i record di configurazione per l'esportazione",
+          "L'esportazione include i campi minimi (user_id, operation_type, timestamp, before_state, after_state)",
+          "Per i record di modifiche critiche, l'esportazione include la motivazione (se presente nel record)"
+        ],
+        "traced_criteria": [
+          "AC-3",
+          "AC-1",
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Formato export non specificato; verifica basata su contenuto minimo e disponibilità."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC05",
+        "title": "Utente Compliance senza permesso export: operazione di esportazione negata",
+        "type": "Authorization",
+        "priority": "HIGH",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "L'utente Compliance NON ha permessi di esportazione log",
+          "La sezione di consultazione log è accessibile in lettura"
+        ],
+        "test_data": [
+          "user_id Compliance (no export): CMP_3003"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3003",
+          "Navigare alla sezione di consultazione dei log",
+          "Tentare di avviare l'esportazione dei log (se l'azione è visibile) oppure accedere direttamente alla funzionalità di export (se possibile)"
+        ],
+        "expected_results": [
+          "L'azione di esportazione non è disponibile oppure viene rifiutata con messaggio/errore di autorizzazione",
+          "Nessun file/risorsa di export viene generato o reso disponibile all'utente"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito originale non dettaglia il modello permessi; si assume separazione permessi lettura vs export come da edge case della story."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC06",
+        "title": "Impossibilità temporanea di recuperare i log: errore mostrato e nessun dato parziale",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "È possibile simulare indisponibilità del servizio di recupero log (es. timeout/500 dal backend)"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3001",
+          "Fault: timeout/errore backend su endpoint consultazione log"
+        ],
+        "steps": [
+          "Abilitare la condizione di fault che impedisce il recupero dei log",
+          "Accedere alla dashboard come utente Compliance CMP_3001",
+          "Navigare alla sezione di consultazione dei log"
+        ],
+        "expected_results": [
+          "La dashboard mostra un messaggio di errore di caricamento log",
+          "La dashboard non mostra dati parziali/spuri (es. lista incompleta senza indicazione di errore)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Dettagli di UX (testo errore, retry) non definiti; il test verifica la gestione controllata e l'assenza di risultati parziali non segnalati."
+      },
+      {
+        "test_id": "REQ-D-004.US03.TC07",
+        "title": "Record critico senza motivazione: evidenza di non conformità in consultazione",
+        "type": "Edge Case",
+        "priority": "LOW",
+        "preconditions": [
+          "Utente con ruolo Compliance autenticato in dashboard",
+          "Esiste (o si può inserire a fini test) un record di log marcato come modifica critica con motivazione mancante"
+        ],
+        "test_data": [
+          "user_id Compliance: CMP_3001",
+          "Record critico anomalo: motivazione assente"
+        ],
+        "steps": [
+          "Accedere alla dashboard come utente Compliance CMP_3001",
+          "Aprire la sezione di consultazione dei log",
+          "Individuare il record critico anomalo",
+          "Aprire il dettaglio del record"
+        ],
+        "expected_results": [
+          "La motivazione risulta assente nel record consultato",
+          "Il sistema evidenzia l'anomalia/non conformità oppure rende chiaramente visibile che la motivazione manca (comportamento da definire)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "dashboard"
+        ],
+        "notes": "Il requisito impone motivazione obbligatoria per critiche, quindi questo scenario dovrebbe non verificarsi; il comportamento di evidenziazione non è definito e richiede decisione (es. flag 'non conforme')."
+      }
+    ]
+  }
+]

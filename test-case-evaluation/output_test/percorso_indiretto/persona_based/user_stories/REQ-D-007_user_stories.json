@@ -1,0 +1,95 @@
+[
+  {
+    "story_id": "REQ-D-007.US01",
+    "title": "Registrazione persistente dei log di proposte, configurazioni e accessi nel Motore",
+    "persona": "Motore di Offerte",
+    "goal": "conservare in modo completo e persistente i log delle proposte generate, delle modifiche di configurazione e degli accessi degli utenti autorizzati, rendendoli consultabili/esportabili",
+    "benefit": "garantire tracciabilità, auditabilità e verifiche successive sugli eventi e sulle azioni effettuate",
+    "user_story": "Come Motore di Offerte\nVoglio conservare in modo completo e persistente i log delle proposte generate, delle modifiche di configurazione e degli accessi degli utenti autorizzati, rendendoli consultabili/esportabili\nIn modo che siano possibili audit e verifiche successive con dettaglio sufficiente sugli eventi e sugli utenti che hanno eseguito le azioni",
+    "channels": [],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore genera una proposta ALLORA il Motore registra un evento di log persistente associato alla proposta generata.",
+      "QUANDO viene eseguita una modifica di configurazione (es. regole, parametri, matrici di combinazioni) ALLORA il Motore registra un evento di log persistente che include l'evento e l'identificativo dell'utente autorizzato che ha eseguito la modifica.",
+      "QUANDO un utente autorizzato effettua un accesso ALLORA il Motore registra un evento di log persistente che include timestamp e identificativo utente.",
+      "QUANDO i log vengono salvati ALLORA sono salvati in un'area di persistenza consultabile ed esportabile dal Motore."
+    ],
+    "business_rules": [
+      "Ogni evento di log deve includere almeno la tipologia di evento e un timestamp.",
+      "Per gli eventi generati da azioni utente (modifiche di configurazione, accessi) il log deve includere l'identificativo dell'utente autorizzato che ha effettuato l'azione.",
+      "I log devono essere persistenti (non volatili) e mantenuti in un'area di persistenza accessibile al Motore per consultazione/esportazione."
+    ],
+    "edge_cases": [
+      "QUANDO non è disponibile l'area di persistenza ALLORA il Motore gestisce l'errore di scrittura log senza interrompere in modo non gestito l'operatività (comportamento di fallback/gestione errore da definire).",
+      "QUANDO un evento è generato senza un utente applicabile (es. proposta generata automaticamente) ALLORA il Motore registra comunque il log senza identificativo utente, mantenendo tipologia evento e timestamp.",
+      "QUANDO l'identificativo utente non è risolvibile/assente in un evento di accesso o modifica ALLORA il Motore registra l'evento indicando l'anomalia (modalità di rappresentazione da definire).",
+      "QUANDO si verificano eventi duplicati (retry o invii ripetuti) ALLORA il Motore evita inconsistenze nei log o registra in modo coerente la duplicazione (criterio di deduplica da definire)."
+    ],
+    "assumptions": [
+      "Il requisito non specifica formato/schema dei log: si assume che esista uno schema dati interno al Motore che supporti tipologia evento, timestamp, identificativo utente (ove applicabile) e riferimenti alla proposta/modifica.",
+      "Il requisito non specifica tempi di retention, politiche di cancellazione/anonimizzazione e requisiti di sicurezza/immutabilità: si assume che siano definiti in requisiti separati di compliance/privacy.",
+      "Il requisito non specifica modalità operative di consultazione/esportazione (UI, API, batch): si assume che il Motore disponga di funzionalità o interfacce per consultare/esportare i log."
+    ],
+    "notes": "Requisito principalmente di natura sistemistica: non sono esplicitati i canali. I criteri di accettazione sono stati resi testabili mantenendo il focus su persistenza e contenuto minimo dei log. Potrebbe essere utile una scomposizione futura in sotto-requisiti (logging proposte, logging configurazioni, logging accessi, consultazione/esportazione, retention/sicurezza)."
+  },
+  {
+    "story_id": "REQ-D-007.US02",
+    "title": "Tracciamento delle modifiche di configurazione effettuate dal Marketing",
+    "persona": "Team Marketing",
+    "goal": "avere tracciate in modo persistente le modifiche di configurazione effettuate dagli utenti Marketing e poterle consultare/esportare tramite il Motore",
+    "benefit": "disporre di audit trail sulle variazioni commerciali e poter ricostruire chi ha cambiato cosa e quando",
+    "user_story": "Come Team Marketing\nVoglio che le modifiche di configurazione che effettuo siano tracciate in log persistenti e consultabili/esportabili\nIn modo che sia possibile ricostruire a fini di audit chi ha eseguito le variazioni e quando",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO un utente del Team Marketing esegue una modifica di configurazione ALLORA il Motore registra un evento di log persistente con evidenza dell'evento e identificativo dell'utente che ha eseguito la modifica.",
+      "QUANDO i log delle modifiche di configurazione sono richiesti per consultazione/esportazione ALLORA il Motore li rende disponibili dall'area di persistenza consultabile/esportabile dal Motore."
+    ],
+    "business_rules": [
+      "Le modifiche di configurazione devono essere loggate con identificativo dell'utente autorizzato che le esegue.",
+      "I log devono essere persistenti e recuperabili per consultazione/esportazione."
+    ],
+    "edge_cases": [
+      "QUANDO un utente Marketing non è autorizzato (ruoli/permessi) ALLORA l'accesso o l'azione è negata e l'accesso tentato è registrato nei log (se previsto dal sistema di accesso).",
+      "QUANDO una modifica viene annullata/rollbackata ALLORA la sequenza di eventi deve risultare tracciata in modo coerente (dettaglio da definire)."
+    ],
+    "assumptions": [
+      "Si assume che gli utenti Marketing rientrino tra gli 'utenti autorizzati' citati dal requisito e che esista un identificativo utente utilizzabile nei log.",
+      "La consultazione/esportazione dei log da parte del Team Marketing avviene tramite strumenti già previsti (es. dashboard/log viewer), non dettagliati in questo requisito."
+    ],
+    "notes": "AC condivisi con US03 (Team Compliance) e US01 (Motore di Offerte) relativamente a: logging modifiche configurazione e persistenza consultabile/esportabile. Questa US focalizza il punto di vista Marketing (azioni di configurazione)."
+  },
+  {
+    "story_id": "REQ-D-007.US03",
+    "title": "Consultazione ed esportazione dei log per audit da parte della Compliance",
+    "persona": "Team Compliance",
+    "goal": "poter disporre di log persistenti e consultabili/esportabili relativi a proposte, modifiche di configurazione e accessi autorizzati",
+    "benefit": "effettuare audit e verifiche successive sulla conformità e sulla tracciabilità delle azioni",
+    "user_story": "Come Team Compliance\nVoglio poter consultare ed esportare log persistenti relativi a proposte, modifiche di configurazione e accessi autorizzati\nIn modo che possa svolgere audit e verifiche successive con evidenze tracciabili",
+    "channels": [
+      "dashboard"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO il Motore genera una proposta ALLORA l'evento è registrato come log persistente ed è disponibile per consultazione/esportazione a fini di audit.",
+      "QUANDO viene eseguita una modifica di configurazione ALLORA l'evento è registrato con evidenza dell'evento e dell'utente che ha eseguito la modifica ed è disponibile per consultazione/esportazione a fini di audit.",
+      "QUANDO un utente autorizzato effettua un accesso ALLORA l'evento è registrato con timestamp e identificativo utente ed è disponibile per consultazione/esportazione a fini di audit.",
+      "QUANDO i log sono salvati ALLORA risultano in un'area di persistenza consultabile/esportabile dal Motore."
+    ],
+    "business_rules": [
+      "I log devono contenere informazioni sufficienti per audit: tipologia evento, timestamp e identificativo utente ove applicabile.",
+      "I log devono essere persistenti e recuperabili per consultazione/esportazione."
+    ],
+    "edge_cases": [
+      "QUANDO la Compliance non dispone delle autorizzazioni necessarie ALLORA non può consultare/esportare i log (regole di accesso da definire) e gli accessi autorizzati/negati sono tracciati come eventi di accesso (se previsti).",
+      "QUANDO i log sono incompleti per indisponibilità temporanea della persistenza ALLORA devono essere identificabili le finestre temporali impattate (meccanismo da definire)."
+    ],
+    "assumptions": [
+      "Si assume che la dashboard o il meccanismo di consultazione/esportazione log sia disponibile per il Team Compliance in base ai ruoli, come indicato nel contesto persona, ma non dettagliato nel requisito.",
+      "Il requisito non specifica filtri/ricerche/report: si assume che la consultazione/esportazione sia almeno possibile a livello di dataset di log."
+    ],
+    "notes": "AC replicati e condivisi con US01 (Motore di Offerte) per la parte di registrazione/persistenza e con US02 (Team Marketing) per la parte di modifiche di configurazione con indicazione utente. Questa US enfatizza l'uso dei log per audit."
+  }
+]

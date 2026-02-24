@@ -1,0 +1,36 @@
+[
+  {
+    "story_id": "REQ-UI-003.US01",
+    "title": "Visualizzazione card offerta con informazioni essenziali e dettagli su richiesta (cliente)",
+    "persona": "Cliente (fisico o digitale)",
+    "goal": "visualizzare immediatamente nella card dell’offerta il nome prodotto e il valore dello sconto e accedere ai dettagli completi tramite un controllo dedicato",
+    "benefit": "comprendere rapidamente il valore dell’offerta senza appesantire la vista principale e approfondire solo quando necessario",
+    "user_story": "Come Cliente (fisico o digitale)\nVoglio vedere subito nella card dell’offerta il nome del prodotto e il valore dello sconto e poter aprire i dettagli completi con un pulsante “maggiori info”\nIn modo che possa valutare rapidamente l’offerta e approfondire solo se mi interessa",
+    "channels": [
+      "digital",
+      "front-end commerciale"
+    ],
+    "priority": "high",
+    "acceptance_criteria": [
+      "QUANDO visualizzo una card offerta ALLORA vedo sempre in modo evidente, senza click, il nome del prodotto.",
+      "QUANDO visualizzo una card offerta ALLORA vedo sempre in modo evidente, senza click, il valore dello sconto riservato.",
+      "QUANDO visualizzo una card offerta ALLORA è presente un controllo “maggiori info” (o equivalente) per accedere ai dettagli completi della proposta.",
+      "QUANDO seleziono il controllo “maggiori info” ALLORA vengono mostrati (tramite espansione o apertura) i dettagli completi della proposta non visibili di default.",
+      "QUANDO seleziono il controllo “maggiori info” ALLORA i dettagli risultano effettivamente consultabili dall’utente (test funzionale eseguito con esito positivo)."
+    ],
+    "business_rules": [
+      "Nome prodotto e valore dello sconto devono essere sempre visibili nella porzione di card mostrata di default (senza azioni utente).",
+      "I dettagli completi della proposta devono essere accessibili esclusivamente tramite un’azione esplicita dell’utente (controllo “maggiori info” o equivalente)."
+    ],
+    "edge_cases": [
+      "Il controllo “maggiori info” non è disponibile o non cliccabile: l’utente non riesce ad accedere ai dettagli.",
+      "Apertura dei dettagli fallisce (errore UI o contenuto non caricato): l’utente non può consultare le informazioni non visibili di default.",
+      "Testo del nome prodotto o valore sconto troppo lungo: rischio di troncamento che impedisce la lettura “evidente” delle informazioni essenziali."
+    ],
+    "assumptions": [
+      "I canali per la persona includono sia digitale sia fisico (front-end commerciale) come da descrizione della persona; il requisito non specifica un canale unico.",
+      "“Espande o apre” è interpretato come due modalità equivalenti accettabili purché i dettagli completi siano consultabili dopo l’azione su “maggiori info”."
+    ],
+    "notes": "Requisito UI trasversale: applicabile a qualsiasi contesto in cui una card offerta viene mostrata al Cliente (fisico o digitale). I criteri di accettazione sono stati riscritti per renderli verificabili lato utente; il requisito menziona anche altri contenuti “sempre visibili” (descrizione sintetica/USP) ma gli AC forniti vincolano esplicitamente solo nome prodotto e valore sconto."
+  }
+]

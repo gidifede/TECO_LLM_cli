@@ -1,0 +1,791 @@
+[
+  {
+    "story_id": "REQ-I-006.US01",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-006.US01.TC01",
+        "title": "Persistenza offerta come repository primario con attributi di validità",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Sono disponibili le specifiche di integrazione per l'API di creazione/aggiornamento offerta (endpoint e payload)",
+          "Esiste un cliente valido con identificativo 'CUST-10001'",
+          "Repository del Motore vuoto o in stato noto per il cliente 'CUST-10001'"
+        ],
+        "test_data": [
+          "Cliente: CUST-10001",
+          "Offerta: OFF-20001",
+          "Inizio validità: 2026-02-23T10:00:00Z",
+          "Fine validità: 2026-03-23T10:00:00Z",
+          "Dati presentazione (secondo specifica): titolo='Promo Febbraio', descrizione='Sconto 10%', prioritàVisualizzazione=1"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di creazione offerta per il cliente 'CUST-10001' includendo OFF-20001 e gli attributi di validità temporale previsti",
+          "Verificare l'esito della chiamata di creazione",
+          "Recuperare dal Motore (tramite API di lettura o accesso tecnico al repository previsto) il record dell'offerta OFF-20001 per il cliente 'CUST-10001'"
+        ],
+        "expected_results": [
+          "La creazione dell'offerta restituisce esito di successo (HTTP 200/201 o equivalente secondo specifica)",
+          "Nel repository primario del Motore esiste un record per OFF-20001 associato a CUST-10001",
+          "Il record persiste gli attributi necessari a determinare la validità temporale (almeno inizio validità e fine validità/scadenza o regola di calcolo secondo specifica)",
+          "Il record persiste anche i dati necessari alla presentazione previsti dalla specifica di integrazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Dipendenza: specifiche di integrazione per definire endpoint/payload e l'elenco dei campi 'necessari alla presentazione'."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC02",
+        "title": "Ricalcolo validità e persistenza dello stato di validità in lettura",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Sono disponibili le specifiche di integrazione per l'API di ricalcolo validità (se esposta) o per l'evento/job di ricalcolo",
+          "Esiste un cliente valido 'CUST-10001'",
+          "Esiste un'offerta OFF-20002 per CUST-10001 con regola/attributi di validità configurati secondo specifica"
+        ],
+        "test_data": [
+          "Cliente: CUST-10001",
+          "Offerta: OFF-20002",
+          "Configurazione validità: regola di calcolo o date (secondo specifica)",
+          "Timestamp di verifica lettura: 2026-02-23T10:05:00Z"
+        ],
+        "steps": [
+          "Attivare il calcolo o ricalcolo della validità per l'offerta OFF-20002 (via API, evento o job secondo specifica)",
+          "Recuperare dal Motore l'elenco offerte del cliente CUST-10001",
+          "Individuare nella risposta l'offerta OFF-20002"
+        ],
+        "expected_results": [
+          "Il ricalcolo termina con esito di successo (secondo meccanismo previsto: risposta API, evento di completamento, log applicativo)",
+          "La risposta di lettura include per OFF-20002 uno stato di validità valorizzato e coerente con il calcolo eseguito (es. 'VALIDA'/'NON_VALIDA' o equivalente secondo specifica)",
+          "Lo stato di validità restituito è quello salvato/persistito dal Motore e non calcolato solo 'on the fly' dal consumer (verificabile tramite campo/metadata o audit secondo specifica)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito non specifica formato/valori dello 'stato di validità' né il meccanismo di ricalcolo; il test richiede specifiche di integrazione o evidenze tecniche (audit/log) per dimostrare la persistenza."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC03",
+        "title": "Lettura elenco offerte restituisce solo offerte applicabili e in corso di validità al timestamp richiesta",
+        "type": "Functional",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Esiste un cliente valido 'CUST-10002'",
+          "Per CUST-10002 esistono almeno 3 offerte persistite: una valida, una scaduta, una con inizio validità futuro",
+          "L'API di lettura elenco offerte accetta o utilizza un timestamp di valutazione secondo specifica (esplicito o implicito: system time)"
+        ],
+        "test_data": [
+          "Cliente: CUST-10002",
+          "Offerta valida: OFF-30001 (inizio 2026-02-01T00:00:00Z, fine 2026-03-01T00:00:00Z)",
+          "Offerta scaduta: OFF-30002 (inizio 2026-01-01T00:00:00Z, fine 2026-02-01T00:00:00Z)",
+          "Offerta futura: OFF-30003 (inizio 2026-03-01T00:00:00Z, fine 2026-04-01T00:00:00Z)",
+          "Timestamp richiesta: 2026-02-23T10:00:00Z"
+        ],
+        "steps": [
+          "Invocare l'API di lettura elenco offerte per il cliente CUST-10002 al timestamp di richiesta previsto (esplicito o implicito)",
+          "Analizzare la lista offerte restituita"
+        ],
+        "expected_results": [
+          "La risposta contiene OFF-30001",
+          "La risposta non contiene OFF-30002 (scaduta al timestamp di richiesta)",
+          "La risposta non contiene OFF-30003 (non ancora valida al timestamp di richiesta)",
+          "Ogni offerta restituita risulta 'applicabile' secondo le regole esposte dal Motore (se presenti filtri/flag di applicabilità in specifica)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Assunzione: il criterio 'applicabili' è determinabile tramite campi/filtri nelle specifiche di integrazione; in assenza, si valida solo la componente temporale. Il timestamp di valutazione non è specificato: va definito (system time vs parametro)."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC04",
+        "title": "Offerta valida include tutti i dati necessari alla presentazione (payload completo)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Sono disponibili le specifiche di integrazione che elencano i campi obbligatori per la presentazione",
+          "Esiste un cliente valido 'CUST-10003' con un'offerta valida OFF-40001"
+        ],
+        "test_data": [
+          "Cliente: CUST-10003",
+          "Offerta: OFF-40001 valida al momento della richiesta",
+          "Campi obbligatori attesi (esempi, da specifica): idOfferta, titolo, descrizione, categoria, prioritàVisualizzazione, dataFineValidità, callToAction"
+        ],
+        "steps": [
+          "Invocare l'API di lettura elenco offerte per il cliente CUST-10003",
+          "Selezionare l'elemento corrispondente a OFF-40001",
+          "Verificare la presenza e valorizzazione dei campi obbligatori di presentazione definiti dalla specifica di integrazione"
+        ],
+        "expected_results": [
+          "OFF-40001 è presente nella lista perché valida",
+          "Per OFF-40001 sono presenti nel payload tutti i campi obbligatori di presentazione previsti dalla specifica",
+          "I campi obbligatori risultano valorizzati (non null/vuoti) secondo i vincoli di formato della specifica (es. date ISO-8601, lunghezze massime, enumerazioni)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Questo test è di integrazione perché dipende dal contratto (schema payload) definito nelle specifiche di integrazione, non incluse nel requisito."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC05",
+        "title": "Gestione richiesta elenco offerte per cliente inesistente/non riconosciuto",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Il cliente 'CUST-99999' non esiste nei sistemi del Motore (o non è riconosciuto secondo specifica)"
+        ],
+        "test_data": [
+          "Cliente inesistente: CUST-99999"
+        ],
+        "steps": [
+          "Invocare l'API di lettura elenco offerte per il cliente CUST-99999"
+        ],
+        "expected_results": [
+          "Il Motore restituisce un esito gestito per cliente non riconosciuto (lista vuota oppure errore applicativo/HTTP secondo specifica)",
+          "In caso di errore, la risposta contiene un codice/descrizione errore coerente con le specifiche di integrazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il comportamento atteso (lista vuota vs errore) non è specificato nel requisito: va allineato alle specifiche di integrazione."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC06",
+        "title": "Rifiuto o gestione offerta con validità incoerente (fine < inizio)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Sono disponibili le specifiche di validazione input (se presenti) per creazione/aggiornamento offerta",
+          "Esiste un cliente valido 'CUST-10004'"
+        ],
+        "test_data": [
+          "Cliente: CUST-10004",
+          "Offerta: OFF-50001",
+          "Inizio validità: 2026-03-10T10:00:00Z",
+          "Fine validità: 2026-03-01T10:00:00Z"
+        ],
+        "steps": [
+          "Inviare al Motore una richiesta di creazione/aggiornamento offerta OFF-50001 per CUST-10004 con fine validità antecedente all'inizio validità",
+          "Verificare l'esito della chiamata",
+          "Invocare l'API di lettura elenco offerte per il cliente CUST-10004"
+        ],
+        "expected_results": [
+          "Il Motore gestisce la condizione secondo regole di validazione: rifiuta la richiesta con errore validazione oppure persiste l'offerta marcandola non valida (secondo specifica)",
+          "L'offerta OFF-50001 non risulta presente tra le offerte in corso di validità restituite in lettura"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Le regole di validazione non sono specificate: il test ammette due esiti accettabili 'secondo specifica'. Necessario definire comportamento univoco per automazione."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC07",
+        "title": "Coerenza letture concorrenti durante aggiornamento validità (consistenza dati)",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Esiste un cliente valido 'CUST-10005' con offerta OFF-60001",
+          "È possibile eseguire un aggiornamento di validità (o ricalcolo) che impieghi tempo misurabile (es. tramite job o endpoint asincrono) secondo specifica",
+          "Strumento di test in grado di effettuare richieste concorrenti"
+        ],
+        "test_data": [
+          "Cliente: CUST-10005",
+          "Offerta: OFF-60001",
+          "Aggiornamento: modifica fine validità da 2026-03-31T00:00:00Z a 2026-02-20T00:00:00Z (per renderla non più valida al timestamp di test)",
+          "Numero richieste concorrenti lettura: 20"
+        ],
+        "steps": [
+          "Avviare l'operazione di aggiornamento/ricalcolo validità per OFF-60001",
+          "Durante l'operazione, inviare 20 richieste concorrenti di lettura elenco offerte per CUST-10005",
+          "Raccogliere tutte le risposte e confrontare i valori di validità/stato restituiti per OFF-60001"
+        ],
+        "expected_results": [
+          "Ogni risposta di lettura è strutturalmente valida e non contiene dati parziali/corrotti per OFF-60001",
+          "Le risposte mostrano uno stato coerente per singola risposta (non combinazioni impossibili, es. dataFine aggiornata ma stato non aggiornato) secondo il modello dati",
+          "Il livello di consistenza osservato è conforme a quanto definito in specifica (es. 'read-your-writes', consistenza forte o eventuale)"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il livello di consistenza non è specificato nel requisito: necessario definirlo per rendere l'esito deterministico."
+      },
+      {
+        "test_id": "REQ-I-006.US01.TC08",
+        "title": "Valutazione validità rispetto al timestamp: offerta scade durante il tempo di risposta",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente disponibile con Motore di Offerte deployato e accessibile",
+          "Esiste un cliente valido 'CUST-10006' con offerta OFF-70001 con scadenza imminente",
+          "È possibile controllare il timestamp di valutazione (parametro o system time) o misurare il tempo di risposta"
+        ],
+        "test_data": [
+          "Cliente: CUST-10006",
+          "Offerta: OFF-70001",
+          "Inizio validità: 2026-02-23T09:00:00Z",
+          "Fine validità: 2026-02-23T10:00:02Z",
+          "Istante invio richiesta: 2026-02-23T10:00:01Z"
+        ],
+        "steps": [
+          "Invocare l'API di lettura elenco offerte per CUST-10006 all'istante previsto",
+          "Registrare il timestamp di valutazione utilizzato dal Motore se restituito (o correlare tramite log/audit secondo specifica)",
+          "Verificare se OFF-70001 è inclusa o esclusa in base al timestamp di valutazione definito"
+        ],
+        "expected_results": [
+          "L'inclusione/esclusione di OFF-70001 è determinata in modo coerente rispetto al timestamp di valutazione definito dalla specifica (non rispetto al tempo di arrivo risposta al consumer)",
+          "Non si osservano risultati non deterministici a parità di timestamp di valutazione"
+        ],
+        "traced_criteria": [
+          "AC-1"
+        ],
+        "channels": [],
+        "notes": "Il requisito richiede di 'specificare' il timestamp di valutazione: senza tale decisione, il test può solo verificare coerenza interna e ripetibilità."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-006.US02",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-006.US02.TC01",
+        "title": "Loyalty recupera offerte tramite sole API di lettura (APP e sito)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Sezione Loyalty (APP e sito) integrata con Motore di Offerte",
+          "Sono disponibili specifiche di integrazione (endpoint, metodi, autorizzazioni) tra Loyalty e Motore",
+          "Abilitato logging/tracing delle chiamate in uscita dalla Loyalty (es. API gateway logs, APM, proxy)",
+          "Esiste un cliente valido 'CUST-11001' con almeno un'offerta valida nel Motore"
+        ],
+        "test_data": [
+          "Cliente: CUST-11001",
+          "Canali: APP e sito",
+          "Offerta valida nel Motore: OFF-80001"
+        ],
+        "steps": [
+          "Da canale APP, aprire la sezione che mostra le offerte del cliente CUST-11001",
+          "Raccogliere le evidenze di rete/tracing delle chiamate effettuate dalla APP verso il Motore (o verso il layer che espone i dati del Motore)",
+          "Da canale sito, aprire la sezione che mostra le offerte del cliente CUST-11001",
+          "Raccogliere le evidenze di rete/tracing delle chiamate effettuate dal sito verso il Motore (o verso il layer che espone i dati del Motore)",
+          "Verificare che non siano state effettuate chiamate di update/patch/post che modifichino lo stato delle offerte sul Motore nell'ambito della sola visualizzazione"
+        ],
+        "expected_results": [
+          "Su APP, la Loyalty invoca esclusivamente operazioni di lettura (es. GET) per ottenere elenco/stato/validità offerte secondo specifica",
+          "Su sito, la Loyalty invoca esclusivamente operazioni di lettura (es. GET) per ottenere elenco/stato/validità offerte secondo specifica",
+          "Non risultano chiamate di scrittura verso il Motore (POST/PUT/PATCH/DELETE o equivalenti) generate dal solo flusso di visualizzazione offerte"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "APP",
+          "sito"
+        ],
+        "notes": "Il requisito non specifica se esiste un layer intermedio: il test accetta chiamate verso un servizio di esposizione purché non avvengano update sul Motore e i dati provengano dal Motore secondo architettura."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC02",
+        "title": "Loyalty visualizza aggiornamenti del Motore alla successiva lettura (APP e sito)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Sezione Loyalty (APP e sito) integrata con Motore di Offerte",
+          "Esiste un cliente valido 'CUST-11002' con offerta OFF-80002 inizialmente valida e visibile",
+          "È disponibile un modo controllato per aggiornare i dati/validità di OFF-80002 sul Motore (API backoffice, tool di test o job)",
+          "Eventuali cache/TTL tra Loyalty e Motore sono note e configurabili per il test (o disabilitate)"
+        ],
+        "test_data": [
+          "Cliente: CUST-11002",
+          "Offerta: OFF-80002",
+          "Aggiornamento dati: descrizione da 'Sconto 5%' a 'Sconto 15%'",
+          "Aggiornamento validità: fine validità impostata a una data passata per renderla non più valida (es. 2026-02-01T00:00:00Z)"
+        ],
+        "steps": [
+          "Da canale APP, aprire la sezione offerte per CUST-11002 e verificare che OFF-80002 sia presente con descrizione iniziale",
+          "Aggiornare sul Motore i dati e/o la validità di OFF-80002 secondo test data",
+          "Da canale APP, rieseguire la lettura della sezione offerte (refresh o riapertura)",
+          "Da canale sito, aprire la sezione offerte per CUST-11002 e acquisire lo stato attuale",
+          "Da canale sito, rieseguire la lettura (refresh) dopo l'aggiornamento sul Motore"
+        ],
+        "expected_results": [
+          "Alla successiva lettura su APP, le informazioni visualizzate risultano coerenti con quanto restituito dal Motore (es. descrizione aggiornata o offerta non più presente se non valida)",
+          "Alla successiva lettura su sito, le informazioni visualizzate risultano coerenti con quanto restituito dal Motore (stesso comportamento dell'APP a parità di dati)",
+          "Non vengono visualizzati dati obsoleti oltre i limiti di cache/TTL definiti (se applicabili)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "APP",
+          "sito"
+        ],
+        "notes": "Dipendenza: definire policy di cache/TTL e il significato operativo di 'successiva lettura' per rendere il test deterministico."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC03",
+        "title": "Gestione errore di lettura: Motore non raggiungibile/timeout (APP e sito)",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Ambiente disponibile con Sezione Loyalty (APP e sito)",
+          "È possibile simulare indisponibilità del Motore o timeout (es. blocco rete, fault injection, mock gateway)",
+          "Linee guida di canale per messaggi/placeholder non definite nel requisito"
+        ],
+        "test_data": [
+          "Cliente: CUST-11003",
+          "Fault: timeout 10s o connessione rifiutata verso Motore"
+        ],
+        "steps": [
+          "Simulare l'indisponibilità del Motore (o del servizio che espone i dati del Motore) per le chiamate di lettura",
+          "Da canale APP, aprire la sezione offerte per CUST-11003",
+          "Da canale sito, aprire la sezione offerte per CUST-11003"
+        ],
+        "expected_results": [
+          "Su APP, la Loyalty gestisce l'errore di lettura senza crash e senza mostrare dati incoerenti/obsoleti come se fossero aggiornati",
+          "Su sito, la Loyalty gestisce l'errore di lettura senza crash e senza mostrare dati incoerenti/obsoleti come se fossero aggiornati",
+          "L'errore è tracciato/loggato secondo standard di osservabilità del canale (se previsti)"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "APP",
+          "sito"
+        ],
+        "notes": "Il requisito non definisce UI/UX di errore (messaggio/placeholder): il test verifica solo gestione tecnica e assenza di visualizzazione ingannevole di dati."
+      },
+      {
+        "test_id": "REQ-I-006.US02.TC04",
+        "title": "Risposta vuota del Motore: Loyalty mostra assenza offerte senza errori (APP e sito)",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Ambiente disponibile con Sezione Loyalty (APP e sito) integrata con Motore di Offerte",
+          "Esiste un cliente valido 'CUST-11004' senza offerte valide (Motore restituisce lista vuota)"
+        ],
+        "test_data": [
+          "Cliente: CUST-11004"
+        ],
+        "steps": [
+          "Da canale APP, aprire la sezione offerte per CUST-11004",
+          "Da canale sito, aprire la sezione offerte per CUST-11004"
+        ],
+        "expected_results": [
+          "Su APP, viene mostrata l'assenza di offerte senza errori applicativi",
+          "Su sito, viene mostrata l'assenza di offerte senza errori applicativi",
+          "Non vengono effettuate chiamate di scrittura verso il Motore"
+        ],
+        "traced_criteria": [
+          "AC-2"
+        ],
+        "channels": [
+          "APP",
+          "sito"
+        ],
+        "notes": "La modalità di comunicazione 'nessuna offerta' è canale-specifica e non definita nel requisito; si valida l'assenza di errori e l'assenza di update."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-006.US03",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-006.US03.TC01",
+        "title": "Operatore visualizza elenco offerte valide recuperate dal Motore per cliente selezionato",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale operatore disponibile e integrato con Motore (direttamente o tramite layer intermedio)",
+          "Operatore autenticato e autorizzato ad accedere alla sezione offerte",
+          "Esiste un cliente valido 'CUST-12001' con almeno 1 offerta valida nel Motore e 1 offerta non valida/scaduta",
+          "Eventuali cache tra front-end e Motore sono disabilitate o note"
+        ],
+        "test_data": [
+          "Cliente: CUST-12001",
+          "Offerta valida: OFF-90001",
+          "Offerta scaduta: OFF-90002"
+        ],
+        "steps": [
+          "Accedere al front-end commerciale come operatore",
+          "Selezionare il cliente CUST-12001",
+          "Aprire la sezione 'Offerte' del cliente"
+        ],
+        "expected_results": [
+          "L'interfaccia mostra l'elenco delle offerte recuperate dai dati esposti dal Motore",
+          "Sono mostrate solo le offerte applicabili e in corso di validità (OFF-90001 presente, OFF-90002 assente)",
+          "Non sono mostrati dati di stato/validità in conflitto con quelli del Motore (coerenza del repository primario)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non descrive l'architettura di integrazione; il test verifica l'esito funzionale e la coerenza con quanto esposto dal Motore tramite evidenze (log chiamate/risposte o confronti con API Motore)."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC02",
+        "title": "Operatore vede aggiornamenti del Motore alla successiva acquisizione",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale operatore disponibile e integrato con Motore",
+          "Esiste un cliente valido 'CUST-12002' con offerta OFF-90003 visibile",
+          "È disponibile un modo controllato per aggiornare OFF-90003 sul Motore",
+          "Policy di refresh/acquisizione dal Motore nota (es. refresh manuale, riapertura schermata)"
+        ],
+        "test_data": [
+          "Cliente: CUST-12002",
+          "Offerta: OFF-90003",
+          "Aggiornamento: titolo da 'Promo Base' a 'Promo Premium'"
+        ],
+        "steps": [
+          "Selezionare il cliente CUST-12002 sul front-end operatore",
+          "Aprire la sezione offerte e rilevare il titolo corrente di OFF-90003",
+          "Aggiornare sul Motore il titolo di OFF-90003 secondo test data",
+          "Eseguire la 'successiva acquisizione' dal Motore (refresh o riapertura sezione secondo comportamento del front-end)",
+          "Verificare i dati mostrati per OFF-90003"
+        ],
+        "expected_results": [
+          "Alla successiva acquisizione, il front-end operatore visualizza il titolo aggiornato coerente con quanto restituito dal Motore",
+          "Non vengono mostrati contemporaneamente vecchi e nuovi valori per la stessa offerta (coerenza di visualizzazione)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Dipendenza: definire cosa costituisce 'successiva acquisizione' (refresh, polling, navigazione) e l'eventuale caching."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC03",
+        "title": "Dati necessari alla presentazione disponibili per ogni offerta visualizzata all'operatore",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale operatore disponibile e integrato con Motore",
+          "Sono disponibili le specifiche di integrazione con l'elenco dei campi necessari alla presentazione su canale operatore",
+          "Esiste un cliente valido 'CUST-12003' con offerta valida OFF-90004"
+        ],
+        "test_data": [
+          "Cliente: CUST-12003",
+          "Offerta: OFF-90004",
+          "Campi obbligatori attesi (esempi, da specifica): titolo, descrizione, condizioni, dataFineValidità, canaleProposta"
+        ],
+        "steps": [
+          "Selezionare il cliente CUST-12003 sul front-end operatore",
+          "Aprire la sezione offerte",
+          "Aprire il dettaglio (o tooltip/pannello) di OFF-90004 se previsto",
+          "Verificare la presenza e valorizzazione dei campi di presentazione richiesti"
+        ],
+        "expected_results": [
+          "Per OFF-90004 sono disponibili e visualizzabili i dati necessari alla presentazione previsti dalla specifica di integrazione",
+          "I dati visualizzati risultano coerenti con quelli restituiti dal Motore (stesso contenuto/valori, salvo formattazioni UI)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Necessarie specifiche di integrazione per determinare l'elenco campi e il mapping UI."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC04",
+        "title": "Cliente non identificabile o senza offerte: interfaccia operatore mostra lista vuota/nessuna offerta",
+        "type": "Negative",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Front-end commerciale operatore disponibile",
+          "Operatore autenticato",
+          "Esiste un identificativo cliente non presente 'CUST-99998' e un cliente valido 'CUST-12004' senza offerte valide"
+        ],
+        "test_data": [
+          "Cliente inesistente: CUST-99998",
+          "Cliente senza offerte: CUST-12004"
+        ],
+        "steps": [
+          "Selezionare il cliente CUST-99998 sul front-end operatore",
+          "Aprire la sezione offerte",
+          "Selezionare il cliente CUST-12004 sul front-end operatore",
+          "Aprire la sezione offerte"
+        ],
+        "expected_results": [
+          "Per CUST-99998 l'interfaccia gestisce l'assenza cliente/offerte senza crash e senza mostrare dati di altri clienti",
+          "Per CUST-12004 l'interfaccia mostra chiaramente che non ci sono offerte disponibili (lista vuota/placeholder) senza errori"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito non specifica messaggistica UI; il test valida la gestione funzionale e la non contaminazione dei dati."
+      },
+      {
+        "test_id": "REQ-I-006.US03.TC05",
+        "title": "Motore non disponibile: interfaccia operatore mostra errore gestito e non dati potenzialmente obsoleti",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Front-end commerciale operatore disponibile",
+          "È possibile simulare indisponibilità del Motore o del servizio di esposizione (timeout/errore 5xx)",
+          "Comportamento di cache non specificato nel requisito"
+        ],
+        "test_data": [
+          "Cliente: CUST-12005",
+          "Fault: Motore indisponibile (HTTP 503) o timeout 10s"
+        ],
+        "steps": [
+          "Simulare indisponibilità del Motore (o del servizio intermedio) per le chiamate di lettura offerte",
+          "Selezionare il cliente CUST-12005 sul front-end operatore",
+          "Aprire la sezione offerte"
+        ],
+        "expected_results": [
+          "L'interfaccia operatore visualizza un errore gestito (secondo comportamento applicativo) e non va in crash",
+          "Non vengono mostrati dati di offerte come se fossero aggiornati quando la lettura fallisce (es. lista vuota con indicazione di errore o stato 'non disponibile')"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "front-end commerciale"
+        ],
+        "notes": "Il requisito richiede di non mostrare dati incoerenti/obsoleti ma non definisce caching: necessario chiarire se è ammessa cache e come etichettare i dati."
+      }
+    ]
+  },
+  {
+    "story_id": "REQ-I-006.US04",
+    "test_cases": [
+      {
+        "test_id": "REQ-I-006.US04.TC01",
+        "title": "Cliente digitale visualizza elenco offerte valide ottenute dai dati esposti dal Motore (App e Web)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali digitali App e Web disponibili e integrati (direttamente o indirettamente) con i dati esposti dal Motore",
+          "Cliente autenticato (se richiesto dal canale) con profilo associato a 'CUST-13001'",
+          "Nel Motore esistono per CUST-13001 almeno 1 offerta valida e 1 offerta scaduta",
+          "Eventuali cache/TTL sono note o disabilitate per il test"
+        ],
+        "test_data": [
+          "Cliente: CUST-13001",
+          "Offerta valida: OFF-91001",
+          "Offerta scaduta: OFF-91002"
+        ],
+        "steps": [
+          "Accedere all'App come cliente associato a CUST-13001",
+          "Navigare al touchpoint che mostra le offerte",
+          "Verificare le offerte visualizzate",
+          "Accedere al Web come lo stesso cliente",
+          "Navigare al touchpoint che mostra le offerte",
+          "Verificare le offerte visualizzate"
+        ],
+        "expected_results": [
+          "Su App è visualizzata OFF-91001 e non è visualizzata OFF-91002",
+          "Su Web è visualizzata OFF-91001 e non è visualizzata OFF-91002",
+          "Le offerte visualizzate risultano coerenti con lo stato/validità determinati dal Motore (repository primario)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "I touchpoint digitali specifici non sono elencati nel requisito; il test va mappato alle schermate effettive di canale."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC02",
+        "title": "Cliente digitale vede aggiornamenti del Motore alla successiva lettura (App e Web)",
+        "type": "E2E",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali digitali App e Web disponibili e integrati con i dati del Motore",
+          "Cliente autenticato associato a 'CUST-13002'",
+          "Nel Motore esiste offerta OFF-91003 inizialmente valida e visibile",
+          "È disponibile un modo controllato per aggiornare dati/validità sul Motore",
+          "Policy di refresh/lettura e caching nota (o disabilitata)"
+        ],
+        "test_data": [
+          "Cliente: CUST-13002",
+          "Offerta: OFF-91003",
+          "Aggiornamento: rendere OFF-91003 non valida impostando fine validità a 2026-02-01T00:00:00Z"
+        ],
+        "steps": [
+          "Su App, aprire la sezione offerte e verificare che OFF-91003 sia presente",
+          "Aggiornare sul Motore la validità di OFF-91003 secondo test data",
+          "Su App, effettuare una successiva lettura (refresh/riapertura schermata)",
+          "Su Web, aprire la sezione offerte e verificare lo stato di OFF-91003",
+          "Su Web, effettuare una successiva lettura (refresh)"
+        ],
+        "expected_results": [
+          "Alla successiva lettura su App, OFF-91003 non è più mostrata perché non più valida, coerentemente con il Motore",
+          "Alla successiva lettura su Web, OFF-91003 non è più mostrata perché non più valida, coerentemente con il Motore"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Dipendenza: definire 'successiva acquisizione' e cache/TTL per evitare falsi negativi."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC03",
+        "title": "Dati necessari alla presentazione offerta presenti su canali digitali (contratto payload)",
+        "type": "Integration",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali digitali App e Web integrati con servizio che espone i dati del Motore",
+          "Sono disponibili specifiche di integrazione che definiscono i campi necessari alla presentazione su digitale",
+          "Cliente autenticato associato a 'CUST-13003' con offerta valida OFF-91004"
+        ],
+        "test_data": [
+          "Cliente: CUST-13003",
+          "Offerta: OFF-91004",
+          "Campi obbligatori attesi (esempi, da specifica): titolo, descrizione, dataFineValidità, condizioniSintetiche, idCampagna"
+        ],
+        "steps": [
+          "Su App, aprire la sezione offerte e selezionare OFF-91004",
+          "Verificare che i dati di presentazione richiesti siano visualizzati",
+          "Su Web, aprire la sezione offerte e selezionare OFF-91004",
+          "Verificare che i dati di presentazione richiesti siano visualizzati"
+        ],
+        "expected_results": [
+          "Su App, OFF-91004 mostra tutti i dati necessari alla presentazione previsti dalla specifica",
+          "Su Web, OFF-91004 mostra tutti i dati necessari alla presentazione previsti dalla specifica",
+          "I dati visualizzati sono coerenti con quanto restituito dal Motore (contenuto), salvo formattazioni UI"
+        ],
+        "traced_criteria": [
+          "AC-1",
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Necessarie specifiche di integrazione per determinare campi obbligatori e mapping UI; senza tali specifiche il test non è completamente automatizzabile."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC04",
+        "title": "Nessuna offerta valida: canale digitale comunica assenza offerte senza errori (App e Web)",
+        "type": "Functional",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Canali digitali App e Web disponibili",
+          "Cliente autenticato associato a 'CUST-13004'",
+          "Il Motore restituisce lista vuota di offerte valide per CUST-13004"
+        ],
+        "test_data": [
+          "Cliente: CUST-13004"
+        ],
+        "steps": [
+          "Su App, aprire la sezione offerte per CUST-13004",
+          "Su Web, aprire la sezione offerte per CUST-13004"
+        ],
+        "expected_results": [
+          "Su App, viene mostrata l'assenza di offerte senza errori applicativi",
+          "Su Web, viene mostrata l'assenza di offerte senza errori applicativi"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il testo/messaggio UI non è definito dal requisito; si valida assenza di errori e coerenza con lista vuota proveniente dal Motore."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC05",
+        "title": "Motore/servizio esposizione non disponibile: canali digitali gestiscono errore senza mostrare dati incoerenti",
+        "type": "Negative",
+        "priority": "HIGH",
+        "preconditions": [
+          "Canali digitali App e Web disponibili",
+          "È possibile simulare indisponibilità del Motore o del servizio di esposizione (timeout/5xx)",
+          "Comportamento di cache non definito nel requisito"
+        ],
+        "test_data": [
+          "Cliente: CUST-13005",
+          "Fault: HTTP 503 o timeout 10s"
+        ],
+        "steps": [
+          "Simulare indisponibilità del Motore/servizio esposizione per le chiamate di lettura offerte",
+          "Su App, aprire la sezione offerte per CUST-13005",
+          "Su Web, aprire la sezione offerte per CUST-13005"
+        ],
+        "expected_results": [
+          "Su App, l'errore è gestito senza crash e senza presentare come aggiornati dati non verificati",
+          "Su Web, l'errore è gestito senza crash e senza presentare come aggiornati dati non verificati",
+          "L'evento di errore è tracciato/loggato secondo standard del canale (se previsti)"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito non definisce se sia ammesso mostrare cache; il test verifica almeno che non vengano mostrati dati potenzialmente incoerenti come se fossero correnti."
+      },
+      {
+        "test_id": "REQ-I-006.US04.TC06",
+        "title": "Offerta che scade durante la sessione: alla successiva lettura non viene più mostrata",
+        "type": "Edge Case",
+        "priority": "MEDIUM",
+        "preconditions": [
+          "Canali digitali App e Web disponibili e integrati con dati del Motore",
+          "Cliente autenticato associato a 'CUST-13006'",
+          "Esiste nel Motore un'offerta OFF-91005 con scadenza imminente",
+          "È definito (o osservabile) il timestamp di valutazione della validità (system time o parametro) lungo la catena di integrazione"
+        ],
+        "test_data": [
+          "Cliente: CUST-13006",
+          "Offerta: OFF-91005",
+          "Fine validità: 2026-02-23T10:00:30Z",
+          "Istante prima lettura: 2026-02-23T10:00:00Z",
+          "Istante seconda lettura: 2026-02-23T10:01:00Z"
+        ],
+        "steps": [
+          "Su App, effettuare una prima lettura delle offerte prima della scadenza e verificare che OFF-91005 sia presente",
+          "Attendere fino a dopo la scadenza",
+          "Su App, effettuare una successiva lettura (refresh/riapertura)",
+          "Su Web, effettuare una lettura dopo la scadenza"
+        ],
+        "expected_results": [
+          "Prima della scadenza, OFF-91005 è mostrata",
+          "Dopo la scadenza, alla successiva lettura OFF-91005 non è più mostrata perché non più valida secondo il Motore",
+          "Il comportamento è coerente tra App e Web a parità di timestamp di valutazione"
+        ],
+        "traced_criteria": [
+          "AC-3"
+        ],
+        "channels": [
+          "App",
+          "Web"
+        ],
+        "notes": "Il requisito indica che il timestamp di valutazione è 'da definire': necessario allineamento per evitare divergenze tra canali o tra layer intermedi."
+      }
+    ]
+  }
+]

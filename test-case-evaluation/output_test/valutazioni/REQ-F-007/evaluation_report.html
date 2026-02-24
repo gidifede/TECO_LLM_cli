@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-007</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-007</h1>
+  <div class="subtitle">Generazione automatica con possibilità di editing e creazione da parte del marketing</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:32</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-007</div>
+  <div class="req-field"><strong>Titolo:</strong> Generazione automatica con possibilità di editing e creazione da parte del marketing</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Inteegrazione al REQ-F-006: la generazione delle descrizioni deve avvenire automaticamente, ma il team marketing deve poter intervenire: correggere le bozze generate, creare descrizioni completamente nuove da zero e gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela. Deve essere fornita un&#x27;interfaccia (dashboard) per queste operazioni con controllo delle versioni e assegnazione delle varianti.</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Il sistema genera automaticamente una bozza di descrizione per ogni suggerimento.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Il team marketing può aprire la bozza e modificarla tramite una dashboard di editing.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Il team marketing può creare descrizioni da zero e salvarle come nuove varianti.</td></tr>
+<tr><td class='ac-num'>AC-4</td><td>La dashboard supporta la gestione di versioni/varianti e l&#x27;assegnazione delle stesse a tipologie di offerta o cluster.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">68</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#dc2626">40</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC, ma il set direct resta piu aderente al requisito: ha una sola lacuna sostanziale (manca la verifica dell&#x27;uso della variante &#x27;in funzione&#x27; di tipologia/cluster) e introduce meno assunzioni non richieste. Il set indirect_persona, pur completo sugli AC, introduce molte regole aggiuntive (versioning automatico con storico, validazioni, conflitti di assegnazione, gestione fallimenti) e soprattutto non valida davvero AC-1 perché pone la bozza generata come precondizione invece di testare la generazione. Per questo il punteggio del direct (68) supera l&#x27;indirect_persona (40).</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">68</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">11</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">9</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-007.TC01</td><td>Introduce precondizioni non esplicitate: feature flag di abilitazione e disponibilità/raggiungibilità del servizio/engine di generazione; inoltre assume un canale specifico &#x27;web&#x27; e una UI di dettaglio suggerimento con sezione &#x27;Descrizione/Bozza&#x27;.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC01</td><td>Atteso aggiuntivo: bozza &#x27;identificabile come generata automaticamente&#x27; tramite flag/stato; il requisito non richiede un indicatore esplicito.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC02</td><td>Introduce autenticazione e ruolo utente &#x27;Marketing&#x27; come precondizione; il requisito cita &#x27;team marketing&#x27; ma non definisce ruoli/controlli accesso.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC04</td><td>Assume una specifica operazione di versioning (duplicazione/creazione nuova versione da variante esistente) non descritta dal requisito, che parla solo di &#x27;controllo delle versioni&#x27; e gestione varianti.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC07</td><td>Introduce una regola di autorizzazione esclusiva (utenti non marketing non possono modificare) e ruoli aggiuntivi &#x27;Sales/Viewer&#x27; non menzionati nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC08</td><td>Introduce validazioni di campo (testo descrizione obbligatorio, messaggio di validazione) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC09</td><td>Introduce gestione errori del servizio di generazione (timeout/503), segnalazione errore in UI e &#x27;fallback&#x27; manuale come comportamento atteso; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC10</td><td>Introduce vincolo/aspettativa di assenza duplicati nelle assegnazioni e che la variante resti modificabile dopo assegnazione; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.TC11</td><td>Assume la possibilità di &#x27;salvare la bozza modificata come variante&#x27; (conversione bozza-&gt;variante) come funzione specifica; il requisito non esplicita questo workflow.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Description: &quot;...gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela&quot;</td><td>I TC coprono assegnazione a tipologia e a cluster, ma non verificano esplicitamente che la selezione/uso della variante avvenga &#x27;in funzione&#x27; dei metadati (es. che per una determinata tipologia/cluster venga effettivamente selezionata la variante corretta in output/visualizzazione).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-007.TC05, REQ-F-007.TC06</td><td>Scenari molto simili: assegnazione variante tramite dashboard con stessi passi/attesi, cambia solo il target (tipologia vs cluster).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fee2e2;color:#dc2626">
+          <div class="score-value">40</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4/4</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">2</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 4/4 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-007.US01.TC01</td><td>Assume che la UI distingua bozza automatica vs varianti tramite etichetta/campo &#x27;origine&#x27;; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC03</td><td>Assume che ogni salvataggio di una descrizione generi automaticamente una nuova versione e mantenga uno storico consultabile; il requisito richiede &#x27;controllo delle versioni&#x27; ma non impone versioning automatico ad ogni salvataggio né uno storico consultabile in quei termini.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC04</td><td>Associa esplicitamente la variante creata da zero al singolo suggerimento (&#x27;nell’elenco descrizioni del suggerimento&#x27;); il requisito non specifica se le varianti siano per-suggerimento o globali/riusabili.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC08</td><td>Introduce una regola di accesso: &#x27;accesso negato alla dashboard per utente non autorizzato&#x27;; il requisito non definisce controlli di accesso/ruoli, solo che il team marketing deve poter operare.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC09</td><td>Introduce accesso diretto a risorse/endpoint e comportamento di sicurezza specifico; non presente nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC10</td><td>Introduce gestione fallimento generazione: dashboard segnala assenza bozza e impedisce editing; non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC11</td><td>Introduce requisito di fallback operativo in assenza bozza (creazione da zero comunque possibile); non specificato dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC12</td><td>Introduce validazioni (blocco salvataggio contenuto vuoto o solo spazi) non presenti nel requisito.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC13</td><td>Assume una regola: per assegnare una variante è obbligatorio valorizzare almeno uno tra tipologia e cluster; il requisito non lo dichiara.</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC14</td><td>Introduce gestione conflitti di assegnazione (segnalazione conflitto e risoluzione) e presuppone vincoli di unicità per combinazione tipologia+cluster; non specificato dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-1: &quot;Il sistema genera automaticamente una bozza di descrizione per ogni suggerimento.&quot;</td><td>Il set non testa la generazione automatica come evento/risultato del sistema (trigger), ma assume in precondizione che la bozza sia già stata generata. Manca un TC che verifichi che, dato un suggerimento, il sistema produca effettivamente la bozza.</td></tr>
+<tr><td class='mono'>Description: &quot;...gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela&quot;</td><td>Come nel set direct, i TC verificano l&#x27;assegnazione, ma non verificano esplicitamente l&#x27;effettivo utilizzo/selezione della variante corretta quando cambia tipologia/cluster.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-007.US01.TC06, REQ-F-007.US01.TC07</td><td>Scenari quasi identici di assegnazione variante, differisce solo il target (tipologia vs cluster).</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC08, REQ-F-007.US01.TC09</td><td>Entrambi testano non autorizzazione (accesso negato vs salvataggio negato) con forte sovrapposizione; il secondo è un approfondimento, ma resta parzialmente ridondante rispetto al requisito che non parla di autorizzazioni.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-007&quot;,
+  &quot;title&quot;: &quot;Generazione automatica con possibilità di editing e creazione da parte del marketing&quot;,
+  &quot;description&quot;: &quot;Inteegrazione al REQ-F-006: la generazione delle descrizioni deve avvenire automaticamente, ma il team marketing deve poter intervenire: correggere le bozze generate, creare descrizioni completamente nuove da zero e gestire diverse varianti/versioni in funzione del tipo di offerta o dei cluster di clientela. Deve essere fornita un&#x27;interfaccia (dashboard) per queste operazioni con controllo delle versioni e assegnazione delle varianti.&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Il sistema genera automaticamente una bozza di descrizione per ogni suggerimento.&quot;,
+    &quot;Il team marketing può aprire la bozza e modificarla tramite una dashboard di editing.&quot;,
+    &quot;Il team marketing può creare descrizioni da zero e salvarle come nuove varianti.&quot;,
+    &quot;La dashboard supporta la gestione di versioni/varianti e l&#x27;assegnazione delle stesse a tipologie di offerta o cluster.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 11 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-007.TC01</td><td>Generazione automatica della bozza di descrizione per un suggerimento</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-007.TC02</td><td>Modifica di una bozza generata tramite dashboard di editing e salvataggio</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-007.TC03</td><td>Creazione di una descrizione da zero e salvataggio come nuova variante</td><td>Functional</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-007.TC04</td><td>Gestione versioni/varianti: creazione di una nuova versione a partire da una variante esistente</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.TC05</td><td>Assegnazione di una variante a una tipologia di offerta</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.TC06</td><td>Assegnazione di una variante a un cluster di clientela</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.TC07</td><td>Autorizzazione: utente non Marketing non può modificare una bozza in dashboard</td><td>Authorization</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-007.TC08</td><td>Negativo: creazione descrizione da zero con testo mancante non consentita</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-007.TC09</td><td>Integration: generazione automatica fallita per servizio non disponibile e comportamento della dashboard</td><td>Integration</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-007.TC10</td><td>Edge case: assegnazione della stessa variante a tipologia e cluster senza duplicazioni</td><td>Edge Case</td><td>MEDIUM</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.TC11</td><td>E2E: da generazione automatica a modifica marketing e assegnazione variante a cluster</td><td>E2E</td><td>HIGH</td><td>AC-1, AC-2, AC-3, AC-4</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 14 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-007.US01.TC01</td><td>Visualizzazione bozza generata automaticamente per un suggerimento in dashboard</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC02</td><td>Apertura e modifica della bozza tramite dashboard (senza salvataggio)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC03</td><td>Salvataggio modifica su descrizione esistente con creazione di una nuova versione e mantenimento storico</td><td>Functional</td><td>HIGH</td><td>AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC04</td><td>Creazione descrizione da zero e salvataggio come nuova variante associata al suggerimento</td><td>Functional</td><td>HIGH</td><td>AC-3, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC05</td><td>Visualizzazione elenco versioni/varianti disponibili per un suggerimento con indicazione della versione</td><td>UI</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC06</td><td>Assegnazione di una variante a una tipologia di offerta</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC07</td><td>Assegnazione di una variante a un cluster di clientela</td><td>Functional</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC08</td><td>Accesso negato alla dashboard per utente non autorizzato</td><td>Authorization</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC09</td><td>Operazione di modifica/salvataggio negata a utente non autorizzato (accesso diretto a risorsa)</td><td>Authorization</td><td>HIGH</td><td>AC-2, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC10</td><td>Generazione automatica bozza fallita: dashboard segnala assenza bozza e impedisce editing della bozza</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-2</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC11</td><td>In assenza bozza automatica, creazione da zero consentita per Team Marketing</td><td>Functional</td><td>HIGH</td><td>AC-3, AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC12</td><td>Blocco salvataggio descrizione vuota o con soli spazi</td><td>Negative</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC13</td><td>Assegnazione variante senza tipologia e senza cluster: richiesta campi minimi</td><td>Negative</td><td>HIGH</td><td>AC-4</td></tr>
+<tr><td class='mono'>REQ-F-007.US01.TC14</td><td>Conflitto di assegnazione: più varianti assegnate alla stessa combinazione cluster/tipologia</td><td>Edge Case</td><td>HIGH</td><td>AC-4</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [4, 9, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [4, 10, 2, 2], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>

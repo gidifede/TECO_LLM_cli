@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valutazione coerenza &mdash; REQ-F-012</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f8fafc; color: #1e293b; line-height: 1.6;
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .header .subtitle { opacity: 0.85; font-size: 1.1rem; }
+  .header .meta { margin-top: 1rem; font-size: 0.85rem; opacity: 0.7; }
+  .header .meta span { margin-right: 1.5rem; }
+
+  .section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e3a5f;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .section h3 { font-size: 1.05rem; margin: 1.2rem 0 0.6rem; color: #475569; }
+
+  .req-field { margin-bottom: 0.6rem; }
+  .req-field strong { color: #475569; min-width: 100px; display: inline-block; }
+  .req-desc { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #2563eb; }
+
+  table.ac-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+  table.ac-table td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .ac-num { font-weight: 600; color: #2563eb; width: 60px; white-space: nowrap; }
+
+  /* Confronto */
+  .comparison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0; }
+  .comparison-card {
+    text-align: center; padding: 1.5rem; border-radius: 10px;
+    border: 2px solid #e2e8f0; position: relative;
+  }
+  .comparison-card.winner { border-color: #16a34a; background: #f0fdf4; }
+  .comparison-score { font-size: 3rem; font-weight: 800; }
+  .comparison-label { font-size: 0.9rem; color: #64748b; margin-top: 0.3rem; }
+  .winner-badge {
+    display: inline-block; background: #16a34a; color: white; font-size: 0.75rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px; vertical-align: middle; margin-left: 0.5rem;
+  }
+  .reasoning { background: #f1f5f9; padding: 1rem; border-radius: 6px;
+    margin-top: 1rem; font-style: italic; color: #475569; }
+
+  /* Set sections */
+  .set-section { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .set-header { display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem; }
+  .set-header h2 { border: none; padding: 0; margin: 0; }
+  .score-box {
+    text-align: center; padding: 0.8rem 1.5rem; border-radius: 10px; min-width: 100px;
+  }
+  .score-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 0.8rem; opacity: 0.7; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin: 1rem 0; }
+  .metric-card {
+    text-align: center; padding: 0.8rem; background: #f8fafc;
+    border-radius: 8px; border: 1px solid #e2e8f0;
+  }
+  .metric-num { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
+  .metric-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .progress-container { margin: 1rem 0; }
+  .progress-label { font-size: 0.85rem; color: #475569; margin-bottom: 0.3rem; }
+  .progress-bar { background: #e2e8f0; border-radius: 8px; height: 12px; overflow: hidden; }
+  .progress-fill { background: #2563eb; height: 100%; border-radius: 8px;
+    transition: width 0.5s ease; }
+
+  .uncovered { background: #fef2f2; padding: 0.8rem 1rem; border-radius: 6px;
+    margin: 0.8rem 0; border-left: 4px solid #dc2626; }
+  .uncovered ul { margin: 0.5rem 0 0 1.2rem; }
+  .uncovered li { font-size: 0.9rem; color: #7f1d1d; }
+
+  /* Tabelle dati */
+  table.data-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9rem; }
+  table.data-table th {
+    background: #f1f5f9; padding: 0.6rem 0.8rem; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0;
+  }
+  table.data-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f1f5f9; }
+  table.data-table tr:hover td { background: #f8fafc; }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; white-space: nowrap; }
+
+  .empty { color: #94a3b8; font-style: italic; padding: 0.5rem 0; }
+
+  /* Chart */
+  .chart-container { max-width: 600px; margin: 1.5rem auto; }
+
+  /* Input data */
+  .input-section { background: #fffbeb; border: 1px solid #fde68a; }
+  .input-section h2 { color: #92400e; border-color: #fde68a; }
+
+  /* Collapsible */
+  details { margin: 0.5rem 0; }
+  details summary {
+    cursor: pointer; font-weight: 600; color: #2563eb; padding: 0.5rem 0;
+    user-select: none;
+  }
+  details summary:hover { color: #1d4ed8; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Valutazione coerenza &mdash; REQ-F-012</h1>
+  <div class="subtitle">Configurazione pricing e parametri Connect per il bundle</div>
+  <div class="meta">
+    <span>Data: 23/02/2026 18:57</span>
+    <span>Modello: gpt-5.2</span>
+    <span>Set valutati: 2</span>
+  </div>
+</div>
+
+<!-- Requisito -->
+<div class="section">
+  <h2>Requisito</h2>
+  <div class="req-field"><strong>Codice:</strong> REQ-F-012</div>
+  <div class="req-field"><strong>Titolo:</strong> Configurazione pricing e parametri Connect per il bundle</div>
+  <div class="req-field"><strong>Categoria:</strong> FUNZIONALE</div>
+  <div class="req-field"><strong>Priorita:</strong> high</div>
+  <div class="req-desc">Il marketing deve poter configurare per ogni offerta bundle le regole di pricing, sconti e/o cashback, i punti Connect che si applicano all&#x27;intera offerta.
+(Per altriparametri associati al bundle si vedano i REQ-F-002/3/4/5/6/7/10/13)</div>
+  <h3>Acceptance Criteria</h3>
+  <table class="ac-table">
+    <tr><td class='ac-num'>AC-1</td><td>Esistere un&#x27;interfaccia per impostare pricing, punti, cashback e metadati di validità per ogni bundle.</td></tr>
+<tr><td class='ac-num'>AC-2</td><td>Supporto per regole temporali specifiche per clienti già possessori di prodotti.</td></tr>
+<tr><td class='ac-num'>AC-3</td><td>Ogni modifica è soggetta a log di configurazione con before/after.</td></tr>
+
+  </table>
+</div>
+
+<!-- Confronto -->
+<div class="section">
+  <h2>Confronto</h2>
+  <div class="comparison-grid">
+    
+    <div class="comparison-card winner">
+      <div class="comparison-score" style="color:#ca8a04">65</div>
+      <div class="comparison-label">Diretti (da Requisito)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#1</div>
+      <div class='winner-badge' style='margin-top:0.5rem'>&#9733; VINCITORE</div>
+    </div>
+    <div class="comparison-card ">
+      <div class="comparison-score" style="color:#ca8a04">56</div>
+      <div class="comparison-label">Indiretti Persona-based (da User Stories Persona)</div>
+      <div style='font-size:0.8rem;color:#64748b;margin-top:0.2rem'>#2</div>
+      
+    </div>
+  </div>
+  <div class="reasoning"><strong>Motivazione:</strong> Entrambi i set coprono tutti gli AC (AC-1/2/3). Tuttavia, il set direct introduce meno informazioni non tracciabili (6 added_info vs 8) e non presenta una lacuna esplicita su &#x27;sconto&#x27; (nel direct lo sconto è almeno esercitato in TC01/TC02). Il set indirect_persona aggiunge inoltre una business rule non richiesta (non sovrapposizione regole temporali in US01.TC07) e duplicazioni più marcate sull&#x27;audit log (US01.TC03 vs US01.TC08). Per questo il punteggio e la coerenza complessiva risultano migliori per &#x27;direct&#x27;.</div>
+
+  <div class="chart-container">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+</div>
+
+<!-- Sezioni set -->
+
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Diretti (da Requisito) <span class="winner-badge">&#9733; VINCITORE</span></h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">65</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">7</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">6</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-012.TC01</td><td>Assunzione di canale &#x27;web/backoffice&#x27; e disponibilità feature attiva; il requisito parla solo di &#x27;interfaccia&#x27; senza canale.</td></tr>
+<tr><td class='mono'>REQ-F-012.TC01</td><td>Introduzione di un ruolo/permessi (utente Marketing autenticato e abilitato) non esplicitati dal requisito (che cita solo &#x27;Il marketing deve poter...&#x27;).</td></tr>
+<tr><td class='mono'>REQ-F-012.TC04</td><td>Assume che i metadati di validità siano obbligatori e che il salvataggio sia bloccato se mancanti; il requisito richiede l&#x27;interfaccia per impostarli ma non la regola di obbligatorietà.</td></tr>
+<tr><td class='mono'>REQ-F-012.TC05</td><td>Assume una validazione specifica &#x27;data fine &gt; data inizio&#x27; e blocco salvataggio; non esplicitata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-012.TC06</td><td>Introduce RBAC/ruolo alternativo &#x27;CustomerCare&#x27; e comportamento accesso negato/sola lettura; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-012.TC07</td><td>Introduce architettura/integrazione con &#x27;audit/log service&#x27; (HTTP 500/timeout) e policy di comportamento in failure (hard/soft fail) non definite dal requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>Descrizione: &quot;regole di pricing, sconti e/o cashback&quot;</td><td>Copertura esplicita di &#x27;sconti e/o cashback&#x27; è parziale: alcuni TC usano sconto, altri cashback, ma non esiste un caso che verifichi chiaramente l&#x27;alternativa &#x27;solo sconto&#x27; vs &#x27;solo cashback&#x27; vs &#x27;entrambi&#x27; come opzioni supportate dall&#x27;interfaccia (il requisito usa &#x27;e/o&#x27;).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-012.TC05, REQ-F-012.TC04</td><td>Entrambi sono negativi sulla validità e sul blocco salvataggio; scenari diversi (mancanza vs incoerenza date) ma molto sovrapposti come flusso e oracolo (blocco + messaggio + niente log).</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="set-section">
+      <div class="set-header">
+        <h2>Indiretti Persona-based (da User Stories Persona) </h2>
+        <div class="score-box" style="background:#fef9c3;color:#ca8a04">
+          <div class="score-value">56</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Test Cases</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">3/3</div>
+          <div class="metric-label">AC coperti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">8</div>
+          <div class="metric-label">Info aggiunte</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Info mancanti</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1</div>
+          <div class="metric-label">Ridondanze</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-label">Copertura AC: 3/3 (100%)</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:100.0%"></div>
+        </div>
+      </div>
+      
+
+      <h3>Informazioni aggiunte</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test ID</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-012.US01.TC01</td><td>Asserzione che i punti Connect siano associati &#x27;non ai singoli prodotti&#x27; e che non esistano campi/associazioni per-prodotto in UI; il requisito dice solo che i punti si applicano all&#x27;intera offerta bundle, senza vincoli UI/assenza campi.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC01</td><td>Introduce &#x27;dashboard Marketing&#x27;, &#x27;servizio di persistenza&#x27; e &#x27;servizio logging/audit&#x27; come componenti espliciti; il requisito non descrive architettura né canale.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC03</td><td>Assume che il log mostri solo i campi modificati e che i non modificati siano assenti o before=after; il requisito richiede before/after ma non specifica granularità/filtraggio.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC04</td><td>Introduce un profilo specifico &#x27;viewer_marketing&#x27; in sola lettura e comportamenti di autorizzazione; non richiesto dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC05</td><td>Assume validazione cronologica (fine &lt; inizio) con blocco salvataggio; non esplicitata dal requisito.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC06</td><td>Assume comportamento &#x27;fail-closed&#x27; (nessuna persistenza senza audit/log) quando il logging è non disponibile; il requisito non definisce la policy di failure.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC07</td><td>Introduce una business rule di conflitto/sovrapposizione tra regole temporali possessori e blocco salvataggio; il requisito richiede supporto a regole temporali ma non vincoli di non-sovrapposizione.</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC08</td><td>Introduce considerazioni su audit asincrono e tempo massimo di attesa; non presenti nel requisito.</td></tr>
+</tbody>
+    </table>
+
+      <h3>Informazioni mancanti</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Fonte</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>AC-1: &quot;Esistere un&#x27;interfaccia per impostare pricing, punti, cashback e metadati di validità per ogni bundle.&quot;</td><td>Nessun TC verifica esplicitamente la configurazione di &#x27;sconto&#x27; (si testa cashback e pricing, ma lo &#x27;sconto&#x27; non viene mai impostato/validato in modo diretto).</td></tr>
+</tbody>
+    </table>
+
+      <h3>Ridondanze</h3>
+      
+    <table class="data-table">
+      <thead><tr><th>Test IDs</th><th>Dettaglio</th></tr></thead>
+      <tbody><tr><td class='mono'>REQ-F-012.US01.TC03, REQ-F-012.US01.TC08</td><td>Entrambi testano audit log before/after su modifica di configurazione; differiscono per numero campi ma scenario e oracolo sono sostanzialmente duplicati.</td></tr>
+</tbody>
+    </table>
+    </div>
+
+<!-- Dati di input inviati al modello -->
+<div class="section input-section">
+  <h2>Dati di input inviati al modello</h2>
+  <p style="color:#92400e;font-size:0.9rem;margin-bottom:1rem;">
+    Questi sono i dati esatti sottomessi al modello per la valutazione di coerenza.
+  </p>
+
+  <details>
+    <summary>Requisito originale (JSON)</summary>
+    <pre style="background:#fef3c7;padding:1rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;margin-top:0.5rem">{
+  &quot;code&quot;: &quot;REQ-F-012&quot;,
+  &quot;title&quot;: &quot;Configurazione pricing e parametri Connect per il bundle&quot;,
+  &quot;description&quot;: &quot;Il marketing deve poter configurare per ogni offerta bundle le regole di pricing, sconti e/o cashback, i punti Connect che si applicano all&#x27;intera offerta.\n(Per altriparametri associati al bundle si vedano i REQ-F-002/3/4/5/6/7/10/13)&quot;,
+  &quot;category&quot;: &quot;FUNZIONALE&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;acceptance_criteria&quot;: [
+    &quot;Esistere un&#x27;interfaccia per impostare pricing, punti, cashback e metadati di validità per ogni bundle.&quot;,
+    &quot;Supporto per regole temporali specifiche per clienti già possessori di prodotti.&quot;,
+    &quot;Ogni modifica è soggetta a log di configurazione con before/after.&quot;
+  ]
+}</pre>
+  </details>
+
+  
+  <details>
+    <summary>Diretti (da Requisito) &mdash; 7 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-012.TC01</td><td>Creazione configurazione pricing/punti/cashback e validità per un bundle (happy path)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC02</td><td>Modifica configurazione esistente e verifica log before/after</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC03</td><td>Configurazione regola temporale dedicata a clienti già possessori di prodotti (in finestra di validità)</td><td>Functional</td><td>HIGH</td><td>AC-1, AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC04</td><td>Validazione campi obbligatori: tentativo di salvataggio senza metadati di validità</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC05</td><td>Edge case validità: data fine antecedente alla data inizio</td><td>Edge Case</td><td>MEDIUM</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC06</td><td>Autorizzazioni: utente non Marketing non può accedere/modificare la configurazione bundle</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.TC07</td><td>Integrazione: indisponibilità del servizio di audit/log impedisce salvataggio o segnala errore coerente</td><td>Integration</td><td>HIGH</td><td>AC-3, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+  <details>
+    <summary>Indiretti Persona-based (da User Stories Persona) &mdash; 8 TC inviati</summary>
+    
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Test ID</th><th>Titolo</th><th>Tipo</th><th>Priorita</th><th>Criteri tracciati</th>
+        </tr>
+      </thead>
+      <tbody><tr><td class='mono'>REQ-F-012.US01.TC01</td><td>Configurazione completa per-bundle di pricing, punti Connect, cashback/sconti e metadati di validità (salvataggio riuscito)</td><td>Functional</td><td>HIGH</td><td>AC-1</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC02</td><td>Definizione regola temporale per clienti già possessori con finestra di validità dedicata (salvataggio riuscito)</td><td>Functional</td><td>HIGH</td><td>AC-2</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC03</td><td>Audit log: salvataggio modifica genera record con before/after per i soli campi modificati</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC04</td><td>Autorizzazioni: utente senza permesso non può modificare/salvare configurazione bundle</td><td>Authorization</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC05</td><td>Validazione metadati di validità: data fine precedente alla data inizio blocca il salvataggio</td><td>Negative</td><td>HIGH</td><td>AC-1, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC06</td><td>Servizio audit/log non disponibile: il salvataggio non viene confermato e viene mostrato errore</td><td>Integration</td><td>HIGH</td><td>AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC07</td><td>Conflitto regole temporali possessori: periodo sovrapposto ad altra regola dello stesso bundle impedisce il salvataggio</td><td>Edge Case</td><td>MEDIUM</td><td>AC-2, AC-3</td></tr>
+<tr><td class='mono'>REQ-F-012.US01.TC08</td><td>Audit log: modifica multipla include before/after per ciascun campo modificato (pricing, punti, validità)</td><td>Integration</td><td>MEDIUM</td><td>AC-3, AC-1</td></tr>
+</tbody>
+    </table>
+  </details>
+</div>
+
+<script>
+const chartData = {"labels": ["AC coperti", "Info aggiunte", "Info mancanti", "Ridondanze"], "datasets": [{"label": "Diretti (da Requisito)", "data": [3, 6, 1, 1], "backgroundColor": "rgba(22, 163, 74, 0.7)", "borderColor": "rgba(22, 163, 74, 1)", "borderWidth": 1}, {"label": "Indiretti Persona-based (da User Stories Persona)", "data": [3, 8, 1, 1], "backgroundColor": "rgba(168, 85, 247, 0.7)", "borderColor": "rgba(168, 85, 247, 1)", "borderWidth": 1}]};
+new Chart(document.getElementById('comparisonChart'), {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: chartData.datasets,
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Confronto metriche',
+        font: { size: 14 },
+      },
+      legend: { position: 'bottom' },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+      },
+    },
+  },
+});
+</script>
+
+</body>
+</html>
