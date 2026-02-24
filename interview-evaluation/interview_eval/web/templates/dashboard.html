@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Dashboard — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Riepilogo di tutte le run per combinazione prompt / modello</p>
+</div>
+
+{% if not data %}
+<div class="empty-state card">
+  <p>Nessuna run trovata.</p>
+  <p class="text-sm text-muted mt-1">Avvia una <a href="/pipeline">nuova pipeline</a> per iniziare.</p>
+</div>
+{% else %}
+
+{% for key, scenarios in data.items() %}
+<div class="card mb-2">
+  <h3 style="margin-bottom:1rem;">{{ key[0] }} / <span style="color:var(--blue)">{{ key[1] }}</span></h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Conv</th>
+        <th>Reqs</th>
+        <th>Eval</th>
+        <th>Score</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sid, info in scenarios.items()|sort %}
+      <tr>
+        <td>{{ sid }}</td>
+        <td>{{ info.conv }}</td>
+        <td>{{ info.reqs }}</td>
+        <td>{{ info.evals }}</td>
+        <td>
+          {% if info.score is not none %}
+            {% if info.score >= 4.0 %}
+              <span class="score score-green">{{ "%.1f"|format(info.score) }}</span>
+            {% elif info.score >= 2.5 %}
+              <span class="score score-amber">{{ "%.1f"|format(info.score) }}</span>
+            {% else %}
+              <span class="score score-red">{{ "%.1f"|format(info.score) }}</span>
+            {% endif %}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if info.evals > 0 %}
+          <a href="/evaluations/detail?path={{ key[0] }}/{{ key[1] }}/evaluations/{{ sid }}" class="btn btn-sm btn-secondary">Dettaglio</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

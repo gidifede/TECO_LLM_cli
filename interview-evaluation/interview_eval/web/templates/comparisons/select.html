@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set active_page = 'comparisons' %}
+{% block title %}Confronta Valutazioni — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Confronta Valutazioni</h1>
+  <p>Seleziona due valutazioni per generare un confronto HTML</p>
+</div>
+
+{# --- Lista confronti esistenti --- #}
+{% if existing_comparisons %}
+<div class="card mb-2">
+  <h3 style="margin-bottom:0.75rem">Confronti precedenti</h3>
+  <table>
+    <thead>
+      <tr><th>File</th><th>Data</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for name, mtime in existing_comparisons %}
+      <tr>
+        <td>{{ name }}</td>
+        <td class="text-muted text-sm">{{ mtime }}</td>
+        <td><a href="/comparisons/view/{{ name }}" class="btn btn-sm btn-secondary" target="_blank">Apri</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{# --- Form nuovo confronto --- #}
+{% if evaluations|length < 2 %}
+<div class="alert alert-info">
+  Servono almeno 2 valutazioni per un confronto (trovate: {{ evaluations|length }}).
+  <a href="/pipeline">Avvia una pipeline</a> per generare valutazioni.
+</div>
+{% else %}
+
+<form method="post" action="/comparisons" class="card">
+  <div class="grid grid-2">
+    <div class="form-group">
+      <label for="eval_a">Valutazione A</label>
+      <select name="eval_a_idx" id="eval_a" required>
+        {% for fp, d, pl, md in evaluations %}
+        {% set run_n = fp.stem.split('_')[0] %}
+        {% set sid = d.get('scenario_id', fp.parent.name) %}
+        {% set overall = d.get('overall_score', '?') %}
+        <option value="{{ loop.index0 }}">[{{ pl }}/{{ md }}] {{ sid }} #{{ run_n }} — overall: {{ overall }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="eval_b">Valutazione B</label>
+      <select name="eval_b_idx" id="eval_b" required>
+        {% for fp, d, pl, md in evaluations %}
+        {% set run_n = fp.stem.split('_')[0] %}
+        {% set sid = d.get('scenario_id', fp.parent.name) %}
+        {% set overall = d.get('overall_score', '?') %}
+        <option value="{{ loop.index0 }}" {% if loop.index0 == 1 %}selected{% endif %}>[{{ pl }}/{{ md }}] {{ sid }} #{{ run_n }} — overall: {{ overall }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Genera Confronto</button>
+</form>
+
+{% endif %}
+{% endblock %}

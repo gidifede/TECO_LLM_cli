@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set active_page = 'scenarios' %}
+{% block title %}{{ 'Modifica' if scenario else 'Nuovo' }} Scenario — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ 'Modifica' if scenario else 'Nuovo' }} Scenario</h1>
+</div>
+
+<form method="post" action="{{ '/scenarios/' + scenario.id if scenario else '/scenarios' }}" class="card">
+  <div class="form-group">
+    <label for="id">ID (identificativo univoco, senza spazi)</label>
+    <input type="text" name="id" id="id" value="{{ scenario.id if scenario else '' }}" {% if scenario %}readonly{% endif %} required pattern="[a-zA-Z0-9_-]+">
+  </div>
+  <div class="form-group">
+    <label for="name">Nome</label>
+    <input type="text" name="name" id="name" value="{{ scenario.name if scenario else '' }}" required>
+  </div>
+  <div class="form-group">
+    <label for="topic">Topic</label>
+    <input type="text" name="topic" id="topic" value="{{ scenario.get('topic', '') if scenario else '' }}">
+  </div>
+  <div class="form-group">
+    <label for="project_idea">Idea Progetto</label>
+    <textarea name="project_idea" id="project_idea" required>{{ scenario.get('project_idea', '') if scenario else '' }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">{{ 'Salva Modifiche' if scenario else 'Crea Scenario' }}</button>
+  <a href="/scenarios" class="btn btn-secondary" style="margin-left:0.5rem">Annulla</a>
+</form>
+{% endblock %}

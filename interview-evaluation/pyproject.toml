@@ -10,10 +10,15 @@ requires-python = ">=3.10"
 dependencies = [
     "openai>=1.30.0",
     "python-dotenv>=1.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.9",
 ]
 
 [project.scripts]
 interview-evaluator = "interview_eval.interactive:main"
+interview-evaluator-web = "interview_eval.web.app:main"
 
 [tool.setuptools.packages.find]
 include = ["interview_eval*"]

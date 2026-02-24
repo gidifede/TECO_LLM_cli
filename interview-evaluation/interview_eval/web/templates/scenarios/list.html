@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% set active_page = 'scenarios' %}
+{% block title %}Scenari — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Scenari</h1>
+  <p>Gestione scenari per la simulazione di interviste</p>
+</div>
+
+<div style="margin-bottom:1.5rem">
+  <a href="/scenarios/new" class="btn btn-primary">Nuovo Scenario</a>
+</div>
+
+{% if not scenarios %}
+<div class="empty-state card">
+  <p>Nessuno scenario trovato.</p>
+  <p class="text-sm text-muted mt-1">Crea il primo scenario per iniziare.</p>
+</div>
+{% else %}
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Topic</th>
+        <th>Idea progetto</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in scenarios %}
+      <tr>
+        <td><code>{{ s.id }}</code></td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.get('topic', '') }}</td>
+        <td class="text-sm text-muted">{{ s.get('project_idea', '')[:80] }}{% if s.get('project_idea', '')|length > 80 %}...{% endif %}</td>
+        <td style="white-space:nowrap">
+          <a href="/scenarios/{{ s.id }}/edit" class="btn btn-sm btn-secondary">Modifica</a>
+          <form method="post" action="/scenarios/{{ s.id }}/delete" style="display:inline" onsubmit="event.preventDefault(); confirmDelete(this, '{{ s.name }}')">
+            <button type="submit" class="btn btn-sm btn-danger">Elimina</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
+{% endblock %}

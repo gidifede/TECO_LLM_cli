@@ -1,6 +1,6 @@
 # Interview Evaluator
 
-CLI per la **simulazione automatica** di interviste di raccolta requisiti, l'**estrazione dei requisiti** dalla conversazione e la **valutazione qualitativa** dei requisiti estratti.
+CLI e interfaccia web per la **simulazione automatica** di interviste di raccolta requisiti, l'**estrazione dei requisiti** dalla conversazione e la **valutazione qualitativa** dei requisiti estratti.
 
 ## Obiettivo
 
@@ -78,7 +78,7 @@ Le due history sono **indipendenti ma intrecciate**: per l'Interviewer le rispos
 
 ```
 interview-evaluation/
-├── pyproject.toml                     # Build config, entry point CLI
+├── pyproject.toml                     # Build config, entry point CLI + web
 ├── README.md
 ├── interview_eval/
 │   ├── __init__.py
@@ -88,13 +88,38 @@ interview-evaluation/
 │   ├── chat_simulator.py              # Orchestratore conversazione multi-turn
 │   ├── requirements_extraction.py     # Estrazione requisiti da conversazione
 │   ├── evaluation.py                  # Valutazione qualità requisiti estratti
+│   ├── comparison.py                  # Generazione HTML confronto A/B valutazioni
+│   ├── services.py                    # Service layer condiviso (logica di business)
 │   ├── interactive.py                 # CLI entry point (shell interattiva)
-│   └── prompts/
-│       ├── interviewers/              # Prompt Interviewer versionati
-│       │   └── interviewer_latest.md  # Prompt Interviewer corrente (da Storyteller)
-│       ├── stakeholder.md             # Prompt Stakeholder topic-guided
-│       ├── requirements.md            # Prompt estrazione requisiti (da requirements_latest)
-│       └── evaluator.md               # Prompt Evaluator (qualità requisiti)
+│   ├── prompts/
+│   │   ├── interviewers/              # Prompt Interviewer versionati
+│   │   │   └── interviewer_latest.md  # Prompt Interviewer corrente (da Storyteller)
+│   │   ├── stakeholder.md             # Prompt Stakeholder topic-guided
+│   │   ├── requirements.md            # Prompt estrazione requisiti (da requirements_latest)
+│   │   └── evaluator.md              # Prompt Evaluator (qualità requisiti)
+│   └── web/                           # Interfaccia web (FastAPI + Jinja2)
+│       ├── app.py                     # FastAPI app factory + entry point
+│       ├── dependencies.py            # Config condivisa, DI
+│       ├── jobs.py                    # Gestione job background (pipeline/step)
+│       ├── routers/
+│       │   ├── dashboard.py           # GET /
+│       │   ├── pipeline.py            # GET/POST /pipeline
+│       │   ├── steps.py               # GET/POST /steps/{type}
+│       │   ├── scenarios.py           # CRUD /scenarios
+│       │   ├── comparisons.py         # GET/POST /comparisons
+│       │   ├── evaluations.py         # GET /evaluations/detail
+│       │   └── api.py                 # GET /api/jobs/{id} (JSON polling)
+│       ├── templates/                 # Template Jinja2
+│       │   ├── base.html
+│       │   ├── dashboard.html
+│       │   ├── pipeline/
+│       │   ├── steps/
+│       │   ├── scenarios/
+│       │   ├── comparisons/
+│       │   └── evaluations/
+│       └── static/
+│           ├── css/style.css
+│           └── js/app.js
 ├── scenarios/
 │   └── example_scenario.json          # Scenario di esempio (e-commerce)
 └── output_test/                       # Output generato (gerarchia per confronto A/B)
@@ -127,6 +152,8 @@ pip install -e TECO_LLM_cli/interview-evaluation/
 # Opzione 3: imposta la variabile DOTENV_PATH
 ```
 
+Le dipendenze installate includono `fastapi`, `uvicorn`, `jinja2` e `python-multipart` per l'interfaccia web.
+
 ### File `.env`
 
 ```env
@@ -138,33 +165,35 @@ AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.2
 
 ## Utilizzo
 
-### Avvio della shell interattiva
+Il progetto offre due modalità di utilizzo: una **CLI interattiva** e un'**interfaccia web**.
+
+### CLI — Shell interattiva
 
 ```bash
 interview-evaluator
 ```
 
-### Menu principale
+#### Menu principale
 
 ```
 Menu principale:
-  1. Simula intervista
-  2. Estrai requisiti (da conversazione salvata)
-  3. Valuta requisiti (da requisiti estratti)
-  4. Pipeline completa (Simula → Estrai → Valuta)
+  1. Nuova pipeline (Simula → Estrai → Valuta)
+  2. Stato run
+  3. Confronta valutazioni
+  4. Step singolo
   5. Impostazioni
   6. Esci
 ```
 
 | Opzione | Cosa fa |
 |---|---|
-| **Simula intervista** | Seleziona scenario e prompt interviewer, esegue la simulazione multi-turn con stakeholder topic-guided, salva in `output_test/{prompt}/{model}/conversations/` |
-| **Estrai requisiti** | Seleziona una conversazione salvata (da qualsiasi combinazione prompt/modello), estrae i requisiti via prompt `requirements_latest`, salva in `output_test/{prompt}/{model}/requirements/` |
-| **Valuta requisiti** | Seleziona un file requisiti, valuta qualità/quantità/maturità con rubrica per-requisito, salva in `output_test/{prompt}/{model}/evaluations/` |
-| **Pipeline completa** | Seleziona scenario e prompt interviewer, esegue Simula → Estrai → Valuta in sequenza |
-| **Impostazioni** | Cambio modello LLM, livello log (verbose/info), pulizia output |
+| **Nuova pipeline** | Seleziona scenario, prompt interviewer e modelli per ogni fase, esegue Simula → Estrai → Valuta in sequenza |
+| **Stato run** | Dashboard testuale con conteggi e score per ogni combinazione prompt/modello/scenario |
+| **Confronta valutazioni** | Seleziona 2 valutazioni e genera un report HTML di confronto A/B |
+| **Step singolo** | Esegue un singolo step (Simula / Estrai / Valuta) su dati esistenti |
+| **Impostazioni** | Livello log (verbose/info), pulizia output |
 
-### Argomenti CLI
+#### Argomenti CLI
 
 ```
 --scenarios-dir    Directory scenari (default: scenarios/)
@@ -179,6 +208,57 @@ Esempio:
 ```bash
 interview-evaluator --env-file ../test-case-evaluation/.env --deployment gpt-5.1
 ```
+
+### Web — Interfaccia browser
+
+```bash
+interview-evaluator-web
+```
+
+Oppure:
+
+```bash
+python -m interview_eval.web.app
+```
+
+Il server si avvia su `http://127.0.0.1:8000/` (default). Aprire l'indirizzo nel browser.
+
+#### Argomenti web server
+
+```
+--host             Host di ascolto (default: 127.0.0.1)
+--port             Porta (default: 8000)
+--env-file         File .env custom
+--deployment       Deployment Azure OpenAI (override del .env)
+--scenarios-dir    Directory scenari (default: scenarios/)
+--output-dir       Directory output (default: ./output_test)
+```
+
+Esempio:
+
+```bash
+interview-evaluator-web --port 8080 --env-file ../test-case-evaluation/.env
+```
+
+#### Pagine disponibili
+
+| Pagina | URL | Descrizione |
+|---|---|---|
+| **Dashboard** | `/` | Riepilogo di tutte le run per combinazione prompt/modello, con conteggi e score colorati |
+| **Pipeline** | `/pipeline` | Form per lanciare una pipeline completa (Simula → Estrai → Valuta) con scelta di scenario, prompt interviewer e modello per ogni fase. Mostra il progresso in tempo reale |
+| **Step Singolo** | `/steps/simulate` | Form per eseguire step singoli (Simula, Estrai, Valuta) su dati nuovi o esistenti |
+| **Scenari** | `/scenarios` | Gestione CRUD degli scenari (lista, crea, modifica, elimina) |
+| **Confronta** | `/comparisons` | Selezione di 2 valutazioni per generare un report HTML di confronto A/B. Lista dei confronti già generati |
+| **Dettaglio** | `/evaluations/detail?path=...` | Dettaglio di una singola valutazione con score card, radar chart (qualità), bar chart (maturità), tabella quantità, lineage, punti di forza e debolezze |
+
+#### Funzionamento job in background
+
+Le operazioni LLM (pipeline e step singoli) vengono eseguite in **background** tramite un thread pool (max 2 worker). Dopo l'avvio, il browser mostra una pagina di stato con:
+- **Barra di progresso** a 3 step (simulazione, estrazione, valutazione)
+- **Log testuale** progressivo
+- **Auto-polling** ogni 2 secondi via JavaScript
+
+Al completamento, viene mostrato il link al risultato (valutazione o dettaglio).
 
 ## Scenari
 
@@ -382,6 +462,18 @@ Copia del prompt `requirements_latest.txt` di produzione dal progetto `TECO_LLM_
 ### Evaluator (`prompts/evaluator.md`)
 
 Valuta qualità, quantità e maturità dei **requisiti estratti** (non della conversazione). Riceve i requisiti, la `project_idea` e il `topic`, e applica una rubrica per-requisito (scala 1-5) su 4 assi di qualità + 4 dimensioni di maturità. Produce un JSON strutturato con overall_score, quality_score, maturity_score, dettaglio per-requisito, punti di forza e debolezze. Pensato per il confronto A/B tra interviste sullo stesso topic.
+
+## Architettura software
+
+Il progetto segue un'architettura a 3 livelli:
+
+| Livello | File | Responsabilità |
+|---|---|---|
+| **Service layer** | `services.py` | Logica di business pura (caricamento dati, scansione artefatti, orchestrazione LLM, aggregazione dashboard). Nessuna dipendenza di presentazione |
+| **CLI** | `interactive.py` | Shell interattiva che usa `services.py` aggiungendo presentazione console (colori ANSI, menu, input) |
+| **Web** | `web/` | Interfaccia browser (FastAPI + Jinja2) che usa `services.py` aggiungendo routing HTTP, template HTML e job background |
+
+CLI e web condividono lo stesso service layer e producono output nella stessa gerarchia `output_test/`. I dati generati da una modalità sono immediatamente visibili dall'altra.
 
 ## Relazione con il progetto esistente
 

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% set active_page = 'pipeline' %}
+{% block title %}Pipeline in corso — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Pipeline in corso</h1>
+  <p id="job-status-text">{{ job.current_step or 'In attesa...' }}</p>
+</div>
+
+<div class="progress-container">
+  <div class="progress-steps">
+    <div class="progress-step {% if job.status in ['step_1'] %}active{% elif job.status in ['step_2','step_3','completed'] %}done{% elif job.status == 'error' and step_idx == 0 %}error{% endif %}">
+      1. Simulazione
+    </div>
+    <div class="progress-step {% if job.status == 'step_2' %}active{% elif job.status in ['step_3','completed'] %}done{% elif job.status == 'error' and step_idx == 1 %}error{% endif %}">
+      2. Estrazione
+    </div>
+    <div class="progress-step {% if job.status == 'step_3' %}active{% elif job.status == 'completed' %}done{% elif job.status == 'error' and step_idx == 2 %}error{% endif %}">
+      3. Valutazione
+    </div>
+  </div>
+</div>
+
+<div class="progress-log" id="progress-log">
+  {% for entry in job.progress %}
+  <div class="log-entry">&gt; {{ entry }}</div>
+  {% endfor %}
+</div>
+
+<div id="job-result" style="display:none; margin-top:1.5rem;"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  pollJobStatus('{{ job.id }}');
+</script>
+{% endblock %}

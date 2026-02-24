@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Valutazione — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dettaglio Valutazione</h1>
+  <p>{{ eval_label }}</p>
+</div>
+
+{% if not evaluation %}
+<div class="alert alert-danger">Valutazione non trovata.</div>
+{% else %}
+
+{# --- Score card --- #}
+<div class="grid grid-3 mb-2">
+  <div class="card" style="text-align:center">
+    <div class="text-sm text-muted">Overall</div>
+    <div class="score-big {% if evaluation.overall_score >= 4 %}score-green{% elif evaluation.overall_score >= 2.5 %}score-amber{% else %}score-red{% endif %}">
+      {{ "%.1f"|format(evaluation.overall_score|default(0)) }}<span style="font-size:1rem;font-weight:400">/5.0</span>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div class="text-sm text-muted">Quality</div>
+    {% set qs = evaluation.get('quality', {}).get('quality_score', 0) %}
+    <div class="score-big {% if qs >= 4 %}score-green{% elif qs >= 2.5 %}score-amber{% else %}score-red{% endif %}">
+      {{ "%.1f"|format(qs) }}<span style="font-size:1rem;font-weight:400">/5.0</span>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <div class="text-sm text-muted">Maturity</div>
+    {% set ms = evaluation.get('maturity', {}).get('maturity_score', 0) %}
+    <div class="score-big {% if ms >= 4 %}score-green{% elif ms >= 2.5 %}score-amber{% else %}score-red{% endif %}">
+      {{ "%.1f"|format(ms) }}<span style="font-size:1rem;font-weight:400">/5.0</span>
+    </div>
+  </div>
+</div>
+
+{# --- Lineage --- #}
+{% set lineage = evaluation.get('lineage', {}) %}
+{% set interview = lineage.get('interview') or {} %}
+<div class="card mb-2">
+  <h3 style="margin-bottom:0.75rem">Catena di produzione</h3>
+  <table>
+    <tr><th>Parametro</th><th>Valore</th></tr>
+    <tr><td>Prompt interviewer</td><td>{{ interview.get('interviewer_prompt', '-') }}</td></tr>
+    <tr><td>Modello intervista</td><td>{{ interview.get('interviewer_model', '-') }}</td></tr>
+    <tr><td>Modello estrazione</td><td>{{ lineage.get('extraction_model', '-') }}</td></tr>
+    <tr><td>Modello valutazione</td><td>{{ evaluation.get('evaluation_model', '-') }}</td></tr>
+    <tr><td>Turni</td><td>{{ interview.get('total_turns', '-') }}</td></tr>
+    <tr><td>Token totali</td><td>{{ interview.get('total_tokens', '-') }}</td></tr>
+    {% if interview.get('avg_turn_time') is not none %}
+    <tr><td>Tempo medio turno</td><td>{{ "%.1f"|format(interview.avg_turn_time) }}s</td></tr>
+    <tr><td>Tempo interviewer</td><td>{{ "%.1f"|format(interview.get('avg_interviewer_time', 0)) }}s</td></tr>
+    <tr><td>Tempo stakeholder</td><td>{{ "%.1f"|format(interview.get('avg_stakeholder_time', 0)) }}s</td></tr>
+    {% endif %}
+  </table>
+</div>
+
+{# --- Charts --- #}
+<div class="grid grid-2 mb-2">
+  <div class="chart-container">
+    <h3 style="margin-bottom:0.75rem">Qualit&agrave; — Radar</h3>
+    <canvas id="radarChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <h3 style="margin-bottom:0.75rem">Maturit&agrave; — Barre</h3>
+    <canvas id="barChart"></canvas>
+  </div>
+</div>
+
+{# --- Quantity --- #}
+{% set qty = evaluation.get('quantity', {}) %}
+{% if qty %}
+<div class="card mb-2">
+  <h3 style="margin-bottom:0.75rem">Quantit&agrave;</h3>
+  <div class="grid grid-3">
+    <div><span class="text-muted text-sm">Requisiti totali</span><br><strong>{{ qty.get('total_requirements', '-') }}</strong></div>
+    <div><span class="text-muted text-sm">Categorie distinte</span><br><strong>{{ qty.get('distinct_categories', '-') }}</strong></div>
+    <div><span class="text-muted text-sm">Criteri accettazione</span><br><strong>{{ qty.get('total_acceptance_criteria', '-') }}</strong></div>
+  </div>
+  {% set by_cat = qty.get('by_category', {}) %}
+  {% if by_cat %}
+  <table style="margin-top:1rem">
+    <tr><th>Categoria</th><th>N</th></tr>
+    {% for cat, count in by_cat.items()|sort %}
+    {% if count > 0 %}
+    <tr><td>{{ cat }}</td><td>{{ count }}</td></tr>
+    {% endif %}
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+{% endif %}
+
+{# --- Strengths / Weaknesses --- #}
+<div class="grid grid-2 mb-2">
+  <div class="card">
+    <h3 style="color:var(--green);margin-bottom:0.5rem">Punti di forza</h3>
+    <ul>
+      {% for s in evaluation.get('strengths', []) %}
+      <li>{{ s }}</li>
+      {% else %}
+      <li class="text-muted">—</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--amber);margin-bottom:0.5rem">Debolezze</h3>
+    <ul>
+      {% for w in evaluation.get('weaknesses', []) %}
+      <li>{{ w }}</li>
+      {% else %}
+      <li class="text-muted">—</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if evaluation %}
+<script>
+(function() {
+  const qual = {{ evaluation.get('quality', {})|tojson }};
+  const mat = {{ evaluation.get('maturity', {})|tojson }};
+
+  // Radar — Quality
+  const radarLabels = ['Specificita titolo', 'Completezza descrizione', 'Qualita criteri', 'Pertinenza topic'];
+  const radarData = [
+    qual.avg_specificita_titolo || 0,
+    qual.avg_completezza_descrizione || 0,
+    qual.avg_qualita_criteri || 0,
+    qual.avg_pertinenza_topic || 0,
+  ];
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: radarLabels,
+      datasets: [{
+        label: 'Quality',
+        data: radarData,
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59,130,246,0.2)',
+        pointBackgroundColor: '#3B82F6',
+      }]
+    },
+    options: {
+      scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, pointLabels: { font: { size: 13 } } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Bar — Maturity
+  function matScore(key) {
+    const sub = mat[key];
+    if (sub && typeof sub === 'object') return sub.score || 0;
+    return typeof sub === 'number' ? sub : 0;
+  }
+  const barLabels = ['Copertura topic', 'Prontezza backlog', 'Chiarezza', 'Unicita'];
+  const barData = [matScore('copertura_topic'), matScore('prontezza_backlog'), matScore('ambiguita'), matScore('duplicati')];
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: barLabels,
+      datasets: [{
+        label: 'Maturity',
+        data: barData,
+        backgroundColor: 'rgba(59,130,246,0.7)',
+        borderColor: '#3B82F6',
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

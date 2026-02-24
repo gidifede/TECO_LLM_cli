@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set active_page = 'steps' %}
+{% block title %}Estrai Requisiti — Interview Evaluator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Estrai Requisiti</h1>
+  <p>Estrai requisiti da una conversazione esistente</p>
+</div>
+
+<div style="margin-bottom:1rem">
+  <a href="/steps/simulate" class="btn btn-secondary btn-sm">Simula</a>
+  <a href="/steps/extract" class="btn btn-primary btn-sm">Estrai</a>
+  <a href="/steps/evaluate" class="btn btn-secondary btn-sm">Valuta</a>
+</div>
+
+{% if not conversations %}
+<div class="alert alert-info">Nessuna conversazione trovata. Esegui prima una <a href="/steps/simulate">simulazione</a>.</div>
+{% else %}
+
+<form method="post" action="/steps/extract" class="card">
+  <div class="form-group">
+    <label for="conv_idx">Conversazione</label>
+    <select name="conv_idx" id="conv_idx" required>
+      {% for fp, d, pl, md in conversations %}
+      {% set run_n = fp.stem.split('_')[0] %}
+      <option value="{{ loop.index0 }}">[{{ pl }}/{{ md }}] {{ d.get('scenario_id', '?') }} #{{ run_n }} — {{ d.get('total_turns', '?') }} turni</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="model">Modello</label>
+    <select name="model" id="model" required>
+      {% for m in models %}
+      <option value="{{ m }}" {% if m == 'gpt-5.2' %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Avvia Estrazione</button>
+</form>
+
+{% endif %}
+{% endblock %}
