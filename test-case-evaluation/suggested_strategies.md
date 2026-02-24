@@ -1,4 +1,4 @@
-# Strategie suggerite per la pipeline TECO
+# Strategie suggerite per la pipeline test-evaluator
 
 > **Nota (2026-02-23):** La **Strategia A** (usare solo diretto + persona-based) è stata implementata. Il percorso AC-based è stato rimosso dalla pipeline. La sezione 2.1 e la Strategia E sono ora superate.
 

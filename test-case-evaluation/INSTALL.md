@@ -1,6 +1,6 @@
-# Guida di installazione — TECO CLI (teco-interactive)
+# Guida di installazione — test-evaluator
 
-Questa guida è pensata per essere seguita da un agente AI o da uno sviluppatore su un desktop che non ha l'ambiente configurato. L'obiettivo è arrivare a lanciare `teco-interactive`.
+Questa guida è pensata per essere seguita da un agente AI o da uno sviluppatore su un desktop che non ha l'ambiente configurato. L'obiettivo è arrivare a lanciare `test-evaluator`.
 
 ---
 
@@ -38,7 +38,7 @@ Servono le seguenti informazioni:
 ## Installazione
 
 ```bash
-cd TECO_LLM_cli
+cd TECO_LLM_cli/test-case-evaluation
 
 # Crea virtual environment
 python -m venv .venv
@@ -63,9 +63,9 @@ La CLI cerca il file `.env` in questo ordine:
 
 1. Parametro esplicito `--env-file <path>`
 2. Variabile d'ambiente `DOTENV_PATH`
-3. Progetto fratello `../TECO_LLM_storyteller_web/.env`
+3. File `.env` nella directory `test-case-evaluation/`
 
-Il modo più diretto è creare un file `.env` nella root di `TECO_LLM_cli` e passarlo con `--env-file`:
+Creare un file `.env` in `test-case-evaluation/`:
 
 ```env
 AZURE_OPENAI_API_KEY=<la-tua-chiave>
@@ -79,16 +79,16 @@ AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.2
 ## Verifica installazione
 
 ```bash
-teco-interactive --help
+test-evaluator --help
 ```
 
 Output atteso:
 
 ```
-usage: teco-interactive [-h] [--requirements REQUIREMENTS]
-                        [--prompts-dir PROMPTS_DIR] [--env-file ENV_FILE]
-                        [--deployment DEPLOYMENT] [--temperature TEMPERATURE]
-                        [--max-tokens MAX_TOKENS]
+usage: test-evaluator [-h] [--requirements REQUIREMENTS]
+                      [--prompts-dir PROMPTS_DIR] [--env-file ENV_FILE]
+                      [--deployment DEPLOYMENT] [--temperature TEMPERATURE]
+                      [--max-tokens MAX_TOKENS]
 ```
 
 ---
@@ -96,14 +96,14 @@ usage: teco-interactive [-h] [--requirements REQUIREMENTS]
 ## Avvio
 
 ```bash
-# Con .env nella directory fratello (TECO_LLM_storyteller_web)
-teco-interactive
+# Con .env nella directory test-case-evaluation/
+test-evaluator
 
 # Con .env esplicito
-teco-interactive --env-file .env
+test-evaluator --env-file .env
 
 # Con deployment specifico
-teco-interactive --env-file .env --deployment gpt-5-mini
+test-evaluator --env-file .env --deployment gpt-5-mini
 ```
 
 La shell interattiva mostra un menu con le seguenti opzioni:
@@ -129,12 +129,12 @@ La CLI **non** richiede `uv`. Usa `pip install -e .` come indicato sopra.
 
 ### Modulo non trovato (`ModuleNotFoundError`)
 
-Assicurati di aver attivato il virtual environment e di aver eseguito `pip install -e .` dalla directory `TECO_LLM_cli`.
+Assicurati di aver attivato il virtual environment e di aver eseguito `pip install -e .` dalla directory `TECO_LLM_cli/test-case-evaluation`.
 
 ### File requirements.json non trovato
 
-Per default `teco-interactive` cerca `input_test/requirements.json` nella directory corrente. Puoi specificare un path diverso:
+Per default `test-evaluator` cerca `input_test/requirements.json` nella directory corrente. Puoi specificare un path diverso:
 
 ```bash
-teco-interactive --env-file .env --requirements /path/to/requirements.json
+test-evaluator --env-file .env --requirements /path/to/requirements.json
 ```

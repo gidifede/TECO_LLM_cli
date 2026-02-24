@@ -1,4 +1,6 @@
-# TECO_LLM_cli
+# Test Case Evaluation
+
+> Sottoprogetto di `TECO_LLM_cli` — CLI per generazione e valutazione di test cases da requisiti via LLM.
 
 ## Il problema
 
@@ -10,7 +12,7 @@ Il problema si amplifica quando la trasformazione è assistita da un LLM: il mod
 
 ## Obiettivo dello strumento
 
-TECO_LLM_cli è una CLI Python che permette di **misurare empiricamente lo scostamento** che il passaggio intermedio attraverso le user stories introduce rispetto al requisito originale.
+`test-evaluator` è una CLI Python che permette di **misurare empiricamente lo scostamento** che il passaggio intermedio attraverso le user stories introduce rispetto al requisito originale.
 
 Per farlo, la pipeline genera test cases seguendo **due percorsi paralleli** a partire dallo stesso requisito:
 
@@ -39,15 +41,13 @@ Lo strumento nasce dalla constatazione che non tutti i requisiti beneficiano all
 - **Requisiti non funzionali, vincoli, dati, integrazione**: non hanno un attore naturale. Forzarli nel formato "Come... Voglio... In modo che..." produce artefatti artificiali
 - **Requisiti già strutturati** con acceptance criteria verificabili: la user story riformula le stesse informazioni in un formato diverso, senza aggiungere conoscenza
 
-TECO_LLM_cli permette di verificare queste ipotesi sui propri dati, confrontando i risultati dei due percorsi per ogni categoria di requisito.
+`test-evaluator` permette di verificare queste ipotesi sui propri dati, confrontando i risultati dei due percorsi per ogni categoria di requisito.
 
-## Comandi disponibili
+## Comando
 
 | Comando | Descrizione |
 |---------|-------------|
-| `teco-cli` | Invio singolo di file + prompt ad Azure OpenAI |
-| `teco-pipeline` | Pipeline completa: requisiti → user stories → test cases (entrambi i percorsi) |
-| `teco-interactive` | Shell interattiva con menu per generazione, valutazione e configurazione |
+| `test-evaluator` | Shell interattiva con menu per generazione, valutazione e configurazione |
 
 ## Pipeline di elaborazione
 
@@ -115,7 +115,7 @@ output/
 
 ## Configurazione
 
-Creare un file `.env` con le credenziali Azure OpenAI:
+Creare un file `.env` nella directory `test-case-evaluation/` con le credenziali Azure OpenAI:
 
 ```env
 AZURE_OPENAI_API_KEY=...
@@ -132,10 +132,11 @@ Il file `.env` viene cercato in questo ordine:
 ## Installazione
 
 ```bash
+cd TECO_LLM_cli/test-case-evaluation
 pip install -e .
 ```
 
-Questo registra i tre comandi: `teco-cli`, `teco-pipeline`, `teco-interactive`.
+Questo registra il comando `test-evaluator`.
 
 ## Decisioni architetturali
 

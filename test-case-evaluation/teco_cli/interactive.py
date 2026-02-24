@@ -112,8 +112,8 @@ DEFAULT_OUTPUT_DIR = "./output_test"
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="teco-interactive",
-        description="Shell interattiva per la pipeline TECO (user stories / test cases).",
+        prog="test-evaluator",
+        description="Shell interattiva per generazione e valutazione test cases da requisiti.",
     )
 
     parser.add_argument(
@@ -1528,7 +1528,7 @@ def main() -> None:
         )
     except (FileNotFoundError, ValueError) as exc:
         print(
-            f"{_C.RED}[teco-interactive] Errore configurazione: {exc}{_C.RESET}",
+            f"{_C.RED}[test-evaluator] Errore configurazione: {exc}{_C.RESET}",
             file=sys.stderr,
         )
         sys.exit(1)

@@ -10,7 +10,7 @@ from .pipeline import run_pipeline
 
 def parse_pipeline_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="teco-pipeline",
+        prog="test-evaluator-pipeline",
         description=(
             "Pipeline automatica: per ogni requisito genera user stories "
             "e poi test cases tramite Azure OpenAI."
@@ -91,9 +91,9 @@ def main() -> None:
     args = parse_pipeline_args()
 
     if args.verbose:
-        print(f"[teco-pipeline] Requirements: {args.requirements}")
-        print(f"[teco-pipeline] Prompts dir:  {args.prompts_dir}")
-        print(f"[teco-pipeline] Output dir:   {args.output_dir}")
+        print(f"[test-evaluator-pipeline] Requirements: {args.requirements}")
+        print(f"[test-evaluator-pipeline] Prompts dir:  {args.prompts_dir}")
+        print(f"[test-evaluator-pipeline] Output dir:   {args.output_dir}")
 
     try:
         config = load_config(
@@ -101,12 +101,12 @@ def main() -> None:
             deployment_override=args.deployment,
         )
     except (FileNotFoundError, ValueError) as exc:
-        print(f"[teco-pipeline] Errore configurazione: {exc}", file=sys.stderr)
+        print(f"[test-evaluator-pipeline] Errore configurazione: {exc}", file=sys.stderr)
         sys.exit(1)
 
     if args.verbose:
-        print(f"[teco-pipeline] Endpoint:   {config.endpoint}")
-        print(f"[teco-pipeline] Deployment: {config.deployment}")
+        print(f"[test-evaluator-pipeline] Endpoint:   {config.endpoint}")
+        print(f"[test-evaluator-pipeline] Deployment: {config.deployment}")
 
     run_pipeline(
         requirements_path=args.requirements,
